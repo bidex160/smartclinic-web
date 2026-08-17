@@ -18,7 +18,7 @@ Start with thin domain-oriented services rather than a generic repository layer:
 
 - `HealthCheckPackagesApi`: retrieves the current package catalogue.
 - `FulfilmentModesApi`: retrieves the current fulfilment catalogue.
-- `BookingsApi`: creates a booking and retrieves a booking by reference.
+- `BookingsApi`: creates a public booking. Booking lookup is intentionally not implemented.
 
 These services own URL construction and typed `HttpClient` calls. Feature state/orchestration decides when to load, retry, navigate, and present results. Components should not call `HttpClient` directly.
 
@@ -28,7 +28,7 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | ----------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
 | `GET /api/v1/health-check-packages` | Populate package selection and supported options | API controls catalogue and availability                  |
 | `GET /api/v1/fulfilment-modes`      | Populate fulfilment selection                    | API controls fulfilment mode availability                |
-| `POST /api/v1/bookings`             | Submit the reviewed booking draft                | API validates, creates, and returns the reference        |
+| `POST /api/v1/public/bookings`      | Submit the reviewed public booking draft         | API validates, creates, and returns confirmation data    |
 | `GET /api/v1/bookings/:reference`   | Retrieve permitted booking/confirmation state    | Authorization and safe response fields must be confirmed |
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.

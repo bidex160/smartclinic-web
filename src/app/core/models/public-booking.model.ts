@@ -1,0 +1,41 @@
+export type PublicBookingRelationship = 'SELF' | 'FAMILY' | 'OTHER';
+
+export interface PublicBookingRequest {
+  readonly booker: {
+    readonly givenName: string;
+    readonly familyName: string;
+    readonly email?: string;
+    readonly phone: string;
+  };
+  readonly participant: {
+    readonly relationship: PublicBookingRelationship;
+    readonly givenName: string;
+    readonly familyName: string;
+    readonly dateOfBirth?: string;
+    readonly phone?: string;
+    readonly email?: string;
+  };
+  readonly booking: {
+    readonly healthCheckPackageId: string;
+    readonly fulfilmentModeId: string;
+    readonly preferredDate?: string;
+    readonly preferredTimeFrom?: string;
+    readonly preferredTimeTo?: string;
+    readonly locationNote?: string;
+  };
+}
+
+export interface PublicBookingResponse {
+  readonly bookingReference: string;
+  readonly status: string;
+  readonly healthCheckPackage: { readonly code: string; readonly name: string };
+  readonly fulfilmentMode: { readonly code: string; readonly name: string };
+  readonly participant: { readonly givenName: string; readonly familyName: string };
+  readonly quotedAmount: string | null;
+  readonly currency: string | null;
+  readonly preferredDate: string | null;
+  readonly preferredTimeWindowStart: string | null;
+  readonly preferredTimeWindowEnd: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}

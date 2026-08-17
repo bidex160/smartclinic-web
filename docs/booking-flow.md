@@ -88,7 +88,7 @@ Derived signals should determine completed steps and the earliest valid route. C
 
 Refresh clears sensitive draft state by design for the initial implementation. Users arriving at an incomplete route are redirected to the earliest required step with a calm explanation.
 
-Package, fulfilment, and details are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A valid details form is saved in memory and stops before review or submission.
+Package, fulfilment, details, review, submission, and confirmation are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. Review explicitly maps valid state to the public request contract and submits only after confirmation. The successful response remains in memory until the user deliberately starts another booking.
 
 ## Open product and UI decisions
 

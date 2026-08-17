@@ -21,3 +21,16 @@ export const hasBookingSelectionsGuard: CanActivateFn = () => {
 
   return bookingFlow.selectedFulfilmentMode() ? true : router.createUrlTree(['/book/fulfilment']);
 };
+
+export const hasCompleteBookingDraftGuard: CanActivateFn = () => {
+  const bookingFlow = inject(BookingFlowStateService);
+  const router = inject(Router);
+
+  if (!bookingFlow.selectedPackage()) {
+    return router.createUrlTree(['/health-check/packages'], { queryParams: { flow: 'restart' } });
+  }
+  if (!bookingFlow.selectedFulfilmentMode()) {
+    return router.createUrlTree(['/book/fulfilment']);
+  }
+  return bookingFlow.details() ? true : router.createUrlTree(['/book/details']);
+};

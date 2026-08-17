@@ -6,7 +6,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { BookingDetailsDraft, ParticipantRelationship } from './booking-flow.models';
 import { BookingFlowStateService } from './booking-flow-state.service';
@@ -41,6 +41,7 @@ function validTimeWindow(control: AbstractControl): ValidationErrors | null {
 export class BookingDetailsPageComponent {
   private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+  private readonly router = inject(Router);
   readonly bookingFlow = inject(BookingFlowStateService);
 
   readonly submitted = signal(false);
@@ -112,6 +113,7 @@ export class BookingDetailsPageComponent {
     const details: BookingDetailsDraft = this.form.getRawValue();
     this.bookingFlow.saveDetails(details);
     this.detailsSaved.set(true);
+    void this.router.navigate(['/book/review']);
   }
 
   showError(control: AbstractControl): boolean {

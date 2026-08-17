@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import {
   hasBookingSelectionsGuard,
+  hasCompleteBookingDraftGuard,
   hasSelectedPackageGuard,
 } from './features/booking/booking-flow.guards';
 
@@ -37,6 +38,23 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/booking/booking-details-page.component').then(
         (component) => component.BookingDetailsPageComponent,
+      ),
+  },
+  {
+    path: 'book/review',
+    title: 'Review your booking | SmartClinic',
+    canActivate: [hasCompleteBookingDraftGuard],
+    loadComponent: () =>
+      import('./features/booking/booking-review-page.component').then(
+        (component) => component.BookingReviewPageComponent,
+      ),
+  },
+  {
+    path: 'book/confirmation/:reference',
+    title: 'Booking confirmation | SmartClinic',
+    loadComponent: () =>
+      import('./features/booking/booking-confirmation-page.component').then(
+        (component) => component.BookingConfirmationPageComponent,
       ),
   },
   {

@@ -102,6 +102,8 @@ Guards should prevent accidental entry into later steps without required in-memo
 
 The fulfilment and details guards are implemented. Refresh intentionally clears the draft, so guarded routes recover to package selection or fulfilment as appropriate.
 
+Review additionally requires saved details and redirects to the earliest incomplete step. Confirmation accepts a reference route parameter but renders booking information only when a matching successful POST response remains in memory; it does not use the reference for automatic lookup.
+
 Whether the lookup route is public and what it may display remains a backend/product security decision.
 
 ## Forms and data boundaries

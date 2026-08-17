@@ -1,4 +1,6 @@
-export type ParticipantRelationship = 'SELF' | 'FAMILY' | 'OTHER';
+import { PublicBookingRelationship } from '../../core/models/public-booking.model';
+
+export type ParticipantRelationship = PublicBookingRelationship;
 
 export interface BookerDetails {
   readonly givenName: string;
