@@ -25,6 +25,9 @@ export class AuthStateService {
     const roles = this.currentUserState()?.roles ?? [];
     return roles.includes('ADMIN') || roles.includes('OPERATIONS');
   });
+  readonly isProvider = computed(
+    () => this.currentUserState()?.roles.includes('PROVIDER') ?? false,
+  );
 
   setSession(response: LoginResponse): void {
     this.accessTokenState.set(response.accessToken);

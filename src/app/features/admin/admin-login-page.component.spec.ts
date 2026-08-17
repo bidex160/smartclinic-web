@@ -44,6 +44,13 @@ describe('AdminLoginPageComponent', () => {
     expect(router.navigate).not.toHaveBeenCalledWith(['/admin/package-prices']);
   });
 
+  it('routes a PROVIDER login to their offers without breaking admin priority', async () => {
+    const { component, router } = await setup(() => of(loginResponse(['PROVIDER'])));
+    component.form.setValue({ email: 'provider@example.test', password: 'secret' });
+    component.login();
+    expect(router.navigate).toHaveBeenCalledWith(['/provider/offers']);
+  });
+
   async function setup(login: () => ReturnType<AuthApiService['login']>) {
     const router = { navigate: vi.fn().mockResolvedValue(true) };
     await TestBed.configureTestingModule({

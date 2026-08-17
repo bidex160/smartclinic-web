@@ -18,7 +18,8 @@ src/app/
 ├── features/
 │   ├── home/            # Landing page and primary CTA
 │   ├── health-check/    # Catalogue/package selection UI
-│   └── booking/         # Booking shell, steps, confirmation, and lookup
+│   ├── booking/         # Booking shell, steps, confirmation, and lookup
+│   └── provider/        # Provider-owned offer list, detail, and response UI
 ├── app.component.ts     # Application shell and router outlet
 ├── app.config.ts        # Providers, router, HTTP, and global application setup
 └── app.routes.ts        # Top-level route map
@@ -99,6 +100,9 @@ Proposed public routes:
 | `/admin/login`                  | In-memory administrator and operations login                                |
 | `/admin/package-prices`         | Role-guarded package-price operations                                       |
 | `/admin/access-denied`          | Accessible recovery for authenticated users without an allowed role         |
+| `/provider/offers`              | Provider-owned actionable/recent offer list                                 |
+| `/provider/offers/:id`          | Safe offer detail and deliberate accept/decline actions                     |
+| `/provider/access-denied`       | Accessible recovery for users without the explicit PROVIDER role            |
 | `**`                            | Accessible not-found page with a route back to safety                       |
 
 Guards should prevent accidental entry into later steps without required in-memory state, returning users to the earliest incomplete step. Guards are navigation aids, not security controls. Avoid sensitive values in URLs.
@@ -114,6 +118,10 @@ Whether the lookup route is public and what it may display remains a backend/pro
 Admin authentication uses a small signal service holding the access token and safe current-user identity in memory only. The refresh token is never represented in frontend code: the backend stores it in an HttpOnly cookie. Angular's application initializer attempts one credentialed refresh on startup, with a bounded timeout, before protected guards decide whether to redirect. Guards await the initialization promise and then require an authenticated `ADMIN` or `OPERATIONS` role; authorization remains enforced independently by the backend.
 
 A functional interceptor attaches the in-memory bearer token only to URLs under the configured API base URL. One normal API `401` starts or joins a shared refresh operation and, after success, retries that request once. Login, refresh, and logout are excluded from this recovery path to prevent loops. Failed restoration is an ordinary unauthenticated state; failed runtime refresh clears the frontend session and returns the user to login. Logout always clears local state even if backend revocation cannot be reached.
+
+Provider routes reuse the same login, signal state, startup restoration, interceptor, and logout flow. Their guard requires the explicit `PROVIDER` role after restoration; ADMIN or OPERATIONS alone never implies provider access. Admin pages remain responsible for operational pricing, while provider pages expose only assignments owned by the authenticated provider. The backend remains responsible for ownership checks, provider linkage, offer expiry, matching transitions, and valid actions.
+
+Provider offer list and detail components model only the backend's safe offer projection: operational timestamps and status, booking reference, package/mode labels, participant name, requested time preferences, and an optional provider response reason. They intentionally exclude contact data, date of birth, location notes, internal booking/provider identifiers, and matching history.
 
 ## Forms and data boundaries
 

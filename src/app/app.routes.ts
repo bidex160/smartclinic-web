@@ -5,6 +5,7 @@ import {
   hasSelectedPackageGuard,
 } from './features/booking/booking-flow.guards';
 import { adminPricingGuard } from './features/admin/admin-auth.guards';
+import { providerGuard } from './features/provider/provider-auth.guard';
 
 export const routes: Routes = [
   {
@@ -60,10 +61,36 @@ export const routes: Routes = [
   },
   {
     path: 'admin/login',
-    title: 'Admin sign in | SmartClinic',
+    title: 'Staff sign in | SmartClinic',
     loadComponent: () =>
       import('./features/admin/admin-login-page.component').then(
         (component) => component.AdminLoginPageComponent,
+      ),
+  },
+  {
+    path: 'provider/access-denied',
+    title: 'Provider access required | SmartClinic',
+    loadComponent: () =>
+      import('./features/provider/provider-access-denied-page.component').then(
+        (component) => component.ProviderAccessDeniedPageComponent,
+      ),
+  },
+  {
+    path: 'provider/offers',
+    title: 'My offers | SmartClinic',
+    canActivate: [providerGuard],
+    loadComponent: () =>
+      import('./features/provider/provider-offers-page.component').then(
+        (component) => component.ProviderOffersPageComponent,
+      ),
+  },
+  {
+    path: 'provider/offers/:id',
+    title: 'Offer details | SmartClinic',
+    canActivate: [providerGuard],
+    loadComponent: () =>
+      import('./features/provider/provider-offer-detail-page.component').then(
+        (component) => component.ProviderOfferDetailPageComponent,
       ),
   },
   {

@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 
 import { API_CONFIG } from '../config/api-config.token';
+import { SKIP_AUTH_RETRY } from '../config/http-context.tokens';
 import { AuthStateService } from '../services/auth-state.service';
 import { AuthSessionService } from '../services/auth-session.service';
 
@@ -32,16 +33,24 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         error.status === 401
       ) {
         return authSession.refreshSession().pipe(
+          catchError((refreshError: unknown) => {
+            authSession.handleRefreshFailure(refreshError);
+            return throwError(() => refreshError);
+          }),
           switchMap(() => {
+            if (request.context.get(SKIP_AUTH_RETRY)) return throwError(() => error);
             const refreshedToken = authState.accessToken();
             const retry = refreshedToken
               ? request.clone({ setHeaders: { Authorization: `Bearer ${refreshedToken}` } })
               : request;
-            return next(retry);
-          }),
-          catchError((refreshError: unknown) => {
-            authSession.handleRefreshFailure(refreshError);
-            return throwError(() => refreshError);
+            return next(retry).pipe(
+              catchError((retryError: unknown) => {
+                if (retryError instanceof HttpErrorResponse && retryError.status === 401) {
+                  authSession.handleRefreshFailure(retryError);
+                }
+                return throwError(() => retryError);
+              }),
+            );
           }),
         );
       }

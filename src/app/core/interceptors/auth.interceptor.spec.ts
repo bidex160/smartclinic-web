@@ -1,9 +1,10 @@
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import { API_CONFIG } from '../config/api-config.token';
+import { SKIP_AUTH_RETRY } from '../config/http-context.tokens';
 import { AuthStateService } from '../services/auth-state.service';
 import { AuthApiService } from '../services/auth-api.service';
 import { authInterceptor } from './auth.interceptor';
@@ -98,6 +99,27 @@ describe('authInterceptor', () => {
       .expectOne('http://api.example.test/api/v1/auth/me')
       .flush({}, { status: 401, statusText: 'Unauthorized' });
     http.expectNone('http://api.example.test/api/v1/auth/refresh');
+    http.verify();
+  });
+
+  it('refreshes the session without replaying an opted-out mutation', () => {
+    const { auth, http } = setup();
+    authenticate(auth);
+    let failed = false;
+    TestBed.inject(HttpClient)
+      .post('http://api.example.test/api/v1/provider/offers/id/accept', null, {
+        context: new HttpContext().set(SKIP_AUTH_RETRY, true),
+      })
+      .subscribe({ error: () => (failed = true) });
+    http
+      .expectOne('http://api.example.test/api/v1/provider/offers/id/accept')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne('http://api.example.test/api/v1/auth/refresh')
+      .flush({ accessToken: 'new-token', user: user() });
+    http.expectNone('http://api.example.test/api/v1/provider/offers/id/accept');
+    expect(failed).toBe(true);
+    expect(auth.authenticated()).toBe(true);
     http.verify();
   });
 

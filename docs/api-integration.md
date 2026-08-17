@@ -21,6 +21,7 @@ Start with thin domain-oriented services rather than a generic repository layer:
 - `BookingsApi`: creates a public booking. Booking lookup is intentionally not implemented.
 - `AuthApi`: logs in and retrieves the authenticated safe user identity.
 - `PackagePricesApi`: lists, creates, schedules, and deactivates package prices.
+- `ProviderOffersApi`: lists and retrieves provider-owned safe offers and submits accept/decline responses.
 
 These services own URL construction and typed `HttpClient` calls. Feature state/orchestration decides when to load, retry, navigate, and present results. Components should not call `HttpClient` directly.
 
@@ -41,6 +42,10 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/admin/package-prices`                 | Create a package price                           | ADMIN or OPERATIONS                                      |
 | `POST /api/v1/admin/package-prices/schedule`        | Schedule a future replacement price              | Preserves history; ADMIN or OPERATIONS                   |
 | `PATCH /api/v1/admin/package-prices/:id/deactivate` | Deactivate without deletion                      | ADMIN or OPERATIONS                                      |
+| `GET /api/v1/provider/offers`                       | List the authenticated provider's current offers | PROVIDER; optional assignment-status filter              |
+| `GET /api/v1/provider/offers/:id`                   | Read one owned safe offer                        | PROVIDER; ownership enforced by API                      |
+| `POST /api/v1/provider/offers/:id/accept`           | Accept one offered assignment                    | Single deliberate mutation; server validates expiry      |
+| `POST /api/v1/provider/offers/:id/decline`          | Decline one offered assignment                   | Optional reason; preserves matching history              |
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.
 
@@ -78,6 +83,14 @@ The auth interceptor is limited to the configured SmartClinic API URL and never 
 Logout revokes the current refresh session and clears its cookie. Logout-all additionally sends the current bearer token and revokes every session for that user. The frontend clears in-memory authentication and navigates to login even when the logout network request fails, avoiding an apparently authenticated UI.
 
 Credentialed cross-origin deployments require the backend to allow the exact frontend origin, allow credentials, and configure cookie `SameSite`, `Secure`, domain, and path attributes consistently with the deployed origins. Wildcard CORS origins are incompatible with credentialed browser requests.
+
+## Provider offer boundary
+
+Provider APIs are Bearer-authenticated and use the existing refresh recovery. Components never call `HttpClient` directly. A provider list may pass the backend-supported single `status` query parameter; omitting it preserves the server's current-offers default.
+
+The offer transport model mirrors only the safe response: assignment status and response timestamps, booking reference, package and fulfilment labels, participant name, requested date/time/timezone, and optional decline reason. It does not model participant contact details, date of birth, free-text location notes, internal booking/provider IDs, or matching history. UI code must not infer or request those fields.
+
+Accept and decline are deliberate POST operations with duplicate controls disabled while pending. They carry an explicit HTTP-context opt-out from automatic request replay: a `401` may refresh the session, but the mutation itself must be deliberately submitted again. A `409` means the server considers the offer expired or otherwise no longer actionable; the UI disables response actions and reloads the authoritative offer instead of reviving it. `403` routes to provider access denial, and `404` uses a non-enumerating owned-offer message.
 
 ## Loading, empty, and error handling
 

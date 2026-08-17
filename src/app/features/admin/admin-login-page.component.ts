@@ -43,11 +43,17 @@ export class AdminLoginPageComponent {
       .subscribe({
         next: (response) => {
           this.authState.setSession(response);
-          if (!this.authState.canManagePricing()) {
-            this.accessDenied.set(true);
+          if (this.authState.canManagePricing()) {
+            void this.router.navigate(['/admin/package-prices']);
             return;
           }
-          void this.router.navigate(['/admin/package-prices']);
+          if (this.authState.isProvider()) {
+            void this.router.navigate(['/provider/offers']);
+            return;
+          }
+          if (!this.authState.canManagePricing() && !this.authState.isProvider()) {
+            this.accessDenied.set(true);
+          }
         },
         error: (error: HttpErrorResponse) => {
           this.authState.setError(
