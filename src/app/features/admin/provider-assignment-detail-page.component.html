@@ -1,0 +1,179 @@
+<app-admin-session-header />
+
+<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+  <a
+    routerLink="/admin/provider-assignments"
+    class="font-bold text-brand-700 underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+    >← Back to provider assignments</a
+  >
+
+  <div class="mt-6" aria-live="polite">
+    @if (statusMessage()) {
+      <p role="status" class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900">
+        {{ statusMessage() }}
+      </p>
+    }
+    @if (error()) {
+      <div
+        #errorSummary
+        tabindex="-1"
+        role="alert"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 outline-none focus:ring-4 focus:ring-red-200"
+      >
+        <p class="font-bold">Assignment unavailable</p>
+        <p class="mt-1">{{ error() }}</p>
+        @if (!notFound()) {
+          <button
+            type="button"
+            (click)="loadAssignment()"
+            class="mt-3 min-h-11 rounded-lg border border-red-700 px-4 py-2 font-bold focus:outline-none focus:ring-4 focus:ring-red-200"
+          >
+            Refresh assignment
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (loading() && !assignment()) {
+    <p role="status" class="mt-6 rounded-xl border border-brand-100 bg-brand-50 p-4">
+      Loading assignment details…
+    </p>
+  }
+
+  @if (assignment(); as current) {
+    <article class="mt-6 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft sm:p-8">
+      <header class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold text-slate-500">{{ current.bookingReference }}</p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight text-brand-900">Provider assignment</h1>
+          <p class="mt-2 text-slate-600">
+            Booking: {{ bookingStatusLabel(current.bookingStatus) }}
+          </p>
+        </div>
+        <span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{
+          assignmentStatusLabel(current.status)
+        }}</span>
+      </header>
+
+      <section class="mt-8" aria-labelledby="assignment-context-title">
+        <h2 id="assignment-context-title" class="text-xl font-bold text-brand-900">
+          Operational details
+        </h2>
+        <dl class="mt-5 grid gap-5 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Provider</dt>
+            <dd class="mt-1 font-bold">{{ current.provider.displayName }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Package</dt>
+            <dd class="mt-1">{{ current.healthCheckPackage.name }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Fulfilment mode</dt>
+            <dd class="mt-1">{{ current.fulfilmentMode.name }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Participant</dt>
+            <dd class="mt-1">
+              {{ current.participant.givenName }} {{ current.participant.familyName }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Preferred date</dt>
+            <dd class="mt-1">{{ current.preferredDate || 'Not specified' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Preferred time</dt>
+            <dd class="mt-1">
+              {{ current.preferredTimeWindowStart || 'Flexible' }}–{{
+                current.preferredTimeWindowEnd || 'Flexible'
+              }}
+              {{ current.preferredTimezone || '' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Offered</dt>
+            <dd class="mt-1">{{ current.offeredAt | date: 'medium' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-slate-600">Expires</dt>
+            <dd class="mt-1">
+              {{ current.expiresAt ? (current.expiresAt | date: 'medium') : 'Not specified' }}
+            </dd>
+          </div>
+          @if (current.acceptedAt) {
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Accepted</dt>
+              <dd class="mt-1">{{ current.acceptedAt | date: 'medium' }}</dd>
+            </div>
+          }
+          @if (current.confirmedAt) {
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Confirmed</dt>
+              <dd class="mt-1">{{ current.confirmedAt | date: 'medium' }}</dd>
+            </div>
+          }
+          @if (current.declineReason) {
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-semibold text-slate-600">Decline reason</dt>
+              <dd class="mt-1 whitespace-pre-wrap">{{ current.declineReason }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      @if (current.status === 'ACCEPTED') {
+        <section class="mt-8 border-t border-slate-100 pt-6" aria-labelledby="confirm-title">
+          <h2 id="confirm-title" class="text-xl font-bold text-brand-900">Confirm assignment</h2>
+          <p class="mt-2 text-slate-600">
+            Confirmation makes this provider active for the booking and advances the booking to
+            Provider assigned.
+          </p>
+          @if (!confirmationOpen()) {
+            <button
+              type="button"
+              (click)="requestConfirmation()"
+              class="mt-5 min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
+            >
+              Confirm provider assignment
+            </button>
+          } @else {
+            <div
+              role="group"
+              aria-label="Confirm provider assignment"
+              class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-5"
+            >
+              <p class="font-bold text-amber-950">
+                Confirm {{ current.provider.displayName }} for {{ current.bookingReference }}?
+              </p>
+              <div class="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  (click)="confirmAssignment()"
+                  [disabled]="confirming()"
+                  class="min-h-11 rounded-lg bg-brand-600 px-5 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {{ confirming() ? 'Confirming…' : 'Yes, confirm assignment' }}
+                </button>
+                <button
+                  type="button"
+                  (click)="cancelConfirmation()"
+                  [disabled]="confirming()"
+                  class="min-h-11 rounded-lg px-5 py-2 font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          }
+        </section>
+      } @else {
+        <p class="mt-8 rounded-xl bg-slate-50 p-4 text-slate-700">
+          Only an accepted provider response can be confirmed. This assignment is
+          {{ assignmentStatusLabel(current.status).toLowerCase() }}.
+        </p>
+      }
+    </article>
+  }
+</main>

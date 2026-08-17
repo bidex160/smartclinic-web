@@ -1,0 +1,253 @@
+<app-admin-session-header />
+
+<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+  <div class="max-w-3xl">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
+      SmartClinic operations
+    </p>
+    <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+      Provider assignments
+    </h1>
+    <p class="mt-4 text-lg leading-8 text-slate-600">
+      Start provider matching, review offer responses, and confirm accepted assignments.
+    </p>
+  </div>
+
+  <div class="mt-6" aria-live="polite" aria-atomic="true">
+    @if (statusMessage()) {
+      <p role="status" class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900">
+        {{ statusMessage() }}
+      </p>
+    }
+    @if (error()) {
+      <div
+        #errorSummary
+        tabindex="-1"
+        role="alert"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 outline-none focus:ring-4 focus:ring-red-200"
+      >
+        <p class="font-bold">Action could not be completed</p>
+        <p class="mt-1">{{ error() }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-2">
+    <section
+      class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+      aria-labelledby="start-matching-title"
+    >
+      <h2 id="start-matching-title" class="text-xl font-bold text-brand-900">Start matching</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        The backend selects the next eligible provider using the booking’s approved matching
+        context.
+      </p>
+      <form [formGroup]="matchingForm" (ngSubmit)="startMatching()" class="mt-5">
+        <label for="matching-reference" class="block text-sm font-bold text-slate-800"
+          >Booking reference</label
+        >
+        <input
+          id="matching-reference"
+          formControlName="bookingReference"
+          placeholder="SC-2026-ABCDEF123456"
+          autocomplete="off"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 uppercase focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        />
+        @if (
+          matchingForm.controls.bookingReference.touched &&
+          matchingForm.controls.bookingReference.invalid
+        ) {
+          <p class="mt-2 text-sm font-semibold text-red-700">
+            Enter a valid SmartClinic booking reference.
+          </p>
+        }
+        <button
+          type="submit"
+          [disabled]="mutating()"
+          class="mt-4 min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+        >
+          {{ mutating() ? 'Working…' : 'Start matching' }}
+        </button>
+      </form>
+    </section>
+
+    <section
+      class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+      aria-labelledby="expire-title"
+    >
+      <h2 id="expire-title" class="text-xl font-bold text-brand-900">Expire stale offers</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        Run the server’s expiry workflow now. Matching may continue to the next eligible provider.
+      </p>
+      <button
+        type="button"
+        (click)="expireStaleOffers()"
+        [disabled]="mutating()"
+        class="mt-5 min-h-12 rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+      >
+        {{ mutating() ? 'Working…' : 'Expire stale offers' }}
+      </button>
+    </section>
+  </div>
+
+  <section
+    class="mt-8 rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+    aria-labelledby="assignment-filters-title"
+  >
+    <h2 id="assignment-filters-title" class="text-xl font-bold text-brand-900">
+      Filter assignments
+    </h2>
+    <form
+      [formGroup]="filterForm"
+      (ngSubmit)="loadAssignments()"
+      class="mt-5 grid gap-4 lg:grid-cols-3"
+    >
+      <div>
+        <label for="filter-reference" class="block text-sm font-bold">Booking reference</label>
+        <input
+          id="filter-reference"
+          formControlName="bookingReference"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 uppercase focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        />
+      </div>
+      <div>
+        <label for="filter-provider" class="block text-sm font-bold">Provider ID</label>
+        <input
+          id="filter-provider"
+          formControlName="providerId"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        />
+      </div>
+      <div>
+        <label for="filter-status" class="block text-sm font-bold">Assignment status</label>
+        <select
+          id="filter-status"
+          formControlName="status"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">All statuses</option>
+          @for (status of assignmentStatuses; track status) {
+            <option [value]="status">{{ assignmentStatusLabel(status) }}</option>
+          }
+        </select>
+      </div>
+      @if (filterForm.invalid && filterForm.touched) {
+        <p class="text-sm font-semibold text-red-700 lg:col-span-3">
+          Use a valid booking reference and provider UUID.
+        </p>
+      }
+      <div class="flex flex-wrap gap-3 lg:col-span-3">
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="min-h-11 rounded-lg bg-brand-600 px-5 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
+        >
+          Apply filters
+        </button>
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="min-h-11 rounded-lg border border-brand-600 px-5 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section
+    class="mt-6 overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-soft"
+    aria-labelledby="assignments-title"
+  >
+    <div class="flex items-center justify-between gap-4 border-b border-slate-100 p-5 sm:p-7">
+      <h2 id="assignments-title" class="text-xl font-bold text-brand-900">Assignment history</h2>
+      @if (loading()) {
+        <span role="status" class="text-sm font-semibold text-brand-700">Loading…</span>
+      }
+    </div>
+    @if (!loading() && assignments().length === 0) {
+      <p class="p-7 text-slate-600">No provider assignments match these filters.</p>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1280px] border-collapse text-left text-sm">
+          <caption class="sr-only">
+            Provider assignments and matching status
+          </caption>
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th scope="col" class="px-4 py-3">Booking</th>
+              <th scope="col" class="px-4 py-3">Booking status</th>
+              <th scope="col" class="px-4 py-3">Assignment</th>
+              <th scope="col" class="px-4 py-3">Provider</th>
+              <th scope="col" class="px-4 py-3">Package / mode</th>
+              <th scope="col" class="px-4 py-3">Participant</th>
+              <th scope="col" class="px-4 py-3">Preferred schedule</th>
+              <th scope="col" class="px-4 py-3">Offer timing</th>
+              <th scope="col" class="px-4 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (assignment of assignments(); track assignment.assignmentId) {
+              <tr>
+                <th scope="row" class="px-4 py-4 font-semibold">
+                  {{ assignment.bookingReference }}
+                </th>
+                <td class="px-4 py-4">{{ bookingStatusLabel(assignment.bookingStatus) }}</td>
+                <td class="px-4 py-4">
+                  <span class="rounded-full bg-brand-50 px-3 py-1 font-bold text-brand-800">{{
+                    assignmentStatusLabel(assignment.status)
+                  }}</span>
+                </td>
+                <td class="px-4 py-4">{{ assignment.provider.displayName }}</td>
+                <td class="px-4 py-4">
+                  {{ assignment.healthCheckPackage.name
+                  }}<span class="block text-slate-500">{{ assignment.fulfilmentMode.name }}</span>
+                </td>
+                <td class="px-4 py-4">
+                  {{ assignment.participant.givenName }} {{ assignment.participant.familyName }}
+                </td>
+                <td class="px-4 py-4">
+                  {{ assignment.preferredDate || 'Not specified'
+                  }}<span class="block text-slate-500"
+                    >{{ assignment.preferredTimeWindowStart || 'Flexible' }}–{{
+                      assignment.preferredTimeWindowEnd || 'Flexible'
+                    }}
+                    {{ assignment.preferredTimezone || '' }}</span
+                  >
+                </td>
+                <td class="px-4 py-4">
+                  Offered {{ assignment.offeredAt | date: 'medium'
+                  }}<span class="block text-slate-500"
+                    >Expires
+                    {{
+                      assignment.expiresAt
+                        ? (assignment.expiresAt | date: 'medium')
+                        : 'not specified'
+                    }}</span
+                  >
+                  @if (assignment.acceptedAt) {
+                    <span class="block text-slate-500"
+                      >Accepted {{ assignment.acceptedAt | date: 'medium' }}</span
+                    >
+                  }
+                  @if (assignment.confirmedAt) {
+                    <span class="block text-slate-500"
+                      >Confirmed {{ assignment.confirmedAt | date: 'medium' }}</span
+                    >
+                  }
+                </td>
+                <td class="px-4 py-4">
+                  <a
+                    [routerLink]="['/admin/provider-assignments', assignment.assignmentId]"
+                    class="inline-flex min-h-10 items-center rounded-lg border border-brand-600 px-3 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                    >View</a
+                  >
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

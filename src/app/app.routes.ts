@@ -111,6 +111,24 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/provider-assignments',
+    title: 'Provider assignments | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/provider-assignments-page.component').then(
+        (component) => component.ProviderAssignmentsPageComponent,
+      ),
+  },
+  {
+    path: 'admin/provider-assignments/:id',
+    title: 'Provider assignment details | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/provider-assignment-detail-page.component').then(
+        (component) => component.ProviderAssignmentDetailPageComponent,
+      ),
+  },
+  {
     path: '**',
     title: 'Page not found | SmartClinic',
     loadComponent: () =>

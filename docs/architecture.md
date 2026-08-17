@@ -88,22 +88,24 @@ Names are proposals, not boilerplate requirements. For example, separate partici
 
 Proposed public routes:
 
-| Route                           | Responsibility                                                              |
-| ------------------------------- | --------------------------------------------------------------------------- |
-| `/`                             | Focused home page with the primary booking CTA                              |
-| `/health-check/packages`        | Fetch and select an available package                                       |
-| `/book/fulfilment`              | Select an API-supported mode; requires an in-memory package selection       |
-| `/book/details`                 | Collect details; requires in-memory package and mode selections             |
-| `/book/review`                  | Review the draft; submission occurs only on explicit confirmation           |
-| `/book/confirmation/:reference` | Display the returned reference and safe next steps                          |
-| `/bookings/:reference`          | Retrieve a booking where the authorization/verification contract permits it |
-| `/admin/login`                  | In-memory administrator and operations login                                |
-| `/admin/package-prices`         | Role-guarded package-price operations                                       |
-| `/admin/access-denied`          | Accessible recovery for authenticated users without an allowed role         |
-| `/provider/offers`              | Provider-owned actionable/recent offer list                                 |
-| `/provider/offers/:id`          | Safe offer detail and deliberate accept/decline actions                     |
-| `/provider/access-denied`       | Accessible recovery for users without the explicit PROVIDER role            |
-| `**`                            | Accessible not-found page with a route back to safety                       |
+| Route                             | Responsibility                                                              |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `/`                               | Focused home page with the primary booking CTA                              |
+| `/health-check/packages`          | Fetch and select an available package                                       |
+| `/book/fulfilment`                | Select an API-supported mode; requires an in-memory package selection       |
+| `/book/details`                   | Collect details; requires in-memory package and mode selections             |
+| `/book/review`                    | Review the draft; submission occurs only on explicit confirmation           |
+| `/book/confirmation/:reference`   | Display the returned reference and safe next steps                          |
+| `/bookings/:reference`            | Retrieve a booking where the authorization/verification contract permits it |
+| `/admin/login`                    | In-memory administrator and operations login                                |
+| `/admin/package-prices`           | Role-guarded package-price operations                                       |
+| `/admin/access-denied`            | Accessible recovery for authenticated users without an allowed role         |
+| `/admin/provider-assignments`     | Guarded matching controls and operational assignment list                   |
+| `/admin/provider-assignments/:id` | Guarded assignment detail and accepted-assignment confirmation              |
+| `/provider/offers`                | Provider-owned actionable/recent offer list                                 |
+| `/provider/offers/:id`            | Safe offer detail and deliberate accept/decline actions                     |
+| `/provider/access-denied`         | Accessible recovery for users without the explicit PROVIDER role            |
+| `**`                              | Accessible not-found page with a route back to safety                       |
 
 Guards should prevent accidental entry into later steps without required in-memory state, returning users to the earliest incomplete step. Guards are navigation aids, not security controls. Avoid sensitive values in URLs.
 
@@ -122,6 +124,10 @@ A functional interceptor attaches the in-memory bearer token only to URLs under 
 Provider routes reuse the same login, signal state, startup restoration, interceptor, and logout flow. Their guard requires the explicit `PROVIDER` role after restoration; ADMIN or OPERATIONS alone never implies provider access. Admin pages remain responsible for operational pricing, while provider pages expose only assignments owned by the authenticated provider. The backend remains responsible for ownership checks, provider linkage, offer expiry, matching transitions, and valid actions.
 
 Provider offer list and detail components model only the backend's safe offer projection: operational timestamps and status, booking reference, package/mode labels, participant name, requested time preferences, and an optional provider response reason. They intentionally exclude contact data, date of birth, location notes, internal booking/provider identifiers, and matching history.
+
+Admin assignment routes use the existing ADMIN/OPERATIONS guard and session. Operations may ask the backend to start matching, inspect assignment state, confirm an accepted provider response, or explicitly expire stale offers. The browser never constructs a candidate list, ranks providers, evaluates availability, revives expired offers, or directly changes booking state. Provider `ACCEPTED` remains distinct from admin `CONFIRMED`; only the server confirmation response advances the booking to `PROVIDER_ASSIGNED`.
+
+The admin assignment read model contains only operational identity and scheduling context: provider ID/display name, minimal participant name, package/mode, booking and assignment states, requested schedule, offer timestamps, and decline reason. Funding, payment, contacts, credentials, free-text location notes, and raw matching histories remain outside the frontend boundary.
 
 ## Forms and data boundaries
 
