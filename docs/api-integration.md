@@ -19,17 +19,25 @@ Start with thin domain-oriented services rather than a generic repository layer:
 - `HealthCheckPackagesApi`: retrieves the current package catalogue.
 - `FulfilmentModesApi`: retrieves the current fulfilment catalogue.
 - `BookingsApi`: creates a public booking. Booking lookup is intentionally not implemented.
+- `AuthApi`: logs in and retrieves the authenticated safe user identity.
+- `PackagePricesApi`: lists, creates, schedules, and deactivates package prices.
 
 These services own URL construction and typed `HttpClient` calls. Feature state/orchestration decides when to load, retry, navigate, and present results. Components should not call `HttpClient` directly.
 
 ## Endpoints
 
-| Method and path                     | Frontend use                                     | Ownership notes                                          |
-| ----------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
-| `GET /api/v1/health-check-packages` | Populate package selection and supported options | API controls catalogue and availability                  |
-| `GET /api/v1/fulfilment-modes`      | Populate fulfilment selection                    | API controls fulfilment mode availability                |
-| `POST /api/v1/public/bookings`      | Submit the reviewed public booking draft         | API validates, creates, and returns confirmation data    |
-| `GET /api/v1/bookings/:reference`   | Retrieve permitted booking/confirmation state    | Authorization and safe response fields must be confirmed |
+| Method and path                                     | Frontend use                                     | Ownership notes                                          |
+| --------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| `GET /api/v1/health-check-packages`                 | Populate package selection and supported options | API controls catalogue and availability                  |
+| `GET /api/v1/fulfilment-modes`                      | Populate fulfilment selection                    | API controls fulfilment mode availability                |
+| `POST /api/v1/public/bookings`                      | Submit the reviewed public booking draft         | API validates, creates, and returns confirmation data    |
+| `GET /api/v1/bookings/:reference`                   | Retrieve permitted booking/confirmation state    | Authorization and safe response fields must be confirmed |
+| `POST /api/v1/auth/login`                           | Establish an in-memory authenticated session     | Returns access token and safe user identity              |
+| `GET /api/v1/auth/me`                               | Retrieve the current safe user identity          | Bearer-authenticated                                     |
+| `GET /api/v1/admin/package-prices`                  | List and filter package prices                   | ADMIN or OPERATIONS                                      |
+| `POST /api/v1/admin/package-prices`                 | Create a package price                           | ADMIN or OPERATIONS                                      |
+| `POST /api/v1/admin/package-prices/schedule`        | Schedule a future replacement price              | Preserves history; ADMIN or OPERATIONS                   |
+| `PATCH /api/v1/admin/package-prices/:id/deactivate` | Deactivate without deletion                      | ADMIN or OPERATIONS                                      |
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.
 
@@ -57,6 +65,8 @@ Route component / feature state
 ```
 
 Add interceptors only for real cross-cutting concerns such as a request correlation header, approved authentication credentials, or consistent transport-error normalization. Do not hide feature-specific behavior in interceptors.
+
+The auth interceptor is limited to the configured SmartClinic API URL. It never attaches the bearer token to external URLs. API `401` responses clear in-memory authentication and return the user to admin login; `403` pricing responses route to the accessible access-denied page. Tokens are intentionally lost on refresh until a separately approved session strategy exists.
 
 ## Loading, empty, and error handling
 

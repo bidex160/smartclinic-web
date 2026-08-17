@@ -1,0 +1,380 @@
+<section class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+  <div class="max-w-3xl">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
+      SmartClinic operations
+    </p>
+    <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+      Package pricing
+    </h1>
+    <p class="mt-4 text-lg leading-8 text-slate-600">
+      Manage current and future package prices without changing historical records.
+    </p>
+  </div>
+
+  <div aria-live="polite" aria-atomic="true" class="mt-6">
+    @if (status()) {
+      <div
+        role="status"
+        class="rounded-xl border border-brand-200 bg-brand-50 p-4 font-semibold text-brand-900"
+      >
+        {{ status() }}
+      </div>
+    }
+    @if (error()) {
+      <div
+        role="alert"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 font-semibold text-red-900"
+      >
+        {{ error() }}
+      </div>
+    }
+  </div>
+
+  <section
+    class="mt-8 rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+    aria-labelledby="price-filters-title"
+  >
+    <h2 id="price-filters-title" class="text-xl font-bold text-brand-900">Filter package prices</h2>
+    <form
+      [formGroup]="filtersForm"
+      (ngSubmit)="applyFilters()"
+      class="mt-5 grid gap-4 md:grid-cols-3"
+    >
+      <div>
+        <label for="filter-package" class="block text-sm font-bold text-slate-800">Package</label
+        ><select
+          id="filter-package"
+          formControlName="healthCheckPackageId"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">All packages</option>
+          @for (package of packages(); track package.id) {
+            <option [value]="package.id">{{ package.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="filter-mode" class="block text-sm font-bold text-slate-800"
+          >Fulfilment mode</label
+        ><select
+          id="filter-mode"
+          formControlName="fulfilmentModeId"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">All modes</option>
+          @for (mode of modes(); track mode.id) {
+            <option [value]="mode.id">{{ mode.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="filter-active" class="block text-sm font-bold text-slate-800">Status</label
+        ><select
+          id="filter-active"
+          formControlName="activeState"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">Active and inactive</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+      <div class="flex flex-wrap gap-3 md:col-span-3">
+        <button
+          type="submit"
+          class="min-h-11 rounded-lg bg-brand-600 px-5 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
+        >
+          Apply filters</button
+        ><button
+          type="button"
+          (click)="clearFilters()"
+          class="min-h-11 rounded-lg border border-brand-600 px-5 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section
+    class="mt-6 rounded-2xl border border-brand-100 bg-white shadow-soft"
+    aria-labelledby="prices-list-title"
+  >
+    <div class="flex items-center justify-between gap-4 border-b border-slate-100 p-5 sm:p-7">
+      <h2 id="prices-list-title" class="text-xl font-bold text-brand-900">Existing prices</h2>
+      @if (loading()) {
+        <span role="status" class="text-sm font-semibold text-brand-700">Loading…</span>
+      }
+    </div>
+    @if (!loading() && prices().length === 0) {
+      <p class="p-7 text-slate-600">No package prices match these filters.</p>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[920px] border-collapse text-left text-sm">
+          <caption class="sr-only">
+            Package prices and effective date ranges
+          </caption>
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th scope="col" class="px-5 py-3">Package</th>
+              <th scope="col" class="px-5 py-3">Fulfilment</th>
+              <th scope="col" class="px-5 py-3">Amount</th>
+              <th scope="col" class="px-5 py-3">From</th>
+              <th scope="col" class="px-5 py-3">To</th>
+              <th scope="col" class="px-5 py-3">Status</th>
+              <th scope="col" class="px-5 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (price of prices(); track price.id) {
+              <tr>
+                <th scope="row" class="px-5 py-4 font-semibold text-slate-900">
+                  {{ packageName(price.healthCheckPackageId) }}
+                </th>
+                <td class="px-5 py-4">{{ modeName(price.fulfilmentModeId) }}</td>
+                <td class="px-5 py-4 font-bold">{{ price.currency }} {{ price.amount }}</td>
+                <td class="px-5 py-4">{{ price.effectiveFrom }}</td>
+                <td class="px-5 py-4">{{ price.effectiveTo || 'Open-ended' }}</td>
+                <td class="px-5 py-4">
+                  <span
+                    class="rounded-full px-3 py-1 text-xs font-bold"
+                    [class.bg-brand-50]="price.isActive"
+                    [class.text-brand-800]="price.isActive"
+                    [class.bg-slate-100]="!price.isActive"
+                    [class.text-slate-600]="!price.isActive"
+                    >{{ price.isActive ? 'Active' : 'Inactive' }}</span
+                  >
+                </td>
+                <td class="px-5 py-4">
+                  @if (price.isActive && pendingDeactivateId() !== price.id) {
+                    <button
+                      type="button"
+                      (click)="requestDeactivation(price.id)"
+                      class="min-h-10 rounded-lg border border-red-300 px-3 py-2 font-bold text-red-800 focus:outline-none focus:ring-4 focus:ring-red-200"
+                    >
+                      Deactivate
+                    </button>
+                  }
+                  @if (pendingDeactivateId() === price.id) {
+                    <div
+                      role="group"
+                      aria-label="Confirm price deactivation"
+                      class="flex items-center gap-2"
+                    >
+                      <button
+                        type="button"
+                        (click)="confirmDeactivation(price.id)"
+                        [disabled]="mutating()"
+                        class="min-h-10 rounded-lg bg-red-800 px-3 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-red-200"
+                      >
+                        Confirm</button
+                      ><button
+                        type="button"
+                        (click)="cancelDeactivation()"
+                        class="min-h-10 rounded-lg px-3 py-2 font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-2">
+    <section
+      class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+      aria-labelledby="create-price-title"
+    >
+      <h2 id="create-price-title" class="text-xl font-bold text-brand-900">Create a price</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        Create a new effective price. Conflicting date ranges will be rejected.
+      </p>
+      <form [formGroup]="createForm" (ngSubmit)="createPrice()" class="mt-5 space-y-4">
+        <div>
+          <label for="create-package" class="block text-sm font-bold">Package</label
+          ><select
+            id="create-package"
+            formControlName="healthCheckPackageId"
+            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3"
+          >
+            <option value="">Select package</option>
+            @for (package of packages(); track package.id) {
+              <option [value]="package.id">{{ package.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="create-mode" class="block text-sm font-bold">Fulfilment mode</label
+          ><select
+            id="create-mode"
+            formControlName="fulfilmentModeId"
+            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3"
+          >
+            <option value="">Select mode</option>
+            @for (mode of modes(); track mode.id) {
+              <option [value]="mode.id">{{ mode.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="create-amount" class="block text-sm font-bold">Amount</label
+            ><input
+              id="create-amount"
+              type="text"
+              inputmode="decimal"
+              formControlName="amount"
+              placeholder="12500.00"
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+            />
+          </div>
+          <div>
+            <label for="create-currency" class="block text-sm font-bold">Currency</label
+            ><input
+              id="create-currency"
+              type="text"
+              formControlName="currency"
+              readonly
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4"
+            />
+          </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="create-from" class="block text-sm font-bold">Effective from</label
+            ><input
+              id="create-from"
+              type="date"
+              formControlName="effectiveFrom"
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+            />
+          </div>
+          <div>
+            <label for="create-to" class="block text-sm font-bold"
+              >Effective to <span class="font-normal text-slate-500">(optional)</span></label
+            ><input
+              id="create-to"
+              type="date"
+              formControlName="effectiveTo"
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+            />
+          </div>
+        </div>
+        @if (createForm.invalid && createForm.touched) {
+          <p class="text-sm font-semibold text-red-700">
+            Complete all required fields with a positive decimal amount and valid date range.
+          </p>
+        }
+        <button
+          type="submit"
+          [disabled]="mutating()"
+          class="min-h-12 w-full rounded-xl bg-brand-600 px-5 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-70"
+        >
+          Create price
+        </button>
+      </form>
+    </section>
+
+    <section
+      class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+      aria-labelledby="schedule-price-title"
+    >
+      <h2 id="schedule-price-title" class="text-xl font-bold text-brand-900">
+        Schedule a future price
+      </h2>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        Schedule a replacement beginning on a future date. Existing pricing history is preserved.
+      </p>
+      <form [formGroup]="scheduleForm" (ngSubmit)="schedulePrice()" class="mt-5 space-y-4">
+        <div>
+          <label for="schedule-package" class="block text-sm font-bold">Package</label
+          ><select
+            id="schedule-package"
+            formControlName="healthCheckPackageId"
+            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3"
+          >
+            <option value="">Select package</option>
+            @for (package of packages(); track package.id) {
+              <option [value]="package.id">{{ package.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="schedule-mode" class="block text-sm font-bold">Fulfilment mode</label
+          ><select
+            id="schedule-mode"
+            formControlName="fulfilmentModeId"
+            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3"
+          >
+            <option value="">Select mode</option>
+            @for (mode of modes(); track mode.id) {
+              <option [value]="mode.id">{{ mode.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="schedule-amount" class="block text-sm font-bold">Amount</label
+            ><input
+              id="schedule-amount"
+              type="text"
+              inputmode="decimal"
+              formControlName="amount"
+              placeholder="12500.00"
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+            />
+          </div>
+          <div>
+            <label for="schedule-currency" class="block text-sm font-bold">Currency</label
+            ><input
+              id="schedule-currency"
+              type="text"
+              formControlName="currency"
+              readonly
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4"
+            />
+          </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="schedule-from" class="block text-sm font-bold">Future effective date</label
+            ><input
+              id="schedule-from"
+              type="date"
+              formControlName="effectiveFrom"
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+            />
+          </div>
+          <div>
+            <label for="schedule-to" class="block text-sm font-bold"
+              >Effective to <span class="font-normal text-slate-500">(optional)</span></label
+            ><input
+              id="schedule-to"
+              type="date"
+              formControlName="effectiveTo"
+              class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+            />
+          </div>
+        </div>
+        @if (scheduleForm.invalid && scheduleForm.touched) {
+          <p class="text-sm font-semibold text-red-700">
+            Use a future start date, a positive decimal amount, and a valid date range.
+          </p>
+        }
+        <button
+          type="submit"
+          [disabled]="mutating()"
+          class="min-h-12 w-full rounded-xl bg-brand-600 px-5 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-70"
+        >
+          Schedule future price
+        </button>
+      </form>
+    </section>
+  </div>
+</section>

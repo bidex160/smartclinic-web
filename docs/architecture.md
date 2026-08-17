@@ -96,6 +96,9 @@ Proposed public routes:
 | `/book/review`                  | Review the draft; submission occurs only on explicit confirmation           |
 | `/book/confirmation/:reference` | Display the returned reference and safe next steps                          |
 | `/bookings/:reference`          | Retrieve a booking where the authorization/verification contract permits it |
+| `/admin/login`                  | In-memory administrator and operations login                                |
+| `/admin/package-prices`         | Role-guarded package-price operations                                       |
+| `/admin/access-denied`          | Accessible recovery for authenticated users without an allowed role         |
 | `**`                            | Accessible not-found page with a route back to safety                       |
 
 Guards should prevent accidental entry into later steps without required in-memory state, returning users to the earliest incomplete step. Guards are navigation aids, not security controls. Avoid sensitive values in URLs.
@@ -107,6 +110,8 @@ Review additionally requires saved details and redirects to the earliest incompl
 The selected catalogue price is a computed value derived from the selected package's API-provided `prices` and selected fulfilment-mode ID. It gates progression but is presentation state only: the public request mapper never sends an amount or currency. The server-returned `quotedAmount` and `quotedCurrency` form the authoritative booking quote snapshot on confirmation.
 
 Whether the lookup route is public and what it may display remains a backend/product security decision.
+
+Admin authentication uses a small signal service holding the access token and safe current-user identity in memory only. A functional interceptor attaches the bearer token only to URLs under the configured API base URL and clears the session on API `401` responses. The pricing route guard requires an authenticated `ADMIN` or `OPERATIONS` role; authorization remains enforced independently by the backend.
 
 ## Forms and data boundaries
 

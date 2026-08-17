@@ -4,6 +4,7 @@ import {
   hasCompleteBookingDraftGuard,
   hasSelectedPackageGuard,
 } from './features/booking/booking-flow.guards';
+import { adminPricingGuard } from './features/admin/admin-auth.guards';
 
 export const routes: Routes = [
   {
@@ -55,6 +56,31 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/booking/booking-confirmation-page.component').then(
         (component) => component.BookingConfirmationPageComponent,
+      ),
+  },
+  {
+    path: 'admin/login',
+    title: 'Admin sign in | SmartClinic',
+    loadComponent: () =>
+      import('./features/admin/admin-login-page.component').then(
+        (component) => component.AdminLoginPageComponent,
+      ),
+  },
+  {
+    path: 'admin/access-denied',
+    title: 'Access denied | SmartClinic',
+    loadComponent: () =>
+      import('./features/admin/admin-access-denied-page.component').then(
+        (component) => component.AdminAccessDeniedPageComponent,
+      ),
+  },
+  {
+    path: 'admin/package-prices',
+    title: 'Package pricing | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/package-prices-admin-page.component').then(
+        (component) => component.PackagePricesAdminPageComponent,
       ),
   },
   {
