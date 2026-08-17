@@ -20,6 +20,8 @@ import {
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { PackagePricesApiService } from '../../core/services/package-prices-api.service';
+import { AuthSessionService } from '../../core/services/auth-session.service';
+import { AuthStateService } from '../../core/services/auth-state.service';
 
 const AMOUNT_PATTERN = /^\d{1,10}(\.\d{1,2})?$/;
 
@@ -48,6 +50,8 @@ export class PackagePricesAdminPageComponent {
   private readonly packagesApi = inject(HealthCheckPackagesApiService);
   private readonly modesApi = inject(FulfilmentModesApiService);
   private readonly router = inject(Router);
+  private readonly authSession = inject(AuthSessionService);
+  readonly authState = inject(AuthStateService);
 
   readonly packages = signal<HealthCheckPackage[]>([]);
   readonly modes = signal<FulfilmentMode[]>([]);
@@ -66,6 +70,15 @@ export class PackagePricesAdminPageComponent {
 
   readonly createForm = this.createPriceForm(false);
   readonly scheduleForm = this.createPriceForm(true);
+
+  logout(): void {
+    if (this.authState.loading()) return;
+    this.authState.loading.set(true);
+    this.authSession
+      .logout()
+      .pipe(finalize(() => this.authState.loading.set(false)))
+      .subscribe();
+  }
 
   constructor() {
     this.loadInitialData();

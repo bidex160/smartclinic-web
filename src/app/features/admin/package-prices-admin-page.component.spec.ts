@@ -7,6 +7,7 @@ import { PackagePrice } from '../../core/models/package-price.model';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { PackagePricesApiService } from '../../core/services/package-prices-api.service';
+import { AuthSessionService } from '../../core/services/auth-session.service';
 import { PackagePricesAdminPageComponent } from './package-prices-admin-page.component';
 
 describe('PackagePricesAdminPageComponent', () => {
@@ -75,6 +76,7 @@ describe('PackagePricesAdminPageComponent', () => {
       imports: [PackagePricesAdminPageComponent],
       providers: [
         { provide: Router, useValue: router },
+        { provide: AuthSessionService, useValue: { logout: () => of(true) } },
         { provide: HealthCheckPackagesApiService, useValue: { getPackages: () => of([]) } },
         { provide: FulfilmentModesApiService, useValue: { getFulfilmentModes: () => of([]) } },
         {
@@ -100,6 +102,7 @@ describe('PackagePricesAdminPageComponent', () => {
       imports: [PackagePricesAdminPageComponent],
       providers: [
         { provide: Router, useValue: { navigate: vi.fn().mockResolvedValue(true) } },
+        { provide: AuthSessionService, useValue: { logout: () => of(true) } },
         {
           provide: HealthCheckPackagesApiService,
           useValue: {

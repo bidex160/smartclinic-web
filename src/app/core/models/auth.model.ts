@@ -18,3 +18,5 @@ export interface LoginResponse {
   readonly accessToken: string;
   readonly user: CurrentUser;
 }
+
+export type AuthSessionResponse = LoginResponse;

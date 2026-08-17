@@ -1,14 +1,32 @@
 <section class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-  <div class="max-w-3xl">
-    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
-      SmartClinic operations
-    </p>
-    <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
-      Package pricing
-    </h1>
-    <p class="mt-4 text-lg leading-8 text-slate-600">
-      Manage current and future package prices without changing historical records.
-    </p>
+  <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+    <div class="max-w-3xl">
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
+        SmartClinic operations
+      </p>
+      <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+        Package pricing
+      </h1>
+      <p class="mt-4 text-lg leading-8 text-slate-600">
+        Manage current and future package prices without changing historical records.
+      </p>
+    </div>
+    <div class="flex items-center gap-4 sm:justify-end">
+      @if (authState.currentUser(); as user) {
+        <p class="text-right text-sm text-slate-600">
+          <span class="block font-bold text-slate-900">{{ user.displayName }}</span>
+          <span>{{ user.roles.join(', ') }}</span>
+        </p>
+      }
+      <button
+        type="button"
+        (click)="logout()"
+        [disabled]="authState.loading()"
+        class="min-h-11 rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+      >
+        {{ authState.loading() ? 'Signing out…' : 'Sign out' }}
+      </button>
+    </div>
   </div>
 
   <div aria-live="polite" aria-atomic="true" class="mt-6">

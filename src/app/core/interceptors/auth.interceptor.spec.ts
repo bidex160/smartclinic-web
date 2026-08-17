@@ -25,16 +25,80 @@ describe('authInterceptor', () => {
     http.verify();
   });
 
-  it('clears in-memory auth and redirects on an API 401', () => {
+  it('refreshes once and retries the original request with the new token', () => {
+    const { auth, api, http } = setup();
+    authenticate(auth);
+    let response: unknown;
+    api.getCurrentUser().subscribe((value) => (response = value));
+    http
+      .expectOne('http://api.example.test/api/v1/auth/me')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    const refresh = http.expectOne('http://api.example.test/api/v1/auth/refresh');
+    expect(refresh.request.withCredentials).toBe(true);
+    refresh.flush({ accessToken: 'new-token', user: user() });
+
+    const retry = http.expectOne('http://api.example.test/api/v1/auth/me');
+    expect(retry.request.headers.get('Authorization')).toBe('Bearer new-token');
+    retry.flush(user());
+    expect(response).toEqual(user());
+    http.verify();
+  });
+
+  it('clears in-memory auth and redirects when refresh fails', () => {
     const { auth, api, http, router } = setup();
     authenticate(auth);
     api.getCurrentUser().subscribe({ error: () => undefined });
     http
       .expectOne('http://api.example.test/api/v1/auth/me')
       .flush({}, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne('http://api.example.test/api/v1/auth/refresh')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
 
     expect(auth.authenticated()).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/admin/login']);
+    http.verify();
+  });
+
+  it('shares one refresh operation across simultaneous 401 responses', () => {
+    const { auth, api, http } = setup();
+    authenticate(auth);
+    api.getCurrentUser().subscribe();
+    api.getCurrentUser().subscribe();
+    const originals = http.match('http://api.example.test/api/v1/auth/me');
+    expect(originals).toHaveLength(2);
+    originals.forEach((request) => request.flush({}, { status: 401, statusText: 'Unauthorized' }));
+
+    const refreshes = http.match('http://api.example.test/api/v1/auth/refresh');
+    expect(refreshes).toHaveLength(1);
+    refreshes[0].flush({ accessToken: 'new-token', user: user() });
+    const retries = http.match('http://api.example.test/api/v1/auth/me');
+    expect(retries).toHaveLength(2);
+    retries.forEach((request) => request.flush(user()));
+    http.verify();
+  });
+
+  it('does not refresh a failed refresh request or retry an original request twice', () => {
+    const { api, http } = setup();
+    api.refresh().subscribe({ error: () => undefined });
+    http
+      .expectOne('http://api.example.test/api/v1/auth/refresh')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    http.expectNone('http://api.example.test/api/v1/auth/refresh');
+
+    api.getCurrentUser().subscribe({ error: () => undefined });
+    http
+      .expectOne('http://api.example.test/api/v1/auth/me')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    http
+      .expectOne('http://api.example.test/api/v1/auth/refresh')
+      .flush({ accessToken: 'new-token', user: user() });
+    http
+      .expectOne('http://api.example.test/api/v1/auth/me')
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    http.expectNone('http://api.example.test/api/v1/auth/refresh');
+    http.verify();
   });
 
   function setup() {

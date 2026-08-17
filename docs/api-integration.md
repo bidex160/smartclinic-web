@@ -33,6 +33,9 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/public/bookings`                      | Submit the reviewed public booking draft         | API validates, creates, and returns confirmation data    |
 | `GET /api/v1/bookings/:reference`                   | Retrieve permitted booking/confirmation state    | Authorization and safe response fields must be confirmed |
 | `POST /api/v1/auth/login`                           | Establish an in-memory authenticated session     | Returns access token and safe user identity              |
+| `POST /api/v1/auth/refresh`                         | Restore or rotate a browser session              | Uses and rotates an HttpOnly refresh cookie              |
+| `POST /api/v1/auth/logout`                          | Revoke the current refresh session               | Clears the refresh cookie; local state clears regardless |
+| `POST /api/v1/auth/logout-all`                      | Revoke all refresh sessions for the current user | Requires Bearer authentication                           |
 | `GET /api/v1/auth/me`                               | Retrieve the current safe user identity          | Bearer-authenticated                                     |
 | `GET /api/v1/admin/package-prices`                  | List and filter package prices                   | ADMIN or OPERATIONS                                      |
 | `POST /api/v1/admin/package-prices`                 | Create a package price                           | ADMIN or OPERATIONS                                      |
@@ -66,7 +69,15 @@ Route component / feature state
 
 Add interceptors only for real cross-cutting concerns such as a request correlation header, approved authentication credentials, or consistent transport-error normalization. Do not hide feature-specific behavior in interceptors.
 
-The auth interceptor is limited to the configured SmartClinic API URL. It never attaches the bearer token to external URLs. API `401` responses clear in-memory authentication and return the user to admin login; `403` pricing responses route to the accessible access-denied page. Tokens are intentionally lost on refresh until a separately approved session strategy exists.
+The access token and safe current user exist only in Angular signal state. The refresh token is an HttpOnly cookie owned by the browser and backend; JavaScript never reads it and no auth token is written to local or session storage. Login, refresh, logout, and logout-all opt into `withCredentials` so the cookie can be set, rotated, or cleared. Other origins do not receive SmartClinic credentials.
+
+At application startup, a modern Angular application initializer performs exactly one credentialed refresh attempt and completes within a bounded timeout. A missing or expired refresh cookie resolves to a normal unauthenticated state without a global error. Protected guards wait for this initialization before redirecting.
+
+The auth interceptor is limited to the configured SmartClinic API URL and never attaches the bearer token to external URLs. For a normal API `401`, all concurrent failures share one in-flight refresh. A successful refresh rotates the cookie, updates in-memory auth, and retries each failed request once with the new bearer token. Auth session endpoints cannot trigger refresh recovery, and retried requests do not re-enter the interceptor, preventing loops and repeated mutations. Failed refresh clears in-memory authentication and returns the user to admin login; `403` pricing responses route to the accessible access-denied page.
+
+Logout revokes the current refresh session and clears its cookie. Logout-all additionally sends the current bearer token and revokes every session for that user. The frontend clears in-memory authentication and navigates to login even when the logout network request fails, avoiding an apparently authenticated UI.
+
+Credentialed cross-origin deployments require the backend to allow the exact frontend origin, allow credentials, and configure cookie `SameSite`, `Secure`, domain, and path attributes consistently with the deployed origins. Wildcard CORS origins are incompatible with credentialed browser requests.
 
 ## Loading, empty, and error handling
 

@@ -6,9 +6,16 @@ import { CurrentUser, LoginResponse } from '../models/auth.model';
 export class AuthStateService {
   private readonly accessTokenState = signal<string | null>(null);
   private readonly currentUserState = signal<CurrentUser | null>(null);
+  private readonly initializingState = signal(true);
+  private resolveInitialization!: () => void;
+  private readonly initializationComplete = new Promise<void>((resolve) => {
+    this.resolveInitialization = resolve;
+  });
 
   readonly accessToken = this.accessTokenState.asReadonly();
   readonly currentUser = this.currentUserState.asReadonly();
+  readonly initializing = this.initializingState.asReadonly();
+  readonly restoringSession = this.initializingState.asReadonly();
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly authenticated = computed(
@@ -27,6 +34,16 @@ export class AuthStateService {
 
   setError(message: string): void {
     this.error.set(message);
+  }
+
+  completeInitialization(): void {
+    if (!this.initializingState()) return;
+    this.initializingState.set(false);
+    this.resolveInitialization();
+  }
+
+  waitForInitialization(): Promise<void> {
+    return this.initializationComplete;
   }
 
   clear(): void {

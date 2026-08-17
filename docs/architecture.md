@@ -111,7 +111,9 @@ The selected catalogue price is a computed value derived from the selected packa
 
 Whether the lookup route is public and what it may display remains a backend/product security decision.
 
-Admin authentication uses a small signal service holding the access token and safe current-user identity in memory only. A functional interceptor attaches the bearer token only to URLs under the configured API base URL and clears the session on API `401` responses. The pricing route guard requires an authenticated `ADMIN` or `OPERATIONS` role; authorization remains enforced independently by the backend.
+Admin authentication uses a small signal service holding the access token and safe current-user identity in memory only. The refresh token is never represented in frontend code: the backend stores it in an HttpOnly cookie. Angular's application initializer attempts one credentialed refresh on startup, with a bounded timeout, before protected guards decide whether to redirect. Guards await the initialization promise and then require an authenticated `ADMIN` or `OPERATIONS` role; authorization remains enforced independently by the backend.
+
+A functional interceptor attaches the in-memory bearer token only to URLs under the configured API base URL. One normal API `401` starts or joins a shared refresh operation and, after success, retries that request once. Login, refresh, and logout are excluded from this recovery path to prevent loops. Failed restoration is an ordinary unauthenticated state; failed runtime refresh clears the frontend session and returns the user to login. Logout always clears local state even if backend revocation cannot be reached.
 
 ## Forms and data boundaries
 

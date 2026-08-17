@@ -11,7 +11,27 @@ export class AuthApiService {
   private readonly apiConfig = inject(API_CONFIG);
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiConfig.baseUrl}/auth/login`, request);
+    return this.http.post<LoginResponse>(`${this.apiConfig.baseUrl}/auth/login`, request, {
+      withCredentials: true,
+    });
+  }
+
+  refresh(): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiConfig.baseUrl}/auth/refresh`, null, {
+      withCredentials: true,
+    });
+  }
+
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.apiConfig.baseUrl}/auth/logout`, null, {
+      withCredentials: true,
+    });
+  }
+
+  logoutAll(): Observable<void> {
+    return this.http.post<void>(`${this.apiConfig.baseUrl}/auth/logout-all`, null, {
+      withCredentials: true,
+    });
   }
 
   getCurrentUser(): Observable<CurrentUser> {
