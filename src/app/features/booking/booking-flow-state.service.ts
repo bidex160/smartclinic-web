@@ -1,0 +1,54 @@
+import { computed, Injectable, signal } from '@angular/core';
+
+import { FulfilmentMode } from '../../core/models/fulfilment-mode.model';
+import { HealthCheckPackage } from '../../core/models/health-check-package.model';
+import { BookingDetailsDraft } from './booking-flow.models';
+
+@Injectable({ providedIn: 'root' })
+export class BookingFlowStateService {
+  private readonly selectedPackageState = signal<HealthCheckPackage | null>(null);
+  private readonly selectedFulfilmentModeState = signal<FulfilmentMode | null>(null);
+  private readonly detailsState = signal<BookingDetailsDraft | null>(null);
+
+  readonly selectedPackage = this.selectedPackageState.asReadonly();
+  readonly selectedFulfilmentMode = this.selectedFulfilmentModeState.asReadonly();
+  readonly details = this.detailsState.asReadonly();
+
+  readonly bookerDetails = computed(() => this.detailsState()?.booker ?? null);
+  readonly participantDetails = computed(() => this.detailsState()?.participant ?? null);
+  readonly preferredDate = computed(() => this.detailsState()?.preferences.preferredDate ?? '');
+  readonly preferredTimeFrom = computed(
+    () => this.detailsState()?.preferences.preferredTimeFrom ?? '',
+  );
+  readonly preferredTimeTo = computed(() => this.detailsState()?.preferences.preferredTimeTo ?? '');
+  readonly locationNote = computed(() => this.detailsState()?.preferences.locationNote ?? '');
+  readonly canAccessFulfilment = computed(() => this.selectedPackageState() !== null);
+  readonly canAccessDetails = computed(
+    () => this.selectedPackageState() !== null && this.selectedFulfilmentModeState() !== null,
+  );
+
+  selectPackage(healthCheckPackage: HealthCheckPackage): void {
+    if (this.selectedPackageState()?.id !== healthCheckPackage.id) {
+      this.selectedFulfilmentModeState.set(null);
+      this.detailsState.set(null);
+    }
+    this.selectedPackageState.set(healthCheckPackage);
+  }
+
+  selectFulfilmentMode(fulfilmentMode: FulfilmentMode): void {
+    if (this.selectedFulfilmentModeState()?.id !== fulfilmentMode.id) {
+      this.detailsState.set(null);
+    }
+    this.selectedFulfilmentModeState.set(fulfilmentMode);
+  }
+
+  saveDetails(details: BookingDetailsDraft): void {
+    this.detailsState.set(details);
+  }
+
+  clear(): void {
+    this.selectedPackageState.set(null);
+    this.selectedFulfilmentModeState.set(null);
+    this.detailsState.set(null);
+  }
+}

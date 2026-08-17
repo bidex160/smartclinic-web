@@ -87,18 +87,20 @@ Names are proposals, not boilerplate requirements. For example, separate partici
 
 Proposed public routes:
 
-| Route | Responsibility |
-| --- | --- |
-| `/` | Focused home page with the primary booking CTA |
-| `/health-check/packages` | Fetch and select an available package |
-| `/book/fulfilment` | Select an API-supported fulfilment mode for the package |
-| `/book/details` | Collect participant and booking/contact information |
-| `/book/review` | Review the draft; submission occurs only on explicit confirmation |
-| `/book/confirmation/:reference` | Display the returned reference and safe next steps |
-| `/bookings/:reference` | Retrieve a booking where the authorization/verification contract permits it |
-| `**` | Accessible not-found page with a route back to safety |
+| Route                           | Responsibility                                                              |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `/`                             | Focused home page with the primary booking CTA                              |
+| `/health-check/packages`        | Fetch and select an available package                                       |
+| `/book/fulfilment`              | Select an API-supported mode; requires an in-memory package selection       |
+| `/book/details`                 | Collect details; requires in-memory package and mode selections             |
+| `/book/review`                  | Review the draft; submission occurs only on explicit confirmation           |
+| `/book/confirmation/:reference` | Display the returned reference and safe next steps                          |
+| `/bookings/:reference`          | Retrieve a booking where the authorization/verification contract permits it |
+| `**`                            | Accessible not-found page with a route back to safety                       |
 
 Guards should prevent accidental entry into later steps without required in-memory state, returning users to the earliest incomplete step. Guards are navigation aids, not security controls. Avoid sensitive values in URLs.
+
+The fulfilment and details guards are implemented. Refresh intentionally clears the draft, so guarded routes recover to package selection or fulfilment as appropriate.
 
 Whether the lookup route is public and what it may display remains a backend/product security decision.
 

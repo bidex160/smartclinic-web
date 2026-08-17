@@ -27,4 +27,4 @@ The API is the source of truth. The frontend presents the available catalogue an
 
 ## Current status
 
-The Angular foundation uses standalone components, strict TypeScript, routing, SCSS, Tailwind CSS, signals, Reactive Forms support, and `HttpClient`. The initial implementation includes the application shell, home page, API-backed package catalogue, and not-found route. The booking wizard remains intentionally unimplemented pending the outstanding product and API decisions.
+The Angular foundation uses standalone components, strict TypeScript, routing, SCSS, Tailwind CSS, signals, Reactive Forms, and `HttpClient`. The implemented booking journey currently covers API-backed package selection, API-backed fulfilment selection, and in-memory booker, participant, and preference details. Review and submission remain intentionally unimplemented.

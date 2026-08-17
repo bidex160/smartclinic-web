@@ -82,11 +82,13 @@ Only create these components when the implementation needs them. If the confirme
 
 ## State transitions
 
-The booking feature may use a route-scoped or root-provided in-memory `BookingDraft` state service with signals for selected package, selected fulfilment mode, form draft, submission status, and returned reference.
+The booking feature uses a root-provided, in-memory `BookingFlowStateService` with signals for the selected package, selected fulfilment mode, and form draft. Computed signals expose step access, booker/participant details, and preferences. Submission status and references will be added only with those future steps.
 
 Derived signals should determine completed steps and the earliest valid route. Changing a package must clear any downstream mode or values that are no longer valid. This is UI consistency, not replacement business validation.
 
 Refresh clears sensitive draft state by design for the initial implementation. Users arriving at an incomplete route are redirected to the earliest required step with a calm explanation.
+
+Package, fulfilment, and details are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A valid details form is saved in memory and stops before review or submission.
 
 ## Open product and UI decisions
 
@@ -102,4 +104,3 @@ Refresh clears sensitive draft state by design for the initial implementation. U
 - Support/contact routes and operational escalation for failed or ambiguous submissions.
 - Brand identity, imagery, typography, tone, localization, and supported languages.
 - Analytics/consent requirements and the events permitted without health data.
-

@@ -1,4 +1,8 @@
 import { Routes } from '@angular/router';
+import {
+  hasBookingSelectionsGuard,
+  hasSelectedPackageGuard,
+} from './features/booking/booking-flow.guards';
 
 export const routes: Routes = [
   {
@@ -15,6 +19,24 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/health-check/package-selection-page.component').then(
         (component) => component.PackageSelectionPageComponent,
+      ),
+  },
+  {
+    path: 'book/fulfilment',
+    title: 'Choose fulfilment | SmartClinic',
+    canActivate: [hasSelectedPackageGuard],
+    loadComponent: () =>
+      import('./features/booking/fulfilment-selection-page.component').then(
+        (component) => component.FulfilmentSelectionPageComponent,
+      ),
+  },
+  {
+    path: 'book/details',
+    title: 'Booking details | SmartClinic',
+    canActivate: [hasBookingSelectionsGuard],
+    loadComponent: () =>
+      import('./features/booking/booking-details-page.component').then(
+        (component) => component.BookingDetailsPageComponent,
       ),
   },
   {

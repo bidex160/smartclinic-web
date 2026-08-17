@@ -1,0 +1,23 @@
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+
+import { BookingFlowStateService } from './booking-flow-state.service';
+
+export const hasSelectedPackageGuard: CanActivateFn = () => {
+  const bookingFlow = inject(BookingFlowStateService);
+  const router = inject(Router);
+  return bookingFlow.canAccessFulfilment()
+    ? true
+    : router.createUrlTree(['/health-check/packages'], { queryParams: { flow: 'restart' } });
+};
+
+export const hasBookingSelectionsGuard: CanActivateFn = () => {
+  const bookingFlow = inject(BookingFlowStateService);
+  const router = inject(Router);
+
+  if (!bookingFlow.selectedPackage()) {
+    return router.createUrlTree(['/health-check/packages'], { queryParams: { flow: 'restart' } });
+  }
+
+  return bookingFlow.selectedFulfilmentMode() ? true : router.createUrlTree(['/book/fulfilment']);
+};

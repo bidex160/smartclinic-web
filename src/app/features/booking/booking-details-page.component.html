@@ -1,0 +1,403 @@
+<section class="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
+  <app-booking-progress [currentStep]="3" />
+
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+    <div>
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
+        Book my Smart Health Check
+      </p>
+      <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+        Tell us who the health check is for
+      </h1>
+      <p class="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+        Enter the contact and participant details needed to prepare your booking. Required fields
+        are marked.
+      </p>
+
+      @if (submitted() && form.invalid) {
+        <div role="alert" class="mt-7 rounded-xl border border-red-200 bg-red-50 p-5 text-red-900">
+          <p class="font-bold">Please check the highlighted fields</p>
+          <p class="mt-1 text-sm">Some required or formatted information needs your attention.</p>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submitDetails()" novalidate class="mt-8 space-y-7">
+        <fieldset
+          formGroupName="booker"
+          class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+        >
+          <legend class="px-2 text-xl font-bold text-brand-900">Your contact details</legend>
+          <p class="mt-1 text-sm leading-6 text-slate-600">
+            We will use these details for booking communication.
+          </p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="booker-given-name" class="block text-sm font-bold text-slate-800"
+                >Given name <span class="text-red-700">*</span></label
+              >
+              <input
+                id="booker-given-name"
+                type="text"
+                formControlName="givenName"
+                autocomplete="given-name"
+                maxlength="100"
+                [attr.aria-invalid]="showError(form.controls.booker.controls.givenName)"
+                [attr.aria-describedby]="
+                  showError(form.controls.booker.controls.givenName)
+                    ? 'booker-given-name-error'
+                    : null
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600 aria-[invalid=true]:ring-red-100"
+              />
+              @if (showError(form.controls.booker.controls.givenName)) {
+                <p id="booker-given-name-error" class="mt-2 text-sm font-semibold text-red-700">
+                  Enter your given name.
+                </p>
+              }
+            </div>
+            <div>
+              <label for="booker-family-name" class="block text-sm font-bold text-slate-800"
+                >Family name <span class="text-red-700">*</span></label
+              >
+              <input
+                id="booker-family-name"
+                type="text"
+                formControlName="familyName"
+                autocomplete="family-name"
+                maxlength="100"
+                [attr.aria-invalid]="showError(form.controls.booker.controls.familyName)"
+                [attr.aria-describedby]="
+                  showError(form.controls.booker.controls.familyName)
+                    ? 'booker-family-name-error'
+                    : null
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600 aria-[invalid=true]:ring-red-100"
+              />
+              @if (showError(form.controls.booker.controls.familyName)) {
+                <p id="booker-family-name-error" class="mt-2 text-sm font-semibold text-red-700">
+                  Enter your family name.
+                </p>
+              }
+            </div>
+            <div>
+              <label for="booker-phone" class="block text-sm font-bold text-slate-800"
+                >Phone number <span class="text-red-700">*</span></label
+              >
+              <input
+                id="booker-phone"
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+                maxlength="30"
+                placeholder="+234 801 234 5678"
+                [attr.aria-invalid]="showError(form.controls.booker.controls.phone)"
+                [attr.aria-describedby]="
+                  showError(form.controls.booker.controls.phone)
+                    ? 'booker-phone-error'
+                    : 'booker-phone-help'
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600 aria-[invalid=true]:ring-red-100"
+              />
+              <p id="booker-phone-help" class="mt-2 text-sm text-slate-500">
+                Include a country code where possible.
+              </p>
+              @if (showError(form.controls.booker.controls.phone)) {
+                <p id="booker-phone-error" class="mt-2 text-sm font-semibold text-red-700">
+                  Enter a valid phone number.
+                </p>
+              }
+            </div>
+            <div>
+              <label for="booker-email" class="block text-sm font-bold text-slate-800"
+                >Email <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="booker-email"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                maxlength="254"
+                [attr.aria-invalid]="showError(form.controls.booker.controls.email)"
+                [attr.aria-describedby]="
+                  showError(form.controls.booker.controls.email) ? 'booker-email-error' : null
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600 aria-[invalid=true]:ring-red-100"
+              />
+              @if (showError(form.controls.booker.controls.email)) {
+                <p id="booker-email-error" class="mt-2 text-sm font-semibold text-red-700">
+                  Enter a valid email address.
+                </p>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset
+          formGroupName="participant"
+          class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+        >
+          <legend class="px-2 text-xl font-bold text-brand-900">Participant details</legend>
+          <fieldset class="mt-3">
+            <legend class="text-sm font-bold text-slate-800">
+              Who is the health check for? <span class="text-red-700">*</span>
+            </legend>
+            <div class="mt-3 grid gap-3 sm:grid-cols-3">
+              @for (relationship of relationships; track relationship.value) {
+                <label
+                  class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-slate-300 px-4 py-3 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-200"
+                >
+                  <input
+                    type="radio"
+                    formControlName="relationship"
+                    [value]="relationship.value"
+                    class="size-4 accent-brand-600"
+                  />
+                  <span class="font-semibold text-slate-800">{{ relationship.label }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+
+          @if (form.controls.participant.controls.relationship.value === 'SELF') {
+            <div class="mt-5 rounded-xl border border-brand-100 bg-brand-50 p-4">
+              <p class="text-sm leading-6 text-slate-700">
+                You can copy your contact details, then review or change the participant fields
+                below.
+              </p>
+              <button
+                type="button"
+                (click)="copyBookerToParticipant()"
+                class="mt-3 min-h-11 rounded-lg border border-brand-600 bg-white px-4 py-2 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
+              >
+                Copy my details
+              </button>
+            </div>
+          }
+
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="participant-given-name" class="block text-sm font-bold text-slate-800"
+                >Given name <span class="text-red-700">*</span></label
+              >
+              <input
+                id="participant-given-name"
+                type="text"
+                formControlName="givenName"
+                maxlength="100"
+                [attr.aria-invalid]="showError(form.controls.participant.controls.givenName)"
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+              @if (showError(form.controls.participant.controls.givenName)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">
+                  Enter the participant's given name.
+                </p>
+              }
+            </div>
+            <div>
+              <label for="participant-family-name" class="block text-sm font-bold text-slate-800"
+                >Family name <span class="text-red-700">*</span></label
+              >
+              <input
+                id="participant-family-name"
+                type="text"
+                formControlName="familyName"
+                maxlength="100"
+                [attr.aria-invalid]="showError(form.controls.participant.controls.familyName)"
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+              @if (showError(form.controls.participant.controls.familyName)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">
+                  Enter the participant's family name.
+                </p>
+              }
+            </div>
+            <div>
+              <label for="participant-dob" class="block text-sm font-bold text-slate-800"
+                >Date of birth <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="participant-dob"
+                type="date"
+                formControlName="dateOfBirth"
+                autocomplete="bday"
+                [attr.aria-invalid]="showError(form.controls.participant.controls.dateOfBirth)"
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+              @if (showError(form.controls.participant.controls.dateOfBirth)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">Enter a valid date.</p>
+              }
+            </div>
+            <div>
+              <label for="participant-phone" class="block text-sm font-bold text-slate-800"
+                >Phone <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="participant-phone"
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+                maxlength="30"
+                [attr.aria-invalid]="showError(form.controls.participant.controls.phone)"
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+              @if (showError(form.controls.participant.controls.phone)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">Enter a valid phone number.</p>
+              }
+            </div>
+            <div class="sm:col-span-2">
+              <label for="participant-email" class="block text-sm font-bold text-slate-800"
+                >Email <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="participant-email"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                maxlength="254"
+                [attr.aria-invalid]="showError(form.controls.participant.controls.email)"
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+              @if (showError(form.controls.participant.controls.email)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">Enter a valid email address.</p>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset
+          formGroupName="preferences"
+          class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+        >
+          <legend class="px-2 text-xl font-bold text-brand-900">Booking preferences</legend>
+          <p class="mt-1 text-sm leading-6 text-slate-600">
+            These preferences are optional and do not guarantee availability.
+          </p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label for="preferred-date" class="block text-sm font-bold text-slate-800"
+                >Preferred date <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="preferred-date"
+                type="date"
+                formControlName="preferredDate"
+                [attr.aria-invalid]="showError(form.controls.preferences.controls.preferredDate)"
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600 sm:max-w-xs"
+              />
+              @if (showError(form.controls.preferences.controls.preferredDate)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">Enter a valid date.</p>
+              }
+            </div>
+            <div>
+              <label for="preferred-time-from" class="block text-sm font-bold text-slate-800"
+                >From <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="preferred-time-from"
+                type="time"
+                formControlName="preferredTimeFrom"
+                [attr.aria-invalid]="
+                  showError(form.controls.preferences.controls.preferredTimeFrom) ||
+                  form.controls.preferences.hasError('timeOrder')
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+            </div>
+            <div>
+              <label for="preferred-time-to" class="block text-sm font-bold text-slate-800"
+                >To <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <input
+                id="preferred-time-to"
+                type="time"
+                formControlName="preferredTimeTo"
+                [attr.aria-invalid]="
+                  showError(form.controls.preferences.controls.preferredTimeTo) ||
+                  form.controls.preferences.hasError('timeOrder')
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              />
+            </div>
+            @if (
+              form.controls.preferences.hasError('timeOrder') &&
+              (form.controls.preferences.touched || submitted())
+            ) {
+              <p class="sm:col-span-2 text-sm font-semibold text-red-700">
+                The end time must be later than the start time.
+              </p>
+            }
+            <div class="sm:col-span-2">
+              <label for="location-note" class="block text-sm font-bold text-slate-800"
+                >Location note <span class="font-normal text-slate-500">(optional)</span></label
+              >
+              <textarea
+                id="location-note"
+                formControlName="locationNote"
+                rows="4"
+                maxlength="1000"
+                placeholder="Share a helpful location note if needed."
+                [attr.aria-invalid]="showError(form.controls.preferences.controls.locationNote)"
+                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
+              ></textarea>
+              <p class="mt-2 text-sm text-slate-500">Do not include medical information here.</p>
+              @if (showError(form.controls.preferences.controls.locationNote)) {
+                <p class="mt-2 text-sm font-semibold text-red-700">
+                  Keep the note under 1,000 characters.
+                </p>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        @if (detailsSaved()) {
+          <div
+            role="status"
+            class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900"
+          >
+            <p class="font-bold">Your details are saved in this booking session.</p>
+            <p class="mt-1 text-sm">
+              The review step will be added next. Nothing has been submitted.
+            </p>
+          </div>
+        }
+
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <a
+            routerLink="/book/fulfilment"
+            class="inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
+            ><span class="mr-2" aria-hidden="true">←</span> Back</a
+          >
+          <button
+            type="submit"
+            class="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white shadow-soft hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
+          >
+            Continue to review <span class="ml-2" aria-hidden="true">→</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="space-y-4 lg:sticky lg:top-6" aria-label="Your booking selections">
+      <div class="rounded-2xl border border-brand-100 bg-brand-50/70 p-5">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Package</p>
+        <p class="mt-2 font-bold text-brand-900">{{ bookingFlow.selectedPackage()?.name }}</p>
+        <a
+          routerLink="/health-check/packages"
+          class="mt-3 inline-flex rounded-md text-sm font-semibold text-brand-700 underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          >Change</a
+        >
+      </div>
+      <div class="rounded-2xl border border-brand-100 bg-white p-5">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Fulfilment</p>
+        <p class="mt-2 font-bold text-brand-900">
+          {{ bookingFlow.selectedFulfilmentMode()?.name }}
+        </p>
+        <a
+          routerLink="/book/fulfilment"
+          class="mt-3 inline-flex rounded-md text-sm font-semibold text-brand-700 underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          >Change</a
+        >
+      </div>
+    </aside>
+  </div>
+</section>

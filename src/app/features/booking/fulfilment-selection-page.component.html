@@ -1,0 +1,110 @@
+<section class="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
+  <app-booking-progress [currentStep]="2" />
+
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+    <div>
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
+        Book my Smart Health Check
+      </p>
+      <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+        How would you like your check fulfilled?
+      </h1>
+      <p class="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+        Choose from the options currently available through SmartClinic.
+      </p>
+
+      <div class="mt-9">
+        @if (loading()) {
+          <div role="status" aria-live="polite" class="grid gap-4 sm:grid-cols-2">
+            <span class="sr-only">Loading fulfilment choices</span>
+            @for (placeholder of [1, 2]; track placeholder) {
+              <div
+                aria-hidden="true"
+                class="h-40 animate-pulse rounded-2xl border border-slate-200 bg-white p-6"
+              >
+                <div class="h-5 w-2/3 rounded bg-slate-200"></div>
+                <div class="mt-5 h-4 w-full rounded bg-slate-100"></div>
+              </div>
+            }
+          </div>
+        } @else if (error()) {
+          <div role="alert" class="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <h2 class="text-lg font-bold text-red-900">Fulfilment choices are unavailable</h2>
+            <p class="mt-2 leading-7 text-red-800">{{ error() }}</p>
+            <button
+              type="button"
+              (click)="loadModes()"
+              class="mt-5 min-h-11 rounded-lg bg-red-800 px-5 py-3 font-bold text-white hover:bg-red-900 focus:outline-none focus:ring-4 focus:ring-red-200"
+            >
+              Try again
+            </button>
+          </div>
+        } @else if (modes().length === 0) {
+          <div role="status" class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft">
+            <h2 class="text-xl font-bold text-brand-900">No fulfilment choices are available</h2>
+            <p class="mt-3 leading-7 text-slate-600">
+              Please check back soon or choose another package.
+            </p>
+            <button
+              type="button"
+              (click)="loadModes()"
+              class="mt-5 min-h-11 rounded-lg border border-brand-600 px-5 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
+            >
+              Refresh choices
+            </button>
+          </div>
+        } @else {
+          <fieldset>
+            <legend class="sr-only">Available fulfilment modes</legend>
+            <div class="grid gap-4 sm:grid-cols-2">
+              @for (mode of modes(); track mode.id) {
+                <button
+                  type="button"
+                  (click)="selectMode(mode)"
+                  class="group min-h-40 rounded-2xl border border-brand-100 bg-white p-6 text-left shadow-soft transition hover:border-brand-500 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                  [attr.aria-label]="'Choose ' + mode.name"
+                >
+                  <span
+                    class="grid size-10 place-items-center rounded-xl bg-brand-50 text-brand-700 group-hover:bg-white"
+                    aria-hidden="true"
+                    >✓</span
+                  >
+                  <span class="mt-5 block text-xl font-bold text-brand-900">{{ mode.name }}</span>
+                  <span class="mt-2 block text-sm font-semibold text-brand-700"
+                    >Choose this option <span aria-hidden="true">→</span></span
+                  >
+                </button>
+              }
+            </div>
+          </fieldset>
+        }
+      </div>
+      <a
+        routerLink="/health-check/packages"
+        class="mt-8 inline-flex min-h-11 items-center rounded-lg px-2 font-bold text-brand-700 hover:text-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-200"
+        ><span class="mr-2" aria-hidden="true">←</span> Back to packages</a
+      >
+    </div>
+
+    <aside
+      class="rounded-2xl border border-brand-100 bg-brand-50/70 p-5"
+      aria-labelledby="selected-package-title"
+    >
+      <p
+        id="selected-package-title"
+        class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600"
+      >
+        Selected package
+      </p>
+      <p class="mt-2 text-lg font-bold text-brand-900">{{ bookingFlow.selectedPackage()?.name }}</p>
+      @if (bookingFlow.selectedPackage()?.description; as description) {
+        <p class="mt-2 text-sm leading-6 text-slate-600">{{ description }}</p>
+      }
+      <a
+        routerLink="/health-check/packages"
+        class="mt-4 inline-flex rounded-md font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+        >Change package</a
+      >
+    </aside>
+  </div>
+</section>

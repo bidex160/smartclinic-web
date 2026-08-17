@@ -2,6 +2,7 @@
   class="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16 lg:px-10 lg:py-20"
   aria-labelledby="packages-title"
 >
+  <app-booking-progress [currentStep]="1" />
   <div class="max-w-3xl">
     <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Smart Health Checks</p>
     <h1
@@ -79,11 +80,14 @@
                 Details for this package will be shared during booking.
               </p>
             }
-            <p
-              class="mt-7 rounded-lg bg-brand-50 px-4 py-3 text-sm font-semibold leading-6 text-brand-800"
+            <button
+              type="button"
+              (click)="selectPackage(package)"
+              class="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-5 py-3 font-bold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
+              [attr.aria-label]="'Choose ' + package.name"
             >
-              Package selection is available. The next booking steps are coming soon.
-            </p>
+              Choose this package
+            </button>
           </article>
         }
       </div>
