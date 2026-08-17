@@ -1,0 +1,92 @@
+<section
+  class="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16 lg:px-10 lg:py-20"
+  aria-labelledby="packages-title"
+>
+  <div class="max-w-3xl">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Smart Health Checks</p>
+    <h1
+      id="packages-title"
+      class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl"
+    >
+      Choose your health check
+    </h1>
+    <p class="mt-4 text-lg leading-8 text-slate-600">
+      Compare the packages currently available from SmartClinic. You will review your choice before
+      any booking is submitted.
+    </p>
+  </div>
+  <div class="mt-10">
+    @if (loading()) {
+      <div role="status" aria-live="polite" class="grid gap-5 md:grid-cols-2">
+        <span class="sr-only">Loading health check packages</span>
+        @for (placeholder of [1, 2]; track placeholder) {
+          <div
+            class="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 sm:p-8"
+            aria-hidden="true"
+          >
+            <div class="h-4 w-24 rounded bg-slate-200"></div>
+            <div class="mt-5 h-7 w-2/3 rounded bg-slate-200"></div>
+            <div class="mt-5 h-4 w-full rounded bg-slate-100"></div>
+            <div class="mt-2 h-4 w-4/5 rounded bg-slate-100"></div>
+          </div>
+        }
+      </div>
+    } @else if (error()) {
+      <div role="alert" class="max-w-2xl rounded-2xl border border-red-200 bg-red-50 p-6 sm:p-8">
+        <h2 class="text-lg font-bold text-red-900">Packages are temporarily unavailable</h2>
+        <p class="mt-2 leading-7 text-red-800">{{ error() }}</p>
+        <button
+          type="button"
+          (click)="loadPackages()"
+          class="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-red-800 px-5 py-3 font-bold text-white hover:bg-red-900 focus:outline-none focus:ring-4 focus:ring-red-200"
+        >
+          Try again
+        </button>
+      </div>
+    } @else if (packages().length === 0) {
+      <div
+        role="status"
+        class="max-w-2xl rounded-2xl border border-brand-100 bg-white p-6 shadow-soft sm:p-8"
+      >
+        <h2 class="text-xl font-bold text-brand-900">No packages are available right now</h2>
+        <p class="mt-3 leading-7 text-slate-600">
+          Please check back soon. SmartClinic will show packages here as they become available.
+        </p>
+        <button
+          type="button"
+          (click)="loadPackages()"
+          class="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg border border-brand-600 px-5 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
+        >
+          Refresh packages
+        </button>
+      </div>
+    } @else {
+      <div class="grid gap-5 md:grid-cols-2">
+        @for (package of packages(); track package.id) {
+          <article
+            class="flex flex-col rounded-2xl border border-brand-100 bg-white p-6 shadow-soft sm:p-8"
+          >
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+              {{ package.code }}
+            </p>
+            <h2 class="mt-3 text-2xl font-bold tracking-tight text-brand-900">
+              {{ package.name }}
+            </h2>
+            @if (package.description) {
+              <p class="mt-4 flex-1 leading-7 text-slate-600">{{ package.description }}</p>
+            } @else {
+              <p class="mt-4 flex-1 leading-7 text-slate-500">
+                Details for this package will be shared during booking.
+              </p>
+            }
+            <p
+              class="mt-7 rounded-lg bg-brand-50 px-4 py-3 text-sm font-semibold leading-6 text-brand-800"
+            >
+              Package selection is available. The next booking steps are coming soon.
+            </p>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>
