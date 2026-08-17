@@ -12,11 +12,12 @@ describe('BookingConfirmationPageComponent', () => {
     healthCheckPackage: { code: 'PACKAGE', name: 'Smart package' },
     fulfilmentMode: { code: 'MODE', name: 'Provider location' },
     participant: { givenName: 'Ada', familyName: 'Okafor' },
-    quotedAmount: null,
-    currency: null,
+    quotedAmount: '12500.00',
+    quotedCurrency: 'API',
     preferredDate: null,
     preferredTimeWindowStart: null,
     preferredTimeWindowEnd: null,
+    locationNote: null,
     createdAt: '2026-08-17T00:00:00.000Z',
     updatedAt: '2026-08-17T00:00:00.000Z',
   };
@@ -27,6 +28,8 @@ describe('BookingConfirmationPageComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('SC-REF');
     expect(fixture.nativeElement.textContent).toContain('Smart package');
+    expect(fixture.nativeElement.textContent).toContain('Confirmed booking quote');
+    expect(fixture.nativeElement.textContent).toContain('API 12500.00');
 
     fixture.componentInstance.bookAnother();
 

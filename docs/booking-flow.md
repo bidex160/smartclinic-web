@@ -24,7 +24,7 @@ Explain the Smart Health Check proposition in approved, non-diagnostic language.
 
 Fetch `GET /api/v1/health-check-packages` on entry. Render only packages returned as available by the API. Initial known codes are `ESSENTIAL` and `COMPLETE`, but the UI must handle an empty catalogue and unknown future codes safely.
 
-The user must understand meaningful API-provided differences such as included services, price, and duration, once the response contract defines them. Selection is stored in the in-memory booking draft.
+The user sees API-provided benefits, estimated duration, and current prices by fulfilment mode. Selection is stored in the in-memory booking draft.
 
 ### 3. Select fulfilment mode
 
@@ -88,11 +88,11 @@ Derived signals should determine completed steps and the earliest valid route. C
 
 Refresh clears sensitive draft state by design for the initial implementation. Users arriving at an incomplete route are redirected to the earliest required step with a calm explanation.
 
-Package, fulfilment, details, review, submission, and confirmation are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. Review explicitly maps valid state to the public request contract and submits only after confirmation. The successful response remains in memory until the user deliberately starts another booking.
+Package, priced fulfilment, details, review, submission, and confirmation are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. The successful response, including the authoritative server quote, remains in memory until the user deliberately starts another booking.
 
 ## Open product and UI decisions
 
-- Exact package response fields: price/currency, benefits, preparation, duration, availability, and supported fulfilment modes.
+- Whether preparation guidance will be added to the package catalogue.
 - Exact booking request fields and which relate to the participant versus the booking contact.
 - Whether one person may book for another, and requirements for minors or dependants.
 - Whether authentication, identity verification, consent, or terms acceptance is required.

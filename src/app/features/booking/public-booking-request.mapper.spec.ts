@@ -46,6 +46,11 @@ describe('mapBookingFlowToPublicBookingRequest', () => {
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-id',
     });
+    expect(request.booking).not.toHaveProperty('quotedAmount');
+    expect(request.booking).not.toHaveProperty('quotedCurrency');
+    expect(request.booking).not.toHaveProperty('currency');
+    expect(JSON.stringify(request)).not.toContain('quotedAmount');
+    expect(JSON.stringify(request)).not.toContain('quotedCurrency');
   });
 });
 
@@ -58,6 +63,9 @@ function createCompleteState(emptyOptional = false): BookingFlowStateService {
     code: 'PACKAGE',
     name: 'Package',
     description: null,
+    benefits: [],
+    estimatedDurationMinutes: null,
+    prices: [],
     isActive: true,
   });
   state.selectFulfilmentMode({ id: 'mode-id', code: 'MODE', name: 'Mode', isActive: true });

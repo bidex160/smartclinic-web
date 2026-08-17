@@ -27,4 +27,4 @@ The API is the source of truth. The frontend presents the available catalogue an
 
 ## Current status
 
-The Angular foundation uses standalone components, strict TypeScript, routing, SCSS, Tailwind CSS, signals, Reactive Forms, and `HttpClient`. The public booking journey covers API-backed package and fulfilment selection, in-memory details, review, deliberate submission, and in-memory confirmation. Confirmation refresh safely shows recovery rather than performing an unauthorised lookup.
+The Angular foundation uses standalone components, strict TypeScript, routing, SCSS, Tailwind CSS, signals, Reactive Forms, and `HttpClient`. The public booking journey covers API-backed package, pricing, and fulfilment selection, in-memory details, review, deliberate submission, and in-memory confirmation. Catalogue prices are displayed but never submitted; confirmation uses the server-returned quote snapshot. Confirmation refresh safely shows recovery rather than performing an unauthorised lookup.

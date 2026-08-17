@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { FulfilmentMode } from '../../core/models/fulfilment-mode.model';
+import { HealthCheckPackagePrice } from '../../core/models/health-check-package.model';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { BookingFlowStateService } from './booking-flow-state.service';
 import { BookingProgressComponent } from './booking-progress.component';
@@ -47,8 +48,17 @@ export class FulfilmentSelectionPageComponent {
   }
 
   selectMode(mode: FulfilmentMode): void {
+    if (!this.priceFor(mode)) return;
     this.bookingFlow.selectFulfilmentMode(mode);
     void this.router.navigate(['/book/details']);
+  }
+
+  priceFor(mode: FulfilmentMode): HealthCheckPackagePrice | null {
+    return (
+      this.bookingFlow
+        .selectedPackage()
+        ?.prices.find((price) => price.fulfilmentModeId === mode.id) ?? null
+    );
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {

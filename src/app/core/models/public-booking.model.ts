@@ -32,10 +32,11 @@ export interface PublicBookingResponse {
   readonly fulfilmentMode: { readonly code: string; readonly name: string };
   readonly participant: { readonly givenName: string; readonly familyName: string };
   readonly quotedAmount: string | null;
-  readonly currency: string | null;
+  readonly quotedCurrency: string | null;
   readonly preferredDate: string | null;
   readonly preferredTimeWindowStart: string | null;
   readonly preferredTimeWindowEnd: string | null;
+  readonly locationNote: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

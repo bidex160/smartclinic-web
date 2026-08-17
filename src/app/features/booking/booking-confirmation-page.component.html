@@ -47,6 +47,22 @@
           <dt class="text-sm font-semibold text-slate-500">Fulfilment</dt>
           <dd class="mt-1 text-slate-900">{{ booking.fulfilmentMode.name }}</dd>
         </div>
+        @if (booking.quotedAmount && booking.quotedCurrency) {
+          <div class="rounded-xl bg-brand-50 p-4 sm:col-span-2">
+            <dt class="text-sm font-semibold text-brand-800">Confirmed booking quote</dt>
+            <dd class="mt-1 text-2xl font-bold text-brand-900">
+              {{ booking.quotedCurrency }} {{ booking.quotedAmount }}
+            </dd>
+            <p class="mt-1 text-xs leading-5 text-slate-600">
+              This is the authoritative quote recorded by SmartClinic for this booking.
+            </p>
+          </div>
+        } @else {
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-semibold text-slate-500">Confirmed booking quote</dt>
+            <dd class="mt-1 text-slate-700">No quote was returned for this booking.</dd>
+          </div>
+        }
         @if (booking.preferredDate) {
           <div>
             <dt class="text-sm font-semibold text-slate-500">Preferred date</dt>
@@ -60,6 +76,12 @@
               {{ booking.preferredTimeWindowStart || 'Any' }} –
               {{ booking.preferredTimeWindowEnd || 'Any' }}
             </dd>
+          </div>
+        }
+        @if (booking.locationNote) {
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-semibold text-slate-500">Location note</dt>
+            <dd class="mt-1 whitespace-pre-wrap text-slate-900">{{ booking.locationNote }}</dd>
           </div>
         }
       </dl>

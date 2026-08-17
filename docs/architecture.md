@@ -104,6 +104,8 @@ The fulfilment and details guards are implemented. Refresh intentionally clears 
 
 Review additionally requires saved details and redirects to the earliest incomplete step. Confirmation accepts a reference route parameter but renders booking information only when a matching successful POST response remains in memory; it does not use the reference for automatic lookup.
 
+The selected catalogue price is a computed value derived from the selected package's API-provided `prices` and selected fulfilment-mode ID. It gates progression but is presentation state only: the public request mapper never sends an amount or currency. The server-returned `quotedAmount` and `quotedCurrency` form the authoritative booking quote snapshot on confirmation.
+
 Whether the lookup route is public and what it may display remains a backend/product security decision.
 
 ## Forms and data boundaries

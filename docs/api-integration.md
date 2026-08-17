@@ -33,6 +33,8 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.
 
+The package catalogue includes benefits, estimated duration, and current prices keyed by fulfilment-mode ID. These prices support comparison and gate progression. They are not included in the public booking request. On creation, the backend resolves pricing again and returns `quotedAmount` with `quotedCurrency`; that response snapshot is authoritative for the created booking. A `422` response means pricing is no longer available and returns the user to deliberate selection/retry behavior without exposing backend details.
+
 ## Type strategy
 
 - Define explicit request and response interfaces matching the wire format.
@@ -84,7 +86,7 @@ Retries must be deliberate. A catalogue GET may be manually or safely retried. A
 
 - What are the exact success payloads and status codes for all three endpoints?
 - Are packages returned as an array or envelope, and how are availability and fulfilment modes represented?
-- Are price, currency, location, visit fees, scheduling, and preparation details authoritative fields?
+- Will location, scheduling, preparation, or separate visit-fee fields be added to the catalogue?
 - What booking fields are required, optional, nullable, or conditionally required?
 - What is the standard error envelope and field-validation path format?
 - Does booking creation support an idempotency key?

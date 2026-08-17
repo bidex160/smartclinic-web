@@ -74,12 +74,51 @@
               {{ package.name }}
             </h2>
             @if (package.description) {
-              <p class="mt-4 flex-1 leading-7 text-slate-600">{{ package.description }}</p>
+              <p class="mt-4 leading-7 text-slate-600">{{ package.description }}</p>
             } @else {
               <p class="mt-4 flex-1 leading-7 text-slate-500">
                 Details for this package will be shared during booking.
               </p>
             }
+            @if (package.benefits.length > 0) {
+              <div class="mt-5">
+                <h3 class="text-sm font-bold text-brand-900">What is included</h3>
+                <ul class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                  @for (benefit of package.benefits; track benefit) {
+                    <li class="flex gap-2">
+                      <span class="text-brand-600" aria-hidden="true">✓</span
+                      ><span>{{ benefit }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+            @if (package.estimatedDurationMinutes !== null) {
+              <p class="mt-5 text-sm font-semibold text-slate-600">
+                Estimated duration: {{ package.estimatedDurationMinutes }} minutes
+              </p>
+            }
+            <div class="mt-5 border-t border-slate-100 pt-5">
+              <h3 class="text-sm font-bold text-brand-900">Published prices</h3>
+              @if (package.prices.length > 0) {
+                <dl class="mt-3 space-y-2">
+                  @for (price of package.prices; track price.fulfilmentModeId) {
+                    <div class="flex items-baseline justify-between gap-4 text-sm">
+                      <dt class="text-slate-600">{{ price.fulfilmentModeName }}</dt>
+                      <dd class="font-bold text-brand-900">
+                        {{ price.currency }} {{ price.amount }}
+                      </dd>
+                    </div>
+                  }
+                </dl>
+              } @else {
+                <p
+                  class="mt-2 rounded-lg bg-amber-50 p-3 text-sm font-semibold leading-6 text-amber-900"
+                >
+                  No booking price is currently published for this package.
+                </p>
+              }
+            </div>
             <button
               type="button"
               (click)="selectPackage(package)"

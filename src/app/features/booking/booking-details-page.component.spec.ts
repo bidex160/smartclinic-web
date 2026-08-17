@@ -19,6 +19,9 @@ describe('BookingDetailsPageComponent', () => {
       code: 'API_PACKAGE',
       name: 'Package',
       description: null,
+      benefits: [],
+      estimatedDurationMinutes: null,
+      prices: [],
       isActive: true,
     });
     state.selectFulfilmentMode({ id: 'mode-id', code: 'API_MODE', name: 'Mode', isActive: true });

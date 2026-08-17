@@ -32,11 +32,25 @@ describe('HealthCheckPackagesApiService', () => {
         code: 'API_PACKAGE',
         name: 'API package',
         description: null,
+        benefits: ['Benefit'],
+        estimatedDurationMinutes: 30,
+        prices: [
+          {
+            fulfilmentModeId: 'mode-id',
+            fulfilmentModeCode: 'API_MODE',
+            fulfilmentModeName: 'API mode',
+            amount: '12500.00',
+            currency: 'API',
+          },
+        ],
         isActive: true,
       },
     ];
 
-    service.getPackages().subscribe((packages) => expect(packages).toEqual(response));
+    service.getPackages().subscribe((packages) => {
+      expect(packages).toEqual(response);
+      expect(packages[0].prices[0]).toMatchObject({ amount: '12500.00', currency: 'API' });
+    });
 
     const request = httpTesting.expectOne('http://api.example.test/api/v1/health-check-packages');
     expect(request.request.method).toBe('GET');

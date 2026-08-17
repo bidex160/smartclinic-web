@@ -12,6 +12,17 @@ describe('BookingFlowStateService', () => {
     code: 'API_PACKAGE',
     name: 'API package',
     description: null,
+    benefits: [],
+    estimatedDurationMinutes: null,
+    prices: [
+      {
+        fulfilmentModeId: 'mode-one',
+        fulfilmentModeCode: 'API_MODE',
+        fulfilmentModeName: 'API mode',
+        amount: '100.00',
+        currency: 'API',
+      },
+    ],
     isActive: true,
   };
   const mode: FulfilmentMode = {

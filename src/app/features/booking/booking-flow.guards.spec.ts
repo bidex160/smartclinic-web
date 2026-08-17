@@ -32,6 +32,17 @@ describe('booking flow guards', () => {
       code: 'PACKAGE',
       name: 'Package',
       description: null,
+      benefits: [],
+      estimatedDurationMinutes: null,
+      prices: [
+        {
+          fulfilmentModeId: 'mode-id',
+          fulfilmentModeCode: 'MODE',
+          fulfilmentModeName: 'Mode',
+          amount: '100.00',
+          currency: 'API',
+        },
+      ],
       isActive: true,
     });
     state.selectFulfilmentMode({ id: 'mode-id', code: 'MODE', name: 'Mode', isActive: true });

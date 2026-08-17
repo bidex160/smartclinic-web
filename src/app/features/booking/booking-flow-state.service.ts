@@ -25,9 +25,21 @@ export class BookingFlowStateService {
   );
   readonly preferredTimeTo = computed(() => this.detailsState()?.preferences.preferredTimeTo ?? '');
   readonly locationNote = computed(() => this.detailsState()?.preferences.locationNote ?? '');
+  readonly selectedPrice = computed(() => {
+    const healthCheckPackage = this.selectedPackageState();
+    const fulfilmentMode = this.selectedFulfilmentModeState();
+    if (!healthCheckPackage || !fulfilmentMode) return null;
+    return (
+      healthCheckPackage.prices.find((price) => price.fulfilmentModeId === fulfilmentMode.id) ??
+      null
+    );
+  });
   readonly canAccessFulfilment = computed(() => this.selectedPackageState() !== null);
   readonly canAccessDetails = computed(
-    () => this.selectedPackageState() !== null && this.selectedFulfilmentModeState() !== null,
+    () =>
+      this.selectedPackageState() !== null &&
+      this.selectedFulfilmentModeState() !== null &&
+      this.selectedPrice() !== null,
   );
 
   selectPackage(healthCheckPackage: HealthCheckPackage): void {

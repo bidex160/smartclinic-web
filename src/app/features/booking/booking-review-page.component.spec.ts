@@ -15,11 +15,12 @@ describe('BookingReviewPageComponent', () => {
     healthCheckPackage: { code: 'PACKAGE', name: 'Smart package' },
     fulfilmentMode: { code: 'MODE', name: 'Home option' },
     participant: { givenName: 'Ada', familyName: 'Okafor' },
-    quotedAmount: null,
-    currency: null,
+    quotedAmount: '12500.00',
+    quotedCurrency: 'API',
     preferredDate: '2026-08-20',
     preferredTimeWindowStart: '09:00',
     preferredTimeWindowEnd: '12:00',
+    locationNote: null,
     createdAt: '2026-08-17T00:00:00.000Z',
     updatedAt: '2026-08-17T00:00:00.000Z',
   };
@@ -33,6 +34,8 @@ describe('BookingReviewPageComponent', () => {
     expect(text).toContain('Home option');
     expect(text).toContain('Ada Okafor');
     expect(text).toContain('Confirm Smart Health Check');
+    expect(text).toContain('Booking price shown before confirmation');
+    expect(text).toContain('API 12500.00');
     expect(text).not.toContain('quotedAmount');
   });
 
@@ -67,6 +70,25 @@ describe('BookingReviewPageComponent', () => {
     expect(state.confirmation()).toEqual(response);
   });
 
+  it('explains a 422 pricing failure without exposing backend internals', async () => {
+    const { fixture } = await setup(() =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 422,
+            error: { message: 'No current catalogue price is available: internal detail' },
+          }),
+      ),
+    );
+
+    fixture.componentInstance.confirmBooking();
+
+    expect(fixture.componentInstance.submissionError()).toBe(
+      'Pricing is no longer available for this selection. Please choose another option.',
+    );
+    expect(fixture.componentInstance.submissionError()).not.toContain('internal detail');
+  });
+
   async function setup(
     createResponse: () => ReturnType<BookingsApiService['createPublicBooking']>,
   ) {
@@ -89,6 +111,17 @@ function seedState(state: BookingFlowStateService): void {
     code: 'PACKAGE',
     name: 'Smart package',
     description: null,
+    benefits: [],
+    estimatedDurationMinutes: null,
+    prices: [
+      {
+        fulfilmentModeId: 'mode-id',
+        fulfilmentModeCode: 'MODE',
+        fulfilmentModeName: 'Home option',
+        amount: '12500.00',
+        currency: 'API',
+      },
+    ],
     isActive: true,
   });
   state.selectFulfilmentMode({ id: 'mode-id', code: 'MODE', name: 'Home option', isActive: true });

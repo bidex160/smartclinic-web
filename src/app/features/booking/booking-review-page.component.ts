@@ -78,6 +78,8 @@ export class BookingReviewPageComponent {
       return 'Some booking information was not accepted. Review your details and try again.';
     if (error.status === 409)
       return 'We could not create a unique booking reference. Please try again.';
+    if (error.status === 422)
+      return 'Pricing is no longer available for this selection. Please choose another option.';
     return 'SmartClinic could not create your booking right now. Your details are still here, so you can try again.';
   }
 }

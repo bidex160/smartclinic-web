@@ -19,7 +19,7 @@ export const hasBookingSelectionsGuard: CanActivateFn = () => {
     return router.createUrlTree(['/health-check/packages'], { queryParams: { flow: 'restart' } });
   }
 
-  return bookingFlow.selectedFulfilmentMode() ? true : router.createUrlTree(['/book/fulfilment']);
+  return bookingFlow.canAccessDetails() ? true : router.createUrlTree(['/book/fulfilment']);
 };
 
 export const hasCompleteBookingDraftGuard: CanActivateFn = () => {
@@ -29,7 +29,7 @@ export const hasCompleteBookingDraftGuard: CanActivateFn = () => {
   if (!bookingFlow.selectedPackage()) {
     return router.createUrlTree(['/health-check/packages'], { queryParams: { flow: 'restart' } });
   }
-  if (!bookingFlow.selectedFulfilmentMode()) {
+  if (!bookingFlow.canAccessDetails()) {
     return router.createUrlTree(['/book/fulfilment']);
   }
   return bookingFlow.details() ? true : router.createUrlTree(['/book/details']);

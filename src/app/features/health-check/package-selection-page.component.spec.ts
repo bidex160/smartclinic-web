@@ -28,12 +28,27 @@ describe('PackageSelectionPageComponent', () => {
       code: 'FROM_API',
       name: 'API package',
       description: 'API description',
+      benefits: ['API benefit'],
+      estimatedDurationMinutes: 45,
+      prices: [
+        {
+          fulfilmentModeId: 'mode-id',
+          fulfilmentModeCode: 'API_MODE',
+          fulfilmentModeName: 'API mode',
+          amount: '12500.00',
+          currency: 'API',
+        },
+      ],
       isActive: true,
     };
     TestBed.inject(HttpTestingController)
       .expectOne('http://api.example.test/api/v1/health-check-packages')
       .flush([healthCheckPackage]);
     fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('API benefit');
+    expect(fixture.nativeElement.textContent).toContain('45 minutes');
+    expect(fixture.nativeElement.textContent).toContain('API 12500.00');
 
     fixture.componentInstance.selectPackage(healthCheckPackage);
 
