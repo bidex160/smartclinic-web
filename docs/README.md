@@ -41,4 +41,4 @@ Admin and operations users can initiate server-owned provider matching, inspect 
 
 Provider administration lets ADMIN/OPERATIONS list, create, inspect, edit, activate, suspend, link, and safely unlink provider profiles. Provider profiles remain distinct from user identities. Guarded, explicit user search exposes only minimized account and provider-link context, and linking sends only a deliberately selected user ID to the backend-authoritative role workflow.
 
-Unlinked providers can also receive manually shared, one-time setup invitations. The raw invitation token is displayed only after creation and remains in memory; the public setup route validates it, creates the provider account with a new password, and then requires normal login. Automated email delivery remains deferred.
+Unlinked providers can receive one-time setup invitations. Creation reports whether email was sent or a provider-neutral manual fallback is required; fallback links remain ephemeral and are never reconstructed from history. The public setup route validates the link, creates the provider account with a new password, and then requires normal login.

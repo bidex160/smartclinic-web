@@ -56,6 +56,7 @@ export class ProviderAdminDetailPageComponent {
   readonly invitationsLoading = signal(false);
   readonly inviting = signal(false);
   readonly oneTimeInvitationLink = signal<string | null>(null);
+  readonly invitationDeliveryStatus = signal<'SENT' | 'MANUAL_REQUIRED' | 'FAILED' | null>(null);
   readonly pendingRevokeId = signal<string | null>(null);
   readonly revoking = signal(false);
   readonly profileForm = this.formBuilder.group({
@@ -82,18 +83,24 @@ export class ProviderAdminDetailPageComponent {
     this.inviting.set(true);
     this.error.set(null);
     this.oneTimeInvitationLink.set(null);
+    this.invitationDeliveryStatus.set(null);
     const email = this.invitationForm.controls.email.value.trim().toLowerCase();
     this.invitationsApi
       .create(this.id, email)
       .pipe(finalize(() => this.inviting.set(false)))
       .subscribe({
         next: (created) => {
-          const origin = this.document.defaultView?.location.origin ?? '';
-          this.oneTimeInvitationLink.set(
-            `${origin}/provider/setup/${encodeURIComponent(created.invitationToken)}`,
-          );
+          this.invitationDeliveryStatus.set(created.deliveryStatus);
+          this.oneTimeInvitationLink.set(created.manualInvitationLink ?? null);
           this.invitationForm.reset();
-          this.statusMessage.set('Provider invitation created. Copy the one-time link now.');
+          const messages = {
+            SENT: 'Invitation email sent successfully.',
+            MANUAL_REQUIRED:
+              'Automatic email delivery is not configured. Share this invitation link manually.',
+            FAILED:
+              'Invitation was created, but email delivery failed. Share this invitation link manually.',
+          } as const;
+          this.statusMessage.set(messages[created.deliveryStatus]);
           this.loadInvitations();
         },
         error: (error: HttpErrorResponse) => this.handleInvitationError(error),

@@ -122,17 +122,54 @@ describe('ProviderAdminDetailPageComponent', () => {
     expect(usersApi.search).toHaveBeenCalledTimes(2);
   });
 
-  it('creates an invitation, shows and copies its one-time link, then refreshes summaries', async () => {
-    const { component, invitationsApi } = await setup({ provider: detail({ linkedUser: null }) });
+  it('renders SENT delivery without a manual link or copy action', async () => {
+    const { component, fixture } = await setup({
+      provider: detail({ linkedUser: null }),
+      creationResponse: { ...invitations()[0], deliveryStatus: 'SENT' },
+    });
+    component.invitationForm.controls.email.setValue('provider@example.test');
+    component.createInvitation();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Invitation email sent successfully.');
+    expect(component.oneTimeInvitationLink()).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Copy invitation link');
+  });
+
+  it('renders MANUAL_REQUIRED delivery, shows and copies its ephemeral link', async () => {
+    const { component, fixture, invitationsApi } = await setup({
+      provider: detail({ linkedUser: null }),
+    });
     const writeText = vi.fn(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     component.invitationForm.controls.email.setValue('PROVIDER@example.test');
     component.createInvitation();
     expect(invitationsApi.create).toHaveBeenCalledWith('provider-id', 'provider@example.test');
+    expect(component.statusMessage()).toContain('not configured');
     expect(component.oneTimeInvitationLink()).toContain('/provider/setup/');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Copy invitation link');
     await component.copyInvitationLink();
     expect(writeText).toHaveBeenCalledWith(component.oneTimeInvitationLink());
     expect(invitationsApi.list).toHaveBeenCalledTimes(2);
+  });
+
+  it('treats FAILED delivery as created and preserves the manual-sharing fallback', async () => {
+    const { component, fixture } = await setup({
+      provider: detail({ linkedUser: null }),
+      creationResponse: {
+        ...invitations()[0],
+        deliveryStatus: 'FAILED',
+        manualInvitationLink: `https://app.example.test/provider/setup/${'b'.repeat(43)}`,
+      },
+    });
+    component.invitationForm.controls.email.setValue('provider@example.test');
+    component.createInvitation();
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('email delivery failed');
+    expect(text).toContain('do not need to create another invitation');
+    expect(text).toContain('Copy invitation link');
+    expect(component.error()).toBeNull();
   });
 
   it('does not retain the raw invitation token in a fresh component instance', async () => {
@@ -153,6 +190,8 @@ describe('ProviderAdminDetailPageComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('pending@example.test');
     expect(text).toContain('accepted@example.test');
+    expect(text).not.toContain('/provider/setup/');
+    expect(text).not.toContain('resend');
     const revokeButtons = [...fixture.nativeElement.querySelectorAll('button')].filter(
       (button: HTMLButtonElement) => button.textContent?.trim() === 'Revoke invitation',
     );
@@ -169,6 +208,7 @@ describe('ProviderAdminDetailPageComponent', () => {
       provider?: AdminProviderDetail;
       unlinkError?: HttpErrorResponse;
       linkError?: HttpErrorResponse;
+      creationResponse?: unknown;
     } = {},
   ) {
     const value = options.provider ?? detail();
@@ -204,7 +244,15 @@ describe('ProviderAdminDetailPageComponent', () => {
     };
     const invitationsApi = {
       list: vi.fn(() => of(invitations())),
-      create: vi.fn(() => of({ ...invitations()[0], invitationToken: 'a'.repeat(43) })),
+      create: vi.fn(() =>
+        of(
+          options.creationResponse ?? {
+            ...invitations()[0],
+            deliveryStatus: 'MANUAL_REQUIRED',
+            manualInvitationLink: `https://app.example.test/provider/setup/${'a'.repeat(43)}`,
+          },
+        ),
+      ),
       revoke: vi.fn(() =>
         of({ ...invitations()[0], status: 'REVOKED', revokedAt: '2026-08-20T00:00:00Z' }),
       ),

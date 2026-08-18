@@ -81,5 +81,9 @@ function summary() {
   };
 }
 function created() {
-  return { ...summary(), invitationToken: 'a'.repeat(43) };
+  return {
+    ...summary(),
+    deliveryStatus: 'MANUAL_REQUIRED',
+    manualInvitationLink: `https://app.example.test/provider/setup/${'a'.repeat(43)}`,
+  };
 }

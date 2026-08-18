@@ -310,7 +310,8 @@
         Provider invitations
       </h2>
       <p class="mt-2 text-sm text-slate-600">
-        Invitations are shared manually. Email delivery is not currently provided.
+        SmartClinic attempts email delivery when an invitation is created and provides a manual
+        fallback when needed.
       </p>
 
       @if (!current.linkedUser) {
@@ -338,26 +339,44 @@
         </form>
       }
 
-      @if (oneTimeInvitationLink(); as link) {
-        <div class="mt-5 rounded-xl border-2 border-amber-400 bg-amber-50 p-5" role="status">
-          <h3 class="font-bold text-amber-950">One-time invitation link</h3>
-          <p class="mt-2 text-sm text-amber-950">
-            Copy and share this link now. The token cannot be retrieved after this page is refreshed
-            or left.
-          </p>
-          <input
-            aria-label="One-time invitation link"
-            readonly
-            [value]="link"
-            class="mt-3 min-h-11 w-full rounded-lg border border-amber-500 bg-white px-3 font-mono text-sm"
-          />
-          <button
-            type="button"
-            (click)="copyInvitationLink()"
-            class="mt-3 min-h-11 rounded-lg bg-amber-900 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-amber-300"
-          >
-            Copy invitation link
-          </button>
+      @if (invitationDeliveryStatus(); as deliveryStatus) {
+        <div
+          class="mt-5 rounded-xl border-2 border-amber-400 bg-amber-50 p-5"
+          role="status"
+          aria-live="polite"
+        >
+          @if (deliveryStatus === 'SENT') {
+            <h3 class="font-bold text-brand-950">Invitation email sent successfully.</h3>
+            <p class="mt-2 text-sm text-slate-700">No manual invitation link was returned.</p>
+          } @else if (deliveryStatus === 'MANUAL_REQUIRED') {
+            <h3 class="font-bold text-amber-950">Automatic email delivery is not configured.</h3>
+            <p class="mt-2 text-sm text-amber-950">Share this invitation link manually.</p>
+          } @else {
+            <h3 class="font-bold text-amber-950">Invitation created; email delivery failed.</h3>
+            <p class="mt-2 text-sm text-amber-950">
+              Share this invitation link manually. You do not need to create another invitation.
+            </p>
+          }
+          @if (oneTimeInvitationLink(); as link) {
+            <h4 class="mt-4 font-bold text-amber-950">One-time invitation link</h4>
+            <p class="mt-2 text-sm text-amber-950">
+              Copy and share this link now. It cannot be retrieved after this page is refreshed or
+              left.
+            </p>
+            <input
+              aria-label="One-time invitation link"
+              readonly
+              [value]="link"
+              class="mt-3 min-h-11 w-full rounded-lg border border-amber-500 bg-white px-3 font-mono text-sm"
+            />
+            <button
+              type="button"
+              (click)="copyInvitationLink()"
+              class="mt-3 min-h-11 rounded-lg bg-amber-900 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-amber-300"
+            >
+              Copy invitation link
+            </button>
+          }
         </div>
       }
 

@@ -19,7 +19,8 @@ export interface AdminProviderInvitation {
 }
 
 export interface CreatedProviderInvitation extends AdminProviderInvitation {
-  readonly invitationToken: string;
+  readonly deliveryStatus: 'SENT' | 'MANUAL_REQUIRED' | 'FAILED';
+  readonly manualInvitationLink?: string;
 }
 
 export interface PublicProviderInvitation {
