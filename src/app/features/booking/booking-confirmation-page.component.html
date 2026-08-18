@@ -78,6 +78,12 @@
             </dd>
           </div>
         }
+        @if (booking.preferredTimezone) {
+          <div>
+            <dt class="text-sm font-semibold text-slate-500">Preferred timezone</dt>
+            <dd class="mt-1 text-slate-900">{{ booking.preferredTimezone }}</dd>
+          </div>
+        }
         @if (booking.locationNote) {
           <div class="sm:col-span-2">
             <dt class="text-sm font-semibold text-slate-500">Location note</dt>
@@ -89,6 +95,70 @@
         This reference identifies your booking but is not proof of identity or authorization to
         access health information.
       </p>
+
+      <section aria-labelledby="funding-heading" class="mt-7 border-t border-slate-200 pt-7">
+        <h2 id="funding-heading" class="text-xl font-bold text-brand-900">Payment preparation</h2>
+        @if (fundingError(); as error) {
+          <div
+            data-error-summary
+            tabindex="-1"
+            role="alert"
+            class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 focus:outline-none focus:ring-4 focus:ring-red-100"
+          >
+            <p class="font-bold">Payment could not be prepared</p>
+            <p class="mt-1">{{ error }}</p>
+          </div>
+        }
+
+        @if (fundingResult(); as funding) {
+          <div role="status" class="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-5">
+            <p class="font-bold text-brand-900">Payment obligation prepared</p>
+            <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Amount</dt>
+                <dd class="mt-1 font-bold text-slate-900">
+                  {{ funding.currency }} {{ funding.amount }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Funding status</dt>
+                <dd class="mt-1 font-bold text-slate-900">{{ funding.fundingStatus }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Booking status</dt>
+                <dd class="mt-1 font-bold text-slate-900">{{ booking.status }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Booking reference</dt>
+                <dd class="mt-1 break-all font-mono text-slate-900">
+                  {{ funding.bookingReference }}
+                </dd>
+              </div>
+            </dl>
+            <p class="mt-4 text-sm leading-6 text-slate-700">
+              Payment-provider checkout is not available yet. Preparing payment did not charge you.
+            </p>
+          </div>
+        } @else {
+          <p class="mt-2 text-sm leading-6 text-slate-600">
+            Prepare the server-managed funding obligation for this booking. This does not charge you
+            or open a payment-provider checkout.
+          </p>
+          <button
+            type="button"
+            [disabled]="fundingPending()"
+            (click)="initializeFunding()"
+            class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+          >
+            {{ fundingPending() ? 'Preparing payment…' : 'Prepare payment' }}
+          </button>
+          @if (fundingPending()) {
+            <p role="status" aria-live="polite" class="mt-3 text-sm text-slate-600">
+              Securely preparing payment. Please wait.
+            </p>
+          }
+        }
+      </section>
       <button
         type="button"
         (click)="bookAnother()"
@@ -96,6 +166,19 @@
       >
         Book another health check
       </button>
+    </div>
+  } @else if (recovering()) {
+    <div
+      role="status"
+      aria-live="polite"
+      class="mx-auto max-w-2xl rounded-2xl border border-brand-100 bg-white p-8 text-center shadow-soft"
+    >
+      <span
+        class="mx-auto block size-8 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600"
+        aria-hidden="true"
+      ></span>
+      <h1 class="mt-5 text-2xl font-bold text-brand-900">Securely restoring your booking</h1>
+      <p class="mt-3 text-slate-600">Checking this browser's private booking session…</p>
     </div>
   } @else {
     <div
@@ -106,14 +189,28 @@
         aria-hidden="true"
         >i</span
       >
-      <h1 class="mt-5 text-3xl font-bold tracking-tight text-brand-900">
-        Confirmation details are no longer available
-      </h1>
-      <p class="mt-4 leading-7 text-slate-600">
-        For your privacy, booking details are kept only in this browser tab during the current
-        session. Refreshing the page clears them. Use the reference you saved when contacting
-        SmartClinic.
-      </p>
+      <div
+        data-error-summary
+        tabindex="-1"
+        role="alert"
+        class="focus:outline-none focus:ring-4 focus:ring-brand-100"
+      >
+        <h1 class="mt-5 text-3xl font-bold tracking-tight text-brand-900">
+          Booking could not be restored
+        </h1>
+        <p class="mt-4 leading-7 text-slate-600">
+          {{ recoveryError() || 'This booking is unavailable. Please start a new booking.' }}
+        </p>
+      </div>
+      @if (recoveryError()?.includes('right now')) {
+        <button
+          type="button"
+          (click)="recoverConfirmation()"
+          class="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
+        >
+          Try secure recovery again
+        </button>
+      }
       <button
         type="button"
         (click)="bookAnother()"

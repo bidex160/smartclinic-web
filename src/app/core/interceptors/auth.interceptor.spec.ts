@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import { API_CONFIG } from '../config/api-config.token';
-import { SKIP_AUTH_RETRY } from '../config/http-context.tokens';
+import { SKIP_AUTH_RETRY, SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import { AuthStateService } from '../services/auth-state.service';
 import { AuthApiService } from '../services/auth-api.service';
 import { authInterceptor } from './auth.interceptor';
@@ -23,6 +23,27 @@ describe('authInterceptor', () => {
     const externalRequest = http.expectOne('https://external.example.test/data');
     expect(externalRequest.request.headers.has('Authorization')).toBe(false);
     externalRequest.flush({});
+    http.verify();
+  });
+
+  it('keeps cookie-authorized public booking requests out of staff auth handling', () => {
+    const { auth, http } = setup();
+    authenticate(auth);
+    let failed = false;
+    TestBed.inject(HttpClient)
+      .get('http://api.example.test/api/v1/public/bookings/SC-REF', {
+        withCredentials: true,
+        context: new HttpContext().set(SKIP_STAFF_AUTH, true),
+      })
+      .subscribe({ error: () => (failed = true) });
+
+    const request = http.expectOne('http://api.example.test/api/v1/public/bookings/SC-REF');
+    expect(request.request.headers.has('Authorization')).toBe(false);
+    request.flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(failed).toBe(true);
+    http.expectNone('http://api.example.test/api/v1/auth/refresh');
+    expect(auth.authenticated()).toBe(true);
     http.verify();
   });
 

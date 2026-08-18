@@ -36,7 +36,29 @@ export interface PublicBookingResponse {
   readonly preferredDate: string | null;
   readonly preferredTimeWindowStart: string | null;
   readonly preferredTimeWindowEnd: string | null;
+  readonly preferredTimezone: string | null;
   readonly locationNote: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+export type PublicBookingFundingStatus =
+  'PENDING' | 'APPROVED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED' | 'SETTLED';
+
+export type PublicBookingFundingAttemptStatus =
+  | 'CREATED'
+  | 'AWAITING_CUSTOMER_ACTION'
+  | 'PENDING_CONFIRMATION'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export interface PublicBookingFundingResult {
+  readonly bookingReference: string;
+  readonly fundingStatus: PublicBookingFundingStatus;
+  readonly attemptId: string | null;
+  readonly attemptStatus: PublicBookingFundingAttemptStatus | null;
+  readonly amount: string;
+  readonly currency: string;
+  readonly paymentReference: string | null;
 }

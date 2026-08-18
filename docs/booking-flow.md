@@ -54,7 +54,9 @@ An idempotency mechanism is desirable but depends on backend support and must be
 
 Use the reference returned by the create response; do not generate one client-side. Display the reference, safe next steps, and approved contact/support information. Avoid showing unnecessary sensitive details.
 
-If confirmation is refreshed, `GET /api/v1/bookings/:reference` may restore displayable state only if the backend defines suitable authorization and response minimization. A reference alone should not be assumed to authorize disclosure.
+Booking creation accepts the backend's `smartclinic_public_booking_session` HttpOnly cookie. On confirmation refresh, `GET /api/v1/public/bookings/:reference` sends browser credentials and restores the safe response only when that cookie owns the exact booking. The frontend never reads or models the session token, and a reference alone never authorizes disclosure.
+
+The confirmation page can explicitly call `POST /api/v1/public/bookings/:reference/funding/initialize` using the same booking session. It sends no amount or currency. The server's funding result and a secure follow-up booking read supply the authoritative funding and booking states. Payment-provider checkout remains deferred; the UI does not claim a charge occurred or invent a redirect.
 
 ## Proposed feature components
 
@@ -88,7 +90,7 @@ Derived signals should determine completed steps and the earliest valid route. C
 
 Refresh clears sensitive draft state by design for the initial implementation. Users arriving at an incomplete route are redirected to the earliest required step with a calm explanation.
 
-Package, priced fulfilment, details, review, submission, and confirmation are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. The successful response, including the authoritative server quote, remains in memory until the user deliberately starts another booking.
+Package, priced fulfilment, details, review, submission, secure confirmation recovery, and guest funding initialization are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. Draft state remains memory-only; the successful response can be reconstructed from the cookie-authorized backend endpoint.
 
 ## Open product and UI decisions
 
@@ -100,7 +102,7 @@ Package, priced fulfilment, details, review, submission, and confirmation are im
 - Whether date/time scheduling happens during booking or after submission.
 - Pricing, taxes, home-visit fees, promotions, payment timing, refunds, and cancellation/rescheduling.
 - User-facing copy and approved mappings for package and fulfilment codes.
-- What confirmation and booking lookup may display, and what authorization protects it.
+- Which future user-assisted recovery mechanism applies after the public booking session expires.
 - Support/contact routes and operational escalation for failed or ambiguous submissions.
 - Brand identity, imagery, typography, tone, localization, and supported languages.
 - Analytics/consent requirements and the events permitted without health data.

@@ -20,6 +20,7 @@ describe('BookingReviewPageComponent', () => {
     preferredDate: '2026-08-20',
     preferredTimeWindowStart: '09:00',
     preferredTimeWindowEnd: '12:00',
+    preferredTimezone: 'Africa/Lagos',
     locationNote: null,
     createdAt: '2026-08-17T00:00:00.000Z',
     updatedAt: '2026-08-17T00:00:00.000Z',

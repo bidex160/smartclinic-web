@@ -95,7 +95,7 @@ Proposed public routes:
 | `/book/fulfilment`                | Select an API-supported mode; requires an in-memory package selection       |
 | `/book/details`                   | Collect details; requires in-memory package and mode selections             |
 | `/book/review`                    | Review the draft; submission occurs only on explicit confirmation           |
-| `/book/confirmation/:reference`   | Display the returned reference and safe next steps                          |
+| `/book/confirmation/:reference`   | Display or securely recover confirmation and initialize guest funding       |
 | `/bookings/:reference`            | Retrieve a booking where the authorization/verification contract permits it |
 | `/admin/login`                    | In-memory administrator and operations login                                |
 | `/admin/package-prices`           | Role-guarded package-price operations                                       |
@@ -115,7 +115,9 @@ Review additionally requires saved details and redirects to the earliest incompl
 
 The selected catalogue price is a computed value derived from the selected package's API-provided `prices` and selected fulfilment-mode ID. It gates progression but is presentation state only: the public request mapper never sends an amount or currency. The server-returned `quotedAmount` and `quotedCurrency` form the authoritative booking quote snapshot on confirmation.
 
-Whether the lookup route is public and what it may display remains a backend/product security decision.
+Draft form state remains memory-only. After creation, the backend sets a separate HttpOnly public-booking session cookie. Confirmation renders the matching in-memory response immediately; after refresh it performs a credentialed `GET /public/bookings/:reference`. The backend validates that the cookie owns that exact booking, so the reference remains an identifier rather than authorization. Funding initialization uses the same cookie and sends no client amount or currency.
+
+Public booking cookie authorization is deliberately isolated from `AuthStateService`, staff/provider bearer tokens, and the staff refresh interceptor. A guest does not need a registered user, and public-booking `401` responses never trigger staff session refresh.
 
 Admin authentication uses a small signal service holding the access token and safe current-user identity in memory only. The refresh token is never represented in frontend code: the backend stores it in an HttpOnly cookie. Angular's application initializer attempts one credentialed refresh on startup, with a bounded timeout, before protected guards decide whether to redirect. Guards await the initialization promise and then require an authenticated `ADMIN` or `OPERATIONS` role; authorization remains enforced independently by the backend.
 

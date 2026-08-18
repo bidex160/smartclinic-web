@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 
 import { API_CONFIG } from '../config/api-config.token';
-import { SKIP_AUTH_RETRY } from '../config/http-context.tokens';
+import { SKIP_AUTH_RETRY, SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import { AuthStateService } from '../services/auth-state.service';
 import { AuthSessionService } from '../services/auth-session.service';
 
@@ -14,13 +14,14 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const isApiRequest =
     request.url === apiConfig.baseUrl || request.url.startsWith(`${apiConfig.baseUrl}/`);
   const token = authState.accessToken();
+  const skipStaffAuth = request.context.get(SKIP_STAFF_AUTH);
   const sessionEndpoint = `${apiConfig.baseUrl}/auth/`;
   const isSessionRequest =
     request.url === `${sessionEndpoint}login` ||
     request.url === `${sessionEndpoint}refresh` ||
     request.url === `${sessionEndpoint}logout`;
   const authenticatedRequest =
-    isApiRequest && token
+    isApiRequest && token && !skipStaffAuth
       ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
       : request;
 
@@ -28,6 +29,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     catchError((error: unknown) => {
       if (
         isApiRequest &&
+        !skipStaffAuth &&
         !isSessionRequest &&
         error instanceof HttpErrorResponse &&
         error.status === 401

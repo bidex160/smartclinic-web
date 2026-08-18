@@ -28,30 +28,31 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 
 ## Endpoints
 
-| Method and path                                         | Frontend use                                     | Ownership notes                                          |
-| ------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
-| `GET /api/v1/health-check-packages`                     | Populate package selection and supported options | API controls catalogue and availability                  |
-| `GET /api/v1/fulfilment-modes`                          | Populate fulfilment selection                    | API controls fulfilment mode availability                |
-| `POST /api/v1/public/bookings`                          | Submit the reviewed public booking draft         | API validates, creates, and returns confirmation data    |
-| `GET /api/v1/bookings/:reference`                       | Retrieve permitted booking/confirmation state    | Authorization and safe response fields must be confirmed |
-| `POST /api/v1/auth/login`                               | Establish an in-memory authenticated session     | Returns access token and safe user identity              |
-| `POST /api/v1/auth/refresh`                             | Restore or rotate a browser session              | Uses and rotates an HttpOnly refresh cookie              |
-| `POST /api/v1/auth/logout`                              | Revoke the current refresh session               | Clears the refresh cookie; local state clears regardless |
-| `POST /api/v1/auth/logout-all`                          | Revoke all refresh sessions for the current user | Requires Bearer authentication                           |
-| `GET /api/v1/auth/me`                                   | Retrieve the current safe user identity          | Bearer-authenticated                                     |
-| `GET /api/v1/admin/package-prices`                      | List and filter package prices                   | ADMIN or OPERATIONS                                      |
-| `POST /api/v1/admin/package-prices`                     | Create a package price                           | ADMIN or OPERATIONS                                      |
-| `POST /api/v1/admin/package-prices/schedule`            | Schedule a future replacement price              | Preserves history; ADMIN or OPERATIONS                   |
-| `PATCH /api/v1/admin/package-prices/:id/deactivate`     | Deactivate without deletion                      | ADMIN or OPERATIONS                                      |
-| `GET /api/v1/provider/offers`                           | List the authenticated provider's current offers | PROVIDER; optional assignment-status filter              |
-| `GET /api/v1/provider/offers/:id`                       | Read one owned safe offer                        | PROVIDER; ownership enforced by API                      |
-| `POST /api/v1/provider/offers/:id/accept`               | Accept one offered assignment                    | Single deliberate mutation; server validates expiry      |
-| `POST /api/v1/provider/offers/:id/decline`              | Decline one offered assignment                   | Optional reason; preserves matching history              |
-| `POST /api/v1/admin/bookings/:reference/matching/start` | Start or retry provider matching                 | ADMIN/OPERATIONS; backend selects eligible candidate     |
-| `GET /api/v1/admin/provider-assignments`                | List/filter operational assignments              | Filters reference, provider ID, or assignment status     |
-| `GET /api/v1/admin/provider-assignments/:id`            | Inspect one operational assignment               | Excludes payment, contact, and raw history data          |
-| `POST /api/v1/admin/provider-assignments/:id/confirm`   | Confirm an accepted provider response            | Advances assignment and booking transactionally          |
-| `POST /api/v1/admin/provider-assignments/expire-stale`  | Expire stale offers and continue matching        | Explicit operations action; never run by a UI timer      |
+| Method and path                                              | Frontend use                                     | Ownership notes                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------ | -------------------------------------------------------------------- |
+| `GET /api/v1/health-check-packages`                          | Populate package selection and supported options | API controls catalogue and availability                              |
+| `GET /api/v1/fulfilment-modes`                               | Populate fulfilment selection                    | API controls fulfilment mode availability                            |
+| `POST /api/v1/public/bookings`                               | Submit the reviewed public booking draft         | Sets the HttpOnly public-booking session cookie                      |
+| `GET /api/v1/public/bookings/:reference`                     | Securely restore the session-owned confirmation  | Cookie must own the exact referenced booking                         |
+| `POST /api/v1/public/bookings/:reference/funding/initialize` | Initialize the guest funding obligation          | Sends no amount/currency; server returns authoritative funding state |
+| `POST /api/v1/auth/login`                                    | Establish an in-memory authenticated session     | Returns access token and safe user identity                          |
+| `POST /api/v1/auth/refresh`                                  | Restore or rotate a browser session              | Uses and rotates an HttpOnly refresh cookie                          |
+| `POST /api/v1/auth/logout`                                   | Revoke the current refresh session               | Clears the refresh cookie; local state clears regardless             |
+| `POST /api/v1/auth/logout-all`                               | Revoke all refresh sessions for the current user | Requires Bearer authentication                                       |
+| `GET /api/v1/auth/me`                                        | Retrieve the current safe user identity          | Bearer-authenticated                                                 |
+| `GET /api/v1/admin/package-prices`                           | List and filter package prices                   | ADMIN or OPERATIONS                                                  |
+| `POST /api/v1/admin/package-prices`                          | Create a package price                           | ADMIN or OPERATIONS                                                  |
+| `POST /api/v1/admin/package-prices/schedule`                 | Schedule a future replacement price              | Preserves history; ADMIN or OPERATIONS                               |
+| `PATCH /api/v1/admin/package-prices/:id/deactivate`          | Deactivate without deletion                      | ADMIN or OPERATIONS                                                  |
+| `GET /api/v1/provider/offers`                                | List the authenticated provider's current offers | PROVIDER; optional assignment-status filter                          |
+| `GET /api/v1/provider/offers/:id`                            | Read one owned safe offer                        | PROVIDER; ownership enforced by API                                  |
+| `POST /api/v1/provider/offers/:id/accept`                    | Accept one offered assignment                    | Single deliberate mutation; server validates expiry                  |
+| `POST /api/v1/provider/offers/:id/decline`                   | Decline one offered assignment                   | Optional reason; preserves matching history                          |
+| `POST /api/v1/admin/bookings/:reference/matching/start`      | Start or retry provider matching                 | ADMIN/OPERATIONS; backend selects eligible candidate                 |
+| `GET /api/v1/admin/provider-assignments`                     | List/filter operational assignments              | Filters reference, provider ID, or assignment status                 |
+| `GET /api/v1/admin/provider-assignments/:id`                 | Inspect one operational assignment               | Excludes payment, contact, and raw history data                      |
+| `POST /api/v1/admin/provider-assignments/:id/confirm`        | Confirm an accepted provider response            | Advances assignment and booking transactionally                      |
+| `POST /api/v1/admin/provider-assignments/expire-stale`       | Expire stale offers and continue matching        | Explicit operations action; never run by a UI timer                  |
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.
 
@@ -85,6 +86,10 @@ The access token and safe current user exist only in Angular signal state. The r
 At application startup, a modern Angular application initializer performs exactly one credentialed refresh attempt and completes within a bounded timeout. A missing or expired refresh cookie resolves to a normal unauthenticated state without a global error. Protected guards wait for this initialization before redirecting.
 
 The auth interceptor is limited to the configured SmartClinic API URL and never attaches the bearer token to external URLs. For a normal API `401`, all concurrent failures share one in-flight refresh. A successful refresh rotates the cookie, updates in-memory auth, and retries each failed request once with the new bearer token. Auth session endpoints cannot trigger refresh recovery, and retried requests do not re-enter the interceptor, preventing loops and repeated mutations. Failed refresh clears in-memory authentication and returns the user to admin login; `403` pricing responses route to the accessible access-denied page.
+
+Public booking creation, secure retrieval, and funding initialization use `withCredentials: true` so the browser can manage the backend's `smartclinic_public_booking_session` HttpOnly cookie. They opt out of staff bearer-token attachment and staff `401` refresh handling. The cookie/token is absent from frontend models and state. The booking reference is not authorization, and unauthorized or mismatched-session reads render only a safe recovery state. This guest security context is independent of admin/provider authentication.
+
+Funding initialization has an empty request body. Its typed response contains booking reference, server amount/currency, funding status, nullable attempt status/identifier, and nullable payment reference. It contains no production checkout URL, so real payment-provider integration remains deferred.
 
 Logout revokes the current refresh session and clears its cookie. Logout-all additionally sends the current bearer token and revokes every session for that user. The frontend clears in-memory authentication and navigates to login even when the logout network request fails, avoiding an apparently authenticated UI.
 
@@ -122,11 +127,11 @@ Retries must be deliberate. A catalogue GET may be manually or safely retried. A
 
 - Use HTTPS outside local development.
 - Confirm backend CORS and credential policy for each deployed frontend origin.
-- If cookie authentication is introduced, coordinate `SameSite`, secure cookies, credential mode, and CSRF protection with the backend. Do not store auth tokens in local storage by default.
+- Coordinate allowed origins, `Access-Control-Allow-Credentials`, `SameSite`, `Secure`, cookie path, and CSRF controls with the backend/deployment. Neither staff auth nor public-booking tokens belong in browser storage.
 - Never store participant or health information in local/session storage, URL parameters, analytics, logs, or monitoring metadata.
 - Keep sensitive draft data in memory and clear it when the booking session ends or is abandoned where practical.
 - Encode references used in paths and render all backend text as plain text unless it passes an explicitly approved sanitization path.
-- Minimize confirmation and lookup data. A booking reference should be treated as sensitive, not as proof of identity.
+- Minimize confirmation and lookup data. A booking reference is an identifier, never proof of identity or authorization.
 - Configure a restrictive Content Security Policy and related browser security headers at the hosting layer as deployment is defined.
 - Do not claim regulatory compliance based only on frontend safeguards.
 
@@ -138,7 +143,7 @@ Retries must be deliberate. A catalogue GET may be manually or safely retried. A
 - What booking fields are required, optional, nullable, or conditionally required?
 - What is the standard error envelope and field-validation path format?
 - Does booking creation support an idempotency key?
-- Does `GET /bookings/:reference` require authentication or an additional verification factor?
+- What recovery flow should be offered after the HttpOnly public-booking session expires?
 - What caching headers and catalogue freshness behavior should the client respect?
 - What are the timeout, rate-limit, and support expectations?
 - Is API version compatibility documented through OpenAPI and contract tests?
