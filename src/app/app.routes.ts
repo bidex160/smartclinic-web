@@ -61,6 +61,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'me/health-checks',
+    title: 'My Health Checks | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () =>
+      import('./features/results/my-health-checks-page.component').then(
+        (component) => component.MyHealthChecksPageComponent,
+      ),
+  },
+  {
     path: 'me/health-checks/:bookingReference/results',
     title: 'My Smart Health Check result | SmartClinic',
     canActivate: [authenticatedUserGuard],

@@ -25,6 +25,33 @@ describe('HealthCheckResultsApiService', () => {
     expect(pending.request.params.keys()).toEqual([]);
     pending.flush(result());
   });
+
+  it('lists only the current patient scope with supported filters and pagination', () => {
+    const { api, http } = setup();
+    api
+      .getMyHealthChecks({
+        bookingStatus: 'COMPLETED',
+        encounterStatus: 'COMPLETED',
+        page: 2,
+        limit: 10,
+      })
+      .subscribe();
+    const pending = http.expectOne(
+      (request) => request.url === 'http://api.test/api/v1/me/health-checks',
+    );
+    expect(pending.request.method).toBe('GET');
+    expect(pending.request.params.keys().sort()).toEqual([
+      'bookingStatus',
+      'encounterStatus',
+      'limit',
+      'page',
+    ]);
+    expect(pending.request.params.get('bookingStatus')).toBe('COMPLETED');
+    expect(pending.request.params.get('encounterStatus')).toBe('COMPLETED');
+    expect(pending.request.params.has('patientId')).toBe(false);
+    expect(pending.request.params.has('userId')).toBe(false);
+    pending.flush({ items: [], page: 2, limit: 10, total: 0, totalPages: 0 });
+  });
   function setup() {
     TestBed.configureTestingModule({
       providers: [
