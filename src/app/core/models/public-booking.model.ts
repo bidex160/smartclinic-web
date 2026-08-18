@@ -71,3 +71,14 @@ export interface PublicBookingPaymentInitiationResult {
   readonly currency: string;
   readonly checkoutUrl: string | null;
 }
+
+export interface PublicBookingPaymentStatus {
+  readonly bookingReference: string;
+  readonly bookingStatus: string;
+  readonly fundingStatus: PublicBookingFundingStatus | null;
+  readonly paymentStatus: PublicBookingFundingAttemptStatus | null;
+  readonly paymentAttemptReference: string | null;
+  readonly amount: string | null;
+  readonly currency: string | null;
+  readonly paidAt: string | null;
+}

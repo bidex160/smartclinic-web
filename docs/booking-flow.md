@@ -60,6 +60,10 @@ The confirmation page can explicitly call `POST /api/v1/public/bookings/:referen
 
 A Paystack browser redirect is not proof of payment. Signed webhook handling and independent server verification are authoritative. On refresh or a future configured return, the confirmation page securely re-reads the booking through the HttpOnly public-booking session and displays only the backend booking status. No payment-return route is implemented until `PAYSTACK_CALLBACK_URL` is configured to a compatible frontend URL.
 
+The confirmation page securely reads `GET /api/v1/public/bookings/:reference/payment-status` on entry. It presents provider-neutral payment, funding, and booking states rather than interpreting redirect query parameters. While payment is pending, the guest may deliberately invoke `POST /api/v1/public/bookings/:reference/payment-status/refresh`; the backend chooses and verifies the latest attempt. There is no automatic polling or mutation retry. A `429` asks the guest to wait before another check without disclosing the configured interval.
+
+Only `SUCCEEDED` is presented as **Payment confirmed**. A confirmed payment may move a booking to `PENDING_PROVIDER_MATCH`, which means matching can begin—not that a provider has already been assigned. Failed or cancelled attempts may start a fresh explicit payment initialization; an old checkout URL is not reused after terminal status.
+
 ## Proposed feature components
 
 ```text
@@ -92,7 +96,7 @@ Derived signals should determine completed steps and the earliest valid route. C
 
 Refresh clears sensitive draft state by design for the initial implementation. Users arriving at an incomplete route are redirected to the earliest required step with a calm explanation.
 
-Package, priced fulfilment, details, review, submission, secure confirmation recovery, guest funding initialization, and explicit hosted-checkout handoff are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. Draft state remains memory-only; the successful response can be reconstructed from the cookie-authorized backend endpoint.
+Package, priced fulfilment, details, review, submission, secure confirmation recovery, guest funding initialization, explicit hosted-checkout handoff, and manual payment reconciliation are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. Draft state remains memory-only; the successful response can be reconstructed from the cookie-authorized backend endpoint.
 
 ## Open product and UI decisions
 

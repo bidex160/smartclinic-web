@@ -7,6 +7,7 @@ import { SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import {
   PublicBookingFundingResult,
   PublicBookingPaymentInitiationResult,
+  PublicBookingPaymentStatus,
   PublicBookingRequest,
   PublicBookingResponse,
 } from '../models/public-booking.model';
@@ -43,6 +44,21 @@ export class BookingsApiService {
   initiatePayment(reference: string): Observable<PublicBookingPaymentInitiationResult> {
     return this.http.post<PublicBookingPaymentInitiationResult>(
       `${this.apiConfig.baseUrl}/public/bookings/${encodeURIComponent(reference)}/payment/initiate`,
+      null,
+      { withCredentials: true, context: this.publicBookingContext },
+    );
+  }
+
+  getPaymentStatus(reference: string): Observable<PublicBookingPaymentStatus> {
+    return this.http.get<PublicBookingPaymentStatus>(
+      `${this.apiConfig.baseUrl}/public/bookings/${encodeURIComponent(reference)}/payment-status`,
+      { withCredentials: true, context: this.publicBookingContext },
+    );
+  }
+
+  refreshPaymentStatus(reference: string): Observable<PublicBookingPaymentStatus> {
+    return this.http.post<PublicBookingPaymentStatus>(
+      `${this.apiConfig.baseUrl}/public/bookings/${encodeURIComponent(reference)}/payment-status/refresh`,
       null,
       { withCredentials: true, context: this.publicBookingContext },
     );

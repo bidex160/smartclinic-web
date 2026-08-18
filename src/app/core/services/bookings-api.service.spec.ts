@@ -7,6 +7,7 @@ import { SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import {
   PublicBookingFundingResult,
   PublicBookingPaymentInitiationResult,
+  PublicBookingPaymentStatus,
   PublicBookingRequest,
   PublicBookingResponse,
 } from '../models/public-booking.model';
@@ -112,6 +113,42 @@ describe('BookingsApiService', () => {
     httpTesting.verify();
   });
 
+  it('gets authoritative payment status with public-session credentials', () => {
+    const { service, httpTesting } = setup();
+    const response = paymentStatus();
+
+    service.getPaymentStatus('SC/REF').subscribe((result) => expect(result).toEqual(response));
+
+    const pending = httpTesting.expectOne(
+      'http://api.example.test/api/v1/public/bookings/SC%2FREF/payment-status',
+    );
+    expect(pending.request.method).toBe('GET');
+    expect(pending.request.withCredentials).toBe(true);
+    expect(pending.request.context.get(SKIP_STAFF_AUTH)).toBe(true);
+    pending.flush(response);
+    httpTesting.verify();
+  });
+
+  it('refreshes payment status with credentials and no client-controlled payment fields', () => {
+    const { service, httpTesting } = setup();
+    const response = paymentStatus();
+
+    service.refreshPaymentStatus('SC-REF').subscribe((result) => expect(result).toEqual(response));
+
+    const pending = httpTesting.expectOne(
+      'http://api.example.test/api/v1/public/bookings/SC-REF/payment-status/refresh',
+    );
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.body).toBeNull();
+    expect(pending.request.withCredentials).toBe(true);
+    expect(pending.request.context.get(SKIP_STAFF_AUTH)).toBe(true);
+    expect(JSON.stringify(pending.request.body)).not.toMatch(
+      /amount|currency|reference|provider|secret/i,
+    );
+    pending.flush(response);
+    httpTesting.verify();
+  });
+
   function setup() {
     TestBed.configureTestingModule({
       providers: [
@@ -126,3 +163,16 @@ describe('BookingsApiService', () => {
     };
   }
 });
+
+function paymentStatus(): PublicBookingPaymentStatus {
+  return {
+    bookingReference: 'SC-REF',
+    bookingStatus: 'AWAITING_FUNDING',
+    fundingStatus: 'PENDING',
+    paymentStatus: 'PENDING_CONFIRMATION',
+    paymentAttemptReference: 'SC-PAY-safe',
+    amount: '12500.00',
+    currency: 'NGN',
+    paidAt: null,
+  };
+}

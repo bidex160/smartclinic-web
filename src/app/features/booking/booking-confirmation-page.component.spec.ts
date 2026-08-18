@@ -7,6 +7,7 @@ import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token'
 import {
   PublicBookingFundingResult,
   PublicBookingPaymentInitiationResult,
+  PublicBookingPaymentStatus,
   PublicBookingResponse,
 } from '../../core/models/public-booking.model';
 import { BookingsApiService } from '../../core/services/bookings-api.service';
@@ -46,6 +47,16 @@ describe('BookingConfirmationPageComponent', () => {
     amount: '12500.00',
     currency: 'NGN',
     checkoutUrl: 'https://checkout.paystack.com/pay/safe',
+  };
+  const pendingStatus: PublicBookingPaymentStatus = {
+    bookingReference: 'SC-REF',
+    bookingStatus: 'AWAITING_FUNDING',
+    fundingStatus: 'PENDING',
+    paymentStatus: 'PENDING_CONFIRMATION',
+    paymentAttemptReference: 'SC-PAY-safe',
+    amount: '12500.00',
+    currency: 'NGN',
+    paidAt: null,
   };
 
   it('renders matching in-memory state immediately without a recovery lookup', async () => {
@@ -186,10 +197,14 @@ describe('BookingConfirmationPageComponent', () => {
 
   it('ignores payment-looking query parameters and re-reads authoritative booking state', async () => {
     const authoritative = { ...confirmation, status: 'AWAITING_FUNDING' };
-    const { fixture, api } = await setup({ recovery: () => of(authoritative) });
+    const { fixture, api } = await setup({
+      recovery: () => of(authoritative),
+      paymentStatus: () => of(pendingStatus),
+    });
     fixture.detectChanges();
 
     expect(api.getPublicBooking).toHaveBeenCalledWith('SC-REF');
+    expect(api.getPaymentStatus).toHaveBeenCalledWith('SC-REF');
     expect(fixture.nativeElement.textContent).toContain('AWAITING_FUNDING');
     expect(fixture.nativeElement.textContent).not.toContain('Payment successful');
   });
@@ -235,12 +250,133 @@ describe('BookingConfirmationPageComponent', () => {
     expect(fixture.componentInstance.checkoutUrl()).toBe(payment.checkoutUrl);
   });
 
+  it('renders confirmed payment, paid time, amount, and authoritative booking state', async () => {
+    const succeeded: PublicBookingPaymentStatus = {
+      ...pendingStatus,
+      bookingStatus: 'PENDING_PROVIDER_MATCH',
+      fundingStatus: 'SETTLED',
+      paymentStatus: 'SUCCEEDED',
+      paidAt: '2026-08-18T10:00:00.000Z',
+    };
+    const { fixture } = await setup({
+      initial: { ...confirmation, status: 'PENDING_PROVIDER_MATCH' },
+      paymentStatus: () => of(succeeded),
+    });
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).toContain('Payment confirmed');
+    expect(text).toContain('Funding settled');
+    expect(text).toContain('NGN 12500.00');
+    expect(text).toContain('Pending Provider Match');
+    expect(text).toContain('Aug');
+    expect(text).toContain('provider has not yet been assigned');
+  });
+
+  it.each([
+    ['PENDING_CONFIRMATION', 'Payment pending'],
+    ['FAILED', 'Payment failed'],
+    ['CANCELLED', 'Payment cancelled'],
+  ] as const)('renders %s using the safe label %s', async (paymentStatus, label) => {
+    const { fixture } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      paymentStatus: () => of({ ...pendingStatus, paymentStatus }),
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(label);
+    expect(fixture.nativeElement.textContent).not.toContain(paymentStatus);
+  });
+
+  it('refreshes payment status manually and prevents duplicate refresh requests', async () => {
+    const refresh = new Subject<PublicBookingPaymentStatus>();
+    const succeeded = {
+      ...pendingStatus,
+      bookingStatus: 'PENDING_PROVIDER_MATCH',
+      fundingStatus: 'SETTLED' as const,
+      paymentStatus: 'SUCCEEDED' as const,
+    };
+    const { fixture, api } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      paymentStatus: () => of(pendingStatus),
+      paymentStatusRefresh: () => refresh,
+    });
+
+    fixture.componentInstance.checkPaymentStatus();
+    fixture.componentInstance.checkPaymentStatus();
+    expect(api.refreshPaymentStatus).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.paymentStatusRefreshing()).toBe(true);
+
+    refresh.next(succeeded);
+    refresh.complete();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Payment confirmed');
+    expect(fixture.nativeElement.textContent).toContain('Pending Provider Match');
+  });
+
+  it('handles payment verification throttling without exposing interval details', async () => {
+    const { fixture } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      paymentStatus: () => of(pendingStatus),
+      paymentStatusRefresh: () => throwError(() => new HttpErrorResponse({ status: 429 })),
+    });
+    fixture.componentInstance.checkPaymentStatus();
+
+    expect(fixture.componentInstance.paymentStatusError()).toBe(
+      'Payment status was checked recently. Please wait a moment before checking again.',
+    );
+  });
+
+  it.each([401, 403])('sanitizes a %i payment-status session error', async (status) => {
+    const { fixture } = await setup({
+      initial: confirmation,
+      paymentStatus: () => throwError(() => new HttpErrorResponse({ status })),
+    });
+
+    expect(fixture.componentInstance.paymentStatusError()).toContain(
+      'booking session is no longer available',
+    );
+  });
+
+  it('sanitizes provider verification failures', async () => {
+    const { fixture } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      paymentStatus: () => of(pendingStatus),
+      paymentStatusRefresh: () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 503,
+              error: { message: 'raw provider reconciliation detail' },
+            }),
+        ),
+    });
+    fixture.componentInstance.checkPaymentStatus();
+
+    expect(fixture.componentInstance.paymentStatusError()).toContain('temporarily unavailable');
+    expect(fixture.componentInstance.paymentStatusError()).not.toContain('raw provider');
+  });
+
+  it('does not start automatic payment polling', async () => {
+    const { fixture, api } = await setup({
+      initial: confirmation,
+      paymentStatus: () => of(pendingStatus),
+    });
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    expect(api.getPaymentStatus).toHaveBeenCalledTimes(1);
+    expect(api.refreshPaymentStatus).not.toHaveBeenCalled();
+  });
+
   async function setup(
     options: {
       initial?: PublicBookingResponse;
       recovery?: () => ReturnType<BookingsApiService['getPublicBooking']>;
       funding?: () => ReturnType<BookingsApiService['initializeFunding']>;
       payment?: () => ReturnType<BookingsApiService['initiatePayment']>;
+      paymentStatus?: () => ReturnType<BookingsApiService['getPaymentStatus']>;
+      paymentStatusRefresh?: () => ReturnType<BookingsApiService['refreshPaymentStatus']>;
     } = {},
   ) {
     const router = { navigate: vi.fn().mockResolvedValue(true) };
@@ -249,6 +385,17 @@ describe('BookingConfirmationPageComponent', () => {
       getPublicBooking: vi.fn(options.recovery ?? (() => of(confirmation))),
       initializeFunding: vi.fn(options.funding ?? (() => of(funding))),
       initiatePayment: vi.fn(options.payment ?? (() => of(payment))),
+      getPaymentStatus: vi.fn(
+        options.paymentStatus ??
+          (() =>
+            of({
+              ...pendingStatus,
+              fundingStatus: null,
+              paymentStatus: null,
+              paymentAttemptReference: null,
+            })),
+      ),
+      refreshPaymentStatus: vi.fn(options.paymentStatusRefresh ?? (() => of(pendingStatus))),
     };
     await TestBed.configureTestingModule({
       imports: [BookingConfirmationPageComponent],

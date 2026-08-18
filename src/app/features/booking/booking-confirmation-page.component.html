@@ -159,7 +159,7 @@
           }
         }
 
-        @if (canInitiatePayment()) {
+        @if (showCheckoutSection()) {
           <div class="mt-6 border-t border-brand-200 pt-6">
             <h3 class="text-lg font-bold text-brand-900">Secure checkout</h3>
             <p class="mt-2 text-sm leading-6 text-slate-600">
@@ -193,7 +193,9 @@
                   </div>
                   <div>
                     <dt class="text-sm font-semibold text-slate-600">Payment status</dt>
-                    <dd class="mt-1 font-bold text-slate-900">{{ payment.status }}</dd>
+                    <dd class="mt-1 font-bold text-slate-900">
+                      {{ paymentStatusLabel(payment.status) }}
+                    </dd>
                   </div>
                 </dl>
                 <p class="mt-4 text-sm leading-6 text-slate-600">
@@ -238,6 +240,155 @@
             }
           </div>
         }
+
+        <section
+          aria-labelledby="payment-status-heading"
+          class="mt-7 border-t border-brand-200 pt-7"
+        >
+          <h3 id="payment-status-heading" class="text-lg font-bold text-brand-900">
+            Authoritative payment status
+          </h3>
+          <p class="mt-2 text-sm leading-6 text-slate-600">
+            This status comes from SmartClinic's server. Checkout redirects and browser query
+            parameters are not used as payment proof.
+          </p>
+
+          @if (paymentStatusError(); as error) {
+            <div
+              data-error-summary
+              tabindex="-1"
+              role="alert"
+              class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 focus:outline-none focus:ring-4 focus:ring-red-100"
+            >
+              <p class="font-bold">Payment status could not be checked</p>
+              <p class="mt-1">{{ error }}</p>
+            </div>
+          }
+
+          @if (paymentStatusLoading() && !authoritativePaymentStatus()) {
+            <p role="status" aria-live="polite" class="mt-4 text-sm text-slate-600">
+              Loading the authoritative payment status…
+            </p>
+          }
+
+          @if (authoritativePaymentStatus(); as status) {
+            <div aria-live="polite" class="mt-4 rounded-xl border border-brand-200 bg-white p-5">
+              <p class="text-xl font-bold text-brand-900">
+                {{ paymentStatusLabel(status.paymentStatus) }}
+              </p>
+
+              @switch (status.paymentStatus) {
+                @case ('SUCCEEDED') {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    SmartClinic has confirmed this payment with the provider.
+                  </p>
+                  @if (status.bookingStatus === 'PENDING_PROVIDER_MATCH') {
+                    <p class="mt-2 rounded-lg bg-brand-50 p-3 text-sm leading-6 text-brand-900">
+                      Funding is complete. SmartClinic can now proceed to provider matching; a
+                      provider has not yet been assigned.
+                    </p>
+                  }
+                }
+                @case ('FAILED') {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    Payment was not confirmed. You can deliberately initialize another payment
+                    attempt when ready.
+                  </p>
+                }
+                @case ('CANCELLED') {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    Payment was cancelled and has not been confirmed. You can initialize another
+                    attempt when ready.
+                  </p>
+                }
+                @case ('CREATED') {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    Payment is pending customer action. Confirmation may take a short period after
+                    checkout.
+                  </p>
+                }
+                @case ('AWAITING_CUSTOMER_ACTION') {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    Payment is awaiting customer action. Confirmation may take a short period after
+                    checkout.
+                  </p>
+                }
+                @case ('PENDING_CONFIRMATION') {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    SmartClinic is awaiting provider confirmation. This may take a short period.
+                  </p>
+                }
+                @default {
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    No payment attempt has been started for this booking.
+                  </p>
+                }
+              }
+
+              <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <dt class="text-sm font-semibold text-slate-600">Funding status</dt>
+                  <dd class="mt-1 font-bold text-slate-900">
+                    {{ fundingStatusLabel(status.fundingStatus) }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-sm font-semibold text-slate-600">Booking status</dt>
+                  <dd class="mt-1 font-bold text-slate-900">
+                    {{ bookingStatusLabel(status.bookingStatus) }}
+                  </dd>
+                </div>
+                @if (status.amount && status.currency) {
+                  <div>
+                    <dt class="text-sm font-semibold text-slate-600">Authoritative amount</dt>
+                    <dd class="mt-1 font-bold text-slate-900">
+                      {{ status.currency }} {{ status.amount }}
+                    </dd>
+                  </div>
+                }
+                @if (status.paidAt) {
+                  <div>
+                    <dt class="text-sm font-semibold text-slate-600">Paid at</dt>
+                    <dd class="mt-1 font-bold text-slate-900">
+                      {{ status.paidAt | date: 'medium' }}
+                    </dd>
+                  </div>
+                }
+              </dl>
+
+              @if (
+                status.paymentStatus === 'CREATED' ||
+                status.paymentStatus === 'AWAITING_CUSTOMER_ACTION' ||
+                status.paymentStatus === 'PENDING_CONFIRMATION'
+              ) {
+                <button
+                  type="button"
+                  [disabled]="paymentStatusRefreshing()"
+                  (click)="checkPaymentStatus()"
+                  class="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {{ paymentStatusRefreshing() ? 'Checking…' : 'Check payment status' }}
+                </button>
+              }
+
+              @if (status.paymentStatus === 'FAILED' || status.paymentStatus === 'CANCELLED') {
+                <button
+                  type="button"
+                  [disabled]="paymentPending()"
+                  (click)="initiatePayment()"
+                  class="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {{ paymentPending() ? 'Initializing…' : 'Start another payment attempt' }}
+                </button>
+              }
+              @if (paymentStatusRefreshing()) {
+                <p role="status" aria-live="polite" class="mt-3 text-sm text-slate-600">
+                  Checking the provider-confirmed payment status…
+                </p>
+              }
+            </div>
+          }
+        </section>
       </section>
       <button
         type="button"

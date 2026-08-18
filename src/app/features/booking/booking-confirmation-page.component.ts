@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, of, switchMap } from 'rxjs';
 
@@ -14,6 +15,7 @@ import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token'
 import {
   PublicBookingFundingResult,
   PublicBookingPaymentInitiationResult,
+  PublicBookingPaymentStatus,
 } from '../../core/models/public-booking.model';
 import { BookingsApiService } from '../../core/services/bookings-api.service';
 import { BookingFlowStateService } from './booking-flow-state.service';
@@ -22,6 +24,7 @@ import { safePaystackCheckoutUrl } from './paystack-checkout-url';
 @Component({
   selector: 'app-booking-confirmation-page',
   templateUrl: './booking-confirmation-page.component.html',
+  imports: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingConfirmationPageComponent {
@@ -42,6 +45,10 @@ export class BookingConfirmationPageComponent {
   readonly paymentError = signal<string | null>(null);
   readonly paymentResult = signal<PublicBookingPaymentInitiationResult | null>(null);
   readonly checkoutUrl = signal<string | null>(null);
+  readonly paymentStatusLoading = signal(false);
+  readonly paymentStatusRefreshing = signal(false);
+  readonly paymentStatusError = signal<string | null>(null);
+  readonly authoritativePaymentStatus = signal<PublicBookingPaymentStatus | null>(null);
 
   readonly confirmation = computed(() => {
     const confirmation = this.bookingFlow.confirmation();
@@ -50,9 +57,21 @@ export class BookingConfirmationPageComponent {
   readonly canInitiatePayment = computed(
     () => this.fundingResult() !== null || this.confirmation()?.status === 'AWAITING_FUNDING',
   );
+  readonly showCheckoutSection = computed(() => {
+    if (this.checkoutUrl()) return true;
+    const status = this.authoritativePaymentStatus()?.paymentStatus;
+    return (
+      this.canInitiatePayment() &&
+      status !== 'SUCCEEDED' &&
+      status !== 'FAILED' &&
+      status !== 'CANCELLED' &&
+      status !== 'PENDING_CONFIRMATION'
+    );
+  });
 
   constructor() {
-    if (!this.confirmation()) this.recoverConfirmation();
+    if (this.confirmation()) this.loadPaymentStatus();
+    else this.recoverConfirmation();
   }
 
   recoverConfirmation(): void {
@@ -69,6 +88,7 @@ export class BookingConfirmationPageComponent {
       next: (booking) => {
         this.bookingFlow.completeBooking(booking);
         this.recovering.set(false);
+        this.loadPaymentStatus();
       },
       error: (error: unknown) => {
         this.recovering.set(false);
@@ -124,10 +144,12 @@ export class BookingConfirmationPageComponent {
           this.paymentError.set(
             'Secure checkout could not be opened because the payment service returned an invalid destination. Please try again.',
           );
+          this.loadPaymentStatus();
           this.focusErrorSummary();
           return;
         }
         this.checkoutUrl.set(checkoutUrl);
+        this.loadPaymentStatus();
       },
       error: (error: unknown) => {
         this.paymentPending.set(false);
@@ -146,6 +168,88 @@ export class BookingConfirmationPageComponent {
       return;
     }
     this.navigateExternal(checkoutUrl);
+  }
+
+  loadPaymentStatus(): void {
+    const booking = this.confirmation();
+    if (!booking || this.paymentStatusLoading()) return;
+
+    this.paymentStatusLoading.set(true);
+    this.paymentStatusError.set(null);
+    this.bookingsApi.getPaymentStatus(booking.bookingReference).subscribe({
+      next: (status) => {
+        this.applyPaymentStatus(status);
+        this.paymentStatusLoading.set(false);
+      },
+      error: (error: unknown) => {
+        this.paymentStatusLoading.set(false);
+        this.paymentStatusError.set(this.paymentStatusMessage(error));
+        this.focusErrorSummary();
+      },
+    });
+  }
+
+  checkPaymentStatus(): void {
+    const booking = this.confirmation();
+    if (!booking || this.paymentStatusRefreshing()) return;
+
+    this.paymentStatusRefreshing.set(true);
+    this.paymentStatusError.set(null);
+    this.bookingsApi.refreshPaymentStatus(booking.bookingReference).subscribe({
+      next: (status) => {
+        this.applyPaymentStatus(status);
+        this.paymentStatusRefreshing.set(false);
+      },
+      error: (error: unknown) => {
+        this.paymentStatusRefreshing.set(false);
+        this.paymentStatusError.set(this.paymentStatusMessage(error));
+        this.focusErrorSummary();
+      },
+    });
+  }
+
+  paymentStatusLabel(status: PublicBookingPaymentStatus['paymentStatus']): string {
+    switch (status) {
+      case 'SUCCEEDED':
+        return 'Payment confirmed';
+      case 'FAILED':
+        return 'Payment failed';
+      case 'CANCELLED':
+        return 'Payment cancelled';
+      case 'CREATED':
+      case 'AWAITING_CUSTOMER_ACTION':
+      case 'PENDING_CONFIRMATION':
+        return 'Payment pending';
+      default:
+        return 'Payment not started';
+    }
+  }
+
+  fundingStatusLabel(status: PublicBookingPaymentStatus['fundingStatus']): string {
+    switch (status) {
+      case 'SETTLED':
+        return 'Funding settled';
+      case 'PENDING':
+        return 'Funding pending';
+      case 'APPROVED':
+        return 'Funding approved';
+      case 'DECLINED':
+        return 'Funding declined';
+      case 'EXPIRED':
+        return 'Funding expired';
+      case 'CANCELLED':
+        return 'Funding cancelled';
+      default:
+        return 'Funding not initialized';
+    }
+  }
+
+  bookingStatusLabel(status: string): string {
+    return status
+      .toLowerCase()
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
   }
 
   bookAnother(): void {
@@ -195,6 +299,41 @@ export class BookingConfirmationPageComponent {
       }
     }
     return 'We could not initialize secure payment. No charge was made. Please try again.';
+  }
+
+  private paymentStatusMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 401 || error.status === 403) {
+        return 'This booking session is no longer available. Please start a new booking or use a future recovery option.';
+      }
+      if (error.status === 404) return 'Payment information for this booking is unavailable.';
+      if (error.status === 429) {
+        return 'Payment status was checked recently. Please wait a moment before checking again.';
+      }
+      if (error.status === 409 || error.status === 422) {
+        return 'Payment status cannot be checked for the booking in its current state.';
+      }
+      if (error.status === 502 || error.status === 503 || error.status === 0) {
+        return 'The payment verification service is temporarily unavailable. Please try again later.';
+      }
+    }
+    return 'We could not retrieve the authoritative payment status. Please try again.';
+  }
+
+  private applyPaymentStatus(status: PublicBookingPaymentStatus): void {
+    if (status.bookingReference !== this.routeReference) {
+      this.paymentStatusError.set('Payment status could not be safely matched to this booking.');
+      return;
+    }
+    this.authoritativePaymentStatus.set(status);
+    if (
+      status.paymentStatus === 'SUCCEEDED' ||
+      status.paymentStatus === 'FAILED' ||
+      status.paymentStatus === 'CANCELLED' ||
+      status.paymentStatus === 'PENDING_CONFIRMATION'
+    ) {
+      this.checkoutUrl.set(null);
+    }
   }
 
   private focusErrorSummary(): void {
