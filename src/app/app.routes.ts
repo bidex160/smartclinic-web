@@ -111,6 +111,24 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/providers',
+    title: 'Providers | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/providers-admin-page.component').then(
+        (component) => component.ProvidersAdminPageComponent,
+      ),
+  },
+  {
+    path: 'admin/providers/:id',
+    title: 'Provider details | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/provider-admin-detail-page.component').then(
+        (component) => component.ProviderAdminDetailPageComponent,
+      ),
+  },
+  {
     path: 'admin/matching-queue',
     title: 'Provider matching queue | SmartClinic',
     canActivate: [adminPricingGuard],

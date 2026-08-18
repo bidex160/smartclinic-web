@@ -99,6 +99,8 @@ Proposed public routes:
 | `/bookings/:reference`            | Retrieve a booking where the authorization/verification contract permits it |
 | `/admin/login`                    | In-memory administrator and operations login                                |
 | `/admin/package-prices`           | Role-guarded package-price operations                                       |
+| `/admin/providers`                | Guarded provider listing, filtering, and creation                           |
+| `/admin/providers/:id`            | Guarded provider profile, status, and account-link operations               |
 | `/admin/matching-queue`           | Guarded, paginated provider-matching readiness queue                        |
 | `/admin/access-denied`            | Accessible recovery for authenticated users without an allowed role         |
 | `/admin/provider-assignments`     | Guarded matching controls and operational assignment list                   |
@@ -139,6 +141,8 @@ The matching queue is a read-only server projection until an operator explicitly
 `/admin/bookings/:reference` connects the matching queue and provider-assignment workflow through a guarded operational booking projection. It shows the backend-provided booking, schedule, quote/funding, normalized payment, assignment, and readiness summaries; it does not reuse the public booking-session DTO or treat a reference as public authorization. Contextual actions are gated only by the returned readiness, and matching remains an explicit server-owned operation.
 
 The admin projection may include operational booker contact data that the public confirmation projection does not expose. Registered-user bookings can legitimately have missing structured names or phone numbers; the UI renders neutral missing-data labels and never substitutes participant identity. Provider IDs, health data, payment-provider internals, and lifecycle histories stay outside this page's model.
+
+Provider administration keeps the provider operational profile separate from the linked user account. Basic profile edits never carry status, roles, or user IDs; activation, suspension, and unlinking are explicit confirmed server operations. Provider invitation, password setup, self-registration, and clinical verification remain deferred. The backend currently has no safe admin user-search endpoint, so the UI does not ask operators to paste opaque user UUIDs and does not expose linking until searchable selection is supported.
 
 The admin assignment read model contains only operational identity and scheduling context: provider ID/display name, minimal participant name, package/mode, booking and assignment states, requested schedule, offer timestamps, and decline reason. Funding, payment, contacts, credentials, free-text location notes, and raw matching histories remain outside the frontend boundary.
 

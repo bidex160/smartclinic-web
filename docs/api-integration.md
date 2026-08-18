@@ -28,40 +28,50 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 
 ## Endpoints
 
-| Method and path                                                  | Frontend use                                     | Ownership notes                                                        |
-| ---------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------- |
-| `GET /api/v1/health-check-packages`                              | Populate package selection and supported options | API controls catalogue and availability                                |
-| `GET /api/v1/fulfilment-modes`                                   | Populate fulfilment selection                    | API controls fulfilment mode availability                              |
-| `POST /api/v1/public/bookings`                                   | Submit the reviewed public booking draft         | Sets the HttpOnly public-booking session cookie                        |
-| `GET /api/v1/public/bookings/:reference`                         | Securely restore the session-owned confirmation  | Cookie must own the exact referenced booking                           |
-| `POST /api/v1/public/bookings/:reference/funding/initialize`     | Initialize the guest funding obligation          | Sends no amount/currency; server returns authoritative funding state   |
-| `POST /api/v1/public/bookings/:reference/payment/initiate`       | Request a provider-hosted guest checkout         | Empty body; backend returns only normalized safe checkout data         |
-| `GET /api/v1/public/bookings/:reference/payment-status`          | Read authoritative guest payment state           | Cookie-bound safe booking/funding/latest-attempt projection            |
-| `POST /api/v1/public/bookings/:reference/payment-status/refresh` | Reconcile the latest attempt with the provider   | Empty body; backend selects the attempt and throttles verification     |
-| `POST /api/v1/auth/login`                                        | Establish an in-memory authenticated session     | Returns access token and safe user identity                            |
-| `POST /api/v1/auth/refresh`                                      | Restore or rotate a browser session              | Uses and rotates an HttpOnly refresh cookie                            |
-| `POST /api/v1/auth/logout`                                       | Revoke the current refresh session               | Clears the refresh cookie; local state clears regardless               |
-| `POST /api/v1/auth/logout-all`                                   | Revoke all refresh sessions for the current user | Requires Bearer authentication                                         |
-| `GET /api/v1/auth/me`                                            | Retrieve the current safe user identity          | Bearer-authenticated                                                   |
-| `GET /api/v1/admin/package-prices`                               | List and filter package prices                   | ADMIN or OPERATIONS                                                    |
-| `POST /api/v1/admin/package-prices`                              | Create a package price                           | ADMIN or OPERATIONS                                                    |
-| `POST /api/v1/admin/package-prices/schedule`                     | Schedule a future replacement price              | Preserves history; ADMIN or OPERATIONS                                 |
-| `PATCH /api/v1/admin/package-prices/:id/deactivate`              | Deactivate without deletion                      | ADMIN or OPERATIONS                                                    |
-| `GET /api/v1/provider/offers`                                    | List the authenticated provider's current offers | PROVIDER; optional assignment-status filter                            |
-| `GET /api/v1/provider/offers/:id`                                | Read one owned safe offer                        | PROVIDER; ownership enforced by API                                    |
-| `POST /api/v1/provider/offers/:id/accept`                        | Accept one offered assignment                    | Single deliberate mutation; server validates expiry                    |
-| `POST /api/v1/provider/offers/:id/decline`                       | Decline one offered assignment                   | Optional reason; preserves matching history                            |
-| `POST /api/v1/admin/bookings/:reference/matching/start`          | Start or retry provider matching                 | ADMIN/OPERATIONS; backend selects eligible candidate                   |
-| `GET /api/v1/admin/bookings/matching-queue`                      | Read the operational provider-matching queue     | Backend owns readiness, default funding gate, ordering, and paging     |
-| `GET /api/v1/admin/bookings/:reference`                          | Read one operational booking projection          | ADMIN/OPERATIONS; safe booking, funding, payment, and matching context |
-| `GET /api/v1/admin/provider-assignments`                         | List/filter operational assignments              | Filters reference, provider ID, or assignment status                   |
-| `GET /api/v1/admin/provider-assignments/:id`                     | Inspect one operational assignment               | Excludes payment, contact, and raw history data                        |
-| `POST /api/v1/admin/provider-assignments/:id/confirm`            | Confirm an accepted provider response            | Advances assignment and booking transactionally                        |
-| `POST /api/v1/admin/provider-assignments/expire-stale`           | Expire stale offers and continue matching        | Explicit operations action; never run by a UI timer                    |
+| Method and path                                                  | Frontend use                                       | Ownership notes                                                        |
+| ---------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------- |
+| `GET /api/v1/health-check-packages`                              | Populate package selection and supported options   | API controls catalogue and availability                                |
+| `GET /api/v1/fulfilment-modes`                                   | Populate fulfilment selection                      | API controls fulfilment mode availability                              |
+| `POST /api/v1/public/bookings`                                   | Submit the reviewed public booking draft           | Sets the HttpOnly public-booking session cookie                        |
+| `GET /api/v1/public/bookings/:reference`                         | Securely restore the session-owned confirmation    | Cookie must own the exact referenced booking                           |
+| `POST /api/v1/public/bookings/:reference/funding/initialize`     | Initialize the guest funding obligation            | Sends no amount/currency; server returns authoritative funding state   |
+| `POST /api/v1/public/bookings/:reference/payment/initiate`       | Request a provider-hosted guest checkout           | Empty body; backend returns only normalized safe checkout data         |
+| `GET /api/v1/public/bookings/:reference/payment-status`          | Read authoritative guest payment state             | Cookie-bound safe booking/funding/latest-attempt projection            |
+| `POST /api/v1/public/bookings/:reference/payment-status/refresh` | Reconcile the latest attempt with the provider     | Empty body; backend selects the attempt and throttles verification     |
+| `POST /api/v1/auth/login`                                        | Establish an in-memory authenticated session       | Returns access token and safe user identity                            |
+| `POST /api/v1/auth/refresh`                                      | Restore or rotate a browser session                | Uses and rotates an HttpOnly refresh cookie                            |
+| `POST /api/v1/auth/logout`                                       | Revoke the current refresh session                 | Clears the refresh cookie; local state clears regardless               |
+| `POST /api/v1/auth/logout-all`                                   | Revoke all refresh sessions for the current user   | Requires Bearer authentication                                         |
+| `GET /api/v1/auth/me`                                            | Retrieve the current safe user identity            | Bearer-authenticated                                                   |
+| `GET /api/v1/admin/package-prices`                               | List and filter package prices                     | ADMIN or OPERATIONS                                                    |
+| `POST /api/v1/admin/package-prices`                              | Create a package price                             | ADMIN or OPERATIONS                                                    |
+| `POST /api/v1/admin/package-prices/schedule`                     | Schedule a future replacement price                | Preserves history; ADMIN or OPERATIONS                                 |
+| `PATCH /api/v1/admin/package-prices/:id/deactivate`              | Deactivate without deletion                        | ADMIN or OPERATIONS                                                    |
+| `GET /api/v1/admin/providers`                                    | List/filter provider profiles                      | ADMIN/OPERATIONS; backend ordering and pagination                      |
+| `GET /api/v1/admin/providers/:id`                                | Read one safe provider profile                     | Includes linked-user summary and capability/location counts            |
+| `POST /api/v1/admin/providers`                                   | Create an unlinked pending provider                | Basic profile only                                                     |
+| `PATCH /api/v1/admin/providers/:id`                              | Update basic provider profile                      | Never sends status, roles, or user ID                                  |
+| `PATCH /api/v1/admin/providers/:id/activate`                     | Activate a provider explicitly                     | Confirmed operational mutation                                         |
+| `PATCH /api/v1/admin/providers/:id/suspend`                      | Suspend a provider explicitly                      | Confirmed operational mutation                                         |
+| `POST /api/v1/admin/providers/:id/link-user`                     | Link an existing eligible user                     | Typed service support; UI awaits safe admin user search                |
+| `POST /api/v1/admin/providers/:id/unlink-user`                   | Unlink safely and remove PROVIDER role server-side | Backend blocks active-work conflicts                                   |
+| `GET /api/v1/provider/offers`                                    | List the authenticated provider's current offers   | PROVIDER; optional assignment-status filter                            |
+| `GET /api/v1/provider/offers/:id`                                | Read one owned safe offer                          | PROVIDER; ownership enforced by API                                    |
+| `POST /api/v1/provider/offers/:id/accept`                        | Accept one offered assignment                      | Single deliberate mutation; server validates expiry                    |
+| `POST /api/v1/provider/offers/:id/decline`                       | Decline one offered assignment                     | Optional reason; preserves matching history                            |
+| `POST /api/v1/admin/bookings/:reference/matching/start`          | Start or retry provider matching                   | ADMIN/OPERATIONS; backend selects eligible candidate                   |
+| `GET /api/v1/admin/bookings/matching-queue`                      | Read the operational provider-matching queue       | Backend owns readiness, default funding gate, ordering, and paging     |
+| `GET /api/v1/admin/bookings/:reference`                          | Read one operational booking projection            | ADMIN/OPERATIONS; safe booking, funding, payment, and matching context |
+| `GET /api/v1/admin/provider-assignments`                         | List/filter operational assignments                | Filters reference, provider ID, or assignment status                   |
+| `GET /api/v1/admin/provider-assignments/:id`                     | Inspect one operational assignment                 | Excludes payment, contact, and raw history data                        |
+| `POST /api/v1/admin/provider-assignments/:id/confirm`            | Confirm an accepted provider response              | Advances assignment and booking transactionally                        |
+| `POST /api/v1/admin/provider-assignments/expire-stale`           | Expire stale offers and continue matching          | Explicit operations action; never run by a UI timer                    |
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.
 
 The operational booking-detail response is distinct from both the guest confirmation response and raw persistence models. It includes only the contact and workflow context staff need. Nullable registered-booker name/phone fields remain nullable in TypeScript and are never inferred from participant data. Queue references and assignment views link to this projection, while assignment IDs continue to link to the assignment-specific workflow.
+
+Provider management receives only safe linked-user identity, roles, and account status—never credentials, sessions, or token data. Linking and unlinking are backend-owned transactions. There is currently no admin user-search endpoint, so frontend link submission is deliberately unavailable rather than accepting raw UUIDs; adding searchable safe user selection is the contract dependency.
 
 The package catalogue includes benefits, estimated duration, and current prices keyed by fulfilment-mode ID. These prices support comparison and gate progression. They are not included in the public booking request. On creation, the backend resolves pricing again and returns `quotedAmount` with `quotedCurrency`; that response snapshot is authoritative for the created booking. A `422` response means pricing is no longer available and returns the user to deliberate selection/retry behavior without exposing backend details.
 

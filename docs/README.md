@@ -38,3 +38,5 @@ A guarded operational booking detail now links queue rows with provider assignme
 The first provider self-service feature reuses that session infrastructure for explicit `PROVIDER` role access. Providers can list and filter only their own safe offer projections, inspect an offer, and deliberately accept or decline an actionable assignment. The frontend never models or renders patient contact details, health data, location notes, provider internals, or matching internals.
 
 Admin and operations users can initiate server-owned provider matching, inspect the safe operational assignment projection, confirm an accepted provider response, and deliberately run stale-offer expiry. The frontend provides workflow controls and status visibility but never selects candidates or advances assignment/booking state itself.
+
+Provider administration lets ADMIN/OPERATIONS list, create, inspect, edit, activate, suspend, and safely unlink provider profiles. Provider profiles remain distinct from user identities. Linking service support matches the backend contract, but its UI is deferred until a safe admin user-search endpoint can replace raw user-ID entry.
