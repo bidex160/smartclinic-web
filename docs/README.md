@@ -31,6 +31,8 @@ The Angular foundation uses standalone components, strict TypeScript, routing, S
 
 The first authenticated operations feature provides ADMIN/OPERATIONS login and guarded package-price management. Access tokens remain in memory, while an HttpOnly refresh cookie restores the session once at startup and supports single-flight `401` recovery. The feature lists, filters, creates, schedules, and deactivates prices and provides explicit session logout without browser-storage tokens or unrelated administration features.
 
+Operations also has a guarded provider-matching queue. It preserves the backend's oldest-first ordering and derived readiness, supports server-side filters and pagination, and starts matching only after an explicit action. Active and accepted offers link into the existing provider-assignment workflow.
+
 The first provider self-service feature reuses that session infrastructure for explicit `PROVIDER` role access. Providers can list and filter only their own safe offer projections, inspect an offer, and deliberately accept or decline an actionable assignment. The frontend never models or renders patient contact details, health data, location notes, provider internals, or matching internals.
 
 Admin and operations users can initiate server-owned provider matching, inspect the safe operational assignment projection, confirm an accepted provider response, and deliberately run stale-offer expiry. The frontend provides workflow controls and status visibility but never selects candidates or advances assignment/booking state itself.

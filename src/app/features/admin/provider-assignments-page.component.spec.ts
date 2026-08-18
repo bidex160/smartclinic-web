@@ -77,8 +77,12 @@ describe('ProviderAssignmentsPageComponent', () => {
         overrides.startMatching ??
           (() =>
             of({
+              bookingReference: 'SC-2026-ABCDEF123456',
               bookingStatus: 'PENDING_PROVIDER_MATCH',
-              assignment: { id: 'assignment-id', status: 'OFFERED', expiresAt: null },
+              outcome: 'OFFER_CREATED',
+              assignmentId: 'assignment-id',
+              assignmentStatus: 'OFFERED',
+              offerExpiresAt: null,
             })),
       ),
       expireStaleOffers: vi.fn(() =>

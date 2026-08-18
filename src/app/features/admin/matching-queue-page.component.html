@@ -1,0 +1,331 @@
+<app-admin-session-header />
+
+<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+  <div class="max-w-3xl">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">
+      SmartClinic operations
+    </p>
+    <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+      Provider matching queue
+    </h1>
+    <p class="mt-4 text-lg leading-8 text-slate-600">
+      Review backend readiness and deliberately start matching for funded, schedulable bookings. The
+      default view preserves the server’s oldest-ready-first ordering.
+    </p>
+  </div>
+
+  <div class="mt-6 space-y-3" aria-live="polite" aria-atomic="true">
+    @if (statusMessage()) {
+      <div role="status" class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900">
+        <p>{{ statusMessage() }}</p>
+        @if (latestAssignmentId(); as assignmentId) {
+          <a
+            [routerLink]="['/admin/provider-assignments', assignmentId]"
+            class="mt-2 inline-flex rounded font-bold underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          >
+            View the new provider assignment
+          </a>
+        }
+      </div>
+    }
+    @if (error()) {
+      <div
+        #errorSummary
+        tabindex="-1"
+        role="alert"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 outline-none focus:ring-4 focus:ring-red-200"
+      >
+        <p class="font-bold">Action could not be completed</p>
+        <p class="mt-1">{{ error() }}</p>
+      </div>
+    }
+  </div>
+
+  <section
+    class="mt-8 rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
+    aria-labelledby="queue-filters-heading"
+  >
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 id="queue-filters-heading" class="text-xl font-bold text-brand-900">Filter queue</h2>
+      @if (catalogueLoading()) {
+        <span role="status" class="text-sm text-slate-600">Loading catalogue filters…</span>
+      }
+    </div>
+    <form
+      [formGroup]="filterForm"
+      (ngSubmit)="applyFilters()"
+      class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div>
+        <label for="queue-reference" class="block text-sm font-bold text-slate-800">
+          Booking reference
+        </label>
+        <input
+          id="queue-reference"
+          formControlName="bookingReference"
+          placeholder="SC-2026-ABCDEF123456"
+          autocomplete="off"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 uppercase focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        />
+        @if (
+          filterForm.controls.bookingReference.touched &&
+          filterForm.controls.bookingReference.invalid
+        ) {
+          <p class="mt-2 text-sm font-semibold text-red-700">
+            Enter a valid SmartClinic booking reference.
+          </p>
+        }
+      </div>
+      <div>
+        <label for="queue-booking-status" class="block text-sm font-bold text-slate-800">
+          Booking status
+        </label>
+        <select
+          id="queue-booking-status"
+          formControlName="bookingStatus"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">Backend default</option>
+          @for (status of bookingStatuses; track status) {
+            <option [value]="status">{{ statusLabel(status) }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="queue-package" class="block text-sm font-bold text-slate-800">Package</label>
+        <select
+          id="queue-package"
+          formControlName="packageId"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">All packages</option>
+          @for (package of packages(); track package.id) {
+            <option [value]="package.id">{{ package.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="queue-mode" class="block text-sm font-bold text-slate-800">
+          Fulfilment mode
+        </label>
+        <select
+          id="queue-mode"
+          formControlName="fulfilmentModeId"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">All modes</option>
+          @for (mode of fulfilmentModes(); track mode.id) {
+            <option [value]="mode.id">{{ mode.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="queue-date" class="block text-sm font-bold text-slate-800">
+          Preferred date
+        </label>
+        <input
+          id="queue-date"
+          type="date"
+          formControlName="preferredDate"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        />
+      </div>
+      <div>
+        <label for="queue-assignment-status" class="block text-sm font-bold text-slate-800">
+          Assignment status
+        </label>
+        <select
+          id="queue-assignment-status"
+          formControlName="providerAssignmentStatus"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          <option value="">All assignment statuses</option>
+          @for (status of assignmentStatuses; track status) {
+            <option [value]="status">{{ statusLabel(status) }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="queue-page-size" class="block text-sm font-bold text-slate-800">
+          Rows per page
+        </label>
+        <select
+          id="queue-page-size"
+          formControlName="limit"
+          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          @for (size of pageSizes; track size) {
+            <option [ngValue]="size">{{ size }}</option>
+          }
+        </select>
+      </div>
+      <div class="flex flex-wrap items-end gap-3 sm:col-span-2">
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+        >
+          Apply filters
+        </button>
+        <button
+          type="button"
+          (click)="clearFilters()"
+          [disabled]="loading()"
+          class="min-h-12 rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+        >
+          Clear filters
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section
+    class="mt-6 overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-soft"
+    aria-labelledby="matching-queue-heading"
+  >
+    <div
+      class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 p-5 sm:p-7"
+    >
+      <div>
+        <h2 id="matching-queue-heading" class="text-xl font-bold text-brand-900">Matching queue</h2>
+        <p class="mt-1 text-sm text-slate-600">{{ response().total }} total bookings</p>
+      </div>
+      @if (loading()) {
+        <span role="status" class="text-sm font-semibold text-brand-700">Loading queue…</span>
+      }
+    </div>
+
+    @if (!loading() && response().items.length === 0) {
+      <p class="p-7 text-slate-600">No bookings match the current queue filters.</p>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1800px] border-collapse text-left text-sm">
+          <caption class="sr-only">
+            Provider matching readiness queue in backend operational order
+          </caption>
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th scope="col" class="px-4 py-3">Booking</th>
+              <th scope="col" class="px-4 py-3">Readiness</th>
+              <th scope="col" class="px-4 py-3">Package / mode</th>
+              <th scope="col" class="px-4 py-3">Participant</th>
+              <th scope="col" class="px-4 py-3">Preferred schedule</th>
+              <th scope="col" class="px-4 py-3">Funding / quote</th>
+              <th scope="col" class="px-4 py-3">Current assignment</th>
+              <th scope="col" class="px-4 py-3">Created</th>
+              <th scope="col" class="px-4 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (item of response().items; track item.bookingReference) {
+              <tr>
+                <th scope="row" class="px-4 py-4 font-semibold text-slate-900">
+                  {{ item.bookingReference }}
+                  <span class="mt-1 block font-normal text-slate-500">
+                    {{ statusLabel(item.bookingStatus) }}
+                  </span>
+                </th>
+                <td class="px-4 py-4">
+                  <span class="rounded-full bg-brand-50 px-3 py-1 font-bold text-brand-900">
+                    {{ readinessLabel(item.readiness) }}
+                  </span>
+                </td>
+                <td class="px-4 py-4">
+                  {{ item.package.name }}
+                  <span class="block text-slate-500">{{ item.fulfilmentMode.name }}</span>
+                </td>
+                <td class="px-4 py-4">
+                  {{ item.participant.givenName }} {{ item.participant.familyName }}
+                </td>
+                <td class="px-4 py-4">
+                  {{ item.preferredDate || 'Not specified' }}
+                  <span class="block text-slate-500">
+                    {{ item.preferredTimeFrom || 'Not specified' }}–{{
+                      item.preferredTimeTo || 'Not specified'
+                    }}
+                  </span>
+                  <span class="block text-slate-500">
+                    {{ item.preferredTimezone || 'No timezone' }}
+                  </span>
+                </td>
+                <td class="px-4 py-4">
+                  {{ fundingStatusLabel(item.fundingStatus) }}
+                  <span class="block text-slate-500">
+                    @if (item.quotedAmount && item.quotedCurrency) {
+                      {{ item.quotedCurrency }} {{ item.quotedAmount }}
+                    } @else {
+                      Quote unavailable
+                    }
+                  </span>
+                </td>
+                <td class="px-4 py-4">
+                  {{ statusLabel(item.currentAssignmentStatus) }}
+                  <span class="block text-slate-500">
+                    {{ item.currentProviderName || 'No provider' }}
+                  </span>
+                </td>
+                <td class="px-4 py-4">{{ item.createdAt | date: 'medium' }}</td>
+                <td class="px-4 py-4">
+                  @if (item.readiness === 'READY') {
+                    <button
+                      type="button"
+                      (click)="startMatching(item)"
+                      [disabled]="matchingReference() !== null"
+                      class="inline-flex min-h-10 items-center rounded-lg bg-brand-600 px-4 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      {{
+                        matchingReference() === item.bookingReference
+                          ? 'Starting…'
+                          : 'Start matching'
+                      }}
+                    </button>
+                  } @else if (
+                    item.readiness === 'ACTIVE_OFFER' ||
+                    item.readiness === 'ACCEPTED_AWAITING_CONFIRMATION'
+                  ) {
+                    <a
+                      routerLink="/admin/provider-assignments"
+                      [queryParams]="{ bookingReference: item.bookingReference }"
+                      class="inline-flex min-h-10 items-center rounded-lg border border-brand-600 px-3 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                    >
+                      View assignment
+                    </a>
+                  } @else {
+                    <span class="text-slate-500">No matching action</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <nav
+      aria-label="Matching queue pagination"
+      class="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 p-5 sm:p-7"
+    >
+      <button
+        type="button"
+        (click)="goToPage(response().page - 1)"
+        [disabled]="loading() || response().page <= 1"
+        class="min-h-11 rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Previous
+      </button>
+      <p class="text-sm font-semibold text-slate-700">
+        Page {{ response().page }} of {{ response().totalPages || 1 }}
+      </p>
+      <button
+        type="button"
+        (click)="goToPage(response().page + 1)"
+        [disabled]="
+          loading() || response().totalPages === 0 || response().page >= response().totalPages
+        "
+        class="min-h-11 rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Next
+      </button>
+    </nav>
+  </section>
+</main>

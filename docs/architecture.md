@@ -99,6 +99,7 @@ Proposed public routes:
 | `/bookings/:reference`            | Retrieve a booking where the authorization/verification contract permits it |
 | `/admin/login`                    | In-memory administrator and operations login                                |
 | `/admin/package-prices`           | Role-guarded package-price operations                                       |
+| `/admin/matching-queue`           | Guarded, paginated provider-matching readiness queue                        |
 | `/admin/access-denied`            | Accessible recovery for authenticated users without an allowed role         |
 | `/admin/provider-assignments`     | Guarded matching controls and operational assignment list                   |
 | `/admin/provider-assignments/:id` | Guarded assignment detail and accepted-assignment confirmation              |
@@ -132,6 +133,8 @@ Provider routes reuse the same login, signal state, startup restoration, interce
 Provider offer list and detail components model only the backend's safe offer projection: operational timestamps and status, booking reference, package/mode labels, participant name, requested time preferences, and an optional provider response reason. They intentionally exclude contact data, date of birth, location notes, internal booking/provider identifiers, and matching history.
 
 Admin assignment routes use the existing ADMIN/OPERATIONS guard and session. Operations may ask the backend to start matching, inspect assignment state, confirm an accepted provider response, or explicitly expire stale offers. The browser never constructs a candidate list, ranks providers, evaluates availability, revives expired offers, or directly changes booking state. Provider `ACCEPTED` remains distinct from admin `CONFIRMED`; only the server confirmation response advances the booking to `PROVIDER_ASSIGNED`.
+
+The matching queue is a read-only server projection until an operator explicitly starts matching on a `READY` row. With no booking-status filter, the browser leaves the filter absent so the backend can enforce `PENDING_PROVIDER_MATCH`, settled SELF funding, and deterministic oldest-first ordering. Readiness is displayed exactly from the API and is never recalculated or re-sorted client-side. Active and accepted rows link to assignment management using the booking-reference filter because the queue DTO intentionally exposes no assignment ID.
 
 The admin assignment read model contains only operational identity and scheduling context: provider ID/display name, minimal participant name, package/mode, booking and assignment states, requested schedule, offer timestamps, and decline reason. Funding, payment, contacts, credentials, free-text location notes, and raw matching histories remain outside the frontend boundary.
 

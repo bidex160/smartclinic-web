@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
@@ -43,6 +43,7 @@ export class ProviderAssignmentsPageComponent {
   private readonly api = inject(AdminProviderAssignmentsApiService);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('errorSummary');
 
   readonly assignments = signal<AdminProviderAssignment[]>([]);
@@ -61,6 +62,10 @@ export class ProviderAssignmentsPageComponent {
   });
 
   constructor() {
+    const bookingReference = this.route.snapshot.queryParamMap.get('bookingReference');
+    if (bookingReference && BOOKING_REFERENCE_PATTERN.test(bookingReference)) {
+      this.filterForm.controls.bookingReference.setValue(bookingReference.toUpperCase());
+    }
     this.loadAssignments();
   }
 
@@ -145,9 +150,9 @@ export class ProviderAssignmentsPageComponent {
   }
 
   private matchingMessage(result: MatchingResult): string {
-    if (result.assignment)
+    if (result.outcome === 'OFFER_CREATED')
       return 'Matching started and an offer was created for an eligible provider.';
-    if (result.bookingStatus === 'UNFULFILLABLE') {
+    if (result.outcome === 'UNFULFILLABLE') {
       return 'No eligible provider was available. The booking is now unfulfillable.';
     }
     return `Matching completed with booking status ${this.bookingStatusLabel(result.bookingStatus)}.`;

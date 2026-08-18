@@ -111,6 +111,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/matching-queue',
+    title: 'Provider matching queue | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/matching-queue-page.component').then(
+        (component) => component.MatchingQueuePageComponent,
+      ),
+  },
+  {
     path: 'admin/provider-assignments',
     title: 'Provider assignments | SmartClinic',
     canActivate: [adminPricingGuard],

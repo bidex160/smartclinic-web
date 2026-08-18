@@ -39,7 +39,14 @@ describe('AdminProviderAssignmentsApiService', () => {
       'http://api.example.test/api/v1/admin/bookings/SC-2026-ABCDEF123456/matching/start',
     );
     expect(start.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
-    start.flush({ bookingStatus: 'PENDING_PROVIDER_MATCH', assignment: null });
+    start.flush({
+      bookingReference: 'SC-2026-ABCDEF123456',
+      bookingStatus: 'PENDING_PROVIDER_MATCH',
+      outcome: 'OFFER_CREATED',
+      assignmentId: 'assignment-id',
+      assignmentStatus: 'OFFERED',
+      offerExpiresAt: null,
+    });
 
     api.confirmAssignment('assignment-id').subscribe();
     const confirm = http.expectOne(

@@ -52,6 +52,7 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/provider/offers/:id/accept`                        | Accept one offered assignment                    | Single deliberate mutation; server validates expiry                  |
 | `POST /api/v1/provider/offers/:id/decline`                       | Decline one offered assignment                   | Optional reason; preserves matching history                          |
 | `POST /api/v1/admin/bookings/:reference/matching/start`          | Start or retry provider matching                 | ADMIN/OPERATIONS; backend selects eligible candidate                 |
+| `GET /api/v1/admin/bookings/matching-queue`                      | Read the operational provider-matching queue     | Backend owns readiness, default funding gate, ordering, and paging   |
 | `GET /api/v1/admin/provider-assignments`                         | List/filter operational assignments              | Filters reference, provider ID, or assignment status                 |
 | `GET /api/v1/admin/provider-assignments/:id`                     | Inspect one operational assignment               | Excludes payment, contact, and raw history data                      |
 | `POST /api/v1/admin/provider-assignments/:id/confirm`            | Confirm an accepted provider response            | Advances assignment and booking transactionally                      |
@@ -117,6 +118,12 @@ Accept and decline are deliberate POST operations with duplicate controls disabl
 ## Admin matching boundary
 
 The admin matching client is a thin transport layer. Start matching sends only the encoded booking reference; provider candidates, capability checks, availability, sequential offer policy, expiry, and booking transitions remain authoritative backend concerns. Assignment filters map directly to the supported `bookingReference`, `providerId`, and `status` query parameters.
+
+The queue client maps only the supported booking status, catalogue IDs, preferred date, latest assignment status, exact booking reference, page, and limit parameters. Omitting booking status preserves the backend default of settled `PENDING_PROVIDER_MATCH` bookings ordered by creation time and reference. The frontend renders response order unchanged and uses returned `page`, `limit`, `total`, and `totalPages`; it does not implement local sorting or infinite scroll.
+
+Readiness is backend-derived operational metadata: `READY`, `FUNDING_INCOMPLETE`, `INCOMPLETE_SCHEDULING`, `ACTIVE_OFFER`, `ACCEPTED_AWAITING_CONFIRMATION`, `UNFULFILLABLE`, or `ALREADY_ASSIGNED`. Only `READY` exposes the explicit matching command. Queue reads never start matching. Active/accepted rows link to assignment management, while candidate selection and all readiness rules remain server-owned. Settled SELF funding is a default queue prerequisite, not a browser rule.
+
+The queue read model contains only reference/status, package/mode labels, participant name, requested schedule, funding/quote summary, latest assignment status/provider display name, readiness, and timestamps. It excludes contact data, date of birth, provider payment metadata, internal IDs, histories, and candidate providers.
 
 The administrative read model contains assignment/booking state, provider display identity, package and fulfilment labels, minimal participant name, requested schedule, offer timestamps, and a decline reason only when relevant. It excludes funding, payment, participant contact data, credentials, location notes, candidate sets, and raw histories.
 

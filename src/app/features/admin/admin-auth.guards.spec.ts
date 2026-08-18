@@ -29,6 +29,14 @@ describe('adminPricingGuard', () => {
     expect(router.createUrlTree).toHaveBeenCalledWith(['/admin/access-denied']);
   });
 
+  it('redirects a PROVIDER-only account to access denied', async () => {
+    const { state, router } = setup();
+    authenticate(state, ['PROVIDER']);
+    state.completeInitialization();
+    expect(await runGuard()).not.toBe(true);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/admin/access-denied']);
+  });
+
   it('waits for restoration before allowing a restored ADMIN', async () => {
     const { state } = setup();
     const result = runGuard() as Promise<unknown>;

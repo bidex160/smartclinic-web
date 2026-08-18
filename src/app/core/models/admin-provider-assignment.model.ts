@@ -40,12 +40,12 @@ export interface AdminProviderAssignmentFilters {
 }
 
 export interface MatchingResult {
+  readonly bookingReference: string;
   readonly bookingStatus: BookingStatus;
-  readonly assignment: {
-    readonly id: string;
-    readonly status: ProviderOfferStatus;
-    readonly expiresAt: string | null;
-  } | null;
+  readonly outcome: 'OFFER_CREATED' | 'UNFULFILLABLE';
+  readonly assignmentId: string | null;
+  readonly assignmentStatus: ProviderOfferStatus | null;
+  readonly offerExpiresAt: string | null;
 }
 
 export interface ExpireStaleOffersResult {

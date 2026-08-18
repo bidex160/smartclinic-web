@@ -36,6 +36,12 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             >Package pricing</a
           >
           <a
+            routerLink="/admin/matching-queue"
+            routerLinkActive="text-brand-800 underline"
+            class="rounded py-2 text-brand-700 underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+            >Matching queue</a
+          >
+          <a
             routerLink="/admin/provider-assignments"
             routerLinkActive="text-brand-800 underline"
             class="rounded py-2 text-brand-700 underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"

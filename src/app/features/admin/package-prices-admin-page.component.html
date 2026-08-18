@@ -13,8 +13,13 @@
     </div>
     <div class="flex items-center gap-4 sm:justify-end">
       <a
-        href="/admin/provider-assignments"
+        href="/admin/matching-queue"
         class="hidden min-h-11 items-center rounded-lg px-3 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 md:inline-flex"
+        >Matching queue</a
+      >
+      <a
+        href="/admin/provider-assignments"
+        class="hidden min-h-11 items-center rounded-lg px-3 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 lg:inline-flex"
         >Provider assignments</a
       >
       @if (authState.currentUser(); as user) {
