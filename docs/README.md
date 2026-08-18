@@ -37,6 +37,10 @@ A guarded operational booking detail now links queue rows with provider assignme
 
 The first provider self-service feature reuses that session infrastructure for explicit `PROVIDER` role access. Providers can list and filter only their own safe offer projections, inspect an offer, and deliberately accept or decline an actionable assignment. The frontend never models or renders patient contact details, health data, location notes, provider internals, or matching internals.
 
+Confirmed assignments now open a provider-only Smart Health Check encounter for the six initial measurements. Providers explicitly start, save, review, and complete the encounter; server-returned units and timestamps are authoritative, and completed measurements are read-only. Clinical interpretation remains deferred.
+
+Completed measurement results have two deliberately separate read paths: an authenticated Patient-linked User can deep-link by booking reference, while a guest can open exactly one result with a dedicated opaque token. Both show only the backend's completed measurement projection and server-provided units. The guest token is not persisted or reused as booking/payment authority, and clinical interpretation plus a future patient result listing remain deferred.
+
 Admin and operations users can initiate server-owned provider matching, inspect the safe operational assignment projection, confirm an accepted provider response, and deliberately run stale-offer expiry. The frontend provides workflow controls and status visibility but never selects candidates or advances assignment/booking state itself.
 
 Provider administration lets ADMIN/OPERATIONS list, create, inspect, edit, activate, suspend, link, and safely unlink provider profiles. Provider profiles remain distinct from user identities. Guarded, explicit user search exposes only minimized account and provider-link context, and linking sends only a deliberately selected user ID to the backend-authoritative role workflow.

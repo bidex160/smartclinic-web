@@ -19,6 +19,17 @@ describe('ProviderOfferDetailPageComponent', () => {
     expect(text).not.toContain('sensitive free text');
   });
 
+  it('shows the Health Check action only for a confirmed assignment', async () => {
+    const { fixture, component } = await setup({
+      getOffer: () => of(offer({ status: 'CONFIRMED' })),
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Open Smart Health Check');
+    component.offer.set(offer({ status: 'ACCEPTED' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Open Smart Health Check');
+  });
+
   it('accepts once, prevents duplicate submission, and updates the offer', async () => {
     const pending = new Subject<ProviderOffer>();
     const { component, api } = await setup({ acceptOffer: () => pending });

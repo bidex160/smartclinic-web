@@ -6,6 +6,7 @@ import {
 } from './features/booking/booking-flow.guards';
 import { adminPricingGuard } from './features/admin/admin-auth.guards';
 import { providerGuard } from './features/provider/provider-auth.guard';
+import { authenticatedUserGuard } from './features/results/authenticated-user.guard';
 
 export const routes: Routes = [
   {
@@ -60,6 +61,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'me/health-checks/:bookingReference/results',
+    title: 'My Smart Health Check result | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () =>
+      import('./features/results/registered-health-check-result-page.component').then(
+        (component) => component.RegisteredHealthCheckResultPageComponent,
+      ),
+  },
+  {
+    path: 'health-results/:token',
+    title: 'Smart Health Check result | SmartClinic',
+    loadComponent: () =>
+      import('./features/results/guest-health-check-result-page.component').then(
+        (component) => component.GuestHealthCheckResultPageComponent,
+      ),
+  },
+  {
     path: 'admin/login',
     title: 'Staff sign in | SmartClinic',
     loadComponent: () =>
@@ -99,6 +117,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/provider/provider-offer-detail-page.component').then(
         (component) => component.ProviderOfferDetailPageComponent,
+      ),
+  },
+  {
+    path: 'provider/bookings/:reference/health-check',
+    title: 'Smart Health Check encounter | SmartClinic',
+    canActivate: [providerGuard],
+    loadComponent: () =>
+      import('./features/provider/provider-health-check-page.component').then(
+        (component) => component.ProviderHealthCheckPageComponent,
       ),
   },
   {

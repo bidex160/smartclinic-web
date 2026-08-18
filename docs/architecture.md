@@ -88,28 +88,31 @@ Names are proposals, not boilerplate requirements. For example, separate partici
 
 Proposed public routes:
 
-| Route                             | Responsibility                                                              |
-| --------------------------------- | --------------------------------------------------------------------------- |
-| `/`                               | Focused home page with the primary booking CTA                              |
-| `/health-check/packages`          | Fetch and select an available package                                       |
-| `/book/fulfilment`                | Select an API-supported mode; requires an in-memory package selection       |
-| `/book/details`                   | Collect details; requires in-memory package and mode selections             |
-| `/book/review`                    | Review the draft; submission occurs only on explicit confirmation           |
-| `/book/confirmation/:reference`   | Display or securely recover confirmation and initialize guest funding       |
-| `/bookings/:reference`            | Retrieve a booking where the authorization/verification contract permits it |
-| `/admin/login`                    | In-memory administrator and operations login                                |
-| `/admin/package-prices`           | Role-guarded package-price operations                                       |
-| `/admin/providers`                | Guarded provider listing, filtering, and creation                           |
-| `/admin/providers/:id`            | Guarded provider profile, status, and account-link operations               |
-| `/admin/matching-queue`           | Guarded, paginated provider-matching readiness queue                        |
-| `/admin/access-denied`            | Accessible recovery for authenticated users without an allowed role         |
-| `/admin/provider-assignments`     | Guarded matching controls and operational assignment list                   |
-| `/admin/provider-assignments/:id` | Guarded assignment detail and accepted-assignment confirmation              |
-| `/provider/offers`                | Provider-owned actionable/recent offer list                                 |
-| `/provider/offers/:id`            | Safe offer detail and deliberate accept/decline actions                     |
-| `/provider/access-denied`         | Accessible recovery for users without the explicit PROVIDER role            |
-| `/provider/setup/:token`          | Public one-time provider invitation inspection and account setup            |
-| `**`                              | Accessible not-found page with a route back to safety                       |
+| Route                                         | Responsibility                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| `/`                                           | Focused home page with the primary booking CTA                              |
+| `/health-check/packages`                      | Fetch and select an available package                                       |
+| `/book/fulfilment`                            | Select an API-supported mode; requires an in-memory package selection       |
+| `/book/details`                               | Collect details; requires in-memory package and mode selections             |
+| `/book/review`                                | Review the draft; submission occurs only on explicit confirmation           |
+| `/book/confirmation/:reference`               | Display or securely recover confirmation and initialize guest funding       |
+| `/bookings/:reference`                        | Retrieve a booking where the authorization/verification contract permits it |
+| `/admin/login`                                | In-memory administrator and operations login                                |
+| `/admin/package-prices`                       | Role-guarded package-price operations                                       |
+| `/admin/providers`                            | Guarded provider listing, filtering, and creation                           |
+| `/admin/providers/:id`                        | Guarded provider profile, status, and account-link operations               |
+| `/admin/matching-queue`                       | Guarded, paginated provider-matching readiness queue                        |
+| `/admin/access-denied`                        | Accessible recovery for authenticated users without an allowed role         |
+| `/admin/provider-assignments`                 | Guarded matching controls and operational assignment list                   |
+| `/admin/provider-assignments/:id`             | Guarded assignment detail and accepted-assignment confirmation              |
+| `/provider/offers`                            | Provider-owned actionable/recent offer list                                 |
+| `/provider/offers/:id`                        | Safe offer detail and deliberate accept/decline actions                     |
+| `/provider/bookings/:reference/health-check`  | Provider-only encounter and structured measurement entry                    |
+| `/provider/access-denied`                     | Accessible recovery for users without the explicit PROVIDER role            |
+| `/provider/setup/:token`                      | Public one-time provider invitation inspection and account setup            |
+| `/me/health-checks/:bookingReference/results` | Authenticated patient's own completed measurement result                    |
+| `/health-results/:token`                      | Guest result authorized by a dedicated opaque token                         |
+| `**`                                          | Accessible not-found page with a route back to safety                       |
 
 Guards should prevent accidental entry into later steps without required in-memory state, returning users to the earliest incomplete step. Guards are navigation aids, not security controls. Avoid sensitive values in URLs.
 
@@ -135,6 +138,8 @@ Provider routes reuse the same login, signal state, startup restoration, interce
 
 Provider offer list and detail components model only the backend's safe offer projection: operational timestamps and status, booking reference, package/mode labels, participant name, requested time preferences, and an optional provider response reason. They intentionally exclude contact data, date of birth, location notes, internal booking/provider identifiers, and matching history.
 
+Confirmed provider assignments link to a provider-only Smart Health Check encounter. The page loads or explicitly starts the server-owned encounter, saves all six structured measurements as a draft operation, and completes only after a separate confirmation. Units and recorded timestamps come back from the API; completed encounters disable the form. The frontend provides structural numeric validation only and contains no clinical ranges, interpretations, diagnoses, alerts, or patient-facing results.
+
 Admin assignment routes use the existing ADMIN/OPERATIONS guard and session. Operations may ask the backend to start matching, inspect assignment state, confirm an accepted provider response, or explicitly expire stale offers. The browser never constructs a candidate list, ranks providers, evaluates availability, revives expired offers, or directly changes booking state. Provider `ACCEPTED` remains distinct from admin `CONFIRMED`; only the server confirmation response advances the booking to `PROVIDER_ASSIGNED`.
 
 The matching queue is a read-only server projection until an operator explicitly starts matching on a `READY` row. With no booking-status filter, the browser leaves the filter absent so the backend can enforce `PENDING_PROVIDER_MATCH`, settled SELF funding, and deterministic oldest-first ordering. Readiness is displayed exactly from the API and is never recalculated or re-sorted client-side. Active and accepted rows link to assignment management using the booking-reference filter because the queue DTO intentionally exposes no assignment ID.
@@ -146,6 +151,8 @@ The admin projection may include operational booker contact data that the public
 Provider administration keeps the provider operational profile separate from the linked user account. Basic profile edits never carry status, roles, or user IDs; activation, suspension, linking, and unlinking are explicit confirmed server operations. The guarded user-search API supplies minimized account identity, status, roles, and current provider-link context. Operators select an eligible result instead of entering an opaque UUID, and the backend remains authoritative for eligibility and PROVIDER-role changes. Self-registration and clinical verification remain deferred.
 
 Provider invitations offer a separate, one-time onboarding path for unlinked provider records. The backend attempts email delivery and returns only the provider-neutral result `SENT`, `MANUAL_REQUIRED`, or `FAILED`. Manual fallback links are returned only when required, held in component memory, and never browser persistence or invitation history. The public setup route uses its route token only for inspection and acceptance, receives masked identity context, submits display name/password once, and ends at normal login without creating an authenticated frontend session. Email vendor details, self-registration, password reset, and clinical verification remain outside the frontend.
+
+Patient result access is separate from booking confirmation, payment cookies, staff roles, and provider encounter entry. The registered route waits for session restoration and sends only the booking reference; the backend derives the linked Patient from the authenticated User. The guest route uses its dedicated opaque token only for the public result endpoint and never copies it into global state or browser persistence. Both routes render the same completed, measurement-only projection with backend-returned units. No ranges, interpretation, alerts, reports, or advice are inferred. A future authenticated health-check/result list remains deferred until a backend listing contract exists.
 
 The admin assignment read model contains only operational identity and scheduling context: provider ID/display name, minimal participant name, package/mode, booking and assignment states, requested schedule, offer timestamps, and decline reason. Funding, payment, contacts, credentials, free-text location notes, and raw matching histories remain outside the frontend boundary.
 

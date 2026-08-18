@@ -1,0 +1,279 @@
+<app-provider-session-header />
+<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
+  <a
+    routerLink="/provider/offers"
+    class="rounded font-bold text-brand-700 underline focus:outline-none focus:ring-4 focus:ring-brand-200"
+    >← My offers</a
+  >
+  <div class="mt-6 space-y-3" aria-live="polite">
+    @if (statusMessage()) {
+      <p role="status" class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900">
+        {{ statusMessage() }}
+      </p>
+    }
+    @if (error()) {
+      <div
+        #errorSummary
+        tabindex="-1"
+        role="alert"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 outline-none focus:ring-4 focus:ring-red-200"
+      >
+        <p class="font-bold">Health Check action could not be completed</p>
+        <p>{{ error() }}</p>
+      </div>
+    }
+  </div>
+  @if (loading() && !encounter()) {
+    <p role="status" class="mt-6 rounded-xl bg-brand-50 p-4">Loading Smart Health Check…</p>
+  }
+  @if (canStart()) {
+    <section class="mt-6 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft">
+      <h1 class="text-3xl font-bold text-brand-900">Smart Health Check</h1>
+      <p class="mt-3 text-slate-600">No encounter has been started for booking {{ reference }}.</p>
+      <button
+        type="button"
+        (click)="start()"
+        [disabled]="mutating()"
+        class="mt-5 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+      >
+        {{ mutating() ? 'Starting…' : 'Start Health Check' }}
+      </button>
+    </section>
+  }
+  @if (encounter(); as current) {
+    <article class="mt-6">
+      <header class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft">
+        <div class="flex flex-wrap justify-between gap-4">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-[0.14em] text-brand-600">
+              {{ current.bookingReference }}
+            </p>
+            <h1 class="mt-2 text-3xl font-bold text-brand-900">Smart Health Check</h1>
+            <p class="mt-2">
+              {{ current.participant.givenName }} {{ current.participant.familyName }} ·
+              {{ current.healthCheckPackage.name }} · {{ current.fulfilmentMode.name }}
+            </p>
+          </div>
+          <span class="rounded-full bg-brand-50 px-4 py-2 font-bold text-brand-900">{{
+            current.status
+          }}</span>
+        </div>
+        <dl class="mt-5 grid gap-3 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm text-slate-600">Started</dt>
+            <dd>{{ current.startedAt ? (current.startedAt | date: 'medium') : 'Not started' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-600">Completed</dt>
+            <dd>
+              {{ current.completedAt ? (current.completedAt | date: 'medium') : 'Not completed' }}
+            </dd>
+          </div>
+        </dl>
+      </header>
+
+      @if (current.status === 'DRAFT') {
+        <button
+          type="button"
+          (click)="start()"
+          [disabled]="mutating()"
+          class="mt-6 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white"
+        >
+          Start Health Check
+        </button>
+      }
+      <form
+        [formGroup]="form"
+        (ngSubmit)="save()"
+        class="mt-6 space-y-6"
+        [attr.aria-label]="
+          completed() ? 'Completed Health Check measurements' : 'Health Check measurements'
+        "
+      >
+        <fieldset
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+          [disabled]="completed()"
+        >
+          <legend class="px-2 text-xl font-bold text-brand-900">Blood pressure</legend>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="systolic" class="font-bold"
+                >Systolic <span id="systolic-unit">mmHg</span></label
+              ><input
+                id="systolic"
+                type="number"
+                step="0.0001"
+                formControlName="systolic"
+                aria-describedby="systolic-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3 focus:ring-4 focus:ring-brand-200"
+              />
+              @if (form.controls.systolic.touched && form.controls.systolic.invalid) {
+                <p class="mt-1 text-sm text-red-700">
+                  Enter a numeric systolic value with up to four decimal places.
+                </p>
+              }
+            </div>
+            <div>
+              <label for="diastolic" class="font-bold"
+                >Diastolic <span id="diastolic-unit">mmHg</span></label
+              ><input
+                id="diastolic"
+                type="number"
+                step="0.0001"
+                formControlName="diastolic"
+                aria-describedby="diastolic-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3 focus:ring-4 focus:ring-brand-200"
+              />
+              @if (form.controls.diastolic.touched && form.controls.diastolic.invalid) {
+                <p class="mt-1 text-sm text-red-700">
+                  Enter a numeric diastolic value with up to four decimal places.
+                </p>
+              }
+            </div>
+          </div>
+          @if (recordedAt('BLOOD_PRESSURE'); as timestamp) {
+            <p class="mt-3 text-sm text-slate-600">Recorded {{ timestamp | date: 'medium' }}</p>
+          }
+        </fieldset>
+        <fieldset
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+          [disabled]="completed()"
+        >
+          <legend class="px-2 text-xl font-bold text-brand-900">Other measurements</legend>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="blood-glucose" class="font-bold"
+                >Blood glucose <span id="glucose-unit">mg/dL</span></label
+              ><input
+                id="blood-glucose"
+                type="number"
+                step="0.0001"
+                formControlName="bloodGlucose"
+                aria-describedby="glucose-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3"
+              />
+            </div>
+            <div>
+              <label for="bmi" class="font-bold">BMI <span id="bmi-unit">kg/m²</span></label
+              ><input
+                id="bmi"
+                type="number"
+                step="0.0001"
+                formControlName="bmi"
+                aria-describedby="bmi-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3"
+              />
+            </div>
+            <div>
+              <label for="temperature" class="font-bold"
+                >Temperature <span id="temperature-unit">°C</span></label
+              ><input
+                id="temperature"
+                type="number"
+                step="0.0001"
+                formControlName="temperature"
+                aria-describedby="temperature-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3"
+              />
+            </div>
+            <div>
+              <label for="oxygen" class="font-bold"
+                >Oxygen saturation <span id="oxygen-unit">%</span></label
+              ><input
+                id="oxygen"
+                type="number"
+                step="0.0001"
+                formControlName="oxygenSaturation"
+                aria-describedby="oxygen-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3"
+              />
+            </div>
+            <div>
+              <label for="pulse" class="font-bold">Pulse <span id="pulse-unit">bpm</span></label
+              ><input
+                id="pulse"
+                type="number"
+                step="0.0001"
+                formControlName="pulse"
+                aria-describedby="pulse-unit"
+                class="mt-2 min-h-12 w-full rounded-lg border px-3"
+              />
+            </div>
+          </div>
+          <dl class="mt-5 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+            @for (item of current.measurements; track item.code) {
+              @if (item.code !== 'BLOOD_PRESSURE') {
+                <div>
+                  <dt>{{ item.code.replaceAll('_', ' ') }}</dt>
+                  <dd>Recorded {{ item.recordedAt | date: 'medium' }}</dd>
+                </div>
+              }
+            }
+          </dl>
+          @if (form.touched && form.invalid) {
+            <p class="mt-4 text-sm font-semibold text-red-700">
+              All six measurements require finite numeric values with up to four decimal places.
+            </p>
+          }
+        </fieldset>
+        @if (current.status === 'IN_PROGRESS') {
+          <div class="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              [disabled]="mutating()"
+              class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-60"
+            >
+              {{ mutating() ? 'Saving…' : 'Save measurements' }}
+            </button>
+            @if (current.status === 'IN_PROGRESS') {
+              <button
+                type="button"
+                (click)="requestCompletion()"
+                [disabled]="mutating() || !hasAllSavedMeasurements()"
+                class="min-h-12 rounded-xl border border-brand-700 px-6 font-bold text-brand-800 disabled:opacity-50"
+              >
+                Complete Health Check
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="rounded-xl bg-brand-50 p-4 font-semibold text-brand-900">
+            This completed encounter is read-only.
+          </p>
+        }
+      </form>
+      @if (completionConfirmation()) {
+        <section
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="complete-heading"
+          class="mt-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6"
+        >
+          <h2 id="complete-heading" class="text-xl font-bold text-amber-950">
+            Complete Health Check?
+          </h2>
+          <p class="mt-2 text-amber-950">
+            Completing this Health Check will lock the recorded measurements.
+          </p>
+          <div class="mt-5 flex gap-3">
+            <button
+              type="button"
+              (click)="complete()"
+              [disabled]="mutating()"
+              class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
+            >
+              {{ mutating() ? 'Completing…' : 'Yes, complete Health Check' }}</button
+            ><button
+              type="button"
+              (click)="cancelCompletion()"
+              [disabled]="mutating()"
+              class="min-h-11 rounded-lg border px-5 font-bold"
+            >
+              Cancel
+            </button>
+          </div>
+        </section>
+      }
+    </article>
+  }
+</main>

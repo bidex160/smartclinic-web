@@ -119,6 +119,22 @@
         </dl>
       </section>
 
+      @if (currentOffer.status === 'CONFIRMED') {
+        <section class="mt-8 border-t border-slate-100 pt-6" aria-labelledby="health-check-title">
+          <h2 id="health-check-title" class="text-xl font-bold text-brand-900">
+            Smart Health Check
+          </h2>
+          <p class="mt-2 text-slate-600">
+            Open the confirmed booking to start or continue its measurement encounter.
+          </p>
+          <a
+            [routerLink]="['/provider/bookings', currentOffer.bookingReference, 'health-check']"
+            class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
+            >Open Smart Health Check</a
+          >
+        </section>
+      }
+
       @if (canRespond()) {
         <section class="mt-8 border-t border-slate-100 pt-6" aria-labelledby="response-title">
           <h2 id="response-title" class="text-xl font-bold text-brand-900">Respond to offer</h2>
