@@ -109,12 +109,135 @@
           >
             Unlink account
           </button>
+          <p class="mt-3 text-sm leading-6 text-slate-600">
+            Unlinking removes the account association and the backend removes only the PROVIDER
+            role. Provider capabilities, locations, and availability remain attached to this
+            provider record.
+          </p>
         } @else {
           <p class="mt-4 text-slate-600">No user account is linked.</p>
-          <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-            Account linking requires a safe existing-user search and selection endpoint. This is not
-            currently available, so operators are not asked to enter raw user IDs.
-          </p>
+          <section
+            aria-labelledby="link-account-heading"
+            class="mt-5 border-t border-slate-200 pt-5"
+          >
+            <h3 id="link-account-heading" class="font-bold text-brand-900">
+              Link provider account
+            </h3>
+            <form [formGroup]="userSearchForm" (ngSubmit)="searchUsers()" class="mt-4">
+              <label for="user-search" class="font-bold">Search existing users</label>
+              <p id="user-search-help" class="mt-1 text-sm text-slate-600">
+                Enter 2–100 characters from a display name or email address.
+              </p>
+              <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+                <input
+                  id="user-search"
+                  aria-describedby="user-search-help"
+                  formControlName="q"
+                  minlength="2"
+                  maxlength="100"
+                  class="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                />
+                <button
+                  type="submit"
+                  [disabled]="searching()"
+                  class="min-h-11 rounded-lg bg-brand-600 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+                >
+                  {{ searching() ? 'Searching…' : 'Search' }}
+                </button>
+              </div>
+              @if (userSearchForm.controls.q.touched && userSearchForm.controls.q.invalid) {
+                <p class="mt-2 text-sm font-semibold text-red-700">
+                  Enter between 2 and 100 characters.
+                </p>
+              }
+            </form>
+
+            @if (searchResponse(); as results) {
+              <p class="mt-5 text-sm font-semibold text-slate-700" role="status" aria-live="polite">
+                {{ results.total }} {{ results.total === 1 ? 'user' : 'users' }} found
+              </p>
+              @if (results.items.length) {
+                <ul class="mt-3 space-y-3" aria-label="User search results">
+                  @for (user of results.items; track user.id) {
+                    <li class="rounded-xl border border-slate-200 p-4">
+                      <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p class="font-bold">{{ user.displayName || 'Name unavailable' }}</p>
+                          <p class="break-all text-sm text-slate-600">
+                            {{ user.email || 'Email unavailable' }}
+                          </p>
+                          <p class="mt-2 text-sm">Account status: {{ user.status }}</p>
+                          <p class="text-sm">Roles: {{ user.roles.join(', ') || 'None' }}</p>
+                          @if (user.providerLink) {
+                            <p class="mt-2 text-sm font-semibold text-amber-900">
+                              Already linked to {{ user.providerLink.providerDisplayName }}
+                            </p>
+                          } @else if (user.status !== 'ACTIVE') {
+                            <p class="mt-2 text-sm font-semibold text-amber-900">
+                              This account is not active and cannot be selected.
+                            </p>
+                          } @else {
+                            <p class="mt-2 text-sm font-semibold text-brand-800">
+                              Eligible for selection
+                            </p>
+                          }
+                        </div>
+                        <button
+                          type="button"
+                          (click)="selectUser(user)"
+                          [disabled]="!isEligible(user) || mutating()"
+                          [attr.aria-pressed]="selectedUser()?.id === user.id"
+                          class="min-h-11 rounded-lg border border-brand-600 px-4 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-500"
+                        >
+                          {{ selectedUser()?.id === user.id ? 'Selected' : 'Select user' }}
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="mt-3 rounded-lg bg-slate-50 p-3">No matching users were found.</p>
+              }
+              <nav
+                aria-label="User search result pages"
+                class="mt-4 flex items-center justify-between"
+              >
+                <button
+                  type="button"
+                  (click)="searchUsers(results.page - 1)"
+                  [disabled]="results.page <= 1 || searching()"
+                  class="min-h-11 rounded-lg border px-4 font-bold disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <p>Page {{ results.page }} of {{ results.totalPages || 1 }}</p>
+                <button
+                  type="button"
+                  (click)="searchUsers(results.page + 1)"
+                  [disabled]="results.page >= results.totalPages || searching()"
+                  class="min-h-11 rounded-lg border px-4 font-bold disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </nav>
+            }
+
+            @if (selectedUser(); as user) {
+              <div class="mt-5 rounded-xl border-2 border-brand-300 bg-brand-50 p-4">
+                <p class="font-bold">Selected user</p>
+                <p>{{ user.displayName || 'Name unavailable' }}</p>
+                <p class="break-all text-sm">{{ user.email || 'Email unavailable' }}</p>
+                <button
+                  type="button"
+                  (click)="requestLinkConfirmation()"
+                  [disabled]="mutating()"
+                  class="mt-4 min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
+                >
+                  Link user to provider
+                </button>
+              </div>
+            }
+          </section>
         }
       </section>
       <section
@@ -179,6 +302,153 @@
         }
       </section>
     </div>
+    <section
+      aria-labelledby="invitations-heading"
+      class="mt-6 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+    >
+      <h2 id="invitations-heading" class="text-xl font-bold text-brand-900">
+        Provider invitations
+      </h2>
+      <p class="mt-2 text-sm text-slate-600">
+        Invitations are shared manually. Email delivery is not currently provided.
+      </p>
+
+      @if (!current.linkedUser) {
+        <form [formGroup]="invitationForm" (ngSubmit)="createInvitation()" class="mt-5 max-w-xl">
+          <label for="invitation-email" class="font-bold">Provider email</label>
+          <input
+            id="invitation-email"
+            type="email"
+            autocomplete="email"
+            formControlName="email"
+            class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          />
+          @if (invitationForm.controls.email.touched && invitationForm.controls.email.invalid) {
+            <p class="mt-2 text-sm font-semibold text-red-700">
+              Enter a valid email address of no more than 254 characters.
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="inviting()"
+            class="mt-4 min-h-11 rounded-lg bg-brand-600 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+          >
+            {{ inviting() ? 'Creating invitation…' : 'Invite provider' }}
+          </button>
+        </form>
+      }
+
+      @if (oneTimeInvitationLink(); as link) {
+        <div class="mt-5 rounded-xl border-2 border-amber-400 bg-amber-50 p-5" role="status">
+          <h3 class="font-bold text-amber-950">One-time invitation link</h3>
+          <p class="mt-2 text-sm text-amber-950">
+            Copy and share this link now. The token cannot be retrieved after this page is refreshed
+            or left.
+          </p>
+          <input
+            aria-label="One-time invitation link"
+            readonly
+            [value]="link"
+            class="mt-3 min-h-11 w-full rounded-lg border border-amber-500 bg-white px-3 font-mono text-sm"
+          />
+          <button
+            type="button"
+            (click)="copyInvitationLink()"
+            class="mt-3 min-h-11 rounded-lg bg-amber-900 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-amber-300"
+          >
+            Copy invitation link
+          </button>
+        </div>
+      }
+
+      @if (invitationsLoading() && !invitations().length) {
+        <p role="status" class="mt-5">Loading invitations…</p>
+      } @else if (invitations().length) {
+        <div class="mt-6 overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <caption class="sr-only">
+              Provider invitation history
+            </caption>
+            <thead class="bg-brand-50 text-brand-900">
+              <tr>
+                <th class="px-4 py-3">Email</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Created</th>
+                <th class="px-4 py-3">Expires</th>
+                <th class="px-4 py-3">Outcome</th>
+                <th class="px-4 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invitation of invitations(); track invitation.id) {
+                <tr class="border-t border-slate-200">
+                  <th class="px-4 py-4 font-semibold">{{ invitation.email }}</th>
+                  <td class="px-4 py-4 font-bold">{{ invitation.status }}</td>
+                  <td class="px-4 py-4">{{ invitation.createdAt | date: 'medium' }}</td>
+                  <td class="px-4 py-4">{{ invitation.expiresAt | date: 'medium' }}</td>
+                  <td class="px-4 py-4">
+                    @if (invitation.acceptedAt) {
+                      Accepted {{ invitation.acceptedAt | date: 'medium' }}
+                    } @else if (invitation.revokedAt) {
+                      Revoked {{ invitation.revokedAt | date: 'medium' }}
+                    } @else {
+                      Not completed
+                    }
+                  </td>
+                  <td class="px-4 py-4">
+                    @if (invitation.status === 'PENDING') {
+                      <button
+                        type="button"
+                        (click)="requestRevoke(invitation.id)"
+                        [disabled]="revoking()"
+                        class="min-h-11 rounded-lg border border-red-700 px-4 font-bold text-red-800 focus:outline-none focus:ring-4 focus:ring-red-200"
+                      >
+                        Revoke invitation
+                      </button>
+                    } @else {
+                      <span>Not available</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="mt-5 text-slate-600">No invitations have been created.</p>
+      }
+    </section>
+
+    @if (pendingRevokeId()) {
+      <section
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="revoke-heading"
+        class="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 p-6"
+      >
+        <h2 id="revoke-heading" class="text-xl font-bold text-red-950">Revoke this invitation?</h2>
+        <p class="mt-2 text-red-900">
+          The one-time link will stop working. The provider record will not be deleted.
+        </p>
+        <div class="mt-5 flex gap-3">
+          <button
+            type="button"
+            (click)="confirmRevoke()"
+            [disabled]="revoking()"
+            class="min-h-11 rounded-lg bg-red-800 px-5 font-bold text-white focus:ring-4 focus:ring-red-200"
+          >
+            {{ revoking() ? 'Revoking…' : 'Yes, revoke invitation' }}</button
+          ><button
+            type="button"
+            (click)="cancelRevoke()"
+            [disabled]="revoking()"
+            class="min-h-11 rounded-lg border px-5 font-bold focus:ring-4 focus:ring-brand-200"
+          >
+            Cancel
+          </button>
+        </div>
+      </section>
+    }
     @if (confirmation(); as action) {
       <section
         role="alertdialog"
@@ -189,15 +459,23 @@
         <h2 id="confirmation-heading" class="text-xl font-bold text-amber-950">
           Confirm
           {{
-            action === 'unlink'
-              ? 'account unlinking'
-              : action === 'activate'
-                ? 'provider activation'
-                : 'provider suspension'
+            action === 'link'
+              ? 'account linking'
+              : action === 'unlink'
+                ? 'account unlinking'
+                : action === 'activate'
+                  ? 'provider activation'
+                  : 'provider suspension'
           }}
         </h2>
         <p class="mt-2 text-amber-950">
-          This is an explicit operational change. The backend will validate whether it is allowed.
+          @if (action === 'link' && selectedUser(); as user) {
+            You are linking {{ user.displayName || user.email || 'this user' }} to
+            {{ current.displayName }}. The backend remains authoritative for eligibility and role
+            changes.
+          } @else {
+            This is an explicit operational change. The backend will validate whether it is allowed.
+          }
         </p>
         <div class="mt-5 flex gap-3">
           <button

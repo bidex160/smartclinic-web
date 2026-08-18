@@ -39,4 +39,6 @@ The first provider self-service feature reuses that session infrastructure for e
 
 Admin and operations users can initiate server-owned provider matching, inspect the safe operational assignment projection, confirm an accepted provider response, and deliberately run stale-offer expiry. The frontend provides workflow controls and status visibility but never selects candidates or advances assignment/booking state itself.
 
-Provider administration lets ADMIN/OPERATIONS list, create, inspect, edit, activate, suspend, and safely unlink provider profiles. Provider profiles remain distinct from user identities. Linking service support matches the backend contract, but its UI is deferred until a safe admin user-search endpoint can replace raw user-ID entry.
+Provider administration lets ADMIN/OPERATIONS list, create, inspect, edit, activate, suspend, link, and safely unlink provider profiles. Provider profiles remain distinct from user identities. Guarded, explicit user search exposes only minimized account and provider-link context, and linking sends only a deliberately selected user ID to the backend-authoritative role workflow.
+
+Unlinked providers can also receive manually shared, one-time setup invitations. The raw invitation token is displayed only after creation and remains in memory; the public setup route validates it, creates the provider account with a new password, and then requires normal login. Automated email delivery remains deferred.

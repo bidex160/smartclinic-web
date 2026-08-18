@@ -108,6 +108,7 @@ Proposed public routes:
 | `/provider/offers`                | Provider-owned actionable/recent offer list                                 |
 | `/provider/offers/:id`            | Safe offer detail and deliberate accept/decline actions                     |
 | `/provider/access-denied`         | Accessible recovery for users without the explicit PROVIDER role            |
+| `/provider/setup/:token`          | Public one-time provider invitation inspection and account setup            |
 | `**`                              | Accessible not-found page with a route back to safety                       |
 
 Guards should prevent accidental entry into later steps without required in-memory state, returning users to the earliest incomplete step. Guards are navigation aids, not security controls. Avoid sensitive values in URLs.
@@ -142,7 +143,9 @@ The matching queue is a read-only server projection until an operator explicitly
 
 The admin projection may include operational booker contact data that the public confirmation projection does not expose. Registered-user bookings can legitimately have missing structured names or phone numbers; the UI renders neutral missing-data labels and never substitutes participant identity. Provider IDs, health data, payment-provider internals, and lifecycle histories stay outside this page's model.
 
-Provider administration keeps the provider operational profile separate from the linked user account. Basic profile edits never carry status, roles, or user IDs; activation, suspension, and unlinking are explicit confirmed server operations. Provider invitation, password setup, self-registration, and clinical verification remain deferred. The backend currently has no safe admin user-search endpoint, so the UI does not ask operators to paste opaque user UUIDs and does not expose linking until searchable selection is supported.
+Provider administration keeps the provider operational profile separate from the linked user account. Basic profile edits never carry status, roles, or user IDs; activation, suspension, linking, and unlinking are explicit confirmed server operations. The guarded user-search API supplies minimized account identity, status, roles, and current provider-link context. Operators select an eligible result instead of entering an opaque UUID, and the backend remains authoritative for eligibility and PROVIDER-role changes. Self-registration and clinical verification remain deferred.
+
+Provider invitations offer a separate, one-time onboarding path for unlinked provider records. Staff create and manually share a frontend setup link; only the creation response exposes the raw token, held in component memory and never browser persistence. The public setup route uses its route token only for inspection and acceptance, receives masked identity context, submits display name/password once, and ends at normal login without creating an authenticated frontend session. Email delivery, self-registration, password reset, and clinical verification remain deferred.
 
 The admin assignment read model contains only operational identity and scheduling context: provider ID/display name, minimal participant name, package/mode, booking and assignment states, requested schedule, offer timestamps, and decline reason. Funding, payment, contacts, credentials, free-text location notes, and raw matching histories remain outside the frontend boundary.
 

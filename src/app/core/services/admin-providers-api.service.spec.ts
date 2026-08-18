@@ -46,6 +46,9 @@ describe('AdminProvidersApiService', () => {
       const request = http.expectOne(`http://api.test/api/v1${path}`);
       expect(request.request.method).toBe(method);
       expect(request.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+      if (path.endsWith('/link-user')) {
+        expect(request.request.body).toEqual({ userId: 'user-id' });
+      }
       request.flush(provider());
     }
     http.verify();

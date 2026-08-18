@@ -76,6 +76,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'provider/setup/:token',
+    title: 'Provider account setup | SmartClinic',
+    loadComponent: () =>
+      import('./features/provider/provider-setup-page.component').then(
+        (component) => component.ProviderSetupPageComponent,
+      ),
+  },
+  {
     path: 'provider/offers',
     title: 'My offers | SmartClinic',
     canActivate: [providerGuard],
