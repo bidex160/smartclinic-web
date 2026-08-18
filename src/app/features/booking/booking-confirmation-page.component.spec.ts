@@ -3,8 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 
+import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token';
 import {
   PublicBookingFundingResult,
+  PublicBookingPaymentInitiationResult,
   PublicBookingResponse,
 } from '../../core/models/public-booking.model';
 import { BookingsApiService } from '../../core/services/bookings-api.service';
@@ -36,6 +38,14 @@ describe('BookingConfirmationPageComponent', () => {
     amount: '12500.00',
     currency: 'NGN',
     paymentReference: null,
+  };
+  const payment: PublicBookingPaymentInitiationResult = {
+    bookingReference: 'SC-REF',
+    paymentAttemptReference: 'SC-PAY-safe',
+    status: 'AWAITING_CUSTOMER_ACTION',
+    amount: '12500.00',
+    currency: 'NGN',
+    checkoutUrl: 'https://checkout.paystack.com/pay/safe',
   };
 
   it('renders matching in-memory state immediately without a recovery lookup', async () => {
@@ -93,7 +103,7 @@ describe('BookingConfirmationPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Payment obligation prepared');
     expect(fixture.nativeElement.textContent).toContain('NGN 12500.00');
     expect(fixture.nativeElement.textContent).toContain('AWAITING_FUNDING');
-    expect(fixture.nativeElement.textContent).toContain('checkout is not available yet');
+    expect(fixture.nativeElement.textContent).toContain('funding obligation is ready');
   });
 
   it('allows a deliberate retry after funding initialization fails', async () => {
@@ -125,27 +135,136 @@ describe('BookingConfirmationPageComponent', () => {
     expect(localStorageSpy).not.toHaveBeenCalled();
   });
 
+  it('initializes payment once and shows checkout only for a safe backend URL', async () => {
+    const pending = new Subject<PublicBookingPaymentInitiationResult>();
+    const { fixture, api } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: () => pending,
+    });
+
+    fixture.componentInstance.initiatePayment();
+    fixture.componentInstance.initiatePayment();
+    expect(api.initiatePayment).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.paymentPending()).toBe(true);
+
+    pending.next(payment);
+    pending.complete();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Payment is awaiting your action');
+    expect(fixture.nativeElement.textContent).toContain('NGN 12500.00');
+    expect(fixture.nativeElement.textContent).toContain('Continue to secure payment');
+    expect(fixture.nativeElement.textContent).not.toContain('Payment successful');
+  });
+
+  it('rejects an invalid or non-HTTPS checkout URL and permits retry', async () => {
+    const { fixture } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: () => of({ ...payment, checkoutUrl: 'javascript:alert(1)' }),
+    });
+
+    fixture.componentInstance.initiatePayment();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.checkoutUrl()).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Continue to secure payment');
+    expect(fixture.nativeElement.textContent).toContain('Try payment initialization again');
+    expect(fixture.nativeElement.textContent).toContain('invalid destination');
+  });
+
+  it('hands off only to the checkout URL returned and validated from the backend', async () => {
+    const { fixture, navigateExternal } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: () => of(payment),
+    });
+    fixture.componentInstance.initiatePayment();
+
+    fixture.componentInstance.continueToCheckout();
+
+    expect(navigateExternal).toHaveBeenCalledWith('https://checkout.paystack.com/pay/safe');
+  });
+
+  it('ignores payment-looking query parameters and re-reads authoritative booking state', async () => {
+    const authoritative = { ...confirmation, status: 'AWAITING_FUNDING' };
+    const { fixture, api } = await setup({ recovery: () => of(authoritative) });
+    fixture.detectChanges();
+
+    expect(api.getPublicBooking).toHaveBeenCalledWith('SC-REF');
+    expect(fixture.nativeElement.textContent).toContain('AWAITING_FUNDING');
+    expect(fixture.nativeElement.textContent).not.toContain('Payment successful');
+  });
+
+  it.each([401, 403])(
+    'sanitizes a %i session failure during payment initiation',
+    async (status) => {
+      const { fixture } = await setup({
+        initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+        payment: () => throwError(() => new HttpErrorResponse({ status })),
+      });
+      fixture.componentInstance.initiatePayment();
+
+      expect(fixture.componentInstance.paymentError()).toContain(
+        'booking session is no longer available',
+      );
+    },
+  );
+
+  it('sanitizes provider and network failures and allows retry', async () => {
+    let attempts = 0;
+    const { fixture, api } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: () => {
+        attempts += 1;
+        return attempts === 1
+          ? throwError(
+              () =>
+                new HttpErrorResponse({
+                  status: 503,
+                  error: { message: 'raw Paystack upstream secret detail' },
+                }),
+            )
+          : of(payment);
+      },
+    });
+    fixture.componentInstance.initiatePayment();
+
+    expect(fixture.componentInstance.paymentError()).toContain('temporarily unavailable');
+    expect(fixture.componentInstance.paymentError()).not.toContain('Paystack upstream');
+    fixture.componentInstance.initiatePayment();
+    expect(api.initiatePayment).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.checkoutUrl()).toBe(payment.checkoutUrl);
+  });
+
   async function setup(
     options: {
       initial?: PublicBookingResponse;
       recovery?: () => ReturnType<BookingsApiService['getPublicBooking']>;
       funding?: () => ReturnType<BookingsApiService['initializeFunding']>;
+      payment?: () => ReturnType<BookingsApiService['initiatePayment']>;
     } = {},
   ) {
     const router = { navigate: vi.fn().mockResolvedValue(true) };
+    const navigateExternal = vi.fn();
     const api = {
       getPublicBooking: vi.fn(options.recovery ?? (() => of(confirmation))),
       initializeFunding: vi.fn(options.funding ?? (() => of(funding))),
+      initiatePayment: vi.fn(options.payment ?? (() => of(payment))),
     };
     await TestBed.configureTestingModule({
       imports: [BookingConfirmationPageComponent],
       providers: [
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({ reference: 'SC-REF' }) } },
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({ reference: 'SC-REF' }),
+              queryParamMap: convertToParamMap({ reference: 'fake', status: 'success' }),
+            },
+          },
         },
         { provide: Router, useValue: router },
         { provide: BookingsApiService, useValue: api },
+        { provide: EXTERNAL_NAVIGATOR, useValue: navigateExternal },
       ],
     }).compileComponents();
     const state = TestBed.inject(BookingFlowStateService);
@@ -155,6 +274,7 @@ describe('BookingConfirmationPageComponent', () => {
       state,
       api,
       router,
+      navigateExternal,
     };
   }
 });

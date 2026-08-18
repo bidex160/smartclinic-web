@@ -136,7 +136,7 @@
               </div>
             </dl>
             <p class="mt-4 text-sm leading-6 text-slate-700">
-              Payment-provider checkout is not available yet. Preparing payment did not charge you.
+              The funding obligation is ready. Preparing it did not charge you.
             </p>
           </div>
         } @else {
@@ -157,6 +157,86 @@
               Securely preparing payment. Please wait.
             </p>
           }
+        }
+
+        @if (canInitiatePayment()) {
+          <div class="mt-6 border-t border-brand-200 pt-6">
+            <h3 class="text-lg font-bold text-brand-900">Secure checkout</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">
+              SmartClinic will ask the backend to create or reuse a payment attempt. You will choose
+              when to leave for Paystack's hosted checkout.
+            </p>
+
+            @if (paymentError(); as error) {
+              <div
+                data-error-summary
+                tabindex="-1"
+                role="alert"
+                class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 focus:outline-none focus:ring-4 focus:ring-red-100"
+              >
+                <p class="font-bold">Secure payment could not be initialized</p>
+                <p class="mt-1">{{ error }}</p>
+              </div>
+            }
+
+            @if (paymentResult(); as payment) {
+              <div class="mt-4 rounded-xl border border-brand-200 bg-white p-5">
+                <p role="status" class="font-bold text-brand-900">
+                  Payment is awaiting your action
+                </p>
+                <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <dt class="text-sm font-semibold text-slate-600">Amount</dt>
+                    <dd class="mt-1 font-bold text-slate-900">
+                      {{ payment.currency }} {{ payment.amount }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-sm font-semibold text-slate-600">Payment status</dt>
+                    <dd class="mt-1 font-bold text-slate-900">{{ payment.status }}</dd>
+                  </div>
+                </dl>
+                <p class="mt-4 text-sm leading-6 text-slate-600">
+                  Paystack opens on another website. Returning from checkout is not proof of
+                  payment; SmartClinic will show only the status confirmed by its server.
+                </p>
+                @if (checkoutUrl()) {
+                  <button
+                    type="button"
+                    (click)="continueToCheckout()"
+                    class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
+                  >
+                    Continue to secure payment
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    [disabled]="paymentPending()"
+                    (click)="initiatePayment()"
+                    class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    Try payment initialization again
+                  </button>
+                }
+              </div>
+            } @else {
+              <button
+                type="button"
+                [disabled]="paymentPending()"
+                (click)="initiatePayment()"
+                class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+              >
+                {{
+                  paymentPending() ? 'Initializing secure payment…' : 'Initialize secure payment'
+                }}
+              </button>
+            }
+            @if (paymentPending()) {
+              <p role="status" aria-live="polite" class="mt-3 text-sm text-slate-600">
+                Contacting the secure payment service. Please wait.
+              </p>
+            }
+          </div>
         }
       </section>
       <button

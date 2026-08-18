@@ -111,11 +111,13 @@ Guards should prevent accidental entry into later steps without required in-memo
 
 The fulfilment and details guards are implemented. Refresh intentionally clears the draft, so guarded routes recover to package selection or fulfilment as appropriate.
 
-Review additionally requires saved details and redirects to the earliest incomplete step. Confirmation accepts a reference route parameter but renders booking information only when a matching successful POST response remains in memory; it does not use the reference for automatic lookup.
+Review additionally requires saved details and redirects to the earliest incomplete step. Confirmation accepts a reference route parameter, renders a matching in-memory response immediately, and otherwise performs a cookie-authorized secure lookup. Route or query parameters never establish ownership or payment success.
 
 The selected catalogue price is a computed value derived from the selected package's API-provided `prices` and selected fulfilment-mode ID. It gates progression but is presentation state only: the public request mapper never sends an amount or currency. The server-returned `quotedAmount` and `quotedCurrency` form the authoritative booking quote snapshot on confirmation.
 
-Draft form state remains memory-only. After creation, the backend sets a separate HttpOnly public-booking session cookie. Confirmation renders the matching in-memory response immediately; after refresh it performs a credentialed `GET /public/bookings/:reference`. The backend validates that the cookie owns that exact booking, so the reference remains an identifier rather than authorization. Funding initialization uses the same cookie and sends no client amount or currency.
+Draft form state remains memory-only. After creation, the backend sets a separate HttpOnly public-booking session cookie. Confirmation renders the matching in-memory response immediately; after refresh it performs a credentialed `GET /public/bookings/:reference`. The backend validates that the cookie owns that exact booking, so the reference remains an identifier rather than authorization. Funding and payment initialization use the same cookie and empty request bodies; no amount, currency, provider credential, or payment reference is client controlled.
+
+Checkout handoff is an explicit browser boundary. The API supplies a normalized HTTPS Paystack-hosted URL, the frontend validates its scheme and expected host, and only then exposes a deliberate navigation action. Redirect query parameters are ignored. Webhook verification and server state are authoritative, and confirmation re-reads that state after refresh. A dedicated payment-return route remains deferred until the deployed backend callback URL is agreed.
 
 Public booking cookie authorization is deliberately isolated from `AuthStateService`, staff/provider bearer tokens, and the staff refresh interceptor. A guest does not need a registered user, and public-booking `401` responses never trigger staff session refresh.
 

@@ -6,6 +6,7 @@ import { API_CONFIG } from '../config/api-config.token';
 import { SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import {
   PublicBookingFundingResult,
+  PublicBookingPaymentInitiationResult,
   PublicBookingRequest,
   PublicBookingResponse,
 } from '../models/public-booking.model';
@@ -79,6 +80,33 @@ describe('BookingsApiService', () => {
     expect(pending.request.context.get(SKIP_STAFF_AUTH)).toBe(true);
     expect(pending.request.body).not.toEqual(
       expect.objectContaining({ amount: expect.anything(), currency: expect.anything() }),
+    );
+    pending.flush(response);
+    httpTesting.verify();
+  });
+
+  it('initiates payment with credentials and an empty provider-neutral request', () => {
+    const { service, httpTesting } = setup();
+    const response: PublicBookingPaymentInitiationResult = {
+      bookingReference: 'SC-REF',
+      paymentAttemptReference: 'SC-PAY-safe',
+      status: 'AWAITING_CUSTOMER_ACTION',
+      amount: '12500.00',
+      currency: 'NGN',
+      checkoutUrl: 'https://checkout.paystack.com/safe',
+    };
+
+    service.initiatePayment('SC-REF').subscribe((result) => expect(result).toEqual(response));
+
+    const pending = httpTesting.expectOne(
+      'http://api.example.test/api/v1/public/bookings/SC-REF/payment/initiate',
+    );
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.body).toBeNull();
+    expect(pending.request.withCredentials).toBe(true);
+    expect(pending.request.context.get(SKIP_STAFF_AUTH)).toBe(true);
+    expect(JSON.stringify(pending.request.body)).not.toMatch(
+      /amount|currency|reference|secret|public.?key/i,
     );
     pending.flush(response);
     httpTesting.verify();

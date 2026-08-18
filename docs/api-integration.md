@@ -18,7 +18,7 @@ Start with thin domain-oriented services rather than a generic repository layer:
 
 - `HealthCheckPackagesApi`: retrieves the current package catalogue.
 - `FulfilmentModesApi`: retrieves the current fulfilment catalogue.
-- `BookingsApi`: creates a public booking. Booking lookup is intentionally not implemented.
+- `BookingsApi`: creates and securely retrieves a session-owned public booking, initializes funding, and requests a hosted payment checkout.
 - `AuthApi`: logs in and retrieves the authenticated safe user identity.
 - `PackagePricesApi`: lists, creates, schedules, and deactivates package prices.
 - `ProviderOffersApi`: lists and retrieves provider-owned safe offers and submits accept/decline responses.
@@ -35,6 +35,7 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/public/bookings`                               | Submit the reviewed public booking draft         | Sets the HttpOnly public-booking session cookie                      |
 | `GET /api/v1/public/bookings/:reference`                     | Securely restore the session-owned confirmation  | Cookie must own the exact referenced booking                         |
 | `POST /api/v1/public/bookings/:reference/funding/initialize` | Initialize the guest funding obligation          | Sends no amount/currency; server returns authoritative funding state |
+| `POST /api/v1/public/bookings/:reference/payment/initiate`   | Request a provider-hosted guest checkout         | Empty body; backend returns only normalized safe checkout data       |
 | `POST /api/v1/auth/login`                                    | Establish an in-memory authenticated session     | Returns access token and safe user identity                          |
 | `POST /api/v1/auth/refresh`                                  | Restore or rotate a browser session              | Uses and rotates an HttpOnly refresh cookie                          |
 | `POST /api/v1/auth/logout`                                   | Revoke the current refresh session               | Clears the refresh cookie; local state clears regardless             |
@@ -89,7 +90,11 @@ The auth interceptor is limited to the configured SmartClinic API URL and never 
 
 Public booking creation, secure retrieval, and funding initialization use `withCredentials: true` so the browser can manage the backend's `smartclinic_public_booking_session` HttpOnly cookie. They opt out of staff bearer-token attachment and staff `401` refresh handling. The cookie/token is absent from frontend models and state. The booking reference is not authorization, and unauthorized or mismatched-session reads render only a safe recovery state. This guest security context is independent of admin/provider authentication.
 
-Funding initialization has an empty request body. Its typed response contains booking reference, server amount/currency, funding status, nullable attempt status/identifier, and nullable payment reference. It contains no production checkout URL, so real payment-provider integration remains deferred.
+Funding initialization has an empty request body. Its typed response contains booking reference, server amount/currency, funding status, nullable attempt status/identifier, and nullable payment reference.
+
+Payment initiation also has an empty request body. The backend resolves the payer email and authoritative funding values, initializes or reuses the provider-side attempt, and returns only `bookingReference`, `paymentAttemptReference`, normalized status, amount, currency, and nullable `checkoutUrl`. The frontend contains no Paystack keys, access codes, internal IDs, raw payloads, or client-generated payment references. It accepts checkout handoff only for a valid HTTPS `checkout.paystack.com` URL and never constructs a Paystack URL.
+
+The hosted checkout redirect and its query parameters are untrusted navigation context, not payment evidence. Signed Paystack webhooks plus server-side verification determine settlement. After return or refresh, the frontend must securely `GET` the booking again using the public-booking session and render the server status. The backend currently has no callback endpoint and its example `PAYSTACK_CALLBACK_URL` is not a confirmed frontend route, so `/book/payment-return/:reference` is intentionally not present.
 
 Logout revokes the current refresh session and clears its cookie. Logout-all additionally sends the current bearer token and revokes every session for that user. The frontend clears in-memory authentication and navigates to login even when the logout network request fails, avoiding an apparently authenticated UI.
 

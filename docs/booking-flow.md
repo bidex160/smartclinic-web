@@ -56,7 +56,9 @@ Use the reference returned by the create response; do not generate one client-si
 
 Booking creation accepts the backend's `smartclinic_public_booking_session` HttpOnly cookie. On confirmation refresh, `GET /api/v1/public/bookings/:reference` sends browser credentials and restores the safe response only when that cookie owns the exact booking. The frontend never reads or models the session token, and a reference alone never authorizes disclosure.
 
-The confirmation page can explicitly call `POST /api/v1/public/bookings/:reference/funding/initialize` using the same booking session. It sends no amount or currency. The server's funding result and a secure follow-up booking read supply the authoritative funding and booking states. Payment-provider checkout remains deferred; the UI does not claim a charge occurred or invent a redirect.
+The confirmation page can explicitly call `POST /api/v1/public/bookings/:reference/funding/initialize` using the same booking session. It sends no amount or currency. Once funding is ready, `POST /api/v1/public/bookings/:reference/payment/initiate` returns only a safe provider-neutral payment reference/status, amount/currency, and Paystack-hosted checkout URL. The user must deliberately choose **Continue to secure payment**; the frontend never constructs provider URLs or sends prices, references, or provider keys.
+
+A Paystack browser redirect is not proof of payment. Signed webhook handling and independent server verification are authoritative. On refresh or a future configured return, the confirmation page securely re-reads the booking through the HttpOnly public-booking session and displays only the backend booking status. No payment-return route is implemented until `PAYSTACK_CALLBACK_URL` is configured to a compatible frontend URL.
 
 ## Proposed feature components
 
@@ -90,7 +92,7 @@ Derived signals should determine completed steps and the earliest valid route. C
 
 Refresh clears sensitive draft state by design for the initial implementation. Users arriving at an incomplete route are redirected to the earliest required step with a calm explanation.
 
-Package, priced fulfilment, details, review, submission, secure confirmation recovery, and guest funding initialization are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. Draft state remains memory-only; the successful response can be reconstructed from the cookie-authorized backend endpoint.
+Package, priced fulfilment, details, review, submission, secure confirmation recovery, guest funding initialization, and explicit hosted-checkout handoff are implemented. SELF uses an explicit copy action from booker to participant fields so the user can review and edit the result; it does not silently synchronize fields. A package/mode combination without a published price cannot progress. Review explicitly maps valid state to the public request contract without price fields and submits only after confirmation. Draft state remains memory-only; the successful response can be reconstructed from the cookie-authorized backend endpoint.
 
 ## Open product and UI decisions
 

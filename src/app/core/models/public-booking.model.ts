@@ -62,3 +62,12 @@ export interface PublicBookingFundingResult {
   readonly currency: string;
   readonly paymentReference: string | null;
 }
+
+export interface PublicBookingPaymentInitiationResult {
+  readonly bookingReference: string;
+  readonly paymentAttemptReference: string;
+  readonly status: PublicBookingFundingAttemptStatus;
+  readonly amount: string;
+  readonly currency: string;
+  readonly checkoutUrl: string | null;
+}
