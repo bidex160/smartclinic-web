@@ -47,6 +47,23 @@ describe('authInterceptor', () => {
     http.verify();
   });
 
+  it('attaches bearer auth while preserving credentials for patient linking by booking proof', () => {
+    const { auth, http } = setup();
+    authenticate(auth);
+    TestBed.inject(HttpClient)
+      .post('http://api.example.test/api/v1/public/bookings/SC-REF/link-patient-account', null, {
+        withCredentials: true,
+      })
+      .subscribe();
+    const request = http.expectOne(
+      'http://api.example.test/api/v1/public/bookings/SC-REF/link-patient-account',
+    );
+    expect(request.request.headers.get('Authorization')).toBe('Bearer token');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush({ linked: true, patient: { givenName: 'Ada', familyName: 'Okafor' } });
+    http.verify();
+  });
+
   it('refreshes once and retries the original request with the new token', () => {
     const { auth, api, http } = setup();
     authenticate(auth);

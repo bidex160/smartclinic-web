@@ -19,6 +19,22 @@ describe('authenticatedUserGuard', () => {
     state.completeInitialization();
     expect(await run()).toBe(true);
   });
+
+  it('allows ADMIN/PROVIDER multi-role identity through the same patient workflow', async () => {
+    const { state } = setup();
+    state.setSession({
+      accessToken: 'token',
+      user: {
+        id: '1',
+        email: 'multi@example.test',
+        displayName: 'Multi role',
+        roles: ['ADMIN', 'PROVIDER'],
+        status: 'ACTIVE',
+      },
+    });
+    state.completeInitialization();
+    expect(await run()).toBe(true);
+  });
   it('waits for restoration before redirecting an unauthenticated user', async () => {
     const { state, router } = setup();
     let settled = false;

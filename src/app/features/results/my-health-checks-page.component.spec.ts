@@ -121,6 +121,13 @@ describe('MyHealthChecksPageComponent', () => {
     pending.complete();
   });
 
+  it('provides a secondary guest-history linking entry', async () => {
+    const { fixture } = await setup(response([]));
+    expect(
+      fixture.nativeElement.querySelector('a[href="/me/link-health-history"]')?.textContent,
+    ).toContain('Link previous guest history');
+  });
+
   async function setup(
     value?: PatientHealthCheckHistoryResponse,
     providedApi?: { getMyHealthChecks: ReturnType<typeof vi.fn> },

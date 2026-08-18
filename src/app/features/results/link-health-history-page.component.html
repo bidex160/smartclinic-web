@@ -1,0 +1,122 @@
+<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+  <a
+    routerLink="/me/health-checks"
+    class="rounded font-bold text-brand-700 underline focus:outline-none focus:ring-4 focus:ring-brand-200"
+    >← My Health Checks</a
+  >
+  <header class="mt-6 max-w-3xl">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Your care</p>
+    <h1 class="mt-3 text-3xl font-bold text-brand-900 sm:text-4xl">Link existing health history</h1>
+    <p class="mt-4 text-lg leading-8 text-slate-600">
+      If you previously booked a Smart Health Check as a guest, you can securely link that existing
+      health history to your SmartClinic account.
+    </p>
+    <p class="mt-3 rounded-xl bg-brand-50 p-4 text-brand-900">
+      For your privacy, SmartClinic does not link health records using email or phone alone.
+    </p>
+  </header>
+
+  <div class="mt-6" aria-live="polite" aria-atomic="true">
+    @if (success()) {
+      <section role="status" class="rounded-2xl border border-brand-200 bg-brand-50 p-6">
+        <h2 class="text-xl font-bold text-brand-900">History linked</h2>
+        <p class="mt-2">Your existing Smart Health Check history is now linked to this account.</p>
+        <a
+          routerLink="/me/health-checks"
+          class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200"
+          >View My Health Checks</a
+        >
+      </section>
+    }
+    @if (error()) {
+      <section
+        #errorSummary
+        tabindex="-1"
+        role="alert"
+        class="rounded-2xl border border-red-200 bg-red-50 p-6 outline-none focus:ring-4 focus:ring-red-200"
+      >
+        <h2 class="font-bold">History could not be linked</h2>
+        <p class="mt-2">{{ error() }}</p>
+      </section>
+    }
+  </div>
+
+  @if (!success()) {
+    <div class="mt-8 grid gap-6 lg:grid-cols-2">
+      <section
+        class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        aria-labelledby="booking-proof-heading"
+      >
+        <h2 id="booking-proof-heading" class="text-2xl font-bold text-brand-900">
+          Link from a booking
+        </h2>
+        <p class="mt-3 text-slate-600">
+          Use this when this browser still has the secure booking session created with your guest
+          booking.
+        </p>
+        <form [formGroup]="bookingForm" (ngSubmit)="linkFromBooking()" class="mt-5">
+          <label for="link-booking-reference" class="block font-bold">Booking reference</label
+          ><input
+            id="link-booking-reference"
+            formControlName="bookingReference"
+            autocomplete="off"
+            placeholder="SC-2026-7F23B0C9D1E4"
+            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 uppercase focus:outline-none focus:ring-4 focus:ring-brand-200"
+          />
+          @if (
+            bookingForm.controls.bookingReference.touched &&
+            bookingForm.controls.bookingReference.invalid
+          ) {
+            <p class="mt-2 text-sm font-semibold text-red-700">
+              Enter a valid SmartClinic booking reference.
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="bookingPending() || resultPending()"
+            class="mt-5 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+          >
+            {{ bookingPending() ? 'Linking…' : 'Link booking history' }}
+          </button>
+        </form>
+      </section>
+
+      <section
+        class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        aria-labelledby="result-proof-heading"
+      >
+        <h2 id="result-proof-heading" class="text-2xl font-bold text-brand-900">
+          Link from a result link
+        </h2>
+        <p class="mt-3 text-slate-600">
+          Paste the SmartClinic result link you received, or its opaque result access token.
+        </p>
+        <form [formGroup]="resultForm" (ngSubmit)="linkFromResult()" class="mt-5">
+          <label for="link-result-token" class="block font-bold">Result link or access token</label
+          ><input
+            id="link-result-token"
+            formControlName="resultLinkOrToken"
+            autocomplete="off"
+            spellcheck="false"
+            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          />
+          @if (
+            resultForm.controls.resultLinkOrToken.touched &&
+            resultForm.controls.resultLinkOrToken.invalid
+          ) {
+            <p class="mt-2 text-sm font-semibold text-red-700">
+              Enter your result link or access token.
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="resultPending() || bookingPending()"
+            class="mt-5 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+          >
+            {{ resultPending() ? 'Linking…' : 'Link result history' }}
+          </button>
+        </form>
+      </section>
+    </div>
+  }
+</main>

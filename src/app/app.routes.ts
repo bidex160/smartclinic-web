@@ -61,6 +61,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'me/link-health-history',
+    title: 'Link existing health history | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () =>
+      import('./features/results/link-health-history-page.component').then(
+        (component) => component.LinkHealthHistoryPageComponent,
+      ),
+  },
+  {
     path: 'me/health-checks',
     title: 'My Health Checks | SmartClinic',
     canActivate: [authenticatedUserGuard],
