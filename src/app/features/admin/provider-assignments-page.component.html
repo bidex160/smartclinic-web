@@ -190,7 +190,12 @@
             @for (assignment of assignments(); track assignment.assignmentId) {
               <tr>
                 <th scope="row" class="px-4 py-4 font-semibold">
-                  {{ assignment.bookingReference }}
+                  <a
+                    [routerLink]="['/admin/bookings', assignment.bookingReference]"
+                    class="rounded underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                  >
+                    {{ assignment.bookingReference }}
+                  </a>
                 </th>
                 <td class="px-4 py-4">{{ bookingStatusLabel(assignment.bookingStatus) }}</td>
                 <td class="px-4 py-4">

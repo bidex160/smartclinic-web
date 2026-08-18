@@ -129,6 +129,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/bookings/:reference',
+    title: 'Operational booking detail | SmartClinic',
+    canActivate: [adminPricingGuard],
+    loadComponent: () =>
+      import('./features/admin/admin-booking-detail-page.component').then(
+        (component) => component.AdminBookingDetailPageComponent,
+      ),
+  },
+  {
     path: 'admin/provider-assignments/:id',
     title: 'Provider assignment details | SmartClinic',
     canActivate: [adminPricingGuard],

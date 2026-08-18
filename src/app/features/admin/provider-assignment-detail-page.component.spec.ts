@@ -18,6 +18,9 @@ describe('ProviderAssignmentDetailPageComponent', () => {
     expect(text).toContain('Confirm provider assignment');
     expect(text).not.toContain('+2348000000000');
     expect(text).not.toContain('payer@example.test');
+    expect(
+      fixture.nativeElement.querySelector('a[href="/admin/bookings/SC-2026-ABCDEF123456"]'),
+    ).toBeTruthy();
   });
 
   it('requires explicit confirmation and updates accepted assignment state once', async () => {

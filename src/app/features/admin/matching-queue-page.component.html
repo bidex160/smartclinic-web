@@ -220,7 +220,12 @@
             @for (item of response().items; track item.bookingReference) {
               <tr>
                 <th scope="row" class="px-4 py-4 font-semibold text-slate-900">
-                  {{ item.bookingReference }}
+                  <a
+                    [routerLink]="['/admin/bookings', item.bookingReference]"
+                    class="rounded underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                  >
+                    {{ item.bookingReference }}
+                  </a>
                   <span class="mt-1 block font-normal text-slate-500">
                     {{ statusLabel(item.bookingStatus) }}
                   </span>

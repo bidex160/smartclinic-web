@@ -21,6 +21,14 @@ describe('ProviderAssignmentsPageComponent', () => {
     expect(text).not.toContain('quotedAmount');
   });
 
+  it('links each booking reference to operational booking detail', async () => {
+    const { fixture } = await setup();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('a[href="/admin/bookings/SC-2026-ABCDEF123456"]'),
+    ).toBeTruthy();
+  });
+
   it('passes booking, provider, and status filters to the API', async () => {
     const { component, api } = await setup();
     component.filterForm.setValue({

@@ -136,6 +136,10 @@ Admin assignment routes use the existing ADMIN/OPERATIONS guard and session. Ope
 
 The matching queue is a read-only server projection until an operator explicitly starts matching on a `READY` row. With no booking-status filter, the browser leaves the filter absent so the backend can enforce `PENDING_PROVIDER_MATCH`, settled SELF funding, and deterministic oldest-first ordering. Readiness is displayed exactly from the API and is never recalculated or re-sorted client-side. Active and accepted rows link to assignment management using the booking-reference filter because the queue DTO intentionally exposes no assignment ID.
 
+`/admin/bookings/:reference` connects the matching queue and provider-assignment workflow through a guarded operational booking projection. It shows the backend-provided booking, schedule, quote/funding, normalized payment, assignment, and readiness summaries; it does not reuse the public booking-session DTO or treat a reference as public authorization. Contextual actions are gated only by the returned readiness, and matching remains an explicit server-owned operation.
+
+The admin projection may include operational booker contact data that the public confirmation projection does not expose. Registered-user bookings can legitimately have missing structured names or phone numbers; the UI renders neutral missing-data labels and never substitutes participant identity. Provider IDs, health data, payment-provider internals, and lifecycle histories stay outside this page's model.
+
 The admin assignment read model contains only operational identity and scheduling context: provider ID/display name, minimal participant name, package/mode, booking and assignment states, requested schedule, offer timestamps, and decline reason. Funding, payment, contacts, credentials, free-text location notes, and raw matching histories remain outside the frontend boundary.
 
 ## Forms and data boundaries

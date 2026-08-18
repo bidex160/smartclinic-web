@@ -1,0 +1,378 @@
+<app-admin-session-header />
+
+<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+  <nav aria-label="Booking workflow" class="flex flex-wrap gap-4 text-sm font-bold">
+    <a
+      routerLink="/admin/matching-queue"
+      class="rounded text-brand-700 underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+    >
+      ← Matching queue
+    </a>
+    <a
+      routerLink="/admin/provider-assignments"
+      [queryParams]="{ bookingReference: reference }"
+      class="rounded text-brand-700 underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+    >
+      Provider assignments
+    </a>
+  </nav>
+
+  <div class="mt-6 space-y-3" aria-live="polite" aria-atomic="true">
+    @if (statusMessage()) {
+      <div role="status" class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900">
+        <p>{{ statusMessage() }}</p>
+        @if (createdAssignmentId(); as assignmentId) {
+          <a
+            [routerLink]="['/admin/provider-assignments', assignmentId]"
+            class="mt-2 inline-flex rounded font-bold underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          >
+            View the new provider assignment
+          </a>
+        }
+      </div>
+    }
+    @if (error()) {
+      <div
+        #errorSummary
+        tabindex="-1"
+        role="alert"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 outline-none focus:ring-4 focus:ring-red-200"
+      >
+        <p class="font-bold">Booking action could not be completed</p>
+        <p class="mt-1">{{ error() }}</p>
+        @if (!notFound()) {
+          <button
+            type="button"
+            (click)="loadBooking()"
+            class="mt-3 min-h-11 rounded-lg border border-red-700 px-4 py-2 font-bold focus:outline-none focus:ring-4 focus:ring-red-200"
+          >
+            Retry booking details
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (loading() && !booking()) {
+    <p role="status" class="mt-6 rounded-xl border border-brand-100 bg-brand-50 p-4">
+      Loading operational booking details…
+    </p>
+  }
+
+  @if (booking(); as current) {
+    <article class="mt-6">
+      <header class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft sm:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-5">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-[0.14em] text-brand-600">
+              Operational booking detail
+            </p>
+            <h1 class="mt-3 break-all text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+              {{ current.bookingReference }}
+            </h1>
+            <p class="mt-3 text-slate-600">Safe booking, funding, payment, and matching context.</p>
+          </div>
+          <span class="rounded-full bg-brand-50 px-4 py-2 font-bold text-brand-900">
+            {{ statusLabel(current.status) }}
+          </span>
+        </div>
+      </header>
+
+      <div class="mt-6 grid gap-6 lg:grid-cols-2">
+        <section
+          aria-labelledby="booking-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="booking-heading" class="text-xl font-bold text-brand-900">Booking</h2>
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-semibold text-slate-600">Reference</dt>
+              <dd class="mt-1 break-all font-mono font-bold">{{ current.bookingReference }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Status</dt>
+              <dd class="mt-1 font-bold">{{ statusLabel(current.status) }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Created</dt>
+              <dd class="mt-1">{{ current.createdAt | date: 'medium' }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Updated</dt>
+              <dd class="mt-1">{{ current.updatedAt | date: 'medium' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="health-check-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="health-check-heading" class="text-xl font-bold text-brand-900">Health check</h2>
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Package</dt>
+              <dd class="mt-1 font-bold">{{ current.package.name }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Fulfilment mode</dt>
+              <dd class="mt-1">{{ current.fulfilmentMode.name }}</dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-semibold text-slate-600">Participant</dt>
+              <dd class="mt-1">
+                {{ current.participant.givenName }} {{ current.participant.familyName }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="booker-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="booker-heading" class="text-xl font-bold text-brand-900">Booker contact</h2>
+          <dl class="mt-5 grid gap-4">
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Name</dt>
+              <dd class="mt-1 font-bold">{{ bookerName() }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Email</dt>
+              <dd class="mt-1 break-all">{{ current.bookerContact.email || 'Not available' }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Phone</dt>
+              <dd class="mt-1">{{ current.bookerContact.phone || 'Not available' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="scheduling-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="scheduling-heading" class="text-xl font-bold text-brand-900">Scheduling</h2>
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Preferred date</dt>
+              <dd class="mt-1">{{ current.preferredDate || 'Not available' }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Preferred time</dt>
+              <dd class="mt-1">
+                @if (current.preferredTimeFrom || current.preferredTimeTo) {
+                  {{ current.preferredTimeFrom || 'Open' }}–{{ current.preferredTimeTo || 'Open' }}
+                } @else {
+                  Not available
+                }
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Timezone</dt>
+              <dd class="mt-1">{{ current.preferredTimezone || 'Not available' }}</dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-semibold text-slate-600">Location note</dt>
+              <dd class="mt-1 whitespace-pre-wrap">
+                {{ current.locationNote || 'Not available' }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="funding-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="funding-heading" class="text-xl font-bold text-brand-900">Quote and funding</h2>
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Booking quote</dt>
+              <dd class="mt-1 font-bold">
+                @if (current.quotedAmount && current.quotedCurrency) {
+                  {{ current.quotedCurrency }} {{ current.quotedAmount }}
+                } @else {
+                  Not available
+                }
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Funding status</dt>
+              <dd class="mt-1">{{ statusLabel(current.funding.fundingStatus) }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Funding type</dt>
+              <dd class="mt-1">{{ statusLabel(current.funding.fundingType) }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Funding amount</dt>
+              <dd class="mt-1">
+                @if (current.funding.amount && current.funding.currency) {
+                  {{ current.funding.currency }} {{ current.funding.amount }}
+                } @else {
+                  Not available
+                }
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="payment-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="payment-heading" class="text-xl font-bold text-brand-900">Payment</h2>
+          <dl class="mt-5 grid gap-4">
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Latest payment status</dt>
+              <dd class="mt-1 font-bold">
+                {{ current.payment.status ? statusLabel(current.payment.status) : 'Not started' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Payment reference</dt>
+              <dd class="mt-1 break-all font-mono">
+                {{ current.payment.paymentReference || 'Not available' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-semibold text-slate-600">Paid</dt>
+              <dd class="mt-1">
+                {{
+                  current.payment.paidAt
+                    ? (current.payment.paidAt | date: 'medium')
+                    : 'Not available'
+                }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="assignment-heading"
+          class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+        >
+          <h2 id="assignment-heading" class="text-xl font-bold text-brand-900">
+            Provider assignment
+          </h2>
+          @if (current.assignment.assignmentStatus) {
+            <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Assignment status</dt>
+                <dd class="mt-1 font-bold">
+                  {{ statusLabel(current.assignment.assignmentStatus) }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Provider</dt>
+                <dd class="mt-1">{{ current.assignment.providerName || 'Not available' }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Offered</dt>
+                <dd class="mt-1">
+                  {{
+                    current.assignment.offeredAt
+                      ? (current.assignment.offeredAt | date: 'medium')
+                      : 'Not available'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Expires</dt>
+                <dd class="mt-1">
+                  {{
+                    current.assignment.expiresAt
+                      ? (current.assignment.expiresAt | date: 'medium')
+                      : 'Not available'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Accepted</dt>
+                <dd class="mt-1">
+                  {{
+                    current.assignment.acceptedAt
+                      ? (current.assignment.acceptedAt | date: 'medium')
+                      : 'Not available'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Confirmed</dt>
+                <dd class="mt-1">
+                  {{
+                    current.assignment.confirmedAt
+                      ? (current.assignment.confirmedAt | date: 'medium')
+                      : 'Not available'
+                  }}
+                </dd>
+              </div>
+            </dl>
+          } @else {
+            <p class="mt-4 text-slate-600">No assignment yet.</p>
+          }
+        </section>
+
+        <section
+          aria-labelledby="readiness-heading"
+          class="rounded-2xl border border-brand-200 bg-brand-50 p-6 shadow-soft"
+        >
+          <h2 id="readiness-heading" class="text-xl font-bold text-brand-900">
+            Matching readiness
+          </h2>
+          <p class="mt-4 text-lg font-bold text-brand-900">
+            {{ readinessLabel(current.readiness) }}
+          </p>
+          @if (current.readiness === 'READY') {
+            <p class="mt-2 text-sm leading-6 text-slate-700">
+              The backend reports that funding and scheduling are ready for provider matching.
+            </p>
+            <button
+              type="button"
+              (click)="startMatching()"
+              [disabled]="matching()"
+              class="mt-5 min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
+            >
+              {{ matching() ? 'Starting matching…' : 'Start matching' }}
+            </button>
+          } @else if (
+            current.readiness === 'ACTIVE_OFFER' ||
+            current.readiness === 'ACCEPTED_AWAITING_CONFIRMATION' ||
+            current.readiness === 'ALREADY_ASSIGNED'
+          ) {
+            @if (current.assignment.assignmentId) {
+              <a
+                [routerLink]="['/admin/provider-assignments', current.assignment.assignmentId]"
+                class="mt-5 inline-flex min-h-11 items-center rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+              >
+                {{
+                  current.readiness === 'ALREADY_ASSIGNED'
+                    ? 'View confirmed assignment'
+                    : 'View provider assignment'
+                }}
+              </a>
+            } @else {
+              <a
+                routerLink="/admin/provider-assignments"
+                [queryParams]="{ bookingReference: current.bookingReference }"
+                class="mt-5 inline-flex min-h-11 items-center rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+              >
+                View provider assignments
+              </a>
+            }
+          } @else if (current.readiness === 'UNFULFILLABLE') {
+            <p class="mt-2 text-sm leading-6 text-slate-700">
+              No provider is currently available. Review the booking state and operational coverage
+              before deciding on any future matching action.
+            </p>
+          } @else {
+            <p class="mt-2 text-sm leading-6 text-slate-700">
+              Matching is unavailable until the backend reports this booking as ready.
+            </p>
+          }
+        </section>
+      </div>
+    </article>
+  }
+</main>

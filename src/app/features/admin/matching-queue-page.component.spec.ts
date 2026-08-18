@@ -34,6 +34,14 @@ describe('MatchingQueuePageComponent', () => {
     ]);
   });
 
+  it('links booking references to operational booking detail', async () => {
+    const { fixture } = await setup();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('a[href="/admin/bookings/SC-2026-ABCDEF123456"]'),
+    ).toBeTruthy();
+  });
+
   it('renders every readiness label and only safe operational fields', async () => {
     const readinesses: MatchingQueueReadiness[] = [
       'READY',
