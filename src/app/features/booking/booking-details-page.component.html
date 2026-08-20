@@ -346,6 +346,26 @@
                 </p>
               }
             </div>
+            <div class="sm:col-span-2">
+  <label
+    for="preferred-timezone"
+    class="block text-sm font-bold text-slate-800"
+  >
+    Time zone
+  </label>
+
+  <input
+    id="preferred-timezone"
+    type="text"
+    formControlName="preferredTimezone"
+    readonly
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-700 sm:max-w-xs"
+  />
+
+  <p class="mt-2 text-sm text-slate-500">
+    Times will be interpreted using this time zone.
+  </p>
+</div>
           </div>
         </fieldset>
 

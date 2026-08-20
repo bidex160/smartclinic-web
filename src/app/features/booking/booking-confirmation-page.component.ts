@@ -20,6 +20,7 @@ import {
 import { BookingsApiService } from '../../core/services/bookings-api.service';
 import { BookingFlowStateService } from './booking-flow-state.service';
 import { safePaystackCheckoutUrl } from './paystack-checkout-url';
+import PaystackPop from '@paystack/inline-js';
 
 @Component({
   selector: 'app-booking-confirmation-page',
@@ -28,6 +29,7 @@ import { safePaystackCheckoutUrl } from './paystack-checkout-url';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingConfirmationPageComponent {
+  popup = new PaystackPop();
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -140,7 +142,8 @@ export class BookingConfirmationPageComponent {
         this.paymentPending.set(false);
         this.paymentResult.set(result);
         const checkoutUrl = safePaystackCheckoutUrl(result.checkoutUrl);
-        if (result.bookingReference !== booking.bookingReference || !checkoutUrl) {
+        const accessCode = result.accessCode;
+        if (result.bookingReference !== booking.bookingReference || (!checkoutUrl && !accessCode) ) {
           this.paymentError.set(
             'Secure checkout could not be opened because the payment service returned an invalid destination. Please try again.',
           );
@@ -148,8 +151,24 @@ export class BookingConfirmationPageComponent {
           this.focusErrorSummary();
           return;
         }
-        this.checkoutUrl.set(checkoutUrl);
-        this.loadPaymentStatus();
+        if(checkoutUrl) {
+         this.checkoutUrl.set(checkoutUrl);
+        } else{
+           this.popup.resumeTransaction(accessCode as string, {
+          onSuccess: (tranx) => {
+             this.validateTrans(tranx.reference, result.bookingReference);
+                this.checkPaymentStatus();
+          },
+   
+           onError: (er) => {
+            this.paymentError.set('We could not initialize secure payment. No charge was made. Please try again.');
+          },
+   
+         });
+       
+        //  transaction
+        }
+     
       },
       error: (error: unknown) => {
         this.paymentPending.set(false);
@@ -157,6 +176,10 @@ export class BookingConfirmationPageComponent {
         this.focusErrorSummary();
       },
     });
+  }
+
+  validateTrans(ref: string, bookingReference: string){
+
   }
 
   continueToCheckout(): void {

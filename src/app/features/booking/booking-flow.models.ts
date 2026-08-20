@@ -22,6 +22,7 @@ export interface BookingPreferences {
   readonly preferredDate: string;
   readonly preferredTimeFrom: string;
   readonly preferredTimeTo: string;
+  readonly preferredTimezone: string;
   readonly locationNote: string;
 }
 

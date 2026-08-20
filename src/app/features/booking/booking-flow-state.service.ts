@@ -23,6 +23,9 @@ export class BookingFlowStateService {
   readonly preferredTimeFrom = computed(
     () => this.detailsState()?.preferences.preferredTimeFrom ?? '',
   );
+   readonly preferredTimezone = computed(
+    () => this.detailsState()?.preferences.preferredTimezone ?? '',
+  );
   readonly preferredTimeTo = computed(() => this.detailsState()?.preferences.preferredTimeTo ?? '');
   readonly locationNote = computed(() => this.detailsState()?.preferences.locationNote ?? '');
   readonly selectedPrice = computed(() => {

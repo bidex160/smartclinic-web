@@ -49,6 +49,9 @@ export function mapBookingFlowToPublicBookingRequest(
       ...(optional(details.preferences.locationNote) && {
         locationNote: optional(details.preferences.locationNote),
       }),
+        ...(details.preferences.preferredTimezone && {
+        preferredTimezone: optional(details.preferences.preferredTimezone),
+  }),
     },
   };
 }

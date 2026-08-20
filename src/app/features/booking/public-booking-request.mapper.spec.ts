@@ -89,6 +89,7 @@ function createCompleteState(emptyOptional = false): BookingFlowStateService {
       preferredTimeFrom: emptyOptional ? '' : '09:00',
       preferredTimeTo: emptyOptional ? '' : '12:00',
       locationNote: emptyOptional ? ' ' : 'Front desk',
+      preferredTimezone: emptyOptional ? ' ' : '',
     },
   });
   return state;

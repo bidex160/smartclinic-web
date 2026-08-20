@@ -70,6 +70,7 @@ export interface PublicBookingPaymentInitiationResult {
   readonly amount: string;
   readonly currency: string;
   readonly checkoutUrl: string | null;
+  readonly accessCode: string | null;
 }
 
 export interface PublicBookingPaymentStatus {

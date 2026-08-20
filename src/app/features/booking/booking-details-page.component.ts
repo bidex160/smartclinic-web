@@ -76,6 +76,10 @@ export class BookingDetailsPageComponent {
         preferredTimeFrom: ['', optionalPattern(TIME_PATTERN)],
         preferredTimeTo: ['', optionalPattern(TIME_PATTERN)],
         locationNote: ['', Validators.maxLength(1000)],
+        preferredTimezone: [
+      Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lagos',
+    ],
+
       },
       { validators: validTimeWindow },
     ),

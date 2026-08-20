@@ -46,6 +46,7 @@ describe('BookingFlowStateService', () => {
       preferredTimeFrom: '09:00',
       preferredTimeTo: '12:00',
       locationNote: '',
+      preferredTimezone: ''
     },
   };
 
