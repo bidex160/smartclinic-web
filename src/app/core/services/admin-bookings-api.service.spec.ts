@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { API_CONFIG } from '../config/api-config.token';
+import { SKIP_AUTH_RETRY } from '../config/http-context.tokens';
 import { AdminBookingsApiService } from './admin-bookings-api.service';
 
 describe('AdminBookingsApiService', () => {
@@ -29,6 +30,45 @@ describe('AdminBookingsApiService', () => {
     request.flush(booking());
     http.verify();
   });
+
+  it('schedules once with the supported request and opts out of replay', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: API_CONFIG, useValue: { baseUrl: 'http://api.example.test/api/v1' } },
+      ],
+    });
+    const api = TestBed.inject(AdminBookingsApiService);
+    const http = TestBed.inject(HttpTestingController);
+    api
+      .schedule('SC/1', {
+        date: '2026-08-25',
+        timeFrom: '09:00',
+        timeTo: '10:00',
+        timezone: 'Europe/London',
+      })
+      .subscribe();
+    const pending = http.expectOne('http://api.example.test/api/v1/admin/bookings/SC%2F1/schedule');
+    expect(pending.request.body).toEqual({
+      date: '2026-08-25',
+      timeFrom: '09:00',
+      timeTo: '10:00',
+      timezone: 'Europe/London',
+    });
+    expect(pending.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    pending.flush({
+      bookingReference: 'SC/1',
+      bookingStatus: 'SCHEDULED',
+      scheduledDate: '2026-08-25',
+      scheduledTimeFrom: '09:00',
+      scheduledTimeTo: '10:00',
+      scheduledTimezone: 'Europe/London',
+      provider: { displayName: 'Provider' },
+      providerLocation: null,
+      assignmentStatus: 'CONFIRMED',
+    });
+  });
 });
 
 function booking() {
@@ -46,6 +86,7 @@ function booking() {
     preferredTimeTo: '11:00',
     preferredTimezone: 'Africa/Lagos',
     locationNote: null,
+    confirmedSchedule: null,
     quotedAmount: '12500.00',
     quotedCurrency: 'NGN',
     funding: { fundingStatus: 'SETTLED', fundingType: 'SELF', amount: '12500.00', currency: 'NGN' },
@@ -57,6 +98,7 @@ function booking() {
     assignment: {
       assignmentId: 'assignment-id',
       assignmentStatus: 'CONFIRMED',
+      providerId: 'provider-id',
       providerName: 'Care Provider',
       offeredAt: null,
       acceptedAt: null,

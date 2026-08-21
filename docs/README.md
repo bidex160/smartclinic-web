@@ -35,6 +35,8 @@ Operations also has a guarded provider-matching queue. It preserves the backend'
 
 A guarded operational booking detail now links queue rows with provider assignments. It presents only the backend's safe operational projection, handles absent registered-booker contact/funding/payment/assignment data without inference, and exposes matching only when the returned readiness is `READY`.
 
+Operations can now formally schedule a confirmed provider assignment. Preferred scheduling remains clearly requested context; an explicit backend-validated action creates the authoritative `SCHEDULED` appointment. Provider-location bookings use active linked location choices, while home visits send no location. Patient and provider views display the returned confirmed appointment separately, and encounter start is offered only after scheduled eligibility is verified. Rescheduling remains deferred.
+
 The first provider self-service feature reuses that session infrastructure for explicit `PROVIDER` role access. Providers can list and filter only their own safe offer projections, inspect an offer, and deliberately accept or decline an actionable assignment. The frontend never models or renders patient contact details, health data, location notes, provider internals, or matching internals.
 
 Confirmed assignments now open a provider-only Smart Health Check encounter for the six initial measurements. Providers explicitly start, save, review, and complete the encounter; server-returned units and timestamps are authoritative, and completed measurements are read-only. Clinical interpretation remains deferred.

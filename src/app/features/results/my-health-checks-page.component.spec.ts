@@ -51,6 +51,28 @@ describe('MyHealthChecksPageComponent', () => {
     expect(links[0].getAttribute('href')).toBe('/me/health-checks/AVAILABLE/results');
   });
 
+  it('renders preferred and confirmed appointments separately with safe provider location summary', async () => {
+    const scheduled = item('SCHEDULED', {
+      bookingStatus: 'SCHEDULED',
+      confirmedSchedule: {
+        date: '2026-08-25',
+        timeFrom: '12:00',
+        timeTo: '13:00',
+        timezone: 'Europe/London',
+        providerLocationName: 'Central Clinic',
+      },
+    });
+    const { fixture } = await setup(response([scheduled]));
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Preferred schedule');
+    expect(text).toContain('2026-08-20');
+    expect(text).toContain('Confirmed appointment');
+    expect(text).toContain('2026-08-25');
+    expect(text).toContain('Central Clinic');
+    expect(text).toContain('Scheduled');
+    expect(text).not.toContain('location-id');
+  });
+
   it('renders all supported booking and encounter labels', async () => {
     const { component } = await setup(response([]));
     expect(component.bookingStatusLabel('AWAITING_FUNDING')).toBe('Awaiting payment');
@@ -156,6 +178,7 @@ function item(
     preferredTimeFrom: '09:00',
     preferredTimeTo: '11:00',
     preferredTimezone: 'Africa/Lagos',
+    confirmedSchedule: null,
     providerDisplayName: 'Care Provider',
     encounterStatus: 'IN_PROGRESS',
     startedAt: '2026-08-18T09:00:00Z',

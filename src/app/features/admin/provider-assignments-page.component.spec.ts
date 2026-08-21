@@ -131,6 +131,7 @@ export function assignment(
     preferredTimeWindowStart: '09:00',
     preferredTimeWindowEnd: '11:00',
     preferredTimezone: 'Africa/Lagos',
+    confirmedSchedule: null,
     declineReason: null,
     ...changes,
   };

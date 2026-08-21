@@ -47,6 +47,7 @@ describe('BookingConfirmationPageComponent', () => {
     amount: '12500.00',
     currency: 'NGN',
     checkoutUrl: 'https://checkout.paystack.com/pay/safe',
+    accessCode: null,
   };
   const pendingStatus: PublicBookingPaymentStatus = {
     bookingReference: 'SC-REF',

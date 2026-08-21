@@ -123,6 +123,7 @@ function assignment(changes: Partial<AdminProviderAssignment> = {}): AdminProvid
     preferredTimeWindowStart: '09:00',
     preferredTimeWindowEnd: '11:00',
     preferredTimezone: 'Africa/Lagos',
+    confirmedSchedule: null,
     declineReason: null,
     ...changes,
   };

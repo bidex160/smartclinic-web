@@ -152,7 +152,12 @@
           aria-labelledby="scheduling-heading"
           class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
         >
-          <h2 id="scheduling-heading" class="text-xl font-bold text-brand-900">Scheduling</h2>
+          <h2 id="scheduling-heading" class="text-xl font-bold text-brand-900">
+            Preferred schedule
+          </h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Requested preferences only — not a confirmed appointment.
+          </p>
           <dl class="mt-5 grid gap-4 sm:grid-cols-2">
             <div>
               <dt class="text-sm font-semibold text-slate-600">Preferred date</dt>
@@ -180,6 +185,168 @@
             </div>
           </dl>
         </section>
+
+        <section
+          aria-labelledby="confirmed-appointment-heading"
+          class="rounded-2xl border border-brand-200 bg-brand-50 p-6 shadow-soft"
+        >
+          <h2 id="confirmed-appointment-heading" class="text-xl font-bold text-brand-900">
+            Confirmed appointment
+          </h2>
+          @if (current.confirmedSchedule; as appointment) {
+            <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Date</dt>
+                <dd class="mt-1 font-bold">{{ appointment.date }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Time</dt>
+                <dd class="mt-1 font-bold">{{ appointment.timeFrom }}–{{ appointment.timeTo }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Timezone</dt>
+                <dd class="mt-1">{{ appointment.timezone }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-semibold text-slate-600">Scheduled</dt>
+                <dd class="mt-1">{{ appointment.scheduledAt | date: 'medium' }}</dd>
+              </div>
+              @if (appointment.providerLocation; as location) {
+                <div class="sm:col-span-2">
+                  <dt class="text-sm font-semibold text-slate-600">Provider location</dt>
+                  <dd class="mt-1 font-bold">{{ location.name }}</dd>
+                  <dd class="text-sm text-slate-700">
+                    {{ location.addressLine1 }}
+                    @if (location.addressLine2) {
+                      , {{ location.addressLine2 }}
+                    }
+                    , {{ location.city }}, {{ location.state }}, {{ location.countryCode }}
+                  </dd>
+                </div>
+              }
+            </dl>
+          } @else {
+            <p class="mt-4 text-slate-700">No confirmed appointment yet.</p>
+            @if (canSchedule(current) && !scheduleFormOpen()) {
+              <button
+                type="button"
+                (click)="openScheduleForm()"
+                class="mt-5 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200"
+              >
+                Schedule appointment
+              </button>
+            }
+          }
+        </section>
+
+        @if (scheduleFormOpen() && canSchedule(current)) {
+          <section
+            aria-labelledby="schedule-form-heading"
+            class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft lg:col-span-2"
+          >
+            <h2 id="schedule-form-heading" class="text-xl font-bold text-brand-900">
+              Schedule appointment
+            </h2>
+            <p class="mt-2 text-slate-600">
+              Preferred values are proposed defaults only. Review and edit them before confirming.
+            </p>
+            <form
+              [formGroup]="scheduleForm"
+              (ngSubmit)="submitSchedule()"
+              class="mt-5 grid gap-5 sm:grid-cols-2"
+            >
+              <div>
+                <label for="schedule-date" class="block font-bold">Date</label
+                ><input
+                  id="schedule-date"
+                  type="date"
+                  formControlName="date"
+                  class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+                />
+                @if (scheduleForm.controls.date.touched && scheduleForm.controls.date.invalid) {
+                  <p class="mt-1 text-sm text-red-700">Enter an appointment date.</p>
+                }
+              </div>
+              <div>
+                <label for="schedule-time-from" class="block font-bold">Start time</label
+                ><input
+                  id="schedule-time-from"
+                  type="time"
+                  formControlName="timeFrom"
+                  class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+                />
+              </div>
+              <div>
+                <label for="schedule-time-to" class="block font-bold">End time</label
+                ><input
+                  id="schedule-time-to"
+                  type="time"
+                  formControlName="timeTo"
+                  class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+                />
+              </div>
+              <div>
+                <label for="schedule-timezone" class="block font-bold">Timezone</label
+                ><input
+                  id="schedule-timezone"
+                  formControlName="timezone"
+                  aria-describedby="schedule-timezone-help"
+                  class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+                />
+                <p id="schedule-timezone-help" class="mt-1 text-sm text-slate-600">
+                  Use an IANA timezone such as Europe/London. The backend validates it.
+                </p>
+              </div>
+              @if (current.fulfilmentMode.code === 'PROVIDER_LOCATION') {
+                <div class="sm:col-span-2">
+                  <label for="schedule-provider-location" class="block font-bold"
+                    >Provider location</label
+                  >
+                  @if (locationsLoading()) {
+                    <p role="status" class="mt-2">Loading eligible provider locations…</p>
+                  } @else {
+                    <select
+                      id="schedule-provider-location"
+                      formControlName="providerLocationId"
+                      class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:ring-4 focus:ring-brand-200"
+                    >
+                      <option value="">Select an eligible provider location</option>
+                      @for (location of eligibleLocations(); track location.id) {
+                        <option [value]="location.id">
+                          {{ location.name }} — {{ location.city }}, {{ location.state }}
+                        </option>
+                      }
+                    </select>
+                  }
+                  @if (locationLoadError()) {
+                    <p role="alert" class="mt-2 text-sm text-red-700">{{ locationLoadError() }}</p>
+                  }
+                </div>
+              }
+              <div class="flex flex-wrap gap-3 sm:col-span-2">
+                <button
+                  type="submit"
+                  [disabled]="
+                    scheduling() ||
+                    locationsLoading() ||
+                    (current.fulfilmentMode.code === 'PROVIDER_LOCATION' &&
+                      !eligibleLocations().length)
+                  "
+                  class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-60"
+                >
+                  {{ scheduling() ? 'Scheduling…' : 'Confirm appointment' }}</button
+                ><button
+                  type="button"
+                  (click)="cancelSchedule()"
+                  [disabled]="scheduling()"
+                  class="min-h-12 rounded-xl border border-brand-600 px-6 font-bold text-brand-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        }
 
         <section
           aria-labelledby="funding-heading"

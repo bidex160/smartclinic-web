@@ -95,6 +95,7 @@ describe('BookingsApiService', () => {
       amount: '12500.00',
       currency: 'NGN',
       checkoutUrl: 'https://checkout.paystack.com/safe',
+      accessCode: null,
     };
 
     service.initiatePayment('SC-REF').subscribe((result) => expect(result).toEqual(response));

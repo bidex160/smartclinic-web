@@ -126,6 +126,18 @@
             </div>
           }
         </dl>
+        @if (current.confirmedSchedule; as appointment) {
+          <div class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4">
+            <h3 class="font-bold text-brand-900">Confirmed appointment</h3>
+            <p class="mt-1">
+              {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }} ·
+              {{ appointment.timezone }}
+            </p>
+            @if (appointment.providerLocationName) {
+              <p>{{ appointment.providerLocationName }}</p>
+            }
+          </div>
+        }
       </section>
 
       @if (current.status === 'ACCEPTED') {

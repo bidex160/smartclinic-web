@@ -30,6 +30,7 @@ export interface AdminProviderAssignment {
   readonly preferredTimeWindowStart: string | null;
   readonly preferredTimeWindowEnd: string | null;
   readonly preferredTimezone: string | null;
+  readonly confirmedSchedule: import('./booking-schedule.model').ConfirmedScheduleSummary | null;
   readonly declineReason: string | null;
 }
 

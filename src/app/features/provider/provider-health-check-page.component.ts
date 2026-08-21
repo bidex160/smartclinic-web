@@ -24,6 +24,8 @@ import {
   SaveHealthCheckMeasurementsRequest,
 } from '../../core/models/provider-health-check-encounter.model';
 import { ProviderHealthCheckEncountersApiService } from '../../core/services/provider-health-check-encounters-api.service';
+import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
+import { ConfirmedScheduleSummary } from '../../core/models/booking-schedule.model';
 import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 
 function finiteFourDecimals(control: AbstractControl): ValidationErrors | null {
@@ -42,6 +44,7 @@ function finiteFourDecimals(control: AbstractControl): ValidationErrors | null {
 })
 export class ProviderHealthCheckPageComponent {
   private readonly api = inject(ProviderHealthCheckEncountersApiService);
+  private readonly offersApi = inject(ProviderOffersApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
@@ -51,6 +54,7 @@ export class ProviderHealthCheckPageComponent {
   readonly loading = signal(false);
   readonly mutating = signal(false);
   readonly canStart = signal(false);
+  readonly startSchedule = signal<ConfirmedScheduleSummary | null>(null);
   readonly error = signal<string | null>(null);
   readonly statusMessage = signal<string | null>(null);
   readonly completionConfirmation = signal(false);
@@ -86,12 +90,30 @@ export class ProviderHealthCheckPageComponent {
         next: (encounter) => this.applyEncounter(encounter),
         error: (error: HttpErrorResponse) => {
           if (error.status === 404) {
-            this.canStart.set(true);
+            this.loadStartEligibility();
             return;
           }
           this.handleError(error, 'The Health Check encounter could not be loaded.');
         },
       });
+  }
+
+  private loadStartEligibility(): void {
+    this.offersApi.getOffers('CONFIRMED').subscribe({
+      next: (offers) => {
+        const offer = offers.find((item) => item.bookingReference === this.reference);
+        this.startSchedule.set(offer?.confirmedSchedule ?? null);
+        this.canStart.set(!!offer?.confirmedSchedule);
+        if (!offer?.confirmedSchedule)
+          this.error.set(
+            'This booking is not ready to start. A confirmed scheduled appointment is required.',
+          );
+      },
+      error: () =>
+        this.error.set(
+          'The booking schedule could not be verified. Return to My offers and try again.',
+        ),
+    });
   }
 
   start(): void {
@@ -206,7 +228,7 @@ export class ProviderHealthCheckPageComponent {
     }
     const messages: Record<number, string> = {
       404: 'This booking or encounter is unavailable to this provider.',
-      409: 'This action is not allowed in the current booking or encounter state.',
+      409: 'This Health Check cannot start until the booking has a confirmed scheduled appointment, or its lifecycle state no longer allows this action.',
       400: 'Review all six measurement values and try again.',
       422: 'One or more measurement values could not be accepted.',
     };

@@ -119,13 +119,31 @@
         </dl>
       </section>
 
-      @if (currentOffer.status === 'CONFIRMED') {
+      @if (currentOffer.confirmedSchedule; as appointment) {
+        <section
+          class="mt-8 rounded-xl border border-brand-200 bg-brand-50 p-5"
+          aria-labelledby="confirmed-provider-appointment"
+        >
+          <h2 id="confirmed-provider-appointment" class="text-xl font-bold text-brand-900">
+            Confirmed appointment
+          </h2>
+          <p class="mt-3 font-bold">
+            {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }}
+          </p>
+          <p>{{ appointment.timezone }}</p>
+          @if (appointment.providerLocationName) {
+            <p class="mt-1">{{ appointment.providerLocationName }}</p>
+          }
+        </section>
+      }
+
+      @if (currentOffer.status === 'CONFIRMED' && currentOffer.confirmedSchedule) {
         <section class="mt-8 border-t border-slate-100 pt-6" aria-labelledby="health-check-title">
           <h2 id="health-check-title" class="text-xl font-bold text-brand-900">
             Smart Health Check
           </h2>
           <p class="mt-2 text-slate-600">
-            Open the confirmed booking to start or continue its measurement encounter.
+            Open the scheduled booking to start or continue its measurement encounter.
           </p>
           <a
             [routerLink]="['/provider/bookings', currentOffer.bookingReference, 'health-check']"

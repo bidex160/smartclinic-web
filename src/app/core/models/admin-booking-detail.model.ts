@@ -2,6 +2,7 @@ import { MatchingQueueFundingStatus, MatchingQueueReadiness } from './admin-matc
 import { BookingStatus } from './admin-provider-assignment.model';
 import { PublicBookingFundingAttemptStatus } from './public-booking.model';
 import { ProviderOfferStatus } from './provider-offer.model';
+import { AdminConfirmedSchedule } from './booking-schedule.model';
 
 export type AdminBookingFundingType = 'SELF' | 'FAMILY' | 'SPONSOR' | 'ORGANISATION' | 'OTHER';
 
@@ -24,6 +25,7 @@ export interface AdminBookingDetail {
   readonly preferredTimeTo: string | null;
   readonly preferredTimezone: string | null;
   readonly locationNote: string | null;
+  readonly confirmedSchedule: AdminConfirmedSchedule | null;
   readonly quotedAmount: string | null;
   readonly quotedCurrency: string | null;
   readonly funding: {
@@ -40,6 +42,7 @@ export interface AdminBookingDetail {
   readonly assignment: {
     readonly assignmentId: string | null;
     readonly assignmentStatus: ProviderOfferStatus | null;
+    readonly providerId: string | null;
     readonly providerName: string | null;
     readonly offeredAt: string | null;
     readonly acceptedAt: string | null;

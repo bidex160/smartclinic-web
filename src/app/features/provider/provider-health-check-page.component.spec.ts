@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angul
 import { of, Subject, throwError } from 'rxjs';
 import { ProviderHealthCheckEncounter } from '../../core/models/provider-health-check-encounter.model';
 import { ProviderHealthCheckEncountersApiService } from '../../core/services/provider-health-check-encounters-api.service';
+import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProviderHealthCheckPageComponent } from './provider-health-check-page.component';
 
@@ -40,6 +41,18 @@ describe('ProviderHealthCheckPageComponent', () => {
     pending.next(encounter());
     pending.complete();
     expect(component.encounter()?.status).toBe('IN_PROGRESS');
+  });
+
+  it('does not present an assigned but unscheduled booking as startable', async () => {
+    const { component, fixture, api } = await setup({
+      getError: new HttpErrorResponse({ status: 404 }),
+      startEligible: false,
+    });
+    fixture.detectChanges();
+    expect(component.canStart()).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Start Health Check');
+    component.start();
+    expect(api.start).not.toHaveBeenCalled();
   });
 
   it('requires both blood-pressure values and all six fields', async () => {
@@ -113,6 +126,7 @@ describe('ProviderHealthCheckPageComponent', () => {
       saveError?: HttpErrorResponse;
       start?: () => any;
       save?: () => any;
+      startEligible?: boolean;
     } = {},
   ) {
     const value = options.encounter ?? encounter();
@@ -136,6 +150,23 @@ describe('ProviderHealthCheckPageComponent', () => {
           useValue: { snapshot: { paramMap: convertToParamMap({ reference: 'SC-1' }) } },
         },
         { provide: ProviderHealthCheckEncountersApiService, useValue: api },
+        {
+          provide: ProviderOffersApiService,
+          useValue: {
+            getOffers: vi.fn(() =>
+              of(
+                options.startEligible === false
+                  ? []
+                  : [
+                      {
+                        bookingReference: 'SC-1',
+                        confirmedSchedule: encounter().confirmedSchedule,
+                      },
+                    ],
+              ),
+            ),
+          },
+        },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },
       ],
     }).compileComponents();
@@ -157,6 +188,13 @@ function encounter(
     participant: { givenName: 'Ada', familyName: 'Okafor' },
     healthCheckPackage: { code: 'ESSENTIAL', name: 'Essential' },
     fulfilmentMode: { code: 'HOME_VISIT', name: 'Home Visit' },
+    confirmedSchedule: {
+      date: '2026-08-20',
+      timeFrom: '09:00',
+      timeTo: '10:00',
+      timezone: 'Africa/Lagos',
+      providerLocationName: null,
+    },
     measurements: measurements(),
     ...changes,
   };

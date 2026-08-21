@@ -21,7 +21,19 @@ describe('ProviderOfferDetailPageComponent', () => {
 
   it('shows the Health Check action only for a confirmed assignment', async () => {
     const { fixture, component } = await setup({
-      getOffer: () => of(offer({ status: 'CONFIRMED' })),
+      getOffer: () =>
+        of(
+          offer({
+            status: 'CONFIRMED',
+            confirmedSchedule: {
+              date: '2026-08-25',
+              timeFrom: '09:00',
+              timeTo: '10:00',
+              timezone: 'Africa/Lagos',
+              providerLocationName: null,
+            },
+          }),
+        ),
     });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Open Smart Health Check');
@@ -125,6 +137,7 @@ function offer(changes: Partial<ProviderOffer> = {}): ProviderOffer {
     preferredTimeWindowStart: '09:00',
     preferredTimeWindowEnd: '11:00',
     preferredTimezone: 'Africa/Lagos',
+    confirmedSchedule: null,
     responseReason: null,
     ...changes,
   };

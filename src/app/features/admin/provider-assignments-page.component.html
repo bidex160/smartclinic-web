@@ -219,6 +219,14 @@
                     }}
                     {{ assignment.preferredTimezone || '' }}</span
                   >
+                  @if (assignment.confirmedSchedule; as appointment) {
+                    <span class="mt-2 block font-bold text-brand-800"
+                      >Confirmed: {{ appointment.date }} {{ appointment.timeFrom }}–{{
+                        appointment.timeTo
+                      }}
+                      {{ appointment.timezone }}</span
+                    >
+                  }
                 </td>
                 <td class="px-4 py-4">
                   Offered {{ assignment.offeredAt | date: 'medium'

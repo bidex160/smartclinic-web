@@ -18,6 +18,7 @@ export interface ProviderHealthCheckEncounter {
   readonly participant: { readonly givenName: string; readonly familyName: string };
   readonly healthCheckPackage: { readonly code: string; readonly name: string };
   readonly fulfilmentMode: { readonly code: string; readonly name: string };
+  readonly confirmedSchedule: import('./booking-schedule.model').ConfirmedScheduleSummary | null;
   readonly measurements: readonly HealthCheckMeasurement[];
 }
 

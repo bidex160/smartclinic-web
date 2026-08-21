@@ -99,6 +99,16 @@
               </dd>
               <dt class="font-semibold text-slate-600">Offer expiry</dt>
               <dd>{{ offer.expiresAt ? (offer.expiresAt | date: 'medium') : 'Not specified' }}</dd>
+              @if (offer.confirmedSchedule; as appointment) {
+                <dt class="font-semibold text-brand-800">Confirmed appointment</dt>
+                <dd class="font-bold text-brand-900">
+                  {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }}
+                  {{ appointment.timezone }}
+                  @if (appointment.providerLocationName) {
+                    · {{ appointment.providerLocationName }}
+                  }
+                </dd>
+              }
             </dl>
             <a
               [routerLink]="['/provider/offers', offer.assignmentId]"

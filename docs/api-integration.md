@@ -77,6 +77,7 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/admin/bookings/:reference/matching/start`              | Start or retry provider matching                   | ADMIN/OPERATIONS; backend selects eligible candidate                   |
 | `GET /api/v1/admin/bookings/matching-queue`                          | Read the operational provider-matching queue       | Backend owns readiness, default funding gate, ordering, and paging     |
 | `GET /api/v1/admin/bookings/:reference`                              | Read one operational booking projection            | ADMIN/OPERATIONS; safe booking, funding, payment, and matching context |
+| `POST /api/v1/admin/bookings/:reference/schedule`                    | Confirm an assigned booking appointment            | Explicit non-replayed `PROVIDER_ASSIGNED` → `SCHEDULED` mutation       |
 | `GET /api/v1/admin/provider-assignments`                             | List/filter operational assignments                | Filters reference, provider ID, or assignment status                   |
 | `GET /api/v1/admin/provider-assignments/:id`                         | Inspect one operational assignment                 | Excludes payment, contact, and raw history data                        |
 | `POST /api/v1/admin/provider-assignments/:id/confirm`                | Confirm an accepted provider response              | Advances assignment and booking transactionally                        |
@@ -164,6 +165,8 @@ The queue read model contains only reference/status, package/mode labels, partic
 The administrative read model contains assignment/booking state, provider display identity, package and fulfilment labels, minimal participant name, requested schedule, offer timestamps, and a decline reason only when relevant. It excludes funding, payment, participant contact data, credentials, location notes, candidate sets, and raw histories.
 
 Provider acceptance records willingness but does not assign the booking. ADMIN/OPERATIONS confirmation is a separate explicit action available only for `ACCEPTED`; its returned DTO supplies the authoritative `CONFIRMED` assignment and `PROVIDER_ASSIGNED` booking states. Start, confirm, and stale-expiry mutations opt out of automatic HTTP replay and refresh their read view after success. Stale expiry is user-triggered and never scheduled in the browser.
+
+Scheduling sends only date, start/end time, timezone, and an eligible provider-location ID when the fulfilment mode requires it. It opts out of automatic mutation replay and refreshes admin detail after success. A repeated identical schedule is backend-idempotent; a different schedule on an already scheduled booking remains a conflict and does not mutate local confirmation state. Provider capabilities and locations are read through guarded admin endpoints and joined to public catalogue IDs only to construct a usable selector; final eligibility and capacity remain server decisions. Updated patient, provider offer/assignment, and encounter DTOs contain a minimized `confirmedSchedule`, while preferred scheduling remains separate context.
 
 ## Loading, empty, and error handling
 

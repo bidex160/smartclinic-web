@@ -23,6 +23,7 @@ export interface PatientHealthCheckHistoryItem {
   readonly preferredTimeFrom: string | null;
   readonly preferredTimeTo: string | null;
   readonly preferredTimezone: string | null;
+  readonly confirmedSchedule: import('./booking-schedule.model').ConfirmedScheduleSummary | null;
   readonly providerDisplayName: string | null;
   readonly encounterStatus: PatientEncounterStatus | null;
   readonly startedAt: string | null;

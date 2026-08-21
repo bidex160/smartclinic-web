@@ -26,6 +26,7 @@ export interface ProviderOffer {
   readonly preferredTimeWindowStart: string | null;
   readonly preferredTimeWindowEnd: string | null;
   readonly preferredTimezone: string | null;
+  readonly confirmedSchedule: import('./booking-schedule.model').ConfirmedScheduleSummary | null;
   readonly responseReason: string | null;
 }
 

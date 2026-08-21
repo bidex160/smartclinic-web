@@ -1,11 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { AdminBookingDetail } from '../../core/models/admin-booking-detail.model';
 import { AdminBookingsApiService } from '../../core/services/admin-bookings-api.service';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
+import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
+import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { AdminBookingDetailPageComponent } from './admin-booking-detail-page.component';
 
 describe('AdminBookingDetailPageComponent', () => {
@@ -82,9 +85,118 @@ describe('AdminBookingDetailPageComponent', () => {
     expect(component.createdAssignmentId()).toBe('assignment-id');
   });
 
-  async function setup(options: { booking?: AdminBookingDetail; startMatching?: () => any } = {}) {
+  it('shows scheduling only for PROVIDER_ASSIGNED with a confirmed assignment and prefills preferences', async () => {
+    const { component, fixture } = await setup();
+    fixture.detectChanges();
+    expect(button(fixture, 'Schedule appointment')).toBeTruthy();
+    component.openScheduleForm();
+    fixture.detectChanges();
+    expect(component.scheduleForm.getRawValue()).toMatchObject({
+      date: '2026-09-01',
+      timeFrom: '09:00',
+      timeTo: '11:00',
+      timezone: 'Africa/Lagos',
+    });
+    expect(fixture.nativeElement.textContent).toContain('proposed defaults only');
+    component.booking.set(detail({ status: 'IN_PROGRESS' }));
+    fixture.detectChanges();
+    expect(button(fixture, 'Schedule appointment')).toBeFalsy();
+  });
+
+  it('prevents duplicate scheduling, refreshes after success, and sanitizes conflicts', async () => {
+    const pending = new Subject<any>();
+    const success = await setup({ schedule: () => pending });
+    success.component.openScheduleForm();
+    success.component.submitSchedule();
+    success.component.submitSchedule();
+    expect(success.api.schedule).toHaveBeenCalledOnce();
+    pending.next({ bookingStatus: 'SCHEDULED' });
+    pending.complete();
+    expect(success.api.getBooking).toHaveBeenCalledTimes(2);
+    expect(success.component.statusMessage()).toContain('scheduled successfully');
+    TestBed.resetTestingModule();
+    const conflict = await setup({
+      schedule: () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({ status: 409, error: { message: 'raw capacity internals' } }),
+        ),
+    });
+    conflict.component.openScheduleForm();
+    conflict.component.submitSchedule();
+    expect(conflict.component.error()).toContain('rescheduling workflow');
+    expect(conflict.component.error()).not.toContain('raw capacity internals');
+  });
+
+  it('hides location selection for HOME_VISIT and uses named linked locations for PROVIDER_LOCATION', async () => {
+    const home = await setup();
+    home.component.openScheduleForm();
+    home.fixture.detectChanges();
+    expect(home.fixture.nativeElement.querySelector('#schedule-provider-location')).toBeNull();
+    TestBed.resetTestingModule();
+    const providerLocation = await setup({
+      booking: detail({ fulfilmentMode: { code: 'PROVIDER_LOCATION', name: 'Provider location' } }),
+      locationData: true,
+    });
+    providerLocation.component.openScheduleForm();
+    providerLocation.fixture.detectChanges();
+    const select = providerLocation.fixture.nativeElement.querySelector(
+      '#schedule-provider-location',
+    ) as HTMLSelectElement;
+    expect(select.textContent).toContain('Ikeja Clinic');
+    expect(
+      providerLocation.fixture.nativeElement.querySelector(
+        'input[formcontrolname="providerLocationId"]',
+      ),
+    ).toBeNull();
+  });
+
+  async function setup(
+    options: {
+      booking?: AdminBookingDetail;
+      startMatching?: () => any;
+      schedule?: () => any;
+      locationData?: boolean;
+    } = {},
+  ) {
     const api = {
       getBooking: vi.fn(() => of(options.booking ?? detail())),
+      schedule: vi.fn(options.schedule ?? (() => of({ bookingStatus: 'SCHEDULED' }))),
+      getProviderCapabilities: vi.fn(() =>
+        of(
+          options.locationData
+            ? [
+                {
+                  id: 'service',
+                  providerId: '10000000-0000-4000-8000-000000000001',
+                  healthCheckPackageId: 'package-id',
+                  fulfilmentModeId: 'mode-id',
+                  isActive: true,
+                  providerLocationIds: ['location-id'],
+                },
+              ]
+            : [],
+        ),
+      ),
+      getProviderLocations: vi.fn(() =>
+        of(
+          options.locationData
+            ? [
+                {
+                  id: 'location-id',
+                  providerId: '10000000-0000-4000-8000-000000000001',
+                  name: 'Ikeja Clinic',
+                  addressLine1: 'Road',
+                  addressLine2: null,
+                  city: 'Ikeja',
+                  state: 'Lagos',
+                  countryCode: 'NG',
+                  isActive: true,
+                },
+              ]
+            : [],
+        ),
+      ),
       startMatching: vi.fn(
         options.startMatching ??
           (() =>
@@ -110,6 +222,22 @@ describe('AdminBookingDetailPageComponent', () => {
         },
         { provide: AdminBookingsApiService, useValue: api },
         { provide: AdminProviderAssignmentsApiService, useValue: api },
+        {
+          provide: HealthCheckPackagesApiService,
+          useValue: {
+            getPackages: vi.fn(() =>
+              of(options.locationData ? [{ id: 'package-id', code: 'ESSENTIAL' }] : []),
+            ),
+          },
+        },
+        {
+          provide: FulfilmentModesApiService,
+          useValue: {
+            getFulfilmentModes: vi.fn(() =>
+              of(options.locationData ? [{ id: 'mode-id', code: 'PROVIDER_LOCATION' }] : []),
+            ),
+          },
+        },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },
       ],
     }).compileComponents();
@@ -128,6 +256,7 @@ function emptyAssignment(): AdminBookingDetail['assignment'] {
   return {
     assignmentId: null,
     assignmentStatus: null,
+    providerId: null,
     providerName: null,
     offeredAt: null,
     acceptedAt: null,
@@ -156,6 +285,7 @@ function detail(changes: Partial<AdminBookingDetail> = {}): AdminBookingDetail {
     preferredTimeTo: '11:00',
     preferredTimezone: 'Africa/Lagos',
     locationNote: 'Reception',
+    confirmedSchedule: null,
     quotedAmount: '12500.00',
     quotedCurrency: 'NGN',
     funding: { fundingStatus: 'SETTLED', fundingType: 'SELF', amount: '12500.00', currency: 'NGN' },
@@ -167,6 +297,7 @@ function detail(changes: Partial<AdminBookingDetail> = {}): AdminBookingDetail {
     assignment: {
       assignmentId: 'assignment-id',
       assignmentStatus: 'CONFIRMED',
+      providerId: '10000000-0000-4000-8000-000000000001',
       providerName: 'Care Provider',
       offeredAt: '2026-08-18T08:40:00Z',
       acceptedAt: '2026-08-18T08:50:00Z',
