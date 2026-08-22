@@ -8,7 +8,9 @@ import {
   AdminProviderDetail,
   AdminProviderFilters,
   AdminProviderListResponse,
+  AdminCreatedProviderResponse,
   CreateAdminProviderRequest,
+  RejectProviderRequest,
   UpdateAdminProviderRequest,
 } from '../models/admin-provider.model';
 
@@ -21,6 +23,7 @@ export class AdminProvidersApiService {
   list(filters: AdminProviderFilters = {}): Observable<AdminProviderListResponse> {
     let params = new HttpParams();
     if (filters.status) params = params.set('status', filters.status);
+    if (filters.onboardingStatus) params = params.set('onboardingStatus', filters.onboardingStatus);
     if (filters.linkedUserId) params = params.set('linkedUserId', filters.linkedUserId);
     if (filters.search) params = params.set('search', filters.search);
     if (filters.page) params = params.set('page', filters.page);
@@ -32,8 +35,8 @@ export class AdminProvidersApiService {
     return this.http.get<AdminProviderDetail>(`${this.endpoint}/${encodeURIComponent(id)}`);
   }
 
-  create(request: CreateAdminProviderRequest): Observable<AdminProviderDetail> {
-    return this.http.post<AdminProviderDetail>(this.endpoint, request, {
+  create(request: CreateAdminProviderRequest): Observable<AdminCreatedProviderResponse> {
+    return this.http.post<AdminCreatedProviderResponse>(this.endpoint, request, {
       context: this.mutationContext,
     });
   }
@@ -58,6 +61,22 @@ export class AdminProvidersApiService {
     return this.http.patch<AdminProviderDetail>(
       `${this.endpoint}/${encodeURIComponent(id)}/suspend`,
       {},
+      { context: this.mutationContext },
+    );
+  }
+
+  approve(id: string): Observable<AdminProviderDetail> {
+    return this.http.post<AdminProviderDetail>(
+      `${this.endpoint}/${encodeURIComponent(id)}/approve`,
+      {},
+      { context: this.mutationContext },
+    );
+  }
+
+  reject(id: string, request: RejectProviderRequest): Observable<AdminProviderDetail> {
+    return this.http.post<AdminProviderDetail>(
+      `${this.endpoint}/${encodeURIComponent(id)}/reject`,
+      request,
       { context: this.mutationContext },
     );
   }

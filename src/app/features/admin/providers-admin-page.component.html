@@ -4,10 +4,9 @@
     <p class="text-sm font-bold uppercase tracking-[0.14em] text-brand-600">Operations</p>
     <h1 class="mt-2 text-3xl font-bold text-brand-900 sm:text-4xl">Providers</h1>
     <p class="mt-3 max-w-3xl text-slate-600">
-      Create and maintain operational provider profiles. Account access is managed separately.
+      Create an invited provider, then review onboarding separately from operational status.
     </p>
   </header>
-
   <div class="mt-6 space-y-3" aria-live="polite">
     @if (statusMessage()) {
       <p role="status" class="rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900">
@@ -27,13 +26,60 @@
     }
   </div>
 
+  @if (invitationDeliveryStatus(); as delivery) {
+    <section
+      aria-labelledby="delivery-heading"
+      class="mt-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-6"
+    >
+      <h2 id="delivery-heading" class="text-xl font-bold text-amber-950">Invitation delivery</h2>
+      @if (delivery === 'SENT') {
+        <p class="mt-2">Invitation email sent successfully.</p>
+      } @else if (delivery === 'MANUAL_REQUIRED') {
+        <p class="mt-2">
+          Automatic email delivery is unavailable. Share this invitation link manually.
+        </p>
+      } @else {
+        <p class="mt-2">
+          The provider record and invitation were created, but email delivery failed. Share this
+          invitation link manually; do not create the provider again.
+        </p>
+      }
+      @if (oneTimeInvitationLink(); as link) {
+        <p class="mt-4 text-sm">
+          This link is shown once and disappears when this page is refreshed or left.
+        </p>
+        <input
+          aria-label="One-time invitation link"
+          readonly
+          [value]="link"
+          class="mt-2 min-h-11 w-full rounded-lg border border-amber-500 bg-white px-3 font-mono text-sm"
+        />
+        <button
+          type="button"
+          (click)="copyInvitationLink()"
+          class="mt-3 min-h-11 rounded-lg bg-amber-900 px-5 font-bold text-white focus:ring-4 focus:ring-amber-300"
+        >
+          Copy invitation link
+        </button>
+      }
+      @if (createdProviderId(); as id) {
+        <a [routerLink]="['/admin/providers', id]" class="ml-4 font-bold text-brand-800 underline"
+          >Open provider</a
+        >
+      }
+    </section>
+  }
+
   <section
     aria-labelledby="create-provider-heading"
     class="mt-8 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
   >
-    <h2 id="create-provider-heading" class="text-xl font-bold text-brand-900">Create provider</h2>
+    <h2 id="create-provider-heading" class="text-xl font-bold text-brand-900">
+      Create and invite provider
+    </h2>
     <p class="mt-2 text-sm text-slate-600">
-      New providers start as pending and are not linked to a user account.
+      The provider starts pending. This creates the record and invitation together; approval remains
+      a later review action.
     </p>
     <form
       [formGroup]="createForm"
@@ -45,13 +91,35 @@
         ><input
           id="provider-name"
           formControlName="displayName"
-          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
         @if (createForm.controls.displayName.touched && createForm.controls.displayName.invalid) {
-          <p class="mt-1 text-sm text-red-700">
-            Enter a provider name of no more than 200 characters.
-          </p>
+          <p class="mt-1 text-sm text-red-700">Enter a provider name.</p>
         }
+      </div>
+      <div>
+        <label for="provider-email" class="font-bold">Email</label
+        ><input
+          id="provider-email"
+          type="email"
+          autocomplete="email"
+          formControlName="email"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+        />
+        @if (createForm.controls.email.touched && createForm.controls.email.invalid) {
+          <p class="mt-1 text-sm text-red-700">Enter a valid email address.</p>
+        }
+      </div>
+      <div>
+        <label for="provider-phone" class="font-bold"
+          >Phone <span class="font-normal text-slate-500">(optional)</span></label
+        ><input
+          id="provider-phone"
+          type="tel"
+          autocomplete="tel"
+          formControlName="phone"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+        />
       </div>
       <div>
         <label for="professional-reference" class="font-bold"
@@ -59,15 +127,53 @@
         ><input
           id="professional-reference"
           formControlName="professionalReference"
-          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+        />
+      </div>
+      <div>
+        <label for="provider-type" class="font-bold">Provider type</label
+        ><select
+          id="provider-type"
+          formControlName="providerType"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+        >
+          <option value="INDIVIDUAL">Individual</option>
+          <option value="CLINIC">Clinic</option>
+          <option value="DIAGNOSTIC_CENTRE">Diagnostic centre</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div>
+        <label for="country-code" class="font-bold">Country code</label
+        ><input
+          id="country-code"
+          maxlength="2"
+          formControlName="countryCode"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 uppercase focus:ring-4 focus:ring-brand-200"
+        />
+      </div>
+      <div>
+        <label for="provider-region" class="font-bold">State or region</label
+        ><input
+          id="provider-region"
+          formControlName="stateOrRegion"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
+        />
+      </div>
+      <div>
+        <label for="provider-city" class="font-bold">City</label
+        ><input
+          id="provider-city"
+          formControlName="city"
+          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
       </div>
       <button
         type="submit"
         [disabled]="creating()"
-        class="min-h-12 rounded-xl bg-brand-600 px-5 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+        class="min-h-12 rounded-xl bg-brand-600 px-5 py-3 font-bold text-white focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
       >
-        {{ creating() ? 'Creating…' : 'Create provider' }}
+        {{ creating() ? 'Creating and inviting…' : 'Create and invite provider' }}
       </button>
     </form>
   </section>
@@ -77,24 +183,24 @@
     <form
       [formGroup]="filterForm"
       (ngSubmit)="applyFilters()"
-      class="mt-5 grid gap-4 rounded-2xl border border-brand-100 bg-white p-5 md:grid-cols-3"
+      class="mt-5 grid gap-4 rounded-2xl border border-brand-100 bg-white p-5 md:grid-cols-4"
     >
       <div>
         <label for="provider-search" class="font-bold">Name search</label
         ><input
           id="provider-search"
           formControlName="search"
-          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
       </div>
       <div>
-        <label for="provider-status" class="font-bold">Status</label
+        <label for="provider-status" class="font-bold">Operational status</label
         ><select
           id="provider-status"
           formControlName="status"
-          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3"
         >
-          <option value="">All statuses</option>
+          <option value="">All</option>
           <option value="PENDING">Pending</option>
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
@@ -102,33 +208,44 @@
         </select>
       </div>
       <div>
+        <label for="onboarding-status" class="font-bold">Onboarding status</label
+        ><select
+          id="onboarding-status"
+          formControlName="onboardingStatus"
+          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3"
+        >
+          <option value="">All</option>
+          <option value="DRAFT">Draft</option>
+          <option value="INVITED">Invited</option>
+          <option value="SUBMITTED">Submitted</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+      <div>
         <label for="provider-limit" class="font-bold">Rows per page</label
         ><select
           id="provider-limit"
           formControlName="limit"
-          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3"
         >
           <option [ngValue]="10">10</option>
           <option [ngValue]="25">25</option>
           <option [ngValue]="50">50</option>
         </select>
       </div>
-      <div class="flex flex-wrap gap-3 md:col-span-3">
-        <button
-          type="submit"
-          class="min-h-11 rounded-lg bg-brand-600 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
-        >
+      <div class="flex gap-3 md:col-span-4">
+        <button type="submit" class="min-h-11 rounded-lg bg-brand-600 px-5 font-bold text-white">
           Apply filters</button
         ><button
           type="button"
           (click)="clearFilters()"
-          class="min-h-11 rounded-lg border border-brand-600 px-5 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="min-h-11 rounded-lg border border-brand-600 px-5 font-bold text-brand-700"
         >
           Clear filters
         </button>
       </div>
     </form>
-
     @if (loading() && !response()) {
       <p role="status" class="mt-5 rounded-xl bg-brand-50 p-4">Loading providers…</p>
     }
@@ -137,14 +254,16 @@
         <div class="mt-5 overflow-x-auto rounded-2xl border border-brand-100 bg-white shadow-soft">
           <table class="min-w-full text-left text-sm">
             <caption class="sr-only">
-              Operational provider records
+              Provider onboarding and operational records
             </caption>
-            <thead class="bg-brand-50 text-brand-900">
+            <thead class="bg-brand-50">
               <tr>
                 <th class="px-4 py-3">Provider</th>
-                <th class="px-4 py-3">Reference</th>
-                <th class="px-4 py-3">Status</th>
-                <th class="px-4 py-3">Linked user</th>
+                <th class="px-4 py-3">Identity</th>
+                <th class="px-4 py-3">Location</th>
+                <th class="px-4 py-3">Onboarding</th>
+                <th class="px-4 py-3">Operational</th>
+                <th class="px-4 py-3">Account</th>
                 <th class="px-4 py-3">Created</th>
                 <th class="px-4 py-3">Action</th>
               </tr>
@@ -152,17 +271,31 @@
             <tbody>
               @for (provider of result.items; track provider.id) {
                 <tr class="border-t border-slate-200">
-                  <th class="px-4 py-4 font-bold">{{ provider.displayName }}</th>
-                  <td class="px-4 py-4">{{ provider.professionalReference || 'Not available' }}</td>
+                  <th class="px-4 py-4">
+                    <span class="font-bold">{{ provider.displayName }}</span
+                    ><br /><span class="font-normal text-slate-600">{{
+                      provider.providerType
+                    }}</span>
+                  </th>
                   <td class="px-4 py-4">
-                    <span class="font-bold">{{ provider.status }}</span>
+                    {{ provider.email || 'Not available' }}<br />{{
+                      provider.phone || 'Phone not available'
+                    }}<br />{{ provider.professionalReference || 'No professional reference' }}
                   </td>
                   <td class="px-4 py-4">
+                    {{ provider.city || 'Not available' }}
+                    @if (provider.stateOrRegion) {
+                      , {{ provider.stateOrRegion }}
+                    }
+                  </td>
+                  <td class="px-4 py-4 font-bold">{{ provider.onboardingStatus }}</td>
+                  <td class="px-4 py-4 font-bold">{{ provider.status }}</td>
+                  <td class="px-4 py-4">
                     @if (provider.linkedUser) {
-                      <span>{{ provider.linkedUser.displayName || 'Name unavailable' }}</span
-                      ><br /><span class="text-slate-600">{{
-                        provider.linkedUser.email || 'Email unavailable'
-                      }}</span>
+                      Linked to
+                      {{
+                        provider.linkedUser.displayName || provider.linkedUser.email || 'account'
+                      }}
                     } @else {
                       Not linked
                     }
@@ -171,7 +304,7 @@
                   <td class="px-4 py-4">
                     <a
                       [routerLink]="['/admin/providers', provider.id]"
-                      class="rounded font-bold text-brand-700 underline focus:outline-none focus:ring-4 focus:ring-brand-200"
+                      class="font-bold text-brand-700 underline"
                       >Open provider</a
                     >
                   </td>
@@ -181,9 +314,7 @@
           </table>
         </div>
       } @else {
-        <p class="mt-5 rounded-xl border border-slate-200 bg-white p-5">
-          No providers match these filters.
-        </p>
+        <p class="mt-5 rounded-xl border bg-white p-5">No providers match these filters.</p>
       }
       <nav aria-label="Provider pages" class="mt-5 flex items-center justify-between">
         <button

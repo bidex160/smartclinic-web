@@ -8,6 +8,9 @@ import { AdminUserSearchApiService } from '../../core/services/admin-user-search
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProviderAdminDetailPageComponent } from './provider-admin-detail-page.component';
 import { ProviderInvitationsApiService } from '../../core/services/provider-invitations-api.service';
+import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
+import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 
 describe('ProviderAdminDetailPageComponent', () => {
   it('renders safe detail, linked user, counts, and no credential data', async () => {
@@ -23,11 +26,24 @@ describe('ProviderAdminDetailPageComponent', () => {
 
   it('updates only mutable basic profile fields', async () => {
     const { component, api } = await setup();
-    component.profileForm.setValue({ displayName: 'Updated', professionalReference: 'REF-2' });
+    component.profileForm.setValue({
+      displayName: 'Updated',
+      phone: '+2348000000000',
+      professionalReference: 'REF-2',
+      providerType: 'CLINIC',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
+    });
     component.updateProfile();
     expect(api.update).toHaveBeenCalledWith('provider-id', {
       displayName: 'Updated',
+      phone: '+2348000000000',
       professionalReference: 'REF-2',
+      providerType: 'CLINIC',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
     });
   });
 
@@ -45,6 +61,35 @@ describe('ProviderAdminDetailPageComponent', () => {
     component.requestConfirmation('unlink');
     component.confirmAction();
     expect(api.unlinkUser).toHaveBeenCalledOnce();
+  });
+
+  it('shows review actions only for submitted onboarding and sends an optional rejection note', async () => {
+    const { component, fixture, api } = await setup({
+      provider: detail({ status: 'PENDING', onboardingStatus: 'SUBMITTED', reviewedAt: null }),
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Approve provider');
+    expect(fixture.nativeElement.textContent).toContain('Reject provider');
+    component.requestConfirmation('approve');
+    component.confirmAction();
+    expect(api.approve).toHaveBeenCalledWith('provider-id');
+    component.provider.set(detail({ status: 'PENDING', onboardingStatus: 'SUBMITTED' }));
+    component.rejectionForm.controls.reviewNote.setValue('Update the registration details');
+    component.requestConfirmation('reject');
+    component.confirmAction();
+    expect(api.reject).toHaveBeenCalledWith('provider-id', {
+      reviewNote: 'Update the registration details',
+    });
+  });
+
+  it('does not expose approval or activation as alternatives before submission', async () => {
+    const { fixture } = await setup({
+      provider: detail({ status: 'PENDING', onboardingStatus: 'INVITED' }),
+    });
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).not.toContain('Approve provider');
+    expect(text).not.toContain('Activate provider');
   });
 
   it('sanitizes a 409 unlink conflict', async () => {
@@ -230,6 +275,8 @@ describe('ProviderAdminDetailPageComponent', () => {
       update: vi.fn((_id, request) => of({ ...value, ...request })),
       activate: vi.fn(() => of({ ...value, status: 'ACTIVE' })),
       suspend: vi.fn(() => of({ ...value, status: 'SUSPENDED' })),
+      approve: vi.fn(() => of({ ...value, status: 'ACTIVE', onboardingStatus: 'APPROVED' })),
+      reject: vi.fn(() => of({ ...value, status: 'PENDING', onboardingStatus: 'REJECTED' })),
       unlinkUser: vi.fn(() =>
         options.unlinkError
           ? throwError(() => options.unlinkError)
@@ -268,6 +315,9 @@ describe('ProviderAdminDetailPageComponent', () => {
         { provide: AdminProvidersApiService, useValue: api },
         { provide: AdminUserSearchApiService, useValue: usersApi },
         { provide: ProviderInvitationsApiService, useValue: invitationsApi },
+        { provide: ProviderEligibilityApiService, useValue: eligibilityApi() },
+        { provide: HealthCheckPackagesApiService, useValue: { getPackages: () => of([]) } },
+        { provide: FulfilmentModesApiService, useValue: { getFulfilmentModes: () => of([]) } },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },
       ],
     }).compileComponents();
@@ -280,8 +330,18 @@ function detail(changes: Partial<AdminProviderDetail> = {}): AdminProviderDetail
   return {
     id: 'provider-id',
     displayName: 'Care Provider',
+    email: 'care@example.test',
+    phone: '+2348000000000',
     professionalReference: 'PR-1',
     status: 'ACTIVE',
+    providerType: 'CLINIC',
+    countryCode: 'NG',
+    stateOrRegion: 'Lagos',
+    city: 'Ikeja',
+    onboardingStatus: 'APPROVED',
+    submittedAt: '2026-08-17T08:00:00Z',
+    reviewedAt: '2026-08-18T07:00:00Z',
+    reviewNote: null,
     linkedUser: {
       id: 'user-id',
       email: 'operator@example.test',
@@ -294,6 +354,15 @@ function detail(changes: Partial<AdminProviderDetail> = {}): AdminProviderDetail
     createdAt: '2026-08-18T08:00:00Z',
     updatedAt: '2026-08-18T09:00:00Z',
     ...changes,
+  };
+}
+
+function eligibilityApi() {
+  return {
+    listServices: () => of([]),
+    listLocations: () => of([]),
+    listAvailability: () => of([]),
+    listExceptions: () => of([]),
   };
 }
 

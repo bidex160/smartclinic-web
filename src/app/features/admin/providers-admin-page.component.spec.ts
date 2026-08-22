@@ -11,7 +11,7 @@ describe('ProvidersAdminPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Care Provider');
-    expect(text).toContain('operator@example.test');
+    expect(text).toContain('Linked to Operator');
     expect(text).not.toContain('passwordHash');
     expect(text).not.toContain('refreshToken');
     expect(fixture.nativeElement.querySelector('a[href="/admin/providers"]')).toBeTruthy();
@@ -19,7 +19,12 @@ describe('ProvidersAdminPageComponent', () => {
 
   it('applies server filters, clears them, and paginates', async () => {
     const { component, api } = await setup();
-    component.filterForm.setValue({ search: 'Care', status: 'ACTIVE', limit: 10 });
+    component.filterForm.setValue({
+      search: 'Care',
+      status: 'ACTIVE',
+      onboardingStatus: '',
+      limit: 10,
+    });
     component.applyFilters();
     expect(api.list).toHaveBeenLastCalledWith({
       search: 'Care',
@@ -40,18 +45,77 @@ describe('ProvidersAdminPageComponent', () => {
 
   it('creates only backend-supported profile fields and opens detail', async () => {
     const { component, api, router } = await setup();
-    component.createForm.setValue({ displayName: ' New Provider ', professionalReference: '' });
+    component.createForm.setValue({
+      displayName: ' New Provider ',
+      email: 'new@example.test',
+      phone: '',
+      professionalReference: '',
+      providerType: 'CLINIC',
+      countryCode: 'ng',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
+    });
     component.createProvider();
-    expect(api.create).toHaveBeenCalledWith({ displayName: 'New Provider' });
-    expect(router.navigate).toHaveBeenCalledWith(['/admin/providers', 'provider-id']);
+    expect(api.create).toHaveBeenCalledWith({
+      displayName: 'New Provider',
+      email: 'new@example.test',
+      providerType: 'CLINIC',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
+    });
+    expect(component.createdProviderId()).toBe('provider-id');
   });
 
-  async function setup() {
+  it.each([
+    ['MANUAL_REQUIRED', 'Automatic email delivery is unavailable.'],
+    ['FAILED', 'email delivery failed'],
+  ] as const)(
+    'preserves the created provider and ephemeral link for %s delivery',
+    async (deliveryStatus, message) => {
+      const link = `https://app.example.test/provider/setup/${'a'.repeat(43)}`;
+      const { component, api, fixture } = await setup({
+        deliveryStatus,
+        manualInvitationLink: link,
+      });
+      component.createForm.setValue({
+        displayName: 'New Provider',
+        email: 'new@example.test',
+        phone: '',
+        professionalReference: '',
+        providerType: 'CLINIC',
+        countryCode: 'NG',
+        stateOrRegion: 'Lagos',
+        city: 'Ikeja',
+      });
+      component.createProvider();
+      fixture.detectChanges();
+      expect(component.oneTimeInvitationLink()).toBe(link);
+      expect(fixture.nativeElement.textContent).toContain(message);
+      expect(component.error()).toBeNull();
+      expect(api.create).toHaveBeenCalledOnce();
+    },
+  );
+
+  async function setup(
+    invitation: {
+      deliveryStatus: 'SENT' | 'MANUAL_REQUIRED' | 'FAILED';
+      manualInvitationLink?: string;
+    } = { deliveryStatus: 'SENT' },
+  ) {
     const response = { items: [provider()], page: 1, limit: 25, total: 30, totalPages: 2 };
     const api = {
       list: vi.fn(() => of(response)),
       create: vi.fn(() =>
-        of({ ...provider(), displayName: 'New Provider', capabilityCount: 0, locationCount: 0 }),
+        of({
+          provider: {
+            ...provider(),
+            displayName: 'New Provider',
+            capabilityCount: 0,
+            locationCount: 0,
+          },
+          invitation,
+        }),
       ),
     };
     await TestBed.configureTestingModule({
@@ -73,8 +137,18 @@ function provider() {
   return {
     id: 'provider-id',
     displayName: 'Care Provider',
+    email: 'care@example.test',
+    phone: null,
     professionalReference: 'PR-1',
     status: 'ACTIVE' as const,
+    providerType: 'CLINIC' as const,
+    countryCode: 'NG',
+    stateOrRegion: 'Lagos',
+    city: 'Ikeja',
+    onboardingStatus: 'APPROVED' as const,
+    submittedAt: '2026-08-17T08:00:00Z',
+    reviewedAt: '2026-08-18T07:00:00Z',
+    reviewNote: null,
     linkedUser: {
       id: 'user-id',
       email: 'operator@example.test',

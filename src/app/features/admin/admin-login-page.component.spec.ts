@@ -6,6 +6,7 @@ import { of, throwError } from 'rxjs';
 import { LoginResponse, UserRole } from '../../core/models/auth.model';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { AdminLoginPageComponent } from './admin-login-page.component';
 
 describe('AdminLoginPageComponent', () => {
@@ -51,16 +52,33 @@ describe('AdminLoginPageComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/provider/offers']);
   });
 
-  async function setup(login: () => ReturnType<AuthApiService['login']>) {
-    const router = { navigate: vi.fn().mockResolvedValue(true) };
+  it('routes a pending PROVIDER login to their onboarding profile', async () => {
+    const { component, router } = await setup(() => of(loginResponse(['PROVIDER'])), {
+      status: 'PENDING',
+      onboardingStatus: 'SUBMITTED',
+    });
+    component.form.setValue({ email: 'provider@example.test', password: 'secret' });
+    component.login();
+    expect(router.navigate).toHaveBeenCalledWith(['/provider/profile']);
+  });
+
+  async function setup(
+    login: () => ReturnType<AuthApiService['login']>,
+    profile = { status: 'ACTIVE', onboardingStatus: 'APPROVED' },
+  ) {
     await TestBed.configureTestingModule({
       imports: [AdminLoginPageComponent],
       providers: [
         provideRouter([]),
-        { provide: Router, useValue: router },
         { provide: AuthApiService, useValue: { login: vi.fn(login) } },
+        {
+          provide: ProviderOnboardingApiService,
+          useValue: { getProfile: vi.fn(() => of(profile)) },
+        },
       ],
     }).compileComponents();
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
     return {
       component: TestBed.createComponent(AdminLoginPageComponent).componentInstance,
       authState: TestBed.inject(AuthStateService),

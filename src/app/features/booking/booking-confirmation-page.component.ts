@@ -151,9 +151,9 @@ export class BookingConfirmationPageComponent {
           this.focusErrorSummary();
           return;
         }
-        if(checkoutUrl) {
-         this.checkoutUrl.set(checkoutUrl);
-        } else{
+        // if(checkoutUrl) {
+        //  this.checkoutUrl.set(checkoutUrl);
+        // } else{
            this.popup.resumeTransaction(accessCode as string, {
           onSuccess: (tranx) => {
              this.validateTrans(tranx.reference, result.bookingReference);
@@ -167,7 +167,7 @@ export class BookingConfirmationPageComponent {
          });
        
         //  transaction
-        }
+      //  }
      
       },
       error: (error: unknown) => {

@@ -47,7 +47,7 @@ describe('BookingConfirmationPageComponent', () => {
     amount: '12500.00',
     currency: 'NGN',
     checkoutUrl: 'https://checkout.paystack.com/pay/safe',
-    accessCode: null,
+    accessCode: 'access-code-safe',
   };
   const pendingStatus: PublicBookingPaymentStatus = {
     bookingReference: 'SC-REF',
@@ -147,9 +147,9 @@ describe('BookingConfirmationPageComponent', () => {
     expect(localStorageSpy).not.toHaveBeenCalled();
   });
 
-  it('initializes payment once and shows checkout only for a safe backend URL', async () => {
+  it('initializes payment once and opens the access-code Paystack Popup', async () => {
     const pending = new Subject<PublicBookingPaymentInitiationResult>();
-    const { fixture, api } = await setup({
+    const { fixture, api, resumeTransaction } = await setup({
       initial: { ...confirmation, status: 'AWAITING_FUNDING' },
       payment: () => pending,
     });
@@ -165,14 +165,14 @@ describe('BookingConfirmationPageComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Payment is awaiting your action');
     expect(fixture.nativeElement.textContent).toContain('NGN 12500.00');
-    expect(fixture.nativeElement.textContent).toContain('Continue to secure payment');
+    expect(resumeTransaction).toHaveBeenCalledWith('access-code-safe', expect.any(Object));
     expect(fixture.nativeElement.textContent).not.toContain('Payment successful');
   });
 
   it('rejects an invalid or non-HTTPS checkout URL and permits retry', async () => {
     const { fixture } = await setup({
       initial: { ...confirmation, status: 'AWAITING_FUNDING' },
-      payment: () => of({ ...payment, checkoutUrl: 'javascript:alert(1)' }),
+      payment: () => of({ ...payment, checkoutUrl: 'javascript:alert(1)', accessCode: null }),
     });
 
     fixture.componentInstance.initiatePayment();
@@ -184,16 +184,15 @@ describe('BookingConfirmationPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('invalid destination');
   });
 
-  it('hands off only to the checkout URL returned and validated from the backend', async () => {
-    const { fixture, navigateExternal } = await setup({
+  it('hands off payment using only the backend-returned access code', async () => {
+    const { fixture, resumeTransaction, navigateExternal } = await setup({
       initial: { ...confirmation, status: 'AWAITING_FUNDING' },
       payment: () => of(payment),
     });
     fixture.componentInstance.initiatePayment();
 
-    fixture.componentInstance.continueToCheckout();
-
-    expect(navigateExternal).toHaveBeenCalledWith('https://checkout.paystack.com/pay/safe');
+    expect(resumeTransaction).toHaveBeenCalledWith('access-code-safe', expect.any(Object));
+    expect(navigateExternal).not.toHaveBeenCalled();
   });
 
   it('ignores payment-looking query parameters and re-reads authoritative booking state', async () => {
@@ -248,7 +247,7 @@ describe('BookingConfirmationPageComponent', () => {
     expect(fixture.componentInstance.paymentError()).not.toContain('Paystack upstream');
     fixture.componentInstance.initiatePayment();
     expect(api.initiatePayment).toHaveBeenCalledTimes(2);
-    expect(fixture.componentInstance.checkoutUrl()).toBe(payment.checkoutUrl);
+    expect(fixture.componentInstance.paymentResult()?.accessCode).toBe('access-code-safe');
   });
 
   it('renders confirmed payment, paid time, amount, and authoritative booking state', async () => {
@@ -417,12 +416,16 @@ describe('BookingConfirmationPageComponent', () => {
     }).compileComponents();
     const state = TestBed.inject(BookingFlowStateService);
     if (options.initial) state.completeBooking(options.initial);
+    const fixture = TestBed.createComponent(BookingConfirmationPageComponent);
+    const resumeTransaction = vi.fn();
+    fixture.componentInstance.popup.resumeTransaction = resumeTransaction;
     return {
-      fixture: TestBed.createComponent(BookingConfirmationPageComponent),
+      fixture,
       state,
       api,
       router,
       navigateExternal,
+      resumeTransaction,
     };
   }
 });

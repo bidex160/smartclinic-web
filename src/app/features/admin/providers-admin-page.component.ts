@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DOCUMENT } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
@@ -15,7 +15,9 @@ import { finalize } from 'rxjs';
 import {
   AdminProviderFilters,
   AdminProviderListResponse,
+  ProviderOnboardingStatus,
   ProviderStatus,
+  ProviderType,
 } from '../../core/models/admin-provider.model';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
@@ -29,6 +31,7 @@ import { AdminSessionHeaderComponent } from './admin-session-header.component';
 export class ProvidersAdminPageComponent {
   private readonly api = inject(AdminProvidersApiService);
   private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('errorSummary');
 
@@ -37,15 +40,25 @@ export class ProvidersAdminPageComponent {
   readonly creating = signal(false);
   readonly error = signal<string | null>(null);
   readonly statusMessage = signal<string | null>(null);
+  readonly createdProviderId = signal<string | null>(null);
+  readonly invitationDeliveryStatus = signal<'SENT' | 'MANUAL_REQUIRED' | 'FAILED' | null>(null);
+  readonly oneTimeInvitationLink = signal<string | null>(null);
 
   readonly filterForm = this.formBuilder.group({
     search: ['', Validators.maxLength(200)],
     status: this.formBuilder.control<ProviderStatus | ''>(''),
+    onboardingStatus: this.formBuilder.control<ProviderOnboardingStatus | ''>(''),
     limit: this.formBuilder.control<10 | 25 | 50>(25),
   });
   readonly createForm = this.formBuilder.group({
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
+    phone: ['', [Validators.minLength(7), Validators.maxLength(32)]],
     professionalReference: ['', Validators.maxLength(200)],
+    providerType: this.formBuilder.control<ProviderType>('INDIVIDUAL', Validators.required),
+    countryCode: ['NG', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
+    stateOrRegion: ['', [Validators.required, Validators.maxLength(120)]],
+    city: ['', [Validators.required, Validators.maxLength(120)]],
   });
 
   constructor() {
@@ -56,7 +69,7 @@ export class ProvidersAdminPageComponent {
     if (this.filterForm.valid) this.load(1);
   }
   clearFilters(): void {
-    this.filterForm.reset({ search: '', status: '', limit: 25 });
+    this.filterForm.reset({ search: '', status: '', onboardingStatus: '', limit: 25 });
     this.load(1);
   }
   goToPage(page: number): void {
@@ -73,23 +86,55 @@ export class ProvidersAdminPageComponent {
     this.creating.set(true);
     this.error.set(null);
     this.statusMessage.set(null);
+    this.createdProviderId.set(null);
+    this.invitationDeliveryStatus.set(null);
+    this.oneTimeInvitationLink.set(null);
     this.api
       .create({
         displayName: value.displayName.trim(),
+        email: value.email.trim().toLowerCase(),
+        ...(value.phone.trim() && { phone: value.phone.trim() }),
         ...(value.professionalReference.trim() && {
           professionalReference: value.professionalReference.trim(),
         }),
+        providerType: value.providerType,
+        countryCode: value.countryCode.trim().toUpperCase(),
+        stateOrRegion: value.stateOrRegion.trim(),
+        city: value.city.trim(),
       })
       .pipe(finalize(() => this.creating.set(false)))
       .subscribe({
-        next: (provider) => {
-          this.statusMessage.set(`${provider.displayName} was created as a pending provider.`);
-          this.createForm.reset();
-          void this.router.navigate(['/admin/providers', provider.id]);
+        next: ({ provider, invitation }) => {
+          this.createdProviderId.set(provider.id);
+          this.invitationDeliveryStatus.set(invitation.deliveryStatus);
+          this.oneTimeInvitationLink.set(invitation.manualInvitationLink ?? null);
+          const delivery = {
+            SENT: 'Invitation email sent successfully.',
+            MANUAL_REQUIRED:
+              'Automatic email delivery is unavailable. Share the one-time link manually.',
+            FAILED:
+              'The provider and invitation were created, but email delivery failed. Share the one-time link manually.',
+          } as const;
+          this.statusMessage.set(
+            `${provider.displayName} was created. ${delivery[invitation.deliveryStatus]}`,
+          );
+          this.createForm.reset({ providerType: 'INDIVIDUAL', countryCode: 'NG' });
+          this.load(1);
         },
         error: (error: HttpErrorResponse) =>
           this.handleError(error, 'Provider could not be created.'),
       });
+  }
+
+  async copyInvitationLink(): Promise<void> {
+    const link = this.oneTimeInvitationLink();
+    if (!link) return;
+    try {
+      await this.document.defaultView?.navigator.clipboard.writeText(link);
+      this.statusMessage.set('Invitation link copied.');
+    } catch {
+      this.error.set('The invitation link could not be copied. Select and copy it manually.');
+    }
   }
 
   private load(page: number): void {
@@ -100,6 +145,7 @@ export class ProvidersAdminPageComponent {
       limit: value.limit,
       ...(value.search.trim() && { search: value.search.trim() }),
       ...(value.status && { status: value.status }),
+      ...(value.onboardingStatus && { onboardingStatus: value.onboardingStatus }),
     };
     this.loading.set(true);
     this.error.set(null);

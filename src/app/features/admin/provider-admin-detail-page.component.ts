@@ -22,12 +22,19 @@ import { AdminUserSearchApiService } from '../../core/services/admin-user-search
 import { AdminProviderInvitation } from '../../core/models/provider-invitation.model';
 import { ProviderInvitationsApiService } from '../../core/services/provider-invitations-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
+import { ProviderEligibilityConfigComponent } from './provider-eligibility-config.component';
 
-type Confirmation = 'activate' | 'suspend' | 'link' | 'unlink' | null;
+type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'unlink' | null;
 
 @Component({
   selector: 'app-provider-admin-detail-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [
+    AdminSessionHeaderComponent,
+    ProviderEligibilityConfigComponent,
+    DatePipe,
+    ReactiveFormsModule,
+    RouterLink,
+  ],
   templateUrl: './provider-admin-detail-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -61,8 +68,16 @@ export class ProviderAdminDetailPageComponent {
   readonly revoking = signal(false);
   readonly profileForm = this.formBuilder.group({
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
+    phone: ['', [Validators.minLength(7), Validators.maxLength(32)]],
     professionalReference: ['', Validators.maxLength(200)],
+    providerType: this.formBuilder.control<'INDIVIDUAL' | 'CLINIC' | 'DIAGNOSTIC_CENTRE' | 'OTHER'>(
+      'INDIVIDUAL',
+    ),
+    countryCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
+    stateOrRegion: ['', [Validators.required, Validators.maxLength(120)]],
+    city: ['', [Validators.required, Validators.maxLength(120)]],
   });
+  readonly rejectionForm = this.formBuilder.group({ reviewNote: ['', Validators.maxLength(1000)] });
   readonly userSearchForm = this.formBuilder.group({
     q: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
   });
@@ -189,7 +204,12 @@ export class ProviderAdminDetailPageComponent {
           this.provider.set(provider);
           this.profileForm.setValue({
             displayName: provider.displayName,
+            phone: provider.phone ?? '',
             professionalReference: provider.professionalReference ?? '',
+            providerType: provider.providerType,
+            countryCode: provider.countryCode ?? '',
+            stateOrRegion: provider.stateOrRegion ?? '',
+            city: provider.city ?? '',
           });
         },
         error: (error: HttpErrorResponse) =>
@@ -206,7 +226,12 @@ export class ProviderAdminDetailPageComponent {
     this.run(
       this.api.update(this.id, {
         displayName: value.displayName.trim(),
+        phone: value.phone.trim() || null,
         professionalReference: value.professionalReference.trim(),
+        providerType: value.providerType,
+        countryCode: value.countryCode.trim().toUpperCase(),
+        stateOrRegion: value.stateOrRegion.trim(),
+        city: value.city.trim(),
       }),
       'Provider profile updated.',
     );
@@ -230,13 +255,25 @@ export class ProviderAdminDetailPageComponent {
         ? this.api.activate(this.id)
         : action === 'suspend'
           ? this.api.suspend(this.id)
-          : this.api.unlinkUser(this.id);
+          : action === 'approve'
+            ? this.api.approve(this.id)
+            : action === 'reject'
+              ? this.api.reject(this.id, {
+                  ...(this.rejectionForm.controls.reviewNote.value.trim() && {
+                    reviewNote: this.rejectionForm.controls.reviewNote.value.trim(),
+                  }),
+                })
+              : this.api.unlinkUser(this.id);
     const message =
       action === 'activate'
         ? 'Provider activated.'
         : action === 'suspend'
           ? 'Provider suspended.'
-          : 'Provider account unlinked safely.';
+          : action === 'approve'
+            ? 'Provider onboarding approved and provider activated.'
+            : action === 'reject'
+              ? 'Provider onboarding rejected.'
+              : 'Provider account unlinked safely.';
     this.run(operation, message);
   }
 
@@ -319,7 +356,12 @@ export class ProviderAdminDetailPageComponent {
         this.statusMessage.set(message);
         this.profileForm.setValue({
           displayName: provider.displayName,
+          phone: provider.phone ?? '',
           professionalReference: provider.professionalReference ?? '',
+          providerType: provider.providerType,
+          countryCode: provider.countryCode ?? '',
+          stateOrRegion: provider.stateOrRegion ?? '',
+          city: provider.city ?? '',
         });
       },
       error: (error: HttpErrorResponse) =>

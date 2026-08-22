@@ -112,11 +112,28 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'provider/register',
+    title: 'Provider application | SmartClinic',
+    loadComponent: () =>
+      import('./features/provider/provider-register-page.component').then(
+        (component) => component.ProviderRegisterPageComponent,
+      ),
+  },
+  {
     path: 'provider/setup/:token',
     title: 'Provider account setup | SmartClinic',
     loadComponent: () =>
       import('./features/provider/provider-setup-page.component').then(
         (component) => component.ProviderSetupPageComponent,
+      ),
+  },
+  {
+    path: 'provider/profile',
+    title: 'Provider onboarding profile | SmartClinic',
+    canActivate: [providerGuard],
+    loadComponent: () =>
+      import('./features/provider/provider-profile-page.component').then(
+        (component) => component.ProviderProfilePageComponent,
       ),
   },
   {

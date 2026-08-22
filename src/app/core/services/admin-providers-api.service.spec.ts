@@ -30,7 +30,18 @@ describe('AdminProvidersApiService', () => {
     api.get('provider/id').subscribe();
     http.expectOne('http://api.test/api/v1/admin/providers/provider%2Fid').flush(provider());
     const calls = [
-      [api.create({ displayName: 'Care Provider' }), 'POST', '/admin/providers'],
+      [
+        api.create({
+          displayName: 'Care Provider',
+          email: 'care@example.test',
+          providerType: 'CLINIC',
+          countryCode: 'NG',
+          stateOrRegion: 'Lagos',
+          city: 'Ikeja',
+        }),
+        'POST',
+        '/admin/providers',
+      ],
       [
         api.update('provider-id', { displayName: 'Updated' }),
         'PATCH',
@@ -38,11 +49,17 @@ describe('AdminProvidersApiService', () => {
       ],
       [api.activate('provider-id'), 'PATCH', '/admin/providers/provider-id/activate'],
       [api.suspend('provider-id'), 'PATCH', '/admin/providers/provider-id/suspend'],
+      [api.approve('provider-id'), 'POST', '/admin/providers/provider-id/approve'],
+      [
+        api.reject('provider-id', { reviewNote: 'Needs correction' }),
+        'POST',
+        '/admin/providers/provider-id/reject',
+      ],
       [api.linkUser('provider-id', 'user-id'), 'POST', '/admin/providers/provider-id/link-user'],
       [api.unlinkUser('provider-id'), 'POST', '/admin/providers/provider-id/unlink-user'],
     ] as const;
     for (const [operation, method, path] of calls) {
-      operation.subscribe();
+      (operation as import('rxjs').Observable<unknown>).subscribe();
       const request = http.expectOne(`http://api.test/api/v1${path}`);
       expect(request.request.method).toBe(method);
       expect(request.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
@@ -73,8 +90,18 @@ function provider() {
   return {
     id: 'provider-id',
     displayName: 'Care Provider',
+    email: 'care@example.test',
+    phone: null,
     professionalReference: null,
     status: 'PENDING',
+    providerType: 'CLINIC',
+    countryCode: 'NG',
+    stateOrRegion: 'Lagos',
+    city: 'Ikeja',
+    onboardingStatus: 'INVITED',
+    submittedAt: null,
+    reviewedAt: null,
+    reviewNote: null,
     linkedUser: null,
     capabilityCount: 0,
     locationCount: 0,

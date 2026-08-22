@@ -1,15 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 
 @Component({
   selector: 'app-admin-login-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './admin-login-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -17,6 +18,7 @@ export class AdminLoginPageComponent {
   private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly authApi = inject(AuthApiService);
   private readonly router = inject(Router);
+  private readonly providerOnboarding = inject(ProviderOnboardingApiService);
   readonly authState = inject(AuthStateService);
   readonly accessDenied = signal(false);
   readonly submitted = signal(false);
@@ -48,7 +50,15 @@ export class AdminLoginPageComponent {
             return;
           }
           if (this.authState.isProvider()) {
-            void this.router.navigate(['/provider/offers']);
+            this.providerOnboarding.getProfile().subscribe({
+              next: (profile) =>
+                void this.router.navigate([
+                  profile.onboardingStatus === 'APPROVED' && profile.status === 'ACTIVE'
+                    ? '/provider/offers'
+                    : '/provider/profile',
+                ]),
+              error: () => void this.router.navigate(['/provider/profile']),
+            });
             return;
           }
           if (!this.authState.canManagePricing() && !this.authState.isProvider()) {

@@ -1,0 +1,197 @@
+<header class="border-b bg-white">
+  <div class="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
+    <a routerLink="/" class="text-xl font-bold text-brand-900">SmartClinic</a>
+    <div>
+      <span class="mr-4 text-sm">{{
+        auth.currentUser()?.displayName || auth.currentUser()?.email
+      }}</span
+      ><button type="button" (click)="logout()" class="rounded border px-4 py-2 font-bold">
+        Log out
+      </button>
+    </div>
+  </div>
+</header>
+<main class="mx-auto max-w-4xl px-5 py-10">
+  <p class="text-sm font-bold uppercase tracking-[.14em] text-brand-600">Provider onboarding</p>
+  <h1 class="mt-2 text-3xl font-bold text-brand-900">Provider profile</h1>
+  @if (statusMessage()) {
+    <p role="status" aria-live="polite" class="mt-5 rounded-xl bg-brand-50 p-4">
+      {{ statusMessage() }}
+    </p>
+  }
+  @if (error()) {
+    <div
+      #errorSummary
+      tabindex="-1"
+      role="alert"
+      class="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900"
+    >
+      {{ error() }}
+    </div>
+  }
+  @if (loading()) {
+    <p role="status" class="mt-6">Loading provider profile…</p>
+  } @else if (profile(); as current) {
+    <section class="mt-6 rounded-2xl border bg-white p-6">
+      <div class="flex flex-wrap justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold">Onboarding status: {{ current.onboardingStatus }}</h2>
+          <p class="mt-2">
+            Operational status: <strong>{{ current.status }}</strong>
+          </p>
+        </div>
+        @if (current.onboardingStatus === 'APPROVED' && current.status === 'ACTIVE') {
+          <a routerLink="/provider/offers" class="font-bold text-brand-700 underline"
+            >Open provider offers</a
+          >
+        }
+      </div>
+      @if (current.onboardingStatus === 'SUBMITTED') {
+        <p class="mt-4 rounded-lg bg-amber-50 p-4">
+          Your application has been submitted and is pending SmartClinic review. An account and
+          PROVIDER role do not mean the provider is operationally active.
+        </p>
+      } @else if (current.onboardingStatus === 'REJECTED') {
+        <p class="mt-4 rounded-lg bg-amber-50 p-4">
+          Your application needs updates. Review the note, update permitted fields, and submit
+          again.
+        </p>
+        <p class="mt-2">
+          <strong>Review note:</strong> {{ current.reviewNote || 'No note was provided.' }}
+        </p>
+      } @else if (current.onboardingStatus === 'APPROVED') {
+        <p class="mt-4 rounded-lg bg-brand-50 p-4">
+          Provider onboarding is approved. Operational access also requires ACTIVE status and later
+          matching prerequisites.
+        </p>
+      }
+    </section>
+    <form
+      [formGroup]="form"
+      (ngSubmit)="save()"
+      class="mt-6 grid gap-5 rounded-2xl border bg-white p-6 md:grid-cols-2"
+    >
+      <div>
+        <label for="profile-name" class="font-bold">Display name</label
+        ><input
+          id="profile-name"
+          formControlName="displayName"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        />
+      </div>
+      <div>
+        <label for="profile-email" class="font-bold">Account email</label
+        ><input
+          id="profile-email"
+          readonly
+          [value]="current.email"
+          class="mt-2 min-h-12 w-full rounded-lg border bg-slate-50 px-3"
+        />
+      </div>
+      <div>
+        <label for="profile-phone" class="font-bold">Phone</label
+        ><input
+          id="profile-phone"
+          formControlName="phone"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        />
+      </div>
+      <div>
+        <label for="profile-reference" class="font-bold">Professional reference</label
+        ><input
+          id="profile-reference"
+          formControlName="professionalReference"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        />
+      </div>
+      <div>
+        <label for="profile-type" class="font-bold">Provider type</label
+        ><select
+          id="profile-type"
+          formControlName="providerType"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        >
+          <option value="INDIVIDUAL">Individual</option>
+          <option value="CLINIC">Clinic</option>
+          <option value="DIAGNOSTIC_CENTRE">Diagnostic centre</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div>
+        <label for="profile-country" class="font-bold">Country code</label
+        ><input
+          id="profile-country"
+          maxlength="2"
+          formControlName="countryCode"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        />
+      </div>
+      <div>
+        <label for="profile-region" class="font-bold">State or region</label
+        ><input
+          id="profile-region"
+          formControlName="stateOrRegion"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        />
+      </div>
+      <div>
+        <label for="profile-city" class="font-bold">City</label
+        ><input
+          id="profile-city"
+          formControlName="city"
+          class="mt-2 min-h-12 w-full rounded-lg border px-3"
+        />
+      </div>
+      @if (current.onboardingStatus !== 'APPROVED') {
+        <div class="flex flex-wrap gap-3 md:col-span-2">
+          <button
+            type="submit"
+            [disabled]="mutating()"
+            class="min-h-11 rounded-lg border border-brand-700 px-5 font-bold text-brand-800"
+          >
+            Save profile
+          </button>
+          @if (current.onboardingStatus !== 'SUBMITTED') {
+            <button
+              type="button"
+              (click)="requestSubmit()"
+              [disabled]="mutating()"
+              class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
+            >
+              Submit for review
+            </button>
+          }
+        </div>
+      }
+    </form>
+    @if (confirmingSubmit()) {
+      <section
+        role="alertdialog"
+        aria-modal="true"
+        class="mt-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-5"
+      >
+        <h2 class="text-xl font-bold">Submit provider profile for review?</h2>
+        <p class="mt-2">
+          SmartClinic operations will review the saved provider identity. Submission does not
+          activate the provider.
+        </p>
+        <div class="mt-4 flex gap-3">
+          <button
+            type="button"
+            (click)="submit()"
+            [disabled]="mutating()"
+            class="rounded-lg bg-brand-700 px-5 py-3 font-bold text-white"
+          >
+            Confirm submission</button
+          ><button
+            type="button"
+            (click)="confirmingSubmit.set(false)"
+            class="rounded-lg border px-5 py-3 font-bold"
+          >
+            Cancel
+          </button>
+        </div>
+      </section>
+    }
+  }
+</main>
