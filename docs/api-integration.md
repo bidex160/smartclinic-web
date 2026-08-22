@@ -204,3 +204,21 @@ Retries must be deliberate. A catalogue GET may be manually or safely retried. A
 - What caching headers and catalogue freshness behavior should the client respect?
 - What are the timeout, rate-limit, and support expectations?
 - Is API version compatibility documented through OpenAPI and contract tests?
+
+# Provider onboarding contracts
+
+Provider onboarding uses exact, separate contracts:
+
+- `POST /public/providers/register` creates a provider account/application and returns a `PENDING`, `SUBMITTED` profile without authenticating the browser.
+- `GET/PATCH /provider/profile` lets the authenticated PROVIDER view and edit only permitted profile fields.
+- `POST /provider/onboarding/submit` explicitly submits or resubmits the profile for operations review.
+- `POST /admin/providers` creates the full provider identity and initial invitation together; its `{ provider, invitation }` response carries provider-neutral delivery status and an ephemeral manual link only when needed.
+- `POST /admin/providers/:id/approve` and `/reject` are explicit review operations. Approval, not the frontend, produces `APPROVED` and `ACTIVE` state.
+
+Registration passwords and manual invitation links remain in component memory only. The frontend sends no roles, user IDs, provider status, onboarding status, or review metadata through registration/profile forms. A PROVIDER role is account authorization, not proof that onboarding is approved or that capability/location/availability prerequisites are met. Email delivery implementation details remain hidden, and HOME_VISIT service-area management is deferred.
+
+## Provider eligibility configuration
+
+The guarded admin provider detail consumes the existing `/admin/providers/:providerId/services`, `/locations`, `/availability`, and `/availability-exceptions` resources plus their item activate/deactivate/update routes. Service-location linkage uses the dedicated ProviderServiceLocation POST/DELETE routes; deletion applies only to that join record and never deletes a capability or physical location.
+
+Package and fulfilment selectors use the public catalogues and send their IDs only in capability requests. Location selectors contain provider-owned named records rather than exposing raw UUID inputs. Location coordinates are optional in the backend contract and are intentionally omitted. Availability defaults to the browser's IANA timezone but remains editable; client validation is structural only. Backend validation remains authoritative for ownership, active scope, timezones, overlaps, exceptions, reservations/capacity, and booking-specific matching eligibility. HOME_VISIT service-area configuration and provider self-service management are deferred.
