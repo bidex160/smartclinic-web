@@ -6,6 +6,7 @@ import { of, Subject, throwError } from 'rxjs';
 import { AdminBookingDetail } from '../../core/models/admin-booking-detail.model';
 import { AdminBookingsApiService } from '../../core/services/admin-bookings-api.service';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
+import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
@@ -48,30 +49,38 @@ describe('AdminBookingDetailPageComponent', () => {
     expect(text).not.toContain('Ada Okafor Not available');
   });
 
-  it('shows Start matching only when backend readiness is READY', async () => {
+  it('demotes READY to automatic matching and exposes retry only for UNFULFILLABLE', async () => {
     const ready = await setup({
       booking: detail({ readiness: 'READY', assignment: emptyAssignment() }),
     });
     ready.fixture.detectChanges();
-    expect(button(ready.fixture, 'Start matching')).toBeTruthy();
+    expect(button(ready.fixture, 'Start matching')).toBeFalsy();
+    expect(ready.fixture.nativeElement.textContent).toContain('Automatic matching normally begins');
 
     ready.component.booking.set(
-      detail({ readiness: 'FUNDING_INCOMPLETE', assignment: emptyAssignment() }),
+      detail({
+        status: 'UNFULFILLABLE',
+        readiness: 'UNFULFILLABLE',
+        assignment: emptyAssignment(),
+      }),
     );
     ready.fixture.detectChanges();
-    expect(button(ready.fixture, 'Start matching')).toBeFalsy();
-    expect(ready.fixture.nativeElement.textContent).toContain('Funding incomplete');
+    expect(button(ready.fixture, 'Retry automatic matching')).toBeTruthy();
   });
 
   it('prevents duplicate matching and refreshes detail after success', async () => {
     const pending = new Subject<any>();
     const { component, api } = await setup({
-      booking: detail({ readiness: 'READY', assignment: emptyAssignment() }),
-      startMatching: () => pending,
+      booking: detail({
+        status: 'UNFULFILLABLE',
+        readiness: 'UNFULFILLABLE',
+        assignment: emptyAssignment(),
+      }),
+      retryMatching: () => pending,
     });
-    component.startMatching();
-    component.startMatching();
-    expect(api.startMatching).toHaveBeenCalledTimes(1);
+    component.retryMatching();
+    component.retryMatching();
+    expect(api.retryMatching).toHaveBeenCalledTimes(1);
     pending.next({
       bookingReference: 'SC-2026-ABCDEF123456',
       bookingStatus: 'PENDING_PROVIDER_MATCH',
@@ -83,6 +92,53 @@ describe('AdminBookingDetailPageComponent', () => {
     pending.complete();
     expect(api.getBooking).toHaveBeenCalledTimes(2);
     expect(component.createdAssignmentId()).toBe('assignment-id');
+  });
+
+  it('uses named provider selection for manual assignment without a raw UUID field', async () => {
+    const { component, fixture, api } = await setup({
+      booking: detail({
+        status: 'UNFULFILLABLE',
+        readiness: 'UNFULFILLABLE',
+        assignment: emptyAssignment(),
+      }),
+    });
+    const provider = activeProvider();
+    component.openIntervention('assign');
+    component.providerResults.set([provider]);
+    component.selectProvider(provider);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('input[formcontrolname="providerId"]')).toBeNull();
+    component.requestInterventionConfirmation();
+    component.submitIntervention();
+    expect(api.assignProvider).toHaveBeenCalledWith('SC-2026-ABCDEF123456', {
+      providerId: 'provider-id',
+    });
+  });
+
+  it('keeps override separate with a mandatory reason and hides reassignment after scheduling', async () => {
+    const { component, fixture, api } = await setup({
+      booking: detail({
+        status: 'UNFULFILLABLE',
+        readiness: 'UNFULFILLABLE',
+        assignment: emptyAssignment(),
+      }),
+    });
+    component.openIntervention('override');
+    component.providerResults.set([activeProvider()]);
+    component.selectProvider(activeProvider());
+    component.requestInterventionConfirmation();
+    expect(component.confirmingIntervention()).toBe(false);
+    component.overrideForm.controls.reason.setValue('Exceptional coverage decision');
+    component.requestInterventionConfirmation();
+    component.submitIntervention();
+    expect(api.overrideProvider).toHaveBeenCalledWith('SC-2026-ABCDEF123456', {
+      providerId: 'provider-id',
+      reason: 'Exceptional coverage decision',
+    });
+
+    component.booking.set(detail({ status: 'SCHEDULED' }));
+    fixture.detectChanges();
+    expect(button(fixture, 'Reassign provider')).toBeFalsy();
   });
 
   it('shows scheduling only for PROVIDER_ASSIGNED with a confirmed assignment and prefills preferences', async () => {
@@ -154,7 +210,7 @@ describe('AdminBookingDetailPageComponent', () => {
   async function setup(
     options: {
       booking?: AdminBookingDetail;
-      startMatching?: () => any;
+      retryMatching?: () => any;
       schedule?: () => any;
       locationData?: boolean;
     } = {},
@@ -197,8 +253,8 @@ describe('AdminBookingDetailPageComponent', () => {
             : [],
         ),
       ),
-      startMatching: vi.fn(
-        options.startMatching ??
+      retryMatching: vi.fn(
+        options.retryMatching ??
           (() =>
             of({
               bookingReference: 'SC-2026-ABCDEF123456',
@@ -208,6 +264,36 @@ describe('AdminBookingDetailPageComponent', () => {
               assignmentStatus: 'OFFERED',
               offerExpiresAt: null,
             })),
+      ),
+      assignProvider: vi.fn(() =>
+        of({
+          bookingReference: 'SC-2026-ABCDEF123456',
+          bookingStatus: 'PENDING_PROVIDER_MATCH',
+          outcome: 'OFFER_CREATED',
+          assignmentId: 'assignment-id',
+          assignmentStatus: 'OFFERED',
+          offerExpiresAt: null,
+        }),
+      ),
+      overrideProvider: vi.fn(() =>
+        of({
+          bookingReference: 'SC-2026-ABCDEF123456',
+          bookingStatus: 'PENDING_PROVIDER_MATCH',
+          outcome: 'OFFER_CREATED',
+          assignmentId: 'assignment-id',
+          assignmentStatus: 'OFFERED',
+          offerExpiresAt: null,
+        }),
+      ),
+      reassignProvider: vi.fn(() =>
+        of({
+          bookingReference: 'SC-2026-ABCDEF123456',
+          bookingStatus: 'PENDING_PROVIDER_MATCH',
+          outcome: 'OFFER_CREATED',
+          assignmentId: 'assignment-id',
+          assignmentStatus: 'OFFERED',
+          offerExpiresAt: null,
+        }),
       ),
     };
     await TestBed.configureTestingModule({
@@ -222,6 +308,12 @@ describe('AdminBookingDetailPageComponent', () => {
         },
         { provide: AdminBookingsApiService, useValue: api },
         { provide: AdminProviderAssignmentsApiService, useValue: api },
+        {
+          provide: AdminProvidersApiService,
+          useValue: {
+            list: vi.fn(() => of({ items: [], page: 1, limit: 10, total: 0, totalPages: 0 })),
+          },
+        },
         {
           provide: HealthCheckPackagesApiService,
           useValue: {
@@ -306,5 +398,27 @@ function detail(changes: Partial<AdminBookingDetail> = {}): AdminBookingDetail {
     },
     readiness: 'ALREADY_ASSIGNED',
     ...changes,
+  };
+}
+
+function activeProvider() {
+  return {
+    id: 'provider-id',
+    displayName: 'Ikeja Care Provider',
+    email: 'provider@example.test',
+    phone: null,
+    professionalReference: null,
+    status: 'ACTIVE' as const,
+    providerType: 'CLINIC' as const,
+    countryCode: 'NG',
+    stateOrRegion: 'Lagos',
+    city: 'Ikeja',
+    onboardingStatus: 'APPROVED' as const,
+    submittedAt: null,
+    reviewedAt: null,
+    reviewNote: null,
+    linkedUser: null,
+    createdAt: '2026-08-01T00:00:00Z',
+    updatedAt: '2026-08-01T00:00:00Z',
   };
 }

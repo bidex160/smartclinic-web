@@ -129,7 +129,7 @@ export class MyHealthChecksPageComponent {
       SCHEDULED: 'Scheduled',
       IN_PROGRESS: 'Health Check in progress',
       COMPLETED: 'Completed',
-      UNFULFILLABLE: 'Provider not currently available',
+      UNFULFILLABLE: 'Provider match needs review',
       CANCELLED: 'Cancelled',
       EXPIRED: 'Expired',
     };

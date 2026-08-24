@@ -549,6 +549,8 @@
     </p>
 
     @if (pendingRevokeId()) {
+              <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+
       <section
         role="alertdialog"
         aria-modal="true"
@@ -577,8 +579,10 @@
           </button>
         </div>
       </section>
+      </div>
     }
     @if (confirmation(); as action) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <section
         role="alertdialog"
         aria-modal="true"
@@ -642,6 +646,7 @@
           </button>
         </div>
       </section>
+      </div>
     }
   }
 </main>

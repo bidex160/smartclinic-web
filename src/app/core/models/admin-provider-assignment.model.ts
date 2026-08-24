@@ -51,5 +51,19 @@ export interface MatchingResult {
 
 export interface ExpireStaleOffersResult {
   readonly expiredCount: number;
-  readonly nextOffers: MatchingResult[];
+  readonly continuedMatchingCount: number;
+  readonly unfulfillableCount: number;
+}
+
+export interface ManualProviderAssignmentRequest {
+  readonly providerId: string;
+}
+
+export interface OverrideProviderAssignmentRequest extends ManualProviderAssignmentRequest {
+  readonly reason: string;
+}
+
+export interface ReassignProviderRequest {
+  readonly reason: string;
+  readonly providerId?: string;
 }

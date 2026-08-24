@@ -31,9 +31,9 @@ The Angular foundation uses standalone components, strict TypeScript, routing, S
 
 The first authenticated operations feature provides ADMIN/OPERATIONS login and guarded package-price management. Access tokens remain in memory, while an HttpOnly refresh cookie restores the session once at startup and supports single-flight `401` recovery. The feature lists, filters, creates, schedules, and deactivates prices and provides explicit session logout without browser-storage tokens or unrelated administration features.
 
-Operations also has a guarded provider-matching queue. It preserves the backend's oldest-first ordering and derived readiness, supports server-side filters and pagination, and starts matching only after an explicit action. Active and accepted offers link into the existing provider-assignment workflow.
+Operations has a guarded provider-matching intervention queue. Normal matching begins automatically after payment; the queue preserves backend ordering/readiness, supports server-side filters and pagination, retries unfulfillable bookings deliberately, and links active/accepted offers into assignment management.
 
-A guarded operational booking detail now links queue rows with provider assignments. It presents only the backend's safe operational projection, handles absent registered-booker contact/funding/payment/assignment data without inference, and exposes matching only when the returned readiness is `READY`.
+A guarded operational booking detail links queue rows with provider assignments. It presents only the backend's safe operational projection and contains controlled retry, selected-provider assignment, audited override, and reassignment tools. Provider discovery in the browser is bounded and descriptive; the backend remains authoritative for eligibility and capacity.
 
 Operations can now formally schedule a confirmed provider assignment. Preferred scheduling remains clearly requested context; an explicit backend-validated action creates the authoritative `SCHEDULED` appointment. Provider-location bookings use active linked location choices, while home visits send no location. Patient and provider views display the returned confirmed appointment separately, and encounter start is offered only after scheduled eligibility is verified. Rescheduling remains deferred.
 

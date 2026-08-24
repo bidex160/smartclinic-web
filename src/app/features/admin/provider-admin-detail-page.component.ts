@@ -238,6 +238,7 @@ export class ProviderAdminDetailPageComponent {
   }
 
   requestConfirmation(action: Exclude<Confirmation, null>): void {
+    console.log(this.mutating(), 'this.mutating()',  action)
     if (!this.mutating()) this.confirmation.set(action);
   }
   cancelConfirmation(): void {

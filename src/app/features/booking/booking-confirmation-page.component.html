@@ -284,8 +284,13 @@
                   </p>
                   @if (status.bookingStatus === 'PENDING_PROVIDER_MATCH') {
                     <p class="mt-2 rounded-lg bg-brand-50 p-3 text-sm leading-6 text-brand-900">
-                      Funding is complete. SmartClinic can now proceed to provider matching; a
-                      provider has not yet been assigned.
+                      Payment confirmed. SmartClinic is now matching your booking with an available
+                      provider; a provider has not yet been assigned.
+                    </p>
+                  } @else if (status.bookingStatus === 'UNFULFILLABLE') {
+                    <p class="mt-2 rounded-lg bg-brand-50 p-3 text-sm leading-6 text-brand-900">
+                      Payment is confirmed. We could not automatically match a provider yet.
+                      SmartClinic operations can continue reviewing your booking.
                     </p>
                   }
                 }

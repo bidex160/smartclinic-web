@@ -9,7 +9,7 @@
       Provider assignments
     </h1>
     <p class="mt-4 text-lg leading-8 text-slate-600">
-      Start provider matching, review offer responses, and confirm accepted assignments.
+      Review automatic matching outcomes, provider responses, and confirmed assignments.
     </p>
   </div>
 
@@ -32,52 +32,15 @@
     }
   </div>
 
-  <div class="mt-8 grid gap-6 lg:grid-cols-2">
-    <section
-      class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
-      aria-labelledby="start-matching-title"
-    >
-      <h2 id="start-matching-title" class="text-xl font-bold text-brand-900">Start matching</h2>
-      <p class="mt-2 text-sm leading-6 text-slate-600">
-        The backend selects the next eligible provider using the booking’s approved matching
-        context.
-      </p>
-      <form [formGroup]="matchingForm" (ngSubmit)="startMatching()" class="mt-5">
-        <label for="matching-reference" class="block text-sm font-bold text-slate-800"
-          >Booking reference</label
-        >
-        <input
-          id="matching-reference"
-          formControlName="bookingReference"
-          placeholder="SC-2026-ABCDEF123456"
-          autocomplete="off"
-          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 uppercase focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        />
-        @if (
-          matchingForm.controls.bookingReference.touched &&
-          matchingForm.controls.bookingReference.invalid
-        ) {
-          <p class="mt-2 text-sm font-semibold text-red-700">
-            Enter a valid SmartClinic booking reference.
-          </p>
-        }
-        <button
-          type="submit"
-          [disabled]="mutating()"
-          class="mt-4 min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
-        >
-          {{ mutating() ? 'Working…' : 'Start matching' }}
-        </button>
-      </form>
-    </section>
-
+  <div class="mt-8">
     <section
       class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
       aria-labelledby="expire-title"
     >
       <h2 id="expire-title" class="text-xl font-bold text-brand-900">Expire stale offers</h2>
       <p class="mt-2 text-sm leading-6 text-slate-600">
-        Run the server’s expiry workflow now. Matching may continue to the next eligible provider.
+        Automatic offer-expiry processing is not yet enabled. Run the server workflow explicitly;
+        matching may continue to another provider or become unfulfillable.
       </p>
       <button
         type="button"

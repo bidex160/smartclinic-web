@@ -20,10 +20,12 @@ import {
 } from '../../core/models/booking-schedule.model';
 import { MatchingQueueReadiness } from '../../core/models/admin-matching-queue.model';
 import { MatchingResult } from '../../core/models/admin-provider-assignment.model';
+import { AdminProviderListItem } from '../../core/models/admin-provider.model';
 import { AdminBookingsApiService } from '../../core/services/admin-bookings-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
+import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
 
 @Component({
@@ -35,6 +37,7 @@ import { AdminSessionHeaderComponent } from './admin-session-header.component';
 export class AdminBookingDetailPageComponent {
   private readonly bookingsApi = inject(AdminBookingsApiService);
   private readonly assignmentsApi = inject(AdminProviderAssignmentsApiService);
+  private readonly providersApi = inject(AdminProvidersApiService);
   private readonly packagesApi = inject(HealthCheckPackagesApiService);
   private readonly modesApi = inject(FulfilmentModesApiService);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
@@ -45,7 +48,7 @@ export class AdminBookingDetailPageComponent {
 
   readonly booking = signal<AdminBookingDetail | null>(null);
   readonly loading = signal(false);
-  readonly matching = signal(false);
+  readonly intervening = signal(false);
   readonly scheduling = signal(false);
   readonly scheduleFormOpen = signal(false);
   readonly locationsLoading = signal(false);
@@ -55,6 +58,24 @@ export class AdminBookingDetailPageComponent {
   readonly error = signal<string | null>(null);
   readonly statusMessage = signal<string | null>(null);
   readonly createdAssignmentId = signal<string | null>(null);
+  readonly providerResults = signal<readonly AdminProviderListItem[]>([]);
+  readonly providerSearchLoading = signal(false);
+  readonly providerSearchMessage = signal<string | null>(null);
+  readonly interventionOpen = signal<'assign' | 'override' | 'reassign' | null>(null);
+  readonly confirmingIntervention = signal(false);
+  readonly providerSearchForm = this.formBuilder.group({
+    query: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+  });
+  readonly assignForm = this.formBuilder.group({ providerId: ['', Validators.required] });
+  readonly overrideForm = this.formBuilder.group({
+    providerId: ['', Validators.required],
+    reason: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(1000)]],
+  });
+  readonly reassignForm = this.formBuilder.group({
+    mode: this.formBuilder.control<'automatic' | 'selected'>('automatic'),
+    providerId: [''],
+    reason: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(1000)]],
+  });
   readonly scheduleForm = this.formBuilder.group({
     date: ['', Validators.required],
     timeFrom: ['', [Validators.required, Validators.pattern(/^\d{2}:\d{2}$/)]],
@@ -149,33 +170,160 @@ export class AdminBookingDetailPageComponent {
       });
   }
 
-  startMatching(): void {
+  retryMatching(): void {
     const booking = this.booking();
-    if (!booking || booking.readiness !== 'READY' || this.matching()) return;
-    this.matching.set(true);
+    if (!booking || booking.status !== 'UNFULFILLABLE' || this.intervening()) return;
+    this.intervening.set(true);
     this.error.set(null);
     this.statusMessage.set(null);
     this.createdAssignmentId.set(null);
     this.assignmentsApi
-      .startMatching(booking.bookingReference)
-      .pipe(finalize(() => this.matching.set(false)))
+      .retryMatching(booking.bookingReference)
+      .pipe(finalize(() => this.intervening.set(false)))
       .subscribe({
         next: (result) => {
-          this.handleMatchingResult(result);
+          this.handleMatchingResult(result, 'Automatic matching was retried');
           this.loadBooking();
         },
         error: (error: HttpErrorResponse) => this.handleMatchingError(error),
       });
   }
 
+  openIntervention(kind: 'assign' | 'override' | 'reassign'): void {
+    this.interventionOpen.set(kind);
+    this.confirmingIntervention.set(false);
+    this.error.set(null);
+  }
+
+  closeIntervention(): void {
+    if (this.intervening()) return;
+    this.interventionOpen.set(null);
+    this.confirmingIntervention.set(false);
+  }
+
+  searchProviders(): void {
+    if (this.providerSearchForm.invalid || this.providerSearchLoading()) {
+      this.providerSearchForm.markAllAsTouched();
+      return;
+    }
+    this.providerSearchLoading.set(true);
+    this.providerSearchMessage.set(null);
+    this.providersApi
+      .list({
+        status: 'ACTIVE',
+        search: this.providerSearchForm.controls.query.value.trim(),
+        page: 1,
+        limit: 10,
+      })
+      .pipe(finalize(() => this.providerSearchLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.providerResults.set(response.items);
+          this.providerSearchMessage.set(
+            `${response.items.length} active provider${response.items.length === 1 ? '' : 's'} found. Selection is still validated against this booking by the backend.`,
+          );
+        },
+        error: (error: HttpErrorResponse) =>
+          this.handleInterventionError(error, 'Providers could not be searched right now.'),
+      });
+  }
+
+  selectProvider(provider: AdminProviderListItem): void {
+    if (provider.status !== 'ACTIVE') return;
+    const kind = this.interventionOpen();
+    if (kind === 'assign') this.assignForm.controls.providerId.setValue(provider.id);
+    if (kind === 'override') this.overrideForm.controls.providerId.setValue(provider.id);
+    if (kind === 'reassign') {
+      this.reassignForm.patchValue({ mode: 'selected', providerId: provider.id });
+    }
+  }
+
+  selectedProviderName(): string {
+    const kind = this.interventionOpen();
+    const id =
+      kind === 'assign'
+        ? this.assignForm.controls.providerId.value
+        : kind === 'override'
+          ? this.overrideForm.controls.providerId.value
+          : this.reassignForm.controls.providerId.value;
+    return this.providerResults().find((provider) => provider.id === id)?.displayName ?? '';
+  }
+
+  requestInterventionConfirmation(): void {
+    const kind = this.interventionOpen();
+    const form =
+      kind === 'assign'
+        ? this.assignForm
+        : kind === 'override'
+          ? this.overrideForm
+          : this.reassignForm;
+    if (
+      !kind ||
+      form.invalid ||
+      (kind === 'reassign' &&
+        this.reassignForm.controls.mode.value === 'selected' &&
+        !this.reassignForm.controls.providerId.value)
+    ) {
+      form.markAllAsTouched();
+      return;
+    }
+    this.confirmingIntervention.set(true);
+  }
+
+  submitIntervention(): void {
+    const booking = this.booking();
+    const kind = this.interventionOpen();
+    if (!booking || !kind || !this.confirmingIntervention() || this.intervening()) return;
+    const operation =
+      kind === 'assign'
+        ? this.assignmentsApi.assignProvider(booking.bookingReference, {
+            providerId: this.assignForm.controls.providerId.value,
+          })
+        : kind === 'override'
+          ? this.assignmentsApi.overrideProvider(booking.bookingReference, {
+              providerId: this.overrideForm.controls.providerId.value,
+              reason: this.overrideForm.controls.reason.value.trim(),
+            })
+          : this.assignmentsApi.reassignProvider(booking.bookingReference, {
+              reason: this.reassignForm.controls.reason.value.trim(),
+              ...(this.reassignForm.controls.mode.value === 'selected' && {
+                providerId: this.reassignForm.controls.providerId.value,
+              }),
+            });
+    this.intervening.set(true);
+    this.error.set(null);
+    operation.pipe(finalize(() => this.intervening.set(false))).subscribe({
+      next: (result) => {
+        this.handleMatchingResult(
+          result,
+          kind === 'reassign'
+            ? 'Provider reassignment completed'
+            : 'Provider intervention completed',
+        );
+        this.interventionOpen.set(null);
+        this.confirmingIntervention.set(false);
+        this.loadBooking();
+      },
+      error: (error: HttpErrorResponse) =>
+        this.handleInterventionError(error, 'The provider intervention could not be completed.'),
+    });
+  }
+
+  canReassign(booking: AdminBookingDetail): boolean {
+    return (
+      ['PENDING_PROVIDER_MATCH', 'PROVIDER_ASSIGNED'].includes(booking.status) &&
+      ['OFFERED', 'ACCEPTED', 'CONFIRMED'].includes(booking.assignment.assignmentStatus ?? '')
+    );
+  }
+
   readinessLabel(readiness: MatchingQueueReadiness): string {
     const labels: Record<MatchingQueueReadiness, string> = {
-      READY: 'Ready for matching',
+      READY: 'Ready for automatic matching',
       FUNDING_INCOMPLETE: 'Funding incomplete',
       INCOMPLETE_SCHEDULING: 'Scheduling incomplete',
       ACTIVE_OFFER: 'Provider offer active',
       ACCEPTED_AWAITING_CONFIRMATION: 'Awaiting confirmation',
-      UNFULFILLABLE: 'No provider currently available',
+      UNFULFILLABLE: 'Provider match needs review',
       ALREADY_ASSIGNED: 'Provider assigned',
     };
     return labels[readiness];
@@ -190,14 +338,14 @@ export class AdminBookingDetailPageComponent {
       .join(' ');
   }
 
-  private handleMatchingResult(result: MatchingResult): void {
+  private handleMatchingResult(result: MatchingResult, action: string): void {
     if (result.outcome === 'OFFER_CREATED') {
-      this.statusMessage.set('Matching started and a provider offer was created.');
+      this.statusMessage.set(`${action}. A provider offer was created.`);
       this.createdAssignmentId.set(result.assignmentId);
       return;
     }
     this.statusMessage.set(
-      'No eligible provider is currently available. The booking is now unfulfillable.',
+      `${action}, but no eligible provider is currently available. Operations can continue reviewing the booking.`,
     );
   }
 
@@ -222,13 +370,27 @@ export class AdminBookingDetailPageComponent {
   private handleMatchingError(error: HttpErrorResponse): void {
     const messages: Record<number, string> = {
       404: 'This booking is no longer available.',
-      409: 'Matching cannot start because another workflow is active or the booking state changed.',
+      409: 'The intervention conflicts with the current workflow, provider eligibility, or reserved capacity.',
       422: 'This booking is not ready for matching. Review its funding and scheduling information.',
     };
     this.setError(
       error.status === 0
         ? 'SmartClinic could not be reached. Check your connection and try again.'
-        : (messages[error.status] ?? 'Matching could not be started right now.'),
+        : (messages[error.status] ?? 'Automatic matching could not be retried right now.'),
+    );
+  }
+
+  private handleInterventionError(error: HttpErrorResponse, fallback: string): void {
+    const messages: Record<number, string> = {
+      400: 'Review the selected provider and required reason, then try again.',
+      404: 'The booking, provider, or assignment is no longer available.',
+      409: 'The selected provider is not eligible, capacity is unavailable, or the booking workflow has changed.',
+      422: 'The booking does not have complete scheduling information for this intervention.',
+    };
+    this.setError(
+      error.status === 0
+        ? 'SmartClinic could not be reached. Check your connection and try again.'
+        : (messages[error.status] ?? fallback),
     );
   }
 

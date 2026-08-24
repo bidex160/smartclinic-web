@@ -60,12 +60,12 @@ describe('MatchingQueuePageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
 
-    expect(text).toContain('Ready for matching');
+    expect(text).toContain('Ready for automatic matching');
     expect(text).toContain('Funding incomplete');
     expect(text).toContain('Scheduling incomplete');
     expect(text).toContain('Provider offer active');
     expect(text).toContain('Awaiting confirmation');
-    expect(text).toContain('No provider currently available');
+    expect(text).toContain('Provider match needs review');
     expect(text).toContain('Provider assigned');
     expect(text).toContain('Ada Okafor');
     expect(text).not.toContain('+2348000000000');
@@ -119,26 +119,29 @@ describe('MatchingQueuePageComponent', () => {
     expect(api.getQueue).toHaveBeenLastCalledWith({ page: 1, limit: 25 });
   });
 
-  it('shows Start matching only for READY rows', async () => {
+  it('does not show routine Start matching and shows Retry only for UNFULFILLABLE', async () => {
     const { fixture } = await setup({
       items: [
         item(),
-        item({ bookingReference: 'SC-2026-BBBBBBBBBBBB', readiness: 'ACTIVE_OFFER' }),
+        item({
+          bookingReference: 'SC-2026-BBBBBBBBBBBB',
+          readiness: 'UNFULFILLABLE',
+          bookingStatus: 'UNFULFILLABLE',
+        }),
       ],
     });
     fixture.detectChanges();
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
 
-    expect(
-      buttons.filter((button) => button.textContent?.trim() === 'Start matching'),
-    ).toHaveLength(1);
+    expect(buttons.some((button) => button.textContent?.trim() === 'Start matching')).toBe(false);
+    expect(buttons.filter((button) => button.textContent?.trim() === 'Retry')).toHaveLength(1);
   });
 
-  it('starts matching explicitly, exposes the returned assignment, and refreshes the queue', async () => {
+  it('retries an unfulfillable booking, exposes the returned assignment, and refreshes', async () => {
     const { component, api } = await setup();
-    component.startMatching(item());
+    component.retryMatching(item({ readiness: 'UNFULFILLABLE', bookingStatus: 'UNFULFILLABLE' }));
 
-    expect(api.startMatching).toHaveBeenCalledWith('SC-2026-ABCDEF123456');
+    expect(api.retryMatching).toHaveBeenCalledWith('SC-2026-ABCDEF123456');
     expect(component.statusMessage()).toContain('provider offer was created');
     expect(component.latestAssignmentId()).toBe('assignment-id');
     expect(api.getQueue).toHaveBeenCalledTimes(2);
@@ -155,9 +158,9 @@ describe('MatchingQueuePageComponent', () => {
         offerExpiresAt: null,
       },
     });
-    component.startMatching(item());
+    component.retryMatching(item({ readiness: 'UNFULFILLABLE', bookingStatus: 'UNFULFILLABLE' }));
 
-    expect(component.statusMessage()).toContain('now unfulfillable');
+    expect(component.statusMessage()).toContain('no eligible provider');
     expect(component.latestAssignmentId()).toBeNull();
     expect(api.getQueue).toHaveBeenCalledTimes(2);
   });
@@ -180,7 +183,7 @@ describe('MatchingQueuePageComponent', () => {
         error: { message: 'raw candidate and workflow internals' },
       }),
     });
-    component.startMatching(item());
+    component.retryMatching(item({ readiness: 'UNFULFILLABLE', bookingStatus: 'UNFULFILLABLE' }));
 
     expect(component.error()).toContain('another workflow is active');
     expect(component.error()).not.toContain('raw candidate');
@@ -214,7 +217,7 @@ describe('MatchingQueuePageComponent', () => {
         offerExpiresAt: '2026-08-24T10:00:00Z',
       } as const);
     const assignmentsApi = {
-      startMatching: vi.fn(() =>
+      retryMatching: vi.fn(() =>
         options.matchingError ? throwError(() => options.matchingError) : of(matchingResult),
       ),
     };

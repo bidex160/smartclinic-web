@@ -493,16 +493,9 @@
           </p>
           @if (current.readiness === 'READY') {
             <p class="mt-2 text-sm leading-6 text-slate-700">
-              The backend reports that funding and scheduling are ready for provider matching.
+              Funding and scheduling are ready. Automatic matching normally begins after payment; no
+              routine operations action is required here.
             </p>
-            <button
-              type="button"
-              (click)="startMatching()"
-              [disabled]="matching()"
-              class="mt-5 min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
-            >
-              {{ matching() ? 'Starting matching…' : 'Start matching' }}
-            </button>
           } @else if (
             current.readiness === 'ACTIVE_OFFER' ||
             current.readiness === 'ACCEPTED_AWAITING_CONFIRMATION' ||
@@ -530,15 +523,275 @@
             }
           } @else if (current.readiness === 'UNFULFILLABLE') {
             <p class="mt-2 text-sm leading-6 text-slate-700">
-              No provider is currently available. Review the booking state and operational coverage
-              before deciding on any future matching action.
+              Payment may already be settled, but automatic matching did not find an available
+              provider. Retry automatic matching or use a controlled intervention.
             </p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                (click)="retryMatching()"
+                [disabled]="intervening()"
+                class="min-h-11 rounded-lg bg-brand-600 px-4 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+              >
+                {{ intervening() ? 'Working…' : 'Retry automatic matching' }}
+              </button>
+              <button
+                type="button"
+                (click)="openIntervention('assign')"
+                class="min-h-11 rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+              >
+                Assign provider
+              </button>
+            </div>
+            <details class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
+              <summary class="cursor-pointer font-bold text-amber-950">
+                Advanced intervention
+              </summary>
+              <p class="mt-2 text-sm leading-6 text-amber-950">
+                An override bypasses normal provider eligibility selection and is recorded for
+                audit. Scheduling and capacity restrictions may still apply.
+              </p>
+              <button
+                type="button"
+                (click)="openIntervention('override')"
+                class="mt-3 min-h-11 rounded-lg border border-amber-700 px-4 py-2 font-bold text-amber-950 focus:outline-none focus:ring-4 focus:ring-amber-200"
+              >
+                Override provider assignment
+              </button>
+            </details>
           } @else {
             <p class="mt-2 text-sm leading-6 text-slate-700">
               Matching is unavailable until the backend reports this booking as ready.
             </p>
           }
+
+          @if (canReassign(current)) {
+            <div class="mt-6 border-t border-brand-200 pt-5">
+              <button
+                type="button"
+                (click)="openIntervention('reassign')"
+                class="min-h-11 rounded-lg border border-red-300 px-4 py-2 font-bold text-red-800 focus:outline-none focus:ring-4 focus:ring-red-200"
+              >
+                Reassign provider
+              </button>
+              <p class="mt-2 text-sm text-slate-700">
+                Reassignment cancels the current assignment, releases held capacity, and returns the
+                booking to matching. It is unavailable after scheduling begins.
+              </p>
+            </div>
+          }
         </section>
+
+        @if (interventionOpen(); as intervention) {
+          <section
+            aria-labelledby="intervention-heading"
+            class="rounded-2xl border border-slate-200 bg-white p-6 shadow-soft lg:col-span-2"
+          >
+            <h2 id="intervention-heading" class="text-xl font-bold text-brand-900">
+              @switch (intervention) {
+                @case ('assign') {
+                  Assign an eligible provider
+                }
+                @case ('override') {
+                  Override provider assignment
+                }
+                @case ('reassign') {
+                  Reassign provider
+                }
+              }
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-slate-700">
+              Search active providers, then select one to validate against booking
+              {{ current.bookingReference }}. Appearing here does not guarantee booking eligibility.
+            </p>
+            <form
+              [formGroup]="providerSearchForm"
+              (ngSubmit)="searchProviders()"
+              class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"
+            >
+              <div class="flex-1">
+                <label for="provider-search" class="block text-sm font-bold text-slate-800"
+                  >Provider name or location</label
+                >
+                <input
+                  id="provider-search"
+                  formControlName="query"
+                  autocomplete="off"
+                  class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-100"
+                />
+                @if (
+                  providerSearchForm.controls.query.touched &&
+                  providerSearchForm.controls.query.invalid
+                ) {
+                  <p class="mt-2 text-sm font-semibold text-red-700">
+                    Enter at least 2 characters.
+                  </p>
+                }
+              </div>
+              <button
+                type="submit"
+                [disabled]="providerSearchLoading()"
+                class="min-h-12 rounded-xl border border-brand-600 px-5 font-bold text-brand-700 disabled:opacity-60"
+              >
+                {{ providerSearchLoading() ? 'Searching…' : 'Search providers' }}
+              </button>
+            </form>
+            <p class="mt-3 text-sm text-slate-600" aria-live="polite">
+              {{ providerSearchMessage() }}
+            </p>
+            @if (providerResults().length) {
+              <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+                @for (provider of providerResults(); track provider.id) {
+                  <li class="rounded-xl border border-slate-200 p-4">
+                    <p class="font-bold text-slate-900">{{ provider.displayName }}</p>
+                    <p class="mt-1 text-sm text-slate-600">
+                      {{ provider.providerType }} · {{ provider.city || 'Location unavailable' }},
+                      {{ provider.stateOrRegion || 'Region unavailable' }}
+                    </p>
+                    <p class="mt-1 text-sm font-semibold text-slate-700">
+                      {{ provider.status }} · {{ provider.onboardingStatus }}
+                    </p>
+                    <button
+                      type="button"
+                      (click)="selectProvider(provider)"
+                      class="mt-3 min-h-10 rounded-lg border border-brand-600 px-3 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-100"
+                    >
+                      Select provider
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (intervention === 'assign') {
+              <form
+                [formGroup]="assignForm"
+                (ngSubmit)="requestInterventionConfirmation()"
+                class="mt-5"
+              >
+                <p class="font-semibold">
+                  Selected provider: {{ selectedProviderName() || 'None selected' }}
+                </p>
+                @if (
+                  assignForm.controls.providerId.touched && assignForm.controls.providerId.invalid
+                ) {
+                  <p class="mt-2 text-sm font-semibold text-red-700">Select a provider.</p>
+                }
+                <button
+                  type="submit"
+                  class="mt-4 min-h-11 rounded-lg bg-brand-600 px-5 font-bold text-white"
+                >
+                  Review assignment
+                </button>
+              </form>
+            } @else if (intervention === 'override') {
+              <form
+                [formGroup]="overrideForm"
+                (ngSubmit)="requestInterventionConfirmation()"
+                class="mt-5 space-y-4"
+              >
+                <p class="font-semibold">
+                  Selected provider: {{ selectedProviderName() || 'None selected' }}
+                </p>
+                <div>
+                  <label for="override-reason" class="block text-sm font-bold"
+                    >Override reason</label
+                  ><textarea
+                    id="override-reason"
+                    formControlName="reason"
+                    rows="3"
+                    class="mt-2 w-full rounded-xl border border-slate-300 p-3"
+                  ></textarea>
+                  <p class="mt-1 text-sm text-slate-600">
+                    Required for audit; enter at least 3 characters.
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  class="min-h-11 rounded-lg bg-amber-700 px-5 font-bold text-white"
+                >
+                  Review override
+                </button>
+              </form>
+            } @else {
+              <form
+                [formGroup]="reassignForm"
+                (ngSubmit)="requestInterventionConfirmation()"
+                class="mt-5 space-y-4"
+              >
+                <fieldset>
+                  <legend class="font-bold">Reassignment method</legend>
+                  <label class="mt-2 flex gap-2"
+                    ><input type="radio" formControlName="mode" value="automatic" /> Reassign
+                    automatically</label
+                  ><label class="mt-2 flex gap-2"
+                    ><input type="radio" formControlName="mode" value="selected" /> Reassign to
+                    selected provider</label
+                  >
+                </fieldset>
+                @if (reassignForm.controls.mode.value === 'selected') {
+                  <p class="font-semibold">
+                    Selected provider: {{ selectedProviderName() || 'None selected' }}
+                  </p>
+                }
+                <div>
+                  <label for="reassign-reason" class="block text-sm font-bold"
+                    >Reassignment reason</label
+                  ><textarea
+                    id="reassign-reason"
+                    formControlName="reason"
+                    rows="3"
+                    class="mt-2 w-full rounded-xl border border-slate-300 p-3"
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  class="min-h-11 rounded-lg bg-red-700 px-5 font-bold text-white"
+                >
+                  Review reassignment
+                </button>
+              </form>
+            }
+
+            @if (confirmingIntervention()) {
+              <div
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="confirm-intervention"
+                class="mt-5 rounded-xl border border-slate-300 bg-slate-50 p-5"
+              >
+                <h3 id="confirm-intervention" class="font-bold">Confirm intervention</h3>
+                <p class="mt-2">Booking: {{ current.bookingReference }}</p>
+                <p class="mt-1">
+                  Provider: {{ selectedProviderName() || 'Automatic provider selection' }}
+                </p>
+                <div class="mt-4 flex gap-3">
+                  <button
+                    type="button"
+                    (click)="submitIntervention()"
+                    [disabled]="intervening()"
+                    class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white disabled:opacity-60"
+                  >
+                    {{ intervening() ? 'Submitting…' : 'Confirm intervention' }}</button
+                  ><button
+                    type="button"
+                    (click)="confirmingIntervention.set(false)"
+                    class="min-h-11 rounded-lg border border-slate-400 px-5 font-bold"
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+            }
+            <button
+              type="button"
+              (click)="closeIntervention()"
+              class="mt-5 min-h-11 rounded-lg border border-slate-400 px-5 font-bold"
+            >
+              Close intervention
+            </button>
+          </section>
+        }
       </div>
     </article>
   }

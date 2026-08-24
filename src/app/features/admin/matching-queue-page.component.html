@@ -9,8 +9,8 @@
       Provider matching queue
     </h1>
     <p class="mt-4 text-lg leading-8 text-slate-600">
-      Review backend readiness and deliberately start matching for funded, schedulable bookings. The
-      default view preserves the server’s oldest-ready-first ordering.
+      Monitor automatic matching and intervene only when a booking needs operational attention. The
+      default view preserves the server’s authoritative ordering.
     </p>
   </div>
 
@@ -271,18 +271,14 @@
                 </td>
                 <td class="px-4 py-4">{{ item.createdAt | date: 'medium' }}</td>
                 <td class="px-4 py-4">
-                  @if (item.readiness === 'READY') {
+                  @if (item.readiness === 'UNFULFILLABLE') {
                     <button
                       type="button"
-                      (click)="startMatching(item)"
-                      [disabled]="matchingReference() !== null"
+                      (click)="retryMatching(item)"
+                      [disabled]="retryingReference() !== null"
                       class="inline-flex min-h-10 items-center rounded-lg bg-brand-600 px-4 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
                     >
-                      {{
-                        matchingReference() === item.bookingReference
-                          ? 'Starting…'
-                          : 'Start matching'
-                      }}
+                      {{ retryingReference() === item.bookingReference ? 'Retrying…' : 'Retry' }}
                     </button>
                   } @else if (
                     item.readiness === 'ACTIVE_OFFER' ||
@@ -293,8 +289,21 @@
                       [queryParams]="{ bookingReference: item.bookingReference }"
                       class="inline-flex min-h-10 items-center rounded-lg border border-brand-600 px-3 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
                     >
-                      View assignment
+                      {{
+                        item.readiness === 'ACCEPTED_AWAITING_CONFIRMATION'
+                          ? 'Review / Confirm'
+                          : 'View offer'
+                      }}
                     </a>
+                  } @else if (item.readiness === 'ALREADY_ASSIGNED') {
+                    <a
+                      [routerLink]="['/admin/bookings', item.bookingReference]"
+                      class="inline-flex min-h-10 items-center rounded-lg border border-brand-600 px-3 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
+                    >
+                      View booking
+                    </a>
+                  } @else if (item.readiness === 'READY') {
+                    <span class="text-slate-600">Automatic matching pending</span>
                   } @else {
                     <span class="text-slate-500">No matching action</span>
                   }

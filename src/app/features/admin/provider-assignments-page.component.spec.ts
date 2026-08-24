@@ -1,7 +1,6 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 
 import { AdminProviderAssignment } from '../../core/models/admin-provider-assignment.model';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
@@ -44,32 +43,6 @@ describe('ProviderAssignmentsPageComponent', () => {
     });
   });
 
-  it('starts matching and refreshes the list', async () => {
-    const { component, api } = await setup();
-    component.matchingForm.controls.bookingReference.setValue('SC-2026-ABCDEF123456');
-    component.startMatching();
-    expect(api.startMatching).toHaveBeenCalledWith('SC-2026-ABCDEF123456');
-    expect(component.statusMessage()).toContain('offer was created');
-    expect(api.getAssignments).toHaveBeenCalledTimes(2);
-  });
-
-  it('shows a safe matching conflict without raw backend details', async () => {
-    const { component } = await setup({
-      startMatching: () =>
-        throwError(
-          () =>
-            new HttpErrorResponse({
-              status: 409,
-              error: { message: 'raw internal workflow detail' },
-            }),
-        ),
-    });
-    component.matchingForm.controls.bookingReference.setValue('SC-2026-ABCDEF123456');
-    component.startMatching();
-    expect(component.error()).toContain('current workflow state');
-    expect(component.error()).not.toContain('raw internal');
-  });
-
   it('expires stale offers deliberately and refreshes the list', async () => {
     const { component, api } = await setup();
     component.expireStaleOffers();
@@ -78,23 +51,11 @@ describe('ProviderAssignmentsPageComponent', () => {
     expect(api.getAssignments).toHaveBeenCalledTimes(2);
   });
 
-  async function setup(overrides: { startMatching?: () => unknown } = {}) {
+  async function setup() {
     const api = {
       getAssignments: vi.fn(() => of([assignment()])),
-      startMatching: vi.fn(
-        overrides.startMatching ??
-          (() =>
-            of({
-              bookingReference: 'SC-2026-ABCDEF123456',
-              bookingStatus: 'PENDING_PROVIDER_MATCH',
-              outcome: 'OFFER_CREATED',
-              assignmentId: 'assignment-id',
-              assignmentStatus: 'OFFERED',
-              offerExpiresAt: null,
-            })),
-      ),
       expireStaleOffers: vi.fn(() =>
-        of({ expiredCount: 2, nextOffers: [{ bookingStatus: 'UNFULFILLABLE', assignment: null }] }),
+        of({ expiredCount: 2, continuedMatchingCount: 1, unfulfillableCount: 1 }),
       ),
     };
     await TestBed.configureTestingModule({

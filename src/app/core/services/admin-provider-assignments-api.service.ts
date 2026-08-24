@@ -8,7 +8,10 @@ import {
   AdminProviderAssignment,
   AdminProviderAssignmentFilters,
   ExpireStaleOffersResult,
+  ManualProviderAssignmentRequest,
   MatchingResult,
+  OverrideProviderAssignmentRequest,
+  ReassignProviderRequest,
 } from '../models/admin-provider-assignment.model';
 
 @Injectable({ providedIn: 'root' })
@@ -38,6 +41,47 @@ export class AdminProviderAssignmentsApiService {
     return this.http.post<MatchingResult>(
       `${this.apiConfig.baseUrl}/admin/bookings/${encodeURIComponent(bookingReference)}/matching/start`,
       null,
+      this.noReplay,
+    );
+  }
+
+  retryMatching(bookingReference: string): Observable<MatchingResult> {
+    return this.http.post<MatchingResult>(
+      `${this.apiConfig.baseUrl}/admin/bookings/${encodeURIComponent(bookingReference)}/matching/retry`,
+      null,
+      this.noReplay,
+    );
+  }
+
+  assignProvider(
+    bookingReference: string,
+    request: ManualProviderAssignmentRequest,
+  ): Observable<MatchingResult> {
+    return this.http.post<MatchingResult>(
+      `${this.apiConfig.baseUrl}/admin/bookings/${encodeURIComponent(bookingReference)}/assign-provider`,
+      request,
+      this.noReplay,
+    );
+  }
+
+  overrideProvider(
+    bookingReference: string,
+    request: OverrideProviderAssignmentRequest,
+  ): Observable<MatchingResult> {
+    return this.http.post<MatchingResult>(
+      `${this.apiConfig.baseUrl}/admin/bookings/${encodeURIComponent(bookingReference)}/assign-provider/override`,
+      request,
+      this.noReplay,
+    );
+  }
+
+  reassignProvider(
+    bookingReference: string,
+    request: ReassignProviderRequest,
+  ): Observable<MatchingResult> {
+    return this.http.post<MatchingResult>(
+      `${this.apiConfig.baseUrl}/admin/bookings/${encodeURIComponent(bookingReference)}/reassign-provider`,
+      request,
       this.noReplay,
     );
   }

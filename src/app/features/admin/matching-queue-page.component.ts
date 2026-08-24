@@ -76,7 +76,7 @@ export class MatchingQueuePageComponent {
   readonly response = signal<AdminMatchingQueueResponse>(EMPTY_RESPONSE);
   readonly loading = signal(false);
   readonly catalogueLoading = signal(false);
-  readonly matchingReference = signal<string | null>(null);
+  readonly retryingReference = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly statusMessage = signal<string | null>(null);
   readonly latestAssignmentId = signal<string | null>(null);
@@ -145,15 +145,15 @@ export class MatchingQueuePageComponent {
     this.loadQueue();
   }
 
-  startMatching(item: AdminMatchingQueueItem): void {
-    if (item.readiness !== 'READY' || this.matchingReference()) return;
-    this.matchingReference.set(item.bookingReference);
+  retryMatching(item: AdminMatchingQueueItem): void {
+    if (item.readiness !== 'UNFULFILLABLE' || this.retryingReference()) return;
+    this.retryingReference.set(item.bookingReference);
     this.error.set(null);
     this.statusMessage.set(null);
     this.latestAssignmentId.set(null);
     this.assignmentsApi
-      .startMatching(item.bookingReference)
-      .pipe(finalize(() => this.matchingReference.set(null)))
+      .retryMatching(item.bookingReference)
+      .pipe(finalize(() => this.retryingReference.set(null)))
       .subscribe({
         next: (result) => {
           this.handleMatchingResult(result);
@@ -179,12 +179,12 @@ export class MatchingQueuePageComponent {
 
   readinessLabel(readiness: MatchingQueueReadiness): string {
     const labels: Record<MatchingQueueReadiness, string> = {
-      READY: 'Ready for matching',
+      READY: 'Ready for automatic matching',
       FUNDING_INCOMPLETE: 'Funding incomplete',
       INCOMPLETE_SCHEDULING: 'Scheduling incomplete',
       ACTIVE_OFFER: 'Provider offer active',
       ACCEPTED_AWAITING_CONFIRMATION: 'Awaiting confirmation',
-      UNFULFILLABLE: 'No provider currently available',
+      UNFULFILLABLE: 'Provider match needs review',
       ALREADY_ASSIGNED: 'Provider assigned',
     };
     return labels[readiness];
@@ -226,13 +226,13 @@ export class MatchingQueuePageComponent {
   private handleMatchingResult(result: MatchingResult): void {
     if (result.outcome === 'OFFER_CREATED') {
       this.statusMessage.set(
-        `Matching started for ${result.bookingReference}. A provider offer was created.`,
+        `Automatic matching was retried for ${result.bookingReference}. A provider offer was created.`,
       );
       this.latestAssignmentId.set(result.assignmentId);
       return;
     }
     this.statusMessage.set(
-      `No eligible provider is currently available for ${result.bookingReference}. The booking is now unfulfillable.`,
+      `Automatic matching was retried for ${result.bookingReference}, but no eligible provider is currently available.`,
     );
   }
 
@@ -240,12 +240,12 @@ export class MatchingQueuePageComponent {
     const messages: Record<number, string> = {
       400: 'Matching requires a complete preferred date, time window, and timezone.',
       404: 'That booking is no longer available.',
-      409: 'Matching cannot start because another workflow is active or the booking state changed.',
-      422: 'This booking is not ready for matching. Review its funding and scheduling information.',
+      409: 'Matching cannot be retried because another workflow is active or the booking state changed.',
+      422: 'This booking cannot be retried until its funding and scheduling information is complete.',
     };
     this.handleError(
       error,
-      messages[error.status] ?? 'Matching could not be started. Please retry.',
+      messages[error.status] ?? 'Automatic matching could not be retried. Please try again.',
     );
   }
 

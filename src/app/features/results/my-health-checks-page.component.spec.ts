@@ -78,7 +78,7 @@ describe('MyHealthChecksPageComponent', () => {
     expect(component.bookingStatusLabel('AWAITING_FUNDING')).toBe('Awaiting payment');
     expect(component.bookingStatusLabel('PROVIDER_ASSIGNED')).toBe('Provider assigned');
     expect(component.bookingStatusLabel('IN_PROGRESS')).toBe('Health Check in progress');
-    expect(component.bookingStatusLabel('UNFULFILLABLE')).toBe('Provider not currently available');
+    expect(component.bookingStatusLabel('UNFULFILLABLE')).toBe('Provider match needs review');
     expect(component.encounterStatusLabel('COMPLETED')).toBe('Completed');
   });
 

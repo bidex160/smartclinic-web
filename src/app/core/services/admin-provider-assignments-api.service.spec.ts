@@ -60,7 +60,47 @@ describe('AdminProviderAssignmentsApiService', () => {
       'http://api.example.test/api/v1/admin/provider-assignments/expire-stale',
     );
     expect(expire.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
-    expire.flush({ expiredCount: 0, nextOffers: [] });
+    expire.flush({ expiredCount: 0, continuedMatchingCount: 0, unfulfillableCount: 0 });
+    http.verify();
+  });
+
+  it('sends exact non-replayed retry, assign, override, and reassignment contracts', () => {
+    const { api, http } = setup();
+    const reference = 'SC-2026-ABCDEF123456';
+    api.retryMatching(reference).subscribe();
+    const retry = http.expectOne(
+      `http://api.example.test/api/v1/admin/bookings/${reference}/matching/retry`,
+    );
+    expect(retry.request.body).toBeNull();
+    expect(retry.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    retry.flush(result());
+
+    api.assignProvider(reference, { providerId: 'provider-id' }).subscribe();
+    const assign = http.expectOne(
+      `http://api.example.test/api/v1/admin/bookings/${reference}/assign-provider`,
+    );
+    expect(assign.request.body).toEqual({ providerId: 'provider-id' });
+    assign.flush(result());
+
+    api
+      .overrideProvider(reference, { providerId: 'provider-id', reason: 'Coverage exception' })
+      .subscribe();
+    const override = http.expectOne(
+      `http://api.example.test/api/v1/admin/bookings/${reference}/assign-provider/override`,
+    );
+    expect(override.request.body).toEqual({
+      providerId: 'provider-id',
+      reason: 'Coverage exception',
+    });
+    override.flush(result());
+
+    api.reassignProvider(reference, { reason: 'Provider unavailable' }).subscribe();
+    const automatic = http.expectOne(
+      `http://api.example.test/api/v1/admin/bookings/${reference}/reassign-provider`,
+    );
+    expect(automatic.request.body).toEqual({ reason: 'Provider unavailable' });
+    expect(automatic.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    automatic.flush(result());
     http.verify();
   });
 
@@ -78,6 +118,17 @@ describe('AdminProviderAssignmentsApiService', () => {
     };
   }
 });
+
+function result() {
+  return {
+    bookingReference: 'SC-2026-ABCDEF123456',
+    bookingStatus: 'PENDING_PROVIDER_MATCH',
+    outcome: 'OFFER_CREATED',
+    assignmentId: 'assignment-id',
+    assignmentStatus: 'OFFERED',
+    offerExpiresAt: null,
+  };
+}
 
 function assignment() {
   return {

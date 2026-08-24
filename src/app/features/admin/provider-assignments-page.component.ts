@@ -16,7 +16,6 @@ import {
   AdminProviderAssignment,
   AdminProviderAssignmentFilters,
   BookingStatus,
-  MatchingResult,
 } from '../../core/models/admin-provider-assignment.model';
 import { ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
@@ -56,9 +55,6 @@ export class ProviderAssignmentsPageComponent {
     bookingReference: ['', Validators.pattern(BOOKING_REFERENCE_PATTERN)],
     providerId: ['', Validators.pattern(UUID_PATTERN)],
     status: this.formBuilder.control<ProviderOfferStatus | ''>(''),
-  });
-  readonly matchingForm = this.formBuilder.group({
-    bookingReference: ['', [Validators.required, Validators.pattern(BOOKING_REFERENCE_PATTERN)]],
   });
 
   constructor() {
@@ -100,26 +96,6 @@ export class ProviderAssignmentsPageComponent {
     this.loadAssignments();
   }
 
-  startMatching(): void {
-    if (this.matchingForm.invalid || this.mutating()) {
-      this.matchingForm.markAllAsTouched();
-      return;
-    }
-    this.beginMutation();
-    const reference = this.matchingForm.controls.bookingReference.value.trim().toUpperCase();
-    this.api
-      .startMatching(reference)
-      .pipe(finalize(() => this.mutating.set(false)))
-      .subscribe({
-        next: (result) => {
-          this.statusMessage.set(this.matchingMessage(result));
-          this.matchingForm.reset({ bookingReference: '' });
-          this.loadAssignments();
-        },
-        error: (error: HttpErrorResponse) => this.handleMatchingError(error),
-      });
-  }
-
   expireStaleOffers(): void {
     if (this.mutating()) return;
     this.beginMutation();
@@ -128,11 +104,8 @@ export class ProviderAssignmentsPageComponent {
       .pipe(finalize(() => this.mutating.set(false)))
       .subscribe({
         next: (result) => {
-          const unfulfillable = result.nextOffers.filter(
-            (item) => item.bookingStatus === 'UNFULFILLABLE',
-          ).length;
           this.statusMessage.set(
-            `${result.expiredCount} stale ${result.expiredCount === 1 ? 'offer was' : 'offers were'} expired. ${result.nextOffers.length} matching ${result.nextOffers.length === 1 ? 'cycle was' : 'cycles were'} continued.${unfulfillable ? ` ${unfulfillable} reached unfulfillable status.` : ''}`,
+            `${result.expiredCount} stale ${result.expiredCount === 1 ? 'offer was' : 'offers were'} expired. ${result.continuedMatchingCount} matching ${result.continuedMatchingCount === 1 ? 'cycle was' : 'cycles were'} continued.${result.unfulfillableCount ? ` ${result.unfulfillableCount} reached unfulfillable status.` : ''}`,
           );
           this.loadAssignments();
         },
@@ -149,29 +122,10 @@ export class ProviderAssignmentsPageComponent {
     return this.humanize(status);
   }
 
-  private matchingMessage(result: MatchingResult): string {
-    if (result.outcome === 'OFFER_CREATED')
-      return 'Matching started and an offer was created for an eligible provider.';
-    if (result.outcome === 'UNFULFILLABLE') {
-      return 'No eligible provider was available. The booking is now unfulfillable.';
-    }
-    return `Matching completed with booking status ${this.bookingStatusLabel(result.bookingStatus)}.`;
-  }
-
   private beginMutation(): void {
     this.mutating.set(true);
     this.error.set(null);
     this.statusMessage.set(null);
-  }
-
-  private handleMatchingError(error: HttpErrorResponse): void {
-    const messages: Record<number, string> = {
-      400: 'Matching needs a complete preferred date, time window, and timezone.',
-      404: 'That booking could not be found.',
-      409: 'Matching cannot start from the booking’s current workflow state.',
-      422: 'The booking does not yet have the required matching information.',
-    };
-    this.handleError(error, messages[error.status] ?? 'Matching could not be started right now.');
   }
 
   private handleError(error: HttpErrorResponse, fallback: string): void {
