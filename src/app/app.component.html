@@ -1,165 +1,277 @@
-<div class="flex min-h-screen flex-col bg-[#f7faf9] text-ink">
-  <a
-    class="sr-only z-50 rounded-md bg-white px-4 py-3 font-semibold text-brand-800 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
-    href="#main-content"
-    >Skip to main content</a
-  >
-  <header class="border-b border-emerald-950/10 bg-white/95">
-    <div
-      class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8 lg:px-10"
-    >
-      <a
-        routerLink="/"
-        class="group inline-flex items-center gap-3 rounded-md focus:outline-none focus:ring-4 focus:ring-brand-200"
-        aria-label="SmartClinic home"
+<a
+  class="sr-only z-50 rounded-md bg-white px-4 py-3 font-semibold text-brand-800
+         focus:not-sr-only focus:fixed focus:left-4 focus:top-4
+         focus:outline-none focus:ring-4 focus:ring-brand-200"
+  href="#main-content"
+>
+  Skip to main content
+</a>
+
+@if (portalRoute()) {
+  <!--
+    Admin/provider routes already own their sidebar,
+    account controls and portal navigation.
+  -->
+  <main id="main-content" tabindex="-1">
+    <router-outlet />
+  </main>
+} @else {
+  <div class="flex min-h-screen flex-col bg-[#f7faf9] text-ink">
+    <!-- =====================================================
+         PUBLIC / PATIENT HEADER
+    ====================================================== -->
+    <header class="border-b border-emerald-950/10 bg-white/95">
+      <div
+        class="mx-auto flex max-w-7xl items-center justify-between gap-4
+               px-5 py-4 sm:px-8 lg:px-10"
       >
-        <span
-          class="grid size-10 place-items-center rounded-xl bg-brand-600 text-xl font-bold text-white shadow-sm"
-          aria-hidden="true"
-          >S</span
-        >
-        <span class="text-xl font-bold tracking-tight text-brand-900">SmartClinic</span>
-      </a>
-      <nav aria-label="Primary navigation" class="hidden items-center gap-1 md:flex">
         <a
-          routerLink="/health-check/packages"
-          class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus:ring-4 focus:ring-brand-200"
-          >Health Checks</a
+          routerLink="/"
+          class="group inline-flex items-center gap-3 rounded-md
+                 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          aria-label="SmartClinic home"
         >
-        @if (!authState.authenticated()) {
-          <a
-            routerLink="/provider/register"
-            class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus:ring-4 focus:ring-brand-200"
-            >For Providers</a
+          <span
+            class="grid size-10 place-items-center rounded-xl
+                   bg-brand-600 text-xl font-bold text-white shadow-sm"
+            aria-hidden="true"
           >
-          <a
-            routerLink="/admin/login"
-            class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus:ring-4 focus:ring-brand-200"
-            >Sign in</a
+            S
+          </span>
+
+          <span
+            class="text-xl font-bold tracking-tight text-brand-900"
           >
-        } @else {
-          @if (authState.canManagePricing()) {
-            <a
-              routerLink="/admin/package-prices"
-              class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus:ring-4 focus:ring-brand-200"
-              >Admin Portal</a
-            >
-          } @else if (authState.isProvider()) {
-            <a
-              routerLink="/provider/dashboard"
-              class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus:ring-4 focus:ring-brand-200"
-              >Provider Portal</a
-            >
-          }
-          @if (authState.currentUser()?.roles?.includes('USER')) {
-            <a
-              routerLink="/me/health-checks"
-              routerLinkActive="bg-brand-50 text-brand-800"
-              class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
-              >My Health</a
-            >
-          }
-          <button
-            type="button"
-            (click)="logout()"
-            class="min-h-11 rounded-full px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus:ring-4 focus:ring-brand-200"
-          >
-            Sign out
-          </button>
-        }
-        <a
-          routerLink="/health-check/packages"
-          routerLinkActive="bg-brand-50 text-brand-800"
-          class="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
-          >Book My Smart Health Check</a
+            SmartClinic
+          </span>
+        </a>
+
+        <nav
+          aria-label="Primary navigation"
+          class="hidden items-center gap-1 md:flex"
         >
-      </nav>
-      <button
-        type="button"
-        (click)="menuOpen.set(!menuOpen())"
-        [attr.aria-expanded]="menuOpen()"
-        aria-controls="mobile-navigation"
-        class="min-h-11 rounded-lg border px-4 font-bold text-brand-800 md:hidden"
-      >
-        Menu
-      </button>
-    </div>
-    @if (menuOpen()) {
-      <nav
-        id="mobile-navigation"
-        aria-label="Mobile navigation"
-        class="border-t px-5 py-4 md:hidden"
-      >
-        <div class="grid gap-2">
           <a
             routerLink="/health-check/packages"
-            (click)="menuOpen.set(false)"
-            class="rounded-lg px-3 py-3 font-bold text-brand-800"
-            >Health Checks</a
+            class="inline-flex min-h-11 items-center rounded-full
+                   px-4 text-sm font-semibold text-brand-700
+                   hover:bg-brand-50
+                   focus:ring-4 focus:ring-brand-200"
           >
+            Health Checks
+          </a>
+
           @if (!authState.authenticated()) {
             <a
               routerLink="/provider/register"
-              (click)="menuOpen.set(false)"
-              class="rounded-lg px-3 py-3 font-bold text-brand-800"
-              >For Providers</a
+              class="inline-flex min-h-11 items-center rounded-full
+                     px-4 text-sm font-semibold text-brand-700
+                     hover:bg-brand-50
+                     focus:ring-4 focus:ring-brand-200"
             >
+              For Providers
+            </a>
+
             <a
               routerLink="/admin/login"
-              (click)="menuOpen.set(false)"
-              class="rounded-lg px-3 py-3 font-bold text-brand-800"
-              >Sign in</a
+              class="inline-flex min-h-11 items-center rounded-full
+                     px-4 text-sm font-semibold text-brand-700
+                     hover:bg-brand-50
+                     focus:ring-4 focus:ring-brand-200"
             >
+              Sign in
+            </a>
           } @else {
             @if (authState.canManagePricing()) {
               <a
-                routerLink="/admin/package-prices"
-                (click)="menuOpen.set(false)"
-                class="rounded-lg px-3 py-3 font-bold text-brand-800"
-                >Admin Portal</a
+                routerLink="/admin"
+                class="inline-flex min-h-11 items-center rounded-full
+                       px-4 text-sm font-semibold text-brand-700
+                       hover:bg-brand-50
+                       focus:ring-4 focus:ring-brand-200"
               >
-            }
-            @if (authState.isProvider()) {
+                Admin Portal
+              </a>
+            } @else if (authState.isProvider()) {
               <a
                 routerLink="/provider/dashboard"
-                (click)="menuOpen.set(false)"
-                class="rounded-lg px-3 py-3 font-bold text-brand-800"
-                >Provider Portal</a
+                class="inline-flex min-h-11 items-center rounded-full
+                       px-4 text-sm font-semibold text-brand-700
+                       hover:bg-brand-50
+                       focus:ring-4 focus:ring-brand-200"
               >
+                Provider Portal
+              </a>
             }
-            @if (authState.currentUser()?.roles?.includes('USER')) {
+
+            @if (
+              authState.currentUser()?.roles?.includes('USER')
+            ) {
               <a
                 routerLink="/me/health-checks"
-                (click)="menuOpen.set(false)"
-                class="rounded-lg px-3 py-3 font-bold text-brand-800"
-                >My Health</a
+                routerLinkActive="bg-brand-50 text-brand-800"
+                class="inline-flex min-h-11 items-center rounded-full
+                       px-4 text-sm font-semibold text-brand-700
+                       transition hover:bg-brand-50
+                       focus:outline-none focus:ring-4
+                       focus:ring-brand-200"
               >
+                My Health
+              </a>
             }
+
             <button
               type="button"
               (click)="logout()"
-              class="rounded-lg px-3 py-3 text-left font-bold text-brand-800"
+              class="min-h-11 rounded-full px-4
+                     text-sm font-semibold text-brand-700
+                     hover:bg-brand-50
+                     focus:ring-4 focus:ring-brand-200"
             >
               Sign out
             </button>
           }
+
           <a
             routerLink="/health-check/packages"
-            (click)="menuOpen.set(false)"
-            class="rounded-lg bg-brand-600 px-3 py-3 text-center font-bold text-white"
-            >Book My Smart Health Check</a
+            routerLinkActive="bg-brand-50 text-brand-800"
+            class="inline-flex min-h-11 items-center rounded-full
+                   px-4 text-sm font-semibold text-brand-700
+                   transition hover:bg-brand-50
+                   focus:outline-none focus:ring-4
+                   focus:ring-brand-200"
           >
-        </div>
-      </nav>
-    }
-  </header>
-  <main id="main-content" class="flex-1" tabindex="-1"><router-outlet /></main>
-  <footer class="border-t border-emerald-950/10 bg-white">
-    <div
-      class="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-7 text-sm text-slate-600 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10"
+            Book My Smart Health Check
+          </a>
+        </nav>
+
+        <button
+          type="button"
+          (click)="menuOpen.set(!menuOpen())"
+          [attr.aria-expanded]="menuOpen()"
+          aria-controls="mobile-navigation"
+          class="min-h-11 rounded-lg border px-4
+                 font-bold text-brand-800 md:hidden"
+        >
+          Menu
+        </button>
+      </div>
+
+      @if (menuOpen()) {
+        <nav
+          id="mobile-navigation"
+          aria-label="Mobile navigation"
+          class="border-t px-5 py-4 md:hidden"
+        >
+          <div class="grid gap-2">
+            <a
+              routerLink="/health-check/packages"
+              (click)="menuOpen.set(false)"
+              class="rounded-lg px-3 py-3 font-bold text-brand-800"
+            >
+              Health Checks
+            </a>
+
+            @if (!authState.authenticated()) {
+              <a
+                routerLink="/provider/register"
+                (click)="menuOpen.set(false)"
+                class="rounded-lg px-3 py-3 font-bold text-brand-800"
+              >
+                For Providers
+              </a>
+
+              <a
+                routerLink="/admin/login"
+                (click)="menuOpen.set(false)"
+                class="rounded-lg px-3 py-3 font-bold text-brand-800"
+              >
+                Sign in
+              </a>
+            } @else {
+              @if (authState.canManagePricing()) {
+                <a
+                  routerLink="/admin"
+                  (click)="menuOpen.set(false)"
+                  class="rounded-lg px-3 py-3 font-bold text-brand-800"
+                >
+                  Admin Portal
+                </a>
+              }
+
+              @if (authState.isProvider()) {
+                <a
+                  routerLink="/provider/dashboard"
+                  (click)="menuOpen.set(false)"
+                  class="rounded-lg px-3 py-3 font-bold text-brand-800"
+                >
+                  Provider Portal
+                </a>
+              }
+
+              @if (
+                authState.currentUser()?.roles?.includes('USER')
+              ) {
+                <a
+                  routerLink="/me/health-checks"
+                  (click)="menuOpen.set(false)"
+                  class="rounded-lg px-3 py-3 font-bold text-brand-800"
+                >
+                  My Health
+                </a>
+              }
+
+              <button
+                type="button"
+                (click)="logout()"
+                class="rounded-lg px-3 py-3 text-left
+                       font-bold text-brand-800"
+              >
+                Sign out
+              </button>
+            }
+
+            <a
+              routerLink="/health-check/packages"
+              (click)="menuOpen.set(false)"
+              class="rounded-lg bg-brand-600 px-3 py-3
+                     text-center font-bold text-white"
+            >
+              Book My Smart Health Check
+            </a>
+          </div>
+        </nav>
+      }
+    </header>
+
+    <!-- =====================================================
+         PUBLIC/PATIENT ROUTES
+    ====================================================== -->
+    <main
+      id="main-content"
+      class="flex-1"
+      tabindex="-1"
     >
-      <p>&copy; 2026 SmartClinic. Your health journey, made clearer.</p>
-      <p>Health checks do not replace urgent or emergency care.</p>
-    </div>
-  </footer>
-</div>
+      <router-outlet />
+    </main>
+
+    <footer
+      class="border-t border-emerald-950/10 bg-white"
+    >
+      <div
+        class="mx-auto flex max-w-7xl flex-col gap-2
+               px-5 py-7 text-sm text-slate-600
+               sm:px-8 md:flex-row md:items-center
+               md:justify-between lg:px-10"
+      >
+        <p>
+          &copy; 2026 SmartClinic. Your health journey,
+          made clearer.
+        </p>
+
+        <p>
+          Health checks do not replace urgent or emergency care.
+        </p>
+      </div>
+    </footer>
+  </div>
+}

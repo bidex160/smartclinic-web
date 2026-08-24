@@ -28,6 +28,7 @@ import { AdminProviderAssignmentsApiService } from '../../core/services/admin-pr
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
+import { UtilsService } from '../../core/services/utils.service';
 
 const BOOKING_STATUSES: readonly BookingStatus[] = [
   'DRAFT',
@@ -60,11 +61,12 @@ const EMPTY_RESPONSE: AdminMatchingQueueResponse = {
 
 @Component({
   selector: 'app-matching-queue-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './matching-queue-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatchingQueuePageComponent {
+  utilsService = inject(UtilsService);
   private readonly queueApi = inject(AdminMatchingQueueApiService);
   private readonly assignmentsApi = inject(AdminProviderAssignmentsApiService);
   private readonly packagesApi = inject(HealthCheckPackagesApiService);

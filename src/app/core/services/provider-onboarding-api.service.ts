@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api-config.token';
 import { SKIP_AUTH_RETRY, SKIP_STAFF_AUTH } from '../config/http-context.tokens';
@@ -8,6 +8,7 @@ import {
   RegisterProviderRequest,
   UpdateProviderProfileRequest,
 } from '../models/provider-onboarding.model';
+import { ProviderOffer } from '../models/provider-offer.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProviderOnboardingApiService {
@@ -17,6 +18,11 @@ export class ProviderOnboardingApiService {
   private readonly publicMutationContext = new HttpContext()
     .set(SKIP_AUTH_RETRY, true)
     .set(SKIP_STAFF_AUTH, true);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly profile = signal<ProviderOnboardingProfile | null>(null);
+  readonly offers = signal<ProviderOffer[]>([]);
 
   register(request: RegisterProviderRequest): Observable<ProviderOnboardingProfile> {
     return this.http.post<ProviderOnboardingProfile>(

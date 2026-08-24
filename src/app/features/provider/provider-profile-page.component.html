@@ -1,7 +1,5 @@
-<app-provider-session-header
-  [operational]="profile()?.onboardingStatus === 'APPROVED' && profile()?.status === 'ACTIVE'"
-/>
-<main class="mx-auto max-w-6xl px-5 py-10 lg:ml-64 lg:px-10">
+
+<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
   <p class="text-sm font-bold uppercase tracking-[.14em] text-brand-600">Provider onboarding</p>
   <h1 class="mt-2 text-3xl font-bold text-brand-900">Provider profile</h1>
   @if (statusMessage()) {

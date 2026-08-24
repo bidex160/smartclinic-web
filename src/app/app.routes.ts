@@ -7,6 +7,8 @@ import {
 import { adminPricingGuard } from './features/admin/admin-auth.guards';
 import { providerGuard } from './features/provider/provider-auth.guard';
 import { authenticatedUserGuard } from './features/results/authenticated-user.guard';
+import { AdminLayoutComponent } from './features/admin/admin-layout.component';
+import { ProviderLayoutComponent } from './features/provider/provider-layout.component';
 
 export const routes: Routes = [
   {
@@ -103,8 +105,13 @@ export const routes: Routes = [
         (component) => component.AdminLoginPageComponent,
       ),
   },
+
+    {
+    path: 'provider',
+    component: ProviderLayoutComponent,
+    children: [
   {
-    path: 'provider/access-denied',
+    path: 'access-denied',
     title: 'Provider access required | SmartClinic',
     loadComponent: () =>
       import('./features/provider/provider-access-denied-page.component').then(
@@ -112,7 +119,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/register',
+    path: 'register',
     title: 'Provider application | SmartClinic',
     loadComponent: () =>
       import('./features/provider/provider-register-page.component').then(
@@ -120,7 +127,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/setup/:token',
+    path: 'setup/:token',
     title: 'Provider account setup | SmartClinic',
     loadComponent: () =>
       import('./features/provider/provider-setup-page.component').then(
@@ -128,7 +135,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/dashboard',
+    path: 'dashboard',
     title: 'Provider dashboard | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
@@ -137,7 +144,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/profile',
+    path: 'profile',
     title: 'Provider onboarding profile | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
@@ -146,7 +153,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/appointments',
+    path: 'appointments',
     title: 'Provider appointments | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
@@ -155,7 +162,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/offers',
+    path: 'offers',
     title: 'My offers | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
@@ -164,7 +171,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/offers/:id',
+    path: 'offers/:id',
     title: 'Offer details | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
@@ -173,7 +180,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'provider/bookings/:reference/health-check',
+    path: 'bookings/:reference/health-check',
     title: 'Smart Health Check encounter | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
@@ -181,8 +188,14 @@ export const routes: Routes = [
         (component) => component.ProviderHealthCheckPageComponent,
       ),
   },
+    ]
+    }, 
   {
-    path: 'admin/access-denied',
+    path: 'admin',
+    component: AdminLayoutComponent,
+  children: [
+  {
+    path: 'access-denied',
     title: 'Access denied | SmartClinic',
     loadComponent: () =>
       import('./features/admin/admin-access-denied-page.component').then(
@@ -190,7 +203,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/package-prices',
+    path: 'package-prices',
     title: 'Package pricing | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -199,7 +212,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/providers',
+    path: 'providers',
     title: 'Providers | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -208,7 +221,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/providers/:id',
+    path: 'providers/:id',
     title: 'Provider details | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -217,7 +230,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/matching-queue',
+    path: 'matching-queue',
     title: 'Provider matching queue | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -226,7 +239,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/provider-assignments',
+    path: 'provider-assignments',
     title: 'Provider assignments | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -235,7 +248,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/bookings/:reference',
+    path: 'bookings/:reference',
     title: 'Operational booking detail | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -244,7 +257,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/provider-assignments/:id',
+    path: 'provider-assignments/:id',
     title: 'Provider assignment details | SmartClinic',
     canActivate: [adminPricingGuard],
     loadComponent: () =>
@@ -252,6 +265,9 @@ export const routes: Routes = [
         (component) => component.ProviderAssignmentDetailPageComponent,
       ),
   },
+    ]
+  },
+
   {
     path: '**',
     title: 'Page not found | SmartClinic',

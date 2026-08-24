@@ -1,6 +1,5 @@
-<app-provider-session-header />
 
-<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:ml-64 lg:px-10 lg:py-14">
+<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
   <div class="max-w-3xl">
     <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Provider workspace</p>
     <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">My offers</h1>
@@ -64,74 +63,247 @@
       <p class="mt-2 text-slate-600">There are no offers matching this status.</p>
     </section>
   } @else if (!error()) {
-    <section class="mt-6" aria-labelledby="offers-list-title">
-      <h2 id="offers-list-title" class="sr-only">Provider offers</h2>
-      <ul class="grid gap-5 lg:grid-cols-2">
-        @for (offer of offers(); track offer.assignmentId) {
-          <li class="rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-6">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="text-sm font-semibold text-slate-500">{{ offer.bookingReference }}</p>
-                <h3 class="mt-1 text-xl font-bold text-brand-900">
+  <section
+    class="mt-6 overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-soft"
+    aria-labelledby="offers-list-title"
+  >
+    <div
+      class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6"
+    >
+      <h2
+        id="offers-list-title"
+        class="text-xl font-bold text-brand-900"
+      >
+        Provider offers
+      </h2>
+
+      <span class="text-sm font-semibold text-slate-500">
+        {{ offers().length }}
+        {{ offers().length === 1 ? 'offer' : 'offers' }}
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[1200px] border-collapse text-left text-sm">
+        <caption class="sr-only">
+          Health Check offers requiring provider review
+        </caption>
+
+        <thead class="bg-slate-50 text-slate-700">
+          <tr>
+            <th scope="col" class="px-5 py-3 font-bold">
+              Booking
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Health Check
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Participant
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Fulfilment
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Appointment
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Status
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Offer expiry
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Location
+            </th>
+
+            <th scope="col" class="px-5 py-3 font-bold">
+              Action
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-100">
+          @for (offer of offers(); track offer.assignmentId) {
+            <tr class="align-top transition hover:bg-slate-50/70">
+
+              <!-- Booking -->
+              <td class="whitespace-nowrap px-5 py-4">
+                <a
+                  [routerLink]="['/provider/offers', offer.assignmentId]"
+                  class="font-bold text-brand-800 underline underline-offset-4"
+                >
+                  {{ offer.bookingReference }}
+                </a>
+              </td>
+
+              <!-- Health Check -->
+              <td class="px-5 py-4">
+                <p class="font-bold text-slate-900">
                   {{ offer.healthCheckPackage.name }}
-                </h3>
-              </div>
-              <span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{
-                statusLabel(offer.status)
-              }}</span>
-            </div>
-            <dl class="mt-5 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
-              <dt class="font-semibold text-slate-600">Participant</dt>
-              <dd>{{ offer.participant.givenName }} {{ offer.participant.familyName }}</dd>
-              <dt class="font-semibold text-slate-600">Fulfilment</dt>
-              <dd>{{ offer.fulfilmentMode.name }}</dd>
-              <dt class="font-semibold text-slate-600">Appointment date</dt>
-              <dd>{{ utilsService.formatDate(offer.preferredDate) }}</dd>
-              <dt class="font-semibold text-slate-600">Appointment time</dt>
-              <dd>
-                @if (offer.preferredTimeWindowStart && offer.preferredTimeWindowEnd) {
-                  {{ utilsService.formatTime(offer.preferredTimeWindowStart) }}–{{
-                    utilsService.formatTime(offer.preferredTimeWindowEnd)
-                  }}
-                  {{ offer.preferredTimezone || '' }}
-                } @else if (offer.preferredTimeWindowStart) {
-                  {{ utilsService.formatTime(offer.preferredTimeWindowStart) }}
-                  {{ offer.preferredTimezone || '' }}
+                </p>
+              </td>
+
+              <!-- Participant -->
+              <td class="px-5 py-4">
+                <p class="font-semibold text-slate-900">
+                  {{ offer.participant.givenName }}
+                  {{ offer.participant.familyName }}
+                </p>
+              </td>
+
+              <!-- Fulfilment -->
+              <td class="px-5 py-4">
+                <span
+                  class="inline-flex whitespace-nowrap rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-800"
+                >
+                  {{ offer.fulfilmentMode.name }}
+                </span>
+              </td>
+
+              <!-- Appointment -->
+              <td class="px-5 py-4">
+                @if (offer.confirmedSchedule; as appointment) {
+                  <p class="font-bold text-brand-900">
+                    {{
+                      utilsService.formatAppointment(
+                        appointment.date,
+                        appointment.timeFrom,
+                        appointment.timeTo
+                      )
+                    }}
+                  </p>
+
+                  <p class="mt-1 text-xs text-slate-500">
+                    {{ appointment.timezone }}
+                  </p>
                 } @else {
-                  Not specified
-                }
-              </dd>
-              <dt class="font-semibold text-slate-600">Offer expiry</dt>
-              <dd>{{ offer.expiresAt ? (offer.expiresAt | date: 'medium') : 'Not specified' }}</dd>
-              @if (offer.confirmedSchedule; as appointment) {
-                <dt class="font-semibold text-brand-800">Confirmed appointment</dt>
-                <dd class="font-bold text-brand-900">
-                  {{ utilsService.formatDate(appointment.date) }} ·
-                  {{ utilsService.formatTime(appointment.timeFrom) }}–{{
-                    utilsService.formatTime(appointment.timeTo)
-                  }}
-                  {{ appointment.timezone }}
-                  @if (appointment.providerLocationName) {
-                    · {{ appointment.providerLocationName }}
+                  <p class="font-semibold text-slate-900">
+                    {{ utilsService.formatDate(offer.preferredDate) }}
+                  </p>
+
+                  @if (offer.preferredTimeWindowStart) {
+                    <p class="mt-1 whitespace-nowrap text-slate-600">
+                      {{ utilsService.formatTime(offer.preferredTimeWindowStart) }}
+
+                      @if (offer.preferredTimeWindowEnd) {
+                        –
+                        {{
+                          utilsService.formatTime(
+                            offer.preferredTimeWindowEnd
+                          )
+                        }}
+                      }
+                    </p>
+
+                    @if (offer.preferredTimezone) {
+                      <p class="mt-1 text-xs text-slate-500">
+                        {{ offer.preferredTimezone }}
+                      </p>
+                    }
+                  } @else {
+                    <p class="mt-1 text-slate-500">
+                      Time not specified
+                    </p>
                   }
-                </dd>
-              }
-              @if (offer.fulfilmentMode.code === 'HOME_VISIT' && offer.visitAddress; as address) {
-                <dt class="font-semibold text-slate-600">Visit address</dt>
-                <dd>
-                  {{ address.addressLine1 }}, {{ address.city }}, {{ address.stateOrRegion }},
-                  {{ address.countryCode }}
-                </dd>
-              }
-            </dl>
-            <a
-              [routerLink]="['/provider/offers', offer.assignmentId]"
-              class="mt-6 inline-flex min-h-11 items-center rounded-lg border border-brand-600 px-4 py-2 font-bold text-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
-              >View offer</a
-            >
-          </li>
-        }
-      </ul>
-    </section>
-  }
+                }
+              </td>
+
+              <!-- Status -->
+              <td class="px-5 py-4">
+                <span
+                  class="inline-flex whitespace-nowrap rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-800"
+                >
+                  {{ statusLabel(offer.status) }}
+                </span>
+              </td>
+
+              <!-- Expiry -->
+              <td class="px-5 py-4">
+                @if (offer.expiresAt) {
+                  <p class="whitespace-nowrap font-semibold text-slate-900">
+                    {{ offer.expiresAt | date: 'd MMM y' }}
+                  </p>
+
+                  <p class="mt-1 whitespace-nowrap text-xs text-slate-500">
+                    {{ offer.expiresAt | date: 'h:mm a' }}
+                  </p>
+                } @else {
+                  <span class="text-slate-500">
+                    Not specified
+                  </span>
+                }
+              </td>
+
+              <!-- Location -->
+              <td class="px-5 py-4">
+                @if (
+                  offer.fulfilmentMode.code === 'HOME_VISIT' &&
+                  offer.visitAddress;
+                  as address
+                ) {
+                  <!-- Keep list view compact -->
+                  <p class="font-semibold text-slate-900">
+                    {{ address.city }}, {{ address.stateOrRegion }}
+                  </p>
+
+                  <p class="mt-1 text-xs text-slate-500">
+                    {{ address.countryCode }}
+                  </p>
+                } @else if (
+                  offer.confirmedSchedule?.providerLocationName
+                ) {
+                  <p class="font-semibold text-slate-900">
+                    {{ offer.confirmedSchedule?.providerLocationName }}
+                  </p>
+                } @else if (
+                  offer.fulfilmentMode.code === 'PROVIDER_LOCATION'
+                ) {
+                  <span class="text-slate-500">
+                    Provider location
+                  </span>
+                } @else {
+                  <span class="text-slate-500">—</span>
+                }
+              </td>
+
+              <!-- Action -->
+              <td class="px-5 py-4">
+                <a
+                  [routerLink]="[
+                    '/provider/offers',
+                    offer.assignmentId
+                  ]"
+                  class="
+                    inline-flex min-h-10
+                    whitespace-nowrap
+                    items-center
+                    rounded-lg
+                    border border-brand-600
+                    px-3 py-2
+                    font-bold
+                    text-brand-700
+                    transition
+                    hover:bg-brand-50
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-brand-200
+                  "
+                >
+                  View offer
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
 </main>

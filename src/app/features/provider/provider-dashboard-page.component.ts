@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize, of, switchMap } from 'rxjs';
 import { ProviderOffer } from '../../core/models/provider-offer.model';
@@ -19,10 +19,10 @@ export class ProviderDashboardPageComponent {
   private readonly offersApi = inject(ProviderOffersApiService);
   private readonly profileApi = inject(ProviderOnboardingApiService);
   readonly utils = inject(UtilsService);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly profile = signal<ProviderOnboardingProfile | null>(null);
-  readonly offers = signal<ProviderOffer[]>([]);
+  readonly loading = this.profileApi.loading
+  readonly error = this.profileApi.error
+  readonly profile = this.profileApi.profile;
+  readonly offers = this.profileApi.offers;
   readonly operational = computed(
     () => this.profile()?.onboardingStatus === 'APPROVED' && this.profile()?.status === 'ACTIVE',
   );
@@ -34,7 +34,10 @@ export class ProviderDashboardPageComponent {
   );
 
   constructor() {
-    this.load();
+    effect(()=>{
+
+    })
+    // this.load();
   }
 
   load(): void {

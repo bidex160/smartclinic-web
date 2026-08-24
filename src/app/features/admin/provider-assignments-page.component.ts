@@ -34,7 +34,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 @Component({
   selector: 'app-provider-assignments-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './provider-assignments-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

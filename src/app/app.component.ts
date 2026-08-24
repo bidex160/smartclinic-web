@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthStateService } from './core/services/auth-state.service';
 import { AuthSessionService } from './core/services/auth-session.service';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -10,10 +11,38 @@ import { AuthSessionService } from './core/services/auth-session.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  readonly authState = inject(AuthStateService);
-  private readonly session = inject(AuthSessionService);
+    readonly authState = inject(AuthStateService);
+private readonly session = inject(AuthSessionService);
+ private readonly router = inject(Router);
+
   readonly menuOpen = signal(false);
 
+  readonly currentUrl = signal(this.router.url);
+
+  readonly portalRoute = computed(() => {
+    const url = this.currentUrl();
+
+    return (
+      url.startsWith('/admin') ||
+      url.startsWith('/provider')
+    );
+  });
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd =>
+            event instanceof NavigationEnd,
+        ),
+      )
+      .subscribe((event) => {
+        this.currentUrl.set(event.urlAfterRedirects);
+        this.menuOpen.set(false);
+      });
+  }
+
+  
   logout(): void {
     this.menuOpen.set(false);
     this.session.logout().subscribe();

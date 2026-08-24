@@ -22,6 +22,7 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { PackagePricesApiService } from '../../core/services/package-prices-api.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { AdminSessionHeaderComponent } from "./admin-session-header.component";
 
 const AMOUNT_PATTERN = /^\d{1,10}(\.\d{1,2})?$/;
 
@@ -40,7 +41,7 @@ function futureDate(control: AbstractControl<string>): ValidationErrors | null {
 
 @Component({
   selector: 'app-package-prices-admin-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AdminSessionHeaderComponent],
   templateUrl: './package-prices-admin-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
