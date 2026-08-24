@@ -11,6 +11,8 @@ export type PatientBookingStatus =
   | 'EXPIRED';
 
 export type PatientEncounterStatus = 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type PatientPortalCategory =
+  'AWAITING_PAYMENT' | 'UPCOMING_ACTIVE' | 'COMPLETED_HISTORY' | 'NEEDS_ATTENTION' | 'CLOSED';
 
 export interface PatientHealthCheckHistoryItem {
   readonly bookingReference: string;
@@ -30,6 +32,34 @@ export interface PatientHealthCheckHistoryItem {
   readonly startedAt: string | null;
   readonly completedAt: string | null;
   readonly hasCompletedResult: boolean;
+  readonly portalCategory: PatientPortalCategory;
+  readonly fundingStatus: import('./public-booking.model').PublicBookingFundingStatus | null;
+  readonly checkoutOption: import('./public-booking.model').PublicBookingCheckoutOption | null;
+  readonly paymentStatus: import('./public-booking.model').PublicBookingFundingAttemptStatus | null;
+}
+
+export interface PatientHealthCheckDetail extends PatientHealthCheckHistoryItem {
+  readonly visitAddress: import('./public-booking.model').OperationalVisitAddress | null;
+}
+
+export interface PatientPortalProfile {
+  readonly user: { readonly displayName: string; readonly email: string };
+  readonly patient: {
+    readonly patientReference: string;
+    readonly givenName: string;
+    readonly familyName: string;
+    readonly phone: string | null;
+  };
+}
+
+export interface CreateSelfHealthCheckRequest {
+  readonly healthCheckPackageId: string;
+  readonly fulfilmentModeId: string;
+  readonly preferredDate: string;
+  readonly preferredTimeWindowStart: string;
+  readonly preferredTimezone: string;
+  readonly preferredLocationNote?: string;
+  readonly visitAddress?: import('./public-booking.model').BookingVisitAddressInput;
 }
 
 export interface PatientHealthCheckHistoryResponse {

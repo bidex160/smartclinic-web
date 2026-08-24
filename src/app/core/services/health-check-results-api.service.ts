@@ -6,8 +6,12 @@ import { SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import { HealthCheckResult } from '../models/health-check-result.model';
 import {
   PatientHealthCheckHistoryFilters,
+  PatientHealthCheckDetail,
   PatientHealthCheckHistoryResponse,
+  PatientPortalProfile,
+  CreateSelfHealthCheckRequest,
 } from '../models/patient-health-check-history.model';
+import { PublicBookingResponse } from '../models/public-booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class HealthCheckResultsApiService {
@@ -30,6 +34,20 @@ export class HealthCheckResultsApiService {
     return this.http.get<PatientHealthCheckHistoryResponse>(`${this.baseUrl}/me/health-checks`, {
       params,
     });
+  }
+
+  getMyProfile(): Observable<PatientPortalProfile> {
+    return this.http.get<PatientPortalProfile>(`${this.baseUrl}/me/profile`);
+  }
+
+  getMyHealthCheck(reference: string): Observable<PatientHealthCheckDetail> {
+    return this.http.get<PatientHealthCheckDetail>(
+      `${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}`,
+    );
+  }
+
+  createMyHealthCheck(request: CreateSelfHealthCheckRequest): Observable<PublicBookingResponse> {
+    return this.http.post<PublicBookingResponse>(`${this.baseUrl}/me/health-checks`, request);
   }
 
   getGuestResult(token: string): Observable<HealthCheckResult> {

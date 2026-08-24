@@ -52,6 +52,55 @@ describe('HealthCheckResultsApiService', () => {
     expect(pending.request.params.has('userId')).toBe(false);
     pending.flush({ items: [], page: 2, limit: 10, total: 0, totalPages: 0 });
   });
+  it('loads profile and detail through current-user routes only', () => {
+    const { api, http } = setup();
+    api.getMyProfile().subscribe();
+    const profile = http.expectOne('http://api.test/api/v1/me/profile');
+    expect(profile.request.params.keys()).toEqual([]);
+    profile.flush({
+      user: { displayName: 'Ada', email: 'ada@example.test' },
+      patient: {
+        patientReference: 'SCP-1234-ABCD',
+        givenName: 'Ada',
+        familyName: 'Okafor',
+        phone: null,
+      },
+    });
+    api.getMyHealthCheck('SC/1').subscribe();
+    const detail = http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1');
+    expect(detail.request.params.has('patientId')).toBe(false);
+    detail.flush({});
+  });
+
+  it('creates a SELF Health Check without client ownership fields', () => {
+    const { api, http } = setup();
+    api
+      .createMyHealthCheck({
+        healthCheckPackageId: 'package',
+        fulfilmentModeId: 'mode',
+        preferredDate: '2026-09-01',
+        preferredTimeWindowStart: '09:00',
+        preferredTimezone: 'Africa/Lagos',
+        visitAddress: {
+          addressLine1: '15 Ring Road',
+          city: 'Ibadan',
+          stateOrRegion: 'Oyo',
+          countryCode: 'NG',
+        },
+      })
+      .subscribe();
+    const pending = http.expectOne('http://api.test/api/v1/me/health-checks');
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.body).not.toEqual(
+      expect.objectContaining({
+        userId: expect.anything(),
+        patientId: expect.anything(),
+        patientReference: expect.anything(),
+      }),
+    );
+    expect(pending.request.body.visitAddress.city).toBe('Ibadan');
+    pending.flush({});
+  });
   function setup() {
     TestBed.configureTestingModule({
       providers: [

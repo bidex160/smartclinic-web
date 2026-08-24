@@ -1,0 +1,68 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
+import { AuthApiService } from '../../core/services/auth-api.service';
+
+@Component({
+  selector: 'app-patient-register-page',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './patient-register-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PatientRegisterPageComponent {
+  private readonly fb = inject(FormBuilder).nonNullable;
+  private readonly api = inject(AuthApiService);
+  readonly pending = signal(false);
+  readonly submitted = signal(false);
+  readonly success = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly form = this.fb.group({
+    givenName: ['', [Validators.required, Validators.maxLength(80)]],
+    familyName: ['', [Validators.required, Validators.maxLength(80)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
+    phone: ['', [Validators.maxLength(30)]],
+    password: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(128)]],
+  });
+
+  register(): void {
+    this.submitted.set(true);
+    this.error.set(null);
+    if (this.form.invalid || this.pending()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const value = this.form.getRawValue();
+    this.pending.set(true);
+    this.api
+      .register({
+        givenName: value.givenName.trim(),
+        familyName: value.familyName.trim(),
+        email: value.email.trim().toLowerCase(),
+        ...(value.phone.trim() && { phone: value.phone.trim() }),
+        password: value.password,
+      })
+      .pipe(finalize(() => this.pending.set(false)))
+      .subscribe({
+        next: () => {
+          this.form.reset();
+          this.success.set(true);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.error.set(
+            error.status === 409
+              ? 'An account already exists for this email. Sign in instead.'
+              : error.status === 0
+                ? 'SmartClinic could not be reached. Check your connection and try again.'
+                : 'We could not create your account. Check the form and try again.',
+          );
+        },
+      });
+  }
+
+  invalid(name: keyof typeof this.form.controls): boolean {
+    const control = this.form.controls[name];
+    return control.invalid && (control.touched || this.submitted());
+  }
+}

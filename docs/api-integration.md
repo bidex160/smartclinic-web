@@ -41,6 +41,7 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `GET /api/v1/public/bookings/:reference/payment-status`              | Read authoritative guest payment state             | Cookie-bound safe booking/funding/latest-attempt projection            |
 | `POST /api/v1/public/bookings/:reference/payment-status/refresh`     | Reconcile the latest attempt with the provider     | Empty body; backend selects the attempt and throttles verification     |
 | `POST /api/v1/auth/login`                                            | Establish an in-memory authenticated session       | Returns access token and safe user identity                            |
+| `POST /api/v1/auth/register`                                         | Create a standard patient account                  | Creates USER and SELF Patient; does not authenticate                   |
 | `POST /api/v1/auth/refresh`                                          | Restore or rotate a browser session                | Uses and rotates an HttpOnly refresh cookie                            |
 | `POST /api/v1/auth/logout`                                           | Revoke the current refresh session                 | Clears the refresh cookie; local state clears regardless               |
 | `POST /api/v1/auth/logout-all`                                       | Revoke all refresh sessions for the current user   | Requires Bearer authentication                                         |
@@ -72,6 +73,9 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `PUT /api/v1/provider/bookings/:reference/health-check/measurements` | Save all six measurement values                    | Units omitted from request and returned authoritatively                |
 | `POST /api/v1/provider/bookings/:reference/health-check/complete`    | Lock and complete an in-progress encounter         | Explicit confirmation; non-replayed mutation                           |
 | `GET /api/v1/me/health-checks`                                       | List current Patient's Health Check history        | Filters status; backend owns identity, ordering, and pagination        |
+| `GET /api/v1/me/profile`                                             | Read current USER and SELF Patient profile         | Returns public Patient reference, never internal Patient ID            |
+| `GET /api/v1/me/health-checks/:reference`                            | Read one owned patient-safe booking detail         | Ownership comes from authenticated USER → SELF Patient                 |
+| `POST /api/v1/me/health-checks`                                      | Create a booking for the current SELF Patient      | Never accepts User, Patient, Patient reference, or organisation IDs    |
 | `POST /api/v1/public/bookings/:reference/link-patient-account`       | Link Patient using booking ownership proof         | Bearer JWT plus credentialed public booking-session cookie             |
 | `POST /api/v1/me/patient/link-from-result`                           | Link Patient using guest result proof              | Body contains only `resultAccessToken`                                 |
 | `GET /api/v1/me/health-checks/:reference/results`                    | Read authenticated Patient's completed result      | Ownership derived from current User                                    |

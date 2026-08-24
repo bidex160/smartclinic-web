@@ -7,7 +7,7 @@ import { finalize } from 'rxjs';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
-import { AdminSessionHeaderComponent } from "./admin-session-header.component";
+import { AdminSessionHeaderComponent } from './admin-session-header.component';
 
 @Component({
   selector: 'app-admin-login-page',
@@ -62,9 +62,11 @@ export class AdminLoginPageComponent {
             });
             return;
           }
-          if (!this.authState.canManagePricing() && !this.authState.isProvider()) {
-            this.accessDenied.set(true);
+          if (this.authState.isPatient()) {
+            void this.router.navigate(['/me/dashboard']);
+            return;
           }
+          this.accessDenied.set(true);
         },
         error: (error: HttpErrorResponse) => {
           this.authState.setError(

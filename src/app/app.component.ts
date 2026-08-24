@@ -11,9 +11,9 @@ import { filter } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-    readonly authState = inject(AuthStateService);
-private readonly session = inject(AuthSessionService);
- private readonly router = inject(Router);
+  readonly authState = inject(AuthStateService);
+  private readonly session = inject(AuthSessionService);
+  private readonly router = inject(Router);
 
   readonly menuOpen = signal(false);
 
@@ -22,27 +22,18 @@ private readonly session = inject(AuthSessionService);
   readonly portalRoute = computed(() => {
     const url = this.currentUrl();
 
-    return (
-      url.startsWith('/admin') ||
-      url.startsWith('/provider')
-    );
+    return url.startsWith('/admin') || url.startsWith('/provider') || url.startsWith('/me');
   });
 
   constructor() {
     this.router.events
-      .pipe(
-        filter(
-          (event): event is NavigationEnd =>
-            event instanceof NavigationEnd,
-        ),
-      )
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
         this.currentUrl.set(event.urlAfterRedirects);
         this.menuOpen.set(false);
       });
   }
 
-  
   logout(): void {
     this.menuOpen.set(false);
     this.session.logout().subscribe();

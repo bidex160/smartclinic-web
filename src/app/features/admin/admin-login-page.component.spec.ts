@@ -35,13 +35,14 @@ describe('AdminLoginPageComponent', () => {
     expect(router.navigate).not.toHaveBeenCalledWith(['/admin/package-prices']);
   });
 
-  it('denies a USER-only login without navigating to pricing', async () => {
+  it('routes a USER-only login to the patient dashboard', async () => {
     const { component, router } = await setup(() => of(loginResponse(['USER'])));
     component.form.setValue({ email: 'user@example.test', password: 'secret' });
 
     component.login();
 
-    expect(component.accessDenied()).toBe(true);
+    expect(component.accessDenied()).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard']);
     expect(router.navigate).not.toHaveBeenCalledWith(['/admin/package-prices']);
   });
 

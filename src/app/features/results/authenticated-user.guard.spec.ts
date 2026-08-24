@@ -4,7 +4,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { authenticatedUserGuard } from './authenticated-user.guard';
 
 describe('authenticatedUserGuard', () => {
-  it('allows any authenticated user after restoration without a role requirement', async () => {
+  it('allows an authenticated USER after restoration', async () => {
     const { state } = setup();
     state.setSession({
       accessToken: 'token',
@@ -20,7 +20,7 @@ describe('authenticatedUserGuard', () => {
     expect(await run()).toBe(true);
   });
 
-  it('allows ADMIN/PROVIDER multi-role identity through the same patient workflow', async () => {
+  it('allows a multi-role identity only when USER is present', async () => {
     const { state } = setup();
     state.setSession({
       accessToken: 'token',
@@ -28,12 +28,28 @@ describe('authenticatedUserGuard', () => {
         id: '1',
         email: 'multi@example.test',
         displayName: 'Multi role',
-        roles: ['ADMIN', 'PROVIDER'],
+        roles: ['USER', 'ADMIN', 'PROVIDER'],
         status: 'ACTIVE',
       },
     });
     state.completeInitialization();
     expect(await run()).toBe(true);
+  });
+  it('denies an authenticated provider-only identity safely', async () => {
+    const { state, router } = setup();
+    state.setSession({
+      accessToken: 'token',
+      user: {
+        id: '1',
+        email: 'provider@example.test',
+        displayName: 'Provider',
+        roles: ['PROVIDER'],
+        status: 'ACTIVE',
+      },
+    });
+    state.completeInitialization();
+    expect(await run()).not.toBe(true);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/me/access-denied']);
   });
   it('waits for restoration before redirecting an unauthenticated user', async () => {
     const { state, router } = setup();

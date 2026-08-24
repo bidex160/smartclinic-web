@@ -6,5 +6,6 @@ export const authenticatedUserGuard: CanActivateFn = async () => {
   const authState = inject(AuthStateService);
   const router = inject(Router);
   await authState.waitForInitialization();
-  return authState.authenticated() ? true : router.createUrlTree(['/admin/login']);
+  if (!authState.authenticated()) return router.createUrlTree(['/admin/login']);
+  return authState.isPatient() ? true : router.createUrlTree(['/me/access-denied']);
 };
