@@ -43,6 +43,8 @@ describe('BookingConfirmationPageComponent', () => {
   };
   const payment: PublicBookingPaymentInitiationResult = {
     bookingReference: 'SC-REF',
+    fundingStatus: 'PENDING',
+    checkoutOption: 'PAY_NOW',
     paymentAttemptReference: 'SC-PAY-safe',
     status: 'AWAITING_CUSTOMER_ACTION',
     amount: '12500.00',
@@ -54,6 +56,7 @@ describe('BookingConfirmationPageComponent', () => {
     bookingReference: 'SC-REF',
     bookingStatus: 'AWAITING_FUNDING',
     fundingStatus: 'PENDING',
+    checkoutOption: 'PAY_NOW',
     paymentStatus: 'PENDING_CONFIRMATION',
     paymentAttemptReference: 'SC-PAY-safe',
     amount: '12500.00',
@@ -158,14 +161,14 @@ describe('BookingConfirmationPageComponent', () => {
     fixture.componentInstance.initiatePayment();
     fixture.componentInstance.initiatePayment();
     expect(api.initiatePayment).toHaveBeenCalledTimes(1);
+    expect(api.initiatePayment).toHaveBeenCalledWith('SC-REF', 'PAY_NOW');
     expect(fixture.componentInstance.paymentPending()).toBe(true);
 
     pending.next(payment);
     pending.complete();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Payment is awaiting your action');
-    expect(fixture.nativeElement.textContent).toContain('NGN 12500.00');
+    expect(fixture.componentInstance.selectedCheckoutOption()).toBe('PAY_NOW');
     expect(resumeTransaction).toHaveBeenCalledWith('access-code-safe', expect.any(Object));
     expect(fixture.nativeElement.textContent).not.toContain('Payment successful');
   });
@@ -173,16 +176,22 @@ describe('BookingConfirmationPageComponent', () => {
   it('rejects an invalid or non-HTTPS checkout URL and permits retry', async () => {
     const { fixture } = await setup({
       initial: { ...confirmation, status: 'AWAITING_FUNDING' },
-      payment: () => of({ ...payment, checkoutUrl: 'javascript:alert(1)', accessCode: null }),
+      payment: () =>
+        of({
+          ...payment,
+          checkoutOption: 'PAYMENT_LINK',
+          checkoutUrl: 'javascript:alert(1)',
+          accessCode: null,
+        }),
     });
 
-    fixture.componentInstance.initiatePayment();
+    fixture.componentInstance.initiatePayment('PAYMENT_LINK');
     fixture.detectChanges();
 
     expect(fixture.componentInstance.checkoutUrl()).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Continue to secure payment');
-    expect(fixture.nativeElement.textContent).toContain('Try payment initialization again');
-    expect(fixture.nativeElement.textContent).toContain('invalid destination');
+    expect(fixture.nativeElement.textContent).toContain('Pay securely');
+    expect(fixture.nativeElement.textContent).toContain('incomplete response');
   });
 
   it('hands off payment using only the backend-returned access code', async () => {
@@ -194,6 +203,100 @@ describe('BookingConfirmationPageComponent', () => {
 
     expect(resumeTransaction).toHaveBeenCalledWith('access-code-safe', expect.any(Object));
     expect(navigateExternal).not.toHaveBeenCalled();
+  });
+
+  it('creates a shareable payment link without opening the Popup', async () => {
+    const linkPayment: PublicBookingPaymentInitiationResult = {
+      ...payment,
+      checkoutOption: 'PAYMENT_LINK',
+      accessCode: null,
+    };
+    const { fixture, api, resumeTransaction } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: () => of(linkPayment),
+    });
+
+    fixture.componentInstance.selectCheckoutOption('PAYMENT_LINK');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Create payment link');
+    fixture.componentInstance.initiatePayment();
+    fixture.detectChanges();
+
+    expect(api.initiatePayment).toHaveBeenCalledWith('SC-REF', 'PAYMENT_LINK');
+    expect(resumeTransaction).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Payment link ready');
+    expect(fixture.nativeElement.textContent).toContain('does not give them access');
+  });
+
+  it('copies a generated payment link with accessible feedback', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+    const { fixture } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: () => of({ ...payment, checkoutOption: 'PAYMENT_LINK', accessCode: null }),
+    });
+    fixture.componentInstance.initiatePayment('PAYMENT_LINK');
+    await fixture.componentInstance.copyPaymentLink();
+    fixture.detectChanges();
+
+    expect(writeText).toHaveBeenCalledWith('https://checkout.paystack.com/pay/safe');
+    expect(fixture.nativeElement.textContent).toContain('Payment link copied');
+  });
+
+  it('saves PAY_LATER with nullable attempt data and supports later collection options', async () => {
+    const payLater: PublicBookingPaymentInitiationResult = {
+      bookingReference: 'SC-REF',
+      fundingStatus: 'PENDING',
+      checkoutOption: 'PAY_LATER',
+      paymentAttemptReference: null,
+      status: null,
+      amount: '12500.00',
+      currency: 'NGN',
+      checkoutUrl: null,
+      accessCode: null,
+    };
+    const { fixture, api, resumeTransaction } = await setup({
+      initial: { ...confirmation, status: 'AWAITING_FUNDING' },
+      payment: (_reference, option) =>
+        option === 'PAY_LATER'
+          ? of(payLater)
+          : option === 'PAYMENT_LINK'
+            ? of({ ...payment, checkoutOption: 'PAYMENT_LINK', accessCode: null })
+            : of(payment),
+    });
+
+    fixture.componentInstance.initiatePayment('PAY_LATER');
+    fixture.detectChanges();
+    expect(api.initiatePayment).toHaveBeenCalledWith('SC-REF', 'PAY_LATER');
+    expect(resumeTransaction).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Booking saved — payment still required');
+    expect(fixture.nativeElement.textContent).toContain('No provider or appointment capacity');
+
+    fixture.componentInstance.initiatePayment('PAY_NOW');
+    expect(api.initiatePayment).toHaveBeenCalledWith('SC-REF', 'PAY_NOW');
+    fixture.componentInstance.initiatePayment('PAYMENT_LINK');
+    expect(api.initiatePayment).toHaveBeenCalledWith('SC-REF', 'PAYMENT_LINK');
+  });
+
+  it('does not expose payment choices after authoritative settlement', async () => {
+    const { fixture, api } = await setup({
+      initial: { ...confirmation, status: 'PENDING_PROVIDER_MATCH' },
+      paymentStatus: () =>
+        of({
+          ...pendingStatus,
+          fundingStatus: 'SETTLED',
+          paymentStatus: 'SUCCEEDED',
+          bookingStatus: 'PENDING_PROVIDER_MATCH',
+        }),
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Payment options');
+    fixture.componentInstance.initiatePayment('PAY_LATER');
+    expect(api.initiatePayment).not.toHaveBeenCalled();
   });
 
   it('ignores payment-looking query parameters and re-reads authoritative booking state', async () => {
@@ -375,7 +478,9 @@ describe('BookingConfirmationPageComponent', () => {
       initial?: PublicBookingResponse;
       recovery?: () => ReturnType<BookingsApiService['getPublicBooking']>;
       funding?: () => ReturnType<BookingsApiService['initializeFunding']>;
-      payment?: () => ReturnType<BookingsApiService['initiatePayment']>;
+      payment?: (
+        ...args: Parameters<BookingsApiService['initiatePayment']>
+      ) => ReturnType<BookingsApiService['initiatePayment']>;
       paymentStatus?: () => ReturnType<BookingsApiService['getPaymentStatus']>;
       paymentStatusRefresh?: () => ReturnType<BookingsApiService['refreshPaymentStatus']>;
     } = {},

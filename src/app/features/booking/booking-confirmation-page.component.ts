@@ -13,6 +13,7 @@ import { catchError, map, of, switchMap } from 'rxjs';
 
 import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token';
 import {
+  PublicBookingCheckoutOption,
   PublicBookingFundingResult,
   PublicBookingPaymentInitiationResult,
   PublicBookingPaymentStatus,
@@ -47,6 +48,9 @@ export class BookingConfirmationPageComponent {
   readonly paymentError = signal<string | null>(null);
   readonly paymentResult = signal<PublicBookingPaymentInitiationResult | null>(null);
   readonly checkoutUrl = signal<string | null>(null);
+  readonly selectedCheckoutOption = signal<PublicBookingCheckoutOption>('PAY_NOW');
+  readonly payLaterSaved = signal(false);
+  readonly copyFeedback = signal<string | null>(null);
   readonly paymentStatusLoading = signal(false);
   readonly paymentStatusRefreshing = signal(false);
   readonly paymentStatusError = signal<string | null>(null);
@@ -57,10 +61,16 @@ export class BookingConfirmationPageComponent {
     return confirmation?.bookingReference === this.routeReference ? confirmation : null;
   });
   readonly canInitiatePayment = computed(
-    () => this.fundingResult() !== null || this.confirmation()?.status === 'AWAITING_FUNDING',
+    () =>
+      !this.isFundingSettled() &&
+      (this.fundingResult() !== null || this.confirmation()?.status === 'AWAITING_FUNDING'),
+  );
+  readonly isFundingSettled = computed(
+    () => this.authoritativePaymentStatus()?.fundingStatus === 'SETTLED',
   );
   readonly showCheckoutSection = computed(() => {
-    if (this.checkoutUrl()) return true;
+    if (this.isFundingSettled()) return false;
+    if (this.checkoutUrl() || this.payLaterSaved()) return true;
     const status = this.authoritativePaymentStatus()?.paymentStatus;
     return (
       this.canInitiatePayment() &&
@@ -69,6 +79,26 @@ export class BookingConfirmationPageComponent {
       status !== 'CANCELLED' &&
       status !== 'PENDING_CONFIRMATION'
     );
+  });
+  readonly paymentActionLabel = computed(() => {
+    if (this.paymentPending()) {
+      switch (this.selectedCheckoutOption()) {
+        case 'PAYMENT_LINK':
+          return 'Creating payment link…';
+        case 'PAY_LATER':
+          return 'Saving booking…';
+        default:
+          return 'Preparing secure payment…';
+      }
+    }
+    switch (this.selectedCheckoutOption()) {
+      case 'PAYMENT_LINK':
+        return 'Create payment link';
+      case 'PAY_LATER':
+        return 'Save and pay later';
+      default:
+        return 'Pay securely';
+    }
   });
 
   constructor() {
@@ -130,45 +160,70 @@ export class BookingConfirmationPageComponent {
       });
   }
 
-  initiatePayment(): void {
-    const booking = this.confirmation();
-    if (!booking || !this.canInitiatePayment() || this.paymentPending()) return;
+  selectCheckoutOption(option: PublicBookingCheckoutOption): void {
+    if (this.paymentPending() || this.isFundingSettled()) return;
+    this.selectedCheckoutOption.set(option);
+    this.paymentError.set(null);
+    this.copyFeedback.set(null);
+  }
 
+  initiatePayment(option = this.selectedCheckoutOption()): void {
+    const booking = this.confirmation();
+    if (!booking || !this.canInitiatePayment() || this.paymentPending() || this.isFundingSettled())
+      return;
+
+    this.selectedCheckoutOption.set(option);
     this.paymentPending.set(true);
     this.paymentError.set(null);
+    this.copyFeedback.set(null);
     this.checkoutUrl.set(null);
-    this.bookingsApi.initiatePayment(booking.bookingReference).subscribe({
+    this.payLaterSaved.set(false);
+    this.bookingsApi.initiatePayment(booking.bookingReference, option).subscribe({
       next: (result) => {
         this.paymentPending.set(false);
         this.paymentResult.set(result);
-        const checkoutUrl = safePaystackCheckoutUrl(result.checkoutUrl);
-        const accessCode = result.accessCode;
-        if (result.bookingReference !== booking.bookingReference || (!checkoutUrl && !accessCode)) {
-          this.paymentError.set(
-            'Secure checkout could not be opened because the payment service returned an invalid destination. Please try again.',
-          );
-          this.loadPaymentStatus();
-          this.focusErrorSummary();
+        if (
+          result.bookingReference !== booking.bookingReference ||
+          result.checkoutOption !== option
+        ) {
+          this.rejectMalformedPaymentResponse();
           return;
         }
-        // if(checkoutUrl) {
-        //  this.checkoutUrl.set(checkoutUrl);
-        // } else{
-        this.popup.resumeTransaction(accessCode as string, {
-          onSuccess: (tranx) => {
-            this.validateTrans(tranx.reference, result.bookingReference);
-            this.checkPaymentStatus();
-          },
 
-          onError: (er) => {
+        if (result.fundingStatus === 'SETTLED') {
+          this.loadPaymentStatus();
+          return;
+        }
+
+        if (option === 'PAY_LATER') {
+          this.payLaterSaved.set(true);
+          this.loadPaymentStatus();
+          return;
+        }
+
+        if (option === 'PAYMENT_LINK') {
+          const checkoutUrl = safePaystackCheckoutUrl(result.checkoutUrl);
+          if (!checkoutUrl) {
+            this.rejectMalformedPaymentResponse();
+            return;
+          }
+          this.checkoutUrl.set(checkoutUrl);
+          this.loadPaymentStatus();
+          return;
+        }
+
+        if (!result.accessCode) {
+          this.rejectMalformedPaymentResponse();
+          return;
+        }
+        this.popup.resumeTransaction(result.accessCode, {
+          onSuccess: () => this.checkPaymentStatus(),
+          onError: () => {
             this.paymentError.set(
               'We could not initialize secure payment. No charge was made. Please try again.',
             );
           },
         });
-
-        //  transaction
-        //  }
       },
       error: (error: unknown) => {
         this.paymentPending.set(false);
@@ -178,7 +233,18 @@ export class BookingConfirmationPageComponent {
     });
   }
 
-  validateTrans(ref: string, bookingReference: string) {}
+  async copyPaymentLink(): Promise<void> {
+    const checkoutUrl = this.checkoutUrl();
+    if (!checkoutUrl) return;
+    try {
+      await navigator.clipboard.writeText(checkoutUrl);
+      this.copyFeedback.set('Payment link copied');
+    } catch {
+      this.copyFeedback.set(
+        'Copy was unavailable. Select and copy the payment link from the field.',
+      );
+    }
+  }
 
   continueToCheckout(): void {
     const checkoutUrl = safePaystackCheckoutUrl(this.checkoutUrl());
@@ -347,6 +413,7 @@ export class BookingConfirmationPageComponent {
       return;
     }
     this.authoritativePaymentStatus.set(status);
+    if (status.checkoutOption) this.selectedCheckoutOption.set(status.checkoutOption);
     if (
       status.paymentStatus === 'SUCCEEDED' ||
       status.paymentStatus === 'FAILED' ||
@@ -355,6 +422,14 @@ export class BookingConfirmationPageComponent {
     ) {
       this.checkoutUrl.set(null);
     }
+  }
+
+  private rejectMalformedPaymentResponse(): void {
+    this.paymentError.set(
+      'Payment could not be prepared because the payment service returned an incomplete response. Please try again.',
+    );
+    this.loadPaymentStatus();
+    this.focusErrorSummary();
   }
 
   private focusErrorSummary(): void {

@@ -164,11 +164,90 @@
 
         @if (showCheckoutSection()) {
           <div class="mt-6 border-t border-brand-200 pt-6">
-            <h3 class="text-lg font-bold text-brand-900">Secure checkout</h3>
+            <h3 id="payment-options-heading" class="text-lg font-bold text-brand-900">
+              Payment options
+            </h3>
             <p class="mt-2 text-sm leading-6 text-slate-600">
-              SmartClinic will ask the backend to create or reuse a payment attempt. You will choose
-              when to leave for Paystack's hosted checkout.
+              Choose how you would like to fund this Health Check. SmartClinic will use the amount
+              confirmed for this booking.
             </p>
+
+            <fieldset
+              aria-labelledby="payment-options-heading"
+              class="mt-5 grid gap-3 lg:grid-cols-3"
+              [disabled]="paymentPending() || isFundingSettled()"
+            >
+              <label
+                class="flex cursor-pointer gap-3 rounded-2xl border p-4 transition focus-within:ring-4 focus-within:ring-brand-200"
+                [class.border-brand-600]="selectedCheckoutOption() === 'PAY_NOW'"
+                [class.bg-brand-50]="selectedCheckoutOption() === 'PAY_NOW'"
+                [class.border-slate-200]="selectedCheckoutOption() !== 'PAY_NOW'"
+              >
+                <input
+                  type="radio"
+                  name="checkoutOption"
+                  value="PAY_NOW"
+                  [checked]="selectedCheckoutOption() === 'PAY_NOW'"
+                  (change)="selectCheckoutOption('PAY_NOW')"
+                  class="mt-1 size-4 shrink-0 accent-brand-600"
+                />
+                <span>
+                  <span class="block font-bold text-slate-900">Pay now</span>
+                  <span class="mt-1 block text-sm leading-5 text-slate-600">
+                    Pay securely with Paystack and start provider matching once your payment is
+                    confirmed.
+                  </span>
+                  <span class="mt-2 block text-xs font-bold uppercase tracking-wide text-brand-700">
+                    Recommended
+                  </span>
+                </span>
+              </label>
+              <label
+                class="flex cursor-pointer gap-3 rounded-2xl border p-4 transition focus-within:ring-4 focus-within:ring-brand-200"
+                [class.border-brand-600]="selectedCheckoutOption() === 'PAYMENT_LINK'"
+                [class.bg-brand-50]="selectedCheckoutOption() === 'PAYMENT_LINK'"
+                [class.border-slate-200]="selectedCheckoutOption() !== 'PAYMENT_LINK'"
+              >
+                <input
+                  type="radio"
+                  name="checkoutOption"
+                  value="PAYMENT_LINK"
+                  [checked]="selectedCheckoutOption() === 'PAYMENT_LINK'"
+                  (change)="selectCheckoutOption('PAYMENT_LINK')"
+                  class="mt-1 size-4 shrink-0 accent-brand-600"
+                />
+                <span>
+                  <span class="block font-bold text-slate-900">Send payment link</span>
+                  <span class="mt-1 block text-sm leading-5 text-slate-600">
+                    Create a secure Paystack payment link that you can send to someone else to pay.
+                    They do not need access to your SmartClinic account or booking.
+                  </span>
+                </span>
+              </label>
+              <label
+                class="flex cursor-pointer gap-3 rounded-2xl border p-4 transition focus-within:ring-4 focus-within:ring-brand-200"
+                [class.border-brand-600]="selectedCheckoutOption() === 'PAY_LATER'"
+                [class.bg-brand-50]="selectedCheckoutOption() === 'PAY_LATER'"
+                [class.border-slate-200]="selectedCheckoutOption() !== 'PAY_LATER'"
+              >
+                <input
+                  type="radio"
+                  name="checkoutOption"
+                  value="PAY_LATER"
+                  [checked]="selectedCheckoutOption() === 'PAY_LATER'"
+                  (change)="selectCheckoutOption('PAY_LATER')"
+                  class="mt-1 size-4 shrink-0 accent-brand-600"
+                />
+                <span>
+                  <span class="block font-bold text-slate-900">Pay later</span>
+                  <span class="mt-1 block text-sm leading-5 text-slate-600">
+                    Save your booking and pay later. This Health Check is not funded yet; no
+                    provider is reserved and the appointment is not confirmed until payment is
+                    confirmed.
+                  </span>
+                </span>
+              </label>
+            </fieldset>
 
             @if (paymentError(); as error) {
               <div
@@ -182,63 +261,105 @@
               </div>
             }
 
-            @if (paymentResult(); as payment) {
+            @if (checkoutUrl(); as paymentLink) {
               <div class="mt-4 rounded-xl border border-brand-200 bg-white p-5">
-                <p role="status" class="font-bold text-brand-900">
-                  Payment is awaiting your action
+                <p role="status" aria-live="polite" class="font-bold text-brand-900">
+                  Payment link ready
                 </p>
-                <dl class="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt class="text-sm font-semibold text-slate-600">Amount</dt>
-                    <dd class="mt-1 font-bold text-slate-900">
-                      {{ payment.currency }} {{ payment.amount }}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="text-sm font-semibold text-slate-600">Payment status</dt>
-                    <dd class="mt-1 font-bold text-slate-900">
-                      {{ paymentStatusLabel(payment.status) }}
-                    </dd>
-                  </div>
-                </dl>
                 <p class="mt-4 text-sm leading-6 text-slate-600">
-                  Paystack opens on another website. Returning from checkout is not proof of
-                  payment; SmartClinic will show only the status confirmed by its server.
+                  Share this secure Paystack payment link with the person paying for your Health
+                  Check. It does not give them access to your SmartClinic booking.
                 </p>
-                @if (checkoutUrl()) {
+                @if (paymentResult(); as payment) {
+                  <dl class="mt-4">
+                    <div>
+                      <dt class="text-sm font-semibold text-slate-600">Amount to pay</dt>
+                      <dd class="mt-1 text-xl font-bold text-slate-900">
+                        {{ payment.currency }} {{ payment.amount }}
+                      </dd>
+                    </div>
+                  </dl>
+                }
+                <label for="payment-link" class="mt-4 block text-sm font-semibold text-slate-700">
+                  Secure payment link
+                </label>
+                <input
+                  id="payment-link"
+                  type="url"
+                  readonly
+                  [value]="paymentLink"
+                  class="mt-2 block w-full min-w-0 rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-sm text-slate-700 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+                />
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    (click)="copyPaymentLink()"
+                    class="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
+                  >
+                    Copy payment link
+                  </button>
                   <button
                     type="button"
                     (click)="continueToCheckout()"
-                    class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
+                    class="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2"
                   >
-                    Continue to secure payment
+                    Open payment page
                   </button>
-                } @else {
+                </div>
+                <p aria-live="polite" class="mt-3 text-sm font-semibold text-brand-800">
+                  {{ copyFeedback() }}
+                </p>
+                <p class="mt-3 text-sm leading-6 text-slate-600">
+                  Your booking remains awaiting payment until SmartClinic confirms settlement.
+                </p>
+              </div>
+            } @else if (payLaterSaved()) {
+              <div
+                role="status"
+                aria-live="polite"
+                class="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-5"
+              >
+                <p class="text-lg font-bold text-brand-900">
+                  Booking saved — payment still required
+                </p>
+                <p class="mt-2 text-sm leading-6 text-slate-700">
+                  Your Health Check booking has been saved. Pay when you're ready to begin provider
+                  matching. No provider or appointment capacity has been reserved.
+                </p>
+                <div class="mt-4 grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
+                    (click)="initiatePayment('PAY_NOW')"
                     [disabled]="paymentPending()"
-                    (click)="initiatePayment()"
-                    class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                    class="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-600 px-5 py-3 font-bold text-white hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
                   >
-                    Try payment initialization again
+                    Pay now
                   </button>
-                }
+                  <button
+                    type="button"
+                    (click)="initiatePayment('PAYMENT_LINK')"
+                    [disabled]="paymentPending()"
+                    class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-600 px-5 py-3 font-bold text-brand-700 hover:bg-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+                  >
+                    Create payment link
+                  </button>
+                </div>
               </div>
-            } @else {
+            }
+
+            @if (!checkoutUrl() && !payLaterSaved()) {
               <button
                 type="button"
                 [disabled]="paymentPending()"
                 (click)="initiatePayment()"
                 class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
               >
-                {{
-                  paymentPending() ? 'Initializing secure payment…' : 'Initialize secure payment'
-                }}
+                {{ paymentActionLabel() }}
               </button>
             }
             @if (paymentPending()) {
               <p role="status" aria-live="polite" class="mt-3 text-sm text-slate-600">
-                Contacting the secure payment service. Please wait.
+                {{ paymentActionLabel() }} Please wait.
               </p>
             }
           </div>
@@ -383,10 +504,12 @@
                 <button
                   type="button"
                   [disabled]="paymentPending()"
-                  (click)="initiatePayment()"
+                  (click)="initiatePayment('PAY_NOW')"
                   class="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
                 >
-                  {{ paymentPending() ? 'Initializing…' : 'Start another payment attempt' }}
+                  {{
+                    paymentPending() ? 'Preparing secure payment…' : 'Start another payment attempt'
+                  }}
                 </button>
               }
               @if (paymentStatusRefreshing()) {

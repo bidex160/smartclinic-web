@@ -37,7 +37,7 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/public/bookings`                                       | Submit the reviewed public booking draft           | Sets the HttpOnly public-booking session cookie                        |
 | `GET /api/v1/public/bookings/:reference`                             | Securely restore the session-owned confirmation    | Cookie must own the exact referenced booking                           |
 | `POST /api/v1/public/bookings/:reference/funding/initialize`         | Initialize the guest funding obligation            | Sends no amount/currency; server returns authoritative funding state   |
-| `POST /api/v1/public/bookings/:reference/payment/initiate`           | Request a provider-hosted guest checkout           | Empty body; backend returns only normalized safe checkout data         |
+| `POST /api/v1/public/bookings/:reference/payment/initiate`           | Select `PAY_NOW`, `PAYMENT_LINK`, or `PAY_LATER`   | Sends only the option; backend owns amount, references, and settlement |
 | `GET /api/v1/public/bookings/:reference/payment-status`              | Read authoritative guest payment state             | Cookie-bound safe booking/funding/latest-attempt projection            |
 | `POST /api/v1/public/bookings/:reference/payment-status/refresh`     | Reconcile the latest attempt with the provider     | Empty body; backend selects the attempt and throttles verification     |
 | `POST /api/v1/auth/login`                                            | Establish an in-memory authenticated session       | Returns access token and safe user identity                            |
@@ -90,6 +90,8 @@ These services own URL construction and typed `HttpClient` calls. Feature state/
 | `POST /api/v1/admin/provider-assignments/expire-stale`               | Expire stale offers and continue matching          | Explicit operations action; never run by a UI timer                    |
 
 Exact payloads are not documented here because they must come from the backend's authoritative API contract. Before implementation, obtain OpenAPI/schema examples or agreed request and response fixtures, including validation and error shapes.
+
+Guest checkout remains authorized by the booking-bound HttpOnly session. `PAY_NOW` resumes the existing Paystack Popup with the backend-returned `accessCode`. `PAYMENT_LINK` exposes only the validated Paystack-hosted `checkoutUrl`, which may be shared with an external payer but grants no SmartClinic booking authority. `PAY_LATER` creates or retains an outstanding funding obligation without requiring an attempt, URL, or access code. All three options remain outstanding until the backend reports `SETTLED`; Popup callbacks, copied links, and browser redirects are never payment proof.
 
 The operational booking-detail response is distinct from both the guest confirmation response and raw persistence models. It includes only the contact and workflow context staff need. Nullable registered-booker name/phone fields remain nullable in TypeScript and are never inferred from participant data. Queue references and assignment views link to this projection, while assignment IDs continue to link to the assignment-specific workflow.
 

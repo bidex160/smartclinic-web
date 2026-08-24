@@ -96,6 +96,8 @@ describe('BookingsApiService', () => {
     const { service, httpTesting } = setup();
     const response: PublicBookingPaymentInitiationResult = {
       bookingReference: 'SC-REF',
+      fundingStatus: 'PENDING',
+      checkoutOption: 'PAYMENT_LINK',
       paymentAttemptReference: 'SC-PAY-safe',
       status: 'AWAITING_CUSTOMER_ACTION',
       amount: '12500.00',
@@ -104,17 +106,19 @@ describe('BookingsApiService', () => {
       accessCode: null,
     };
 
-    service.initiatePayment('SC-REF').subscribe((result) => expect(result).toEqual(response));
+    service
+      .initiatePayment('SC-REF', 'PAYMENT_LINK')
+      .subscribe((result) => expect(result).toEqual(response));
 
     const pending = httpTesting.expectOne(
       'http://api.example.test/api/v1/public/bookings/SC-REF/payment/initiate',
     );
     expect(pending.request.method).toBe('POST');
-    expect(pending.request.body).toBeNull();
+    expect(pending.request.body).toEqual({ option: 'PAYMENT_LINK' });
     expect(pending.request.withCredentials).toBe(true);
     expect(pending.request.context.get(SKIP_STAFF_AUTH)).toBe(true);
     expect(JSON.stringify(pending.request.body)).not.toMatch(
-      /amount|currency|reference|secret|public.?key/i,
+      /amount|currency|reference|secret|key/i,
     );
     pending.flush(response);
     httpTesting.verify();
@@ -176,6 +180,7 @@ function paymentStatus(): PublicBookingPaymentStatus {
     bookingReference: 'SC-REF',
     bookingStatus: 'AWAITING_FUNDING',
     fundingStatus: 'PENDING',
+    checkoutOption: 'PAY_NOW',
     paymentStatus: 'PENDING_CONFIRMATION',
     paymentAttemptReference: 'SC-PAY-safe',
     amount: '12500.00',

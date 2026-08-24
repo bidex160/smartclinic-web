@@ -6,6 +6,7 @@ import { API_CONFIG } from '../config/api-config.token';
 import { SKIP_STAFF_AUTH } from '../config/http-context.tokens';
 import {
   PublicBookingFundingResult,
+  PublicBookingCheckoutOption,
   PublicBookingPaymentInitiationResult,
   PublicBookingPaymentStatus,
   PublicBookingRequest,
@@ -41,10 +42,13 @@ export class BookingsApiService {
     );
   }
 
-  initiatePayment(reference: string): Observable<PublicBookingPaymentInitiationResult> {
+  initiatePayment(
+    reference: string,
+    option: PublicBookingCheckoutOption,
+  ): Observable<PublicBookingPaymentInitiationResult> {
     return this.http.post<PublicBookingPaymentInitiationResult>(
       `${this.apiConfig.baseUrl}/public/bookings/${encodeURIComponent(reference)}/payment/initiate`,
-      null,
+      { option },
       { withCredentials: true, context: this.publicBookingContext },
     );
   }

@@ -69,6 +69,8 @@ export interface PublicBookingResponse {
 export type PublicBookingFundingStatus =
   'PENDING' | 'APPROVED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED' | 'SETTLED';
 
+export type PublicBookingCheckoutOption = 'PAY_NOW' | 'PAYMENT_LINK' | 'PAY_LATER';
+
 export type PublicBookingFundingAttemptStatus =
   | 'CREATED'
   | 'AWAITING_CUSTOMER_ACTION'
@@ -89,8 +91,10 @@ export interface PublicBookingFundingResult {
 
 export interface PublicBookingPaymentInitiationResult {
   readonly bookingReference: string;
-  readonly paymentAttemptReference: string;
-  readonly status: PublicBookingFundingAttemptStatus;
+  readonly fundingStatus: PublicBookingFundingStatus;
+  readonly checkoutOption: PublicBookingCheckoutOption;
+  readonly paymentAttemptReference: string | null;
+  readonly status: PublicBookingFundingAttemptStatus | null;
   readonly amount: string;
   readonly currency: string;
   readonly checkoutUrl: string | null;
@@ -101,6 +105,7 @@ export interface PublicBookingPaymentStatus {
   readonly bookingReference: string;
   readonly bookingStatus: string;
   readonly fundingStatus: PublicBookingFundingStatus | null;
+  readonly checkoutOption: PublicBookingCheckoutOption | null;
   readonly paymentStatus: PublicBookingFundingAttemptStatus | null;
   readonly paymentAttemptReference: string | null;
   readonly amount: string | null;
