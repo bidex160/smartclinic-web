@@ -40,6 +40,7 @@
                 type="text"
                 formControlName="givenName"
                 autocomplete="given-name"
+                placeholder="e.g. John"
                 maxlength="100"
                 [attr.aria-invalid]="showError(form.controls.booker.controls.givenName)"
                 [attr.aria-describedby]="
@@ -64,6 +65,7 @@
                 type="text"
                 formControlName="familyName"
                 autocomplete="family-name"
+                placeholder="e.g. Adeyemi"
                 maxlength="100"
                 [attr.aria-invalid]="showError(form.controls.booker.controls.familyName)"
                 [attr.aria-describedby]="
@@ -116,6 +118,7 @@
                 type="email"
                 formControlName="email"
                 autocomplete="email"
+                placeholder="e.g. john@example.com"
                 maxlength="254"
                 [attr.aria-invalid]="showError(form.controls.booker.controls.email)"
                 [attr.aria-describedby]="
@@ -183,6 +186,7 @@
                 id="participant-given-name"
                 type="text"
                 formControlName="givenName"
+                placeholder="e.g. John"
                 maxlength="100"
                 [attr.aria-invalid]="showError(form.controls.participant.controls.givenName)"
                 class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
@@ -201,6 +205,7 @@
                 id="participant-family-name"
                 type="text"
                 formControlName="familyName"
+                placeholder="e.g. Adeyemi"
                 maxlength="100"
                 [attr.aria-invalid]="showError(form.controls.participant.controls.familyName)"
                 class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
@@ -236,6 +241,7 @@
                 type="tel"
                 formControlName="phone"
                 autocomplete="tel"
+                placeholder="e.g. 0801 234 5678"
                 maxlength="30"
                 [attr.aria-invalid]="showError(form.controls.participant.controls.phone)"
                 class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
@@ -253,6 +259,7 @@
                 type="email"
                 formControlName="email"
                 autocomplete="email"
+                placeholder="e.g. john@example.com"
                 maxlength="254"
                 [attr.aria-invalid]="showError(form.controls.participant.controls.email)"
                 class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
@@ -321,6 +328,7 @@
                     formControlName="addressLine1"
                     maxlength="255"
                     autocomplete="address-line1"
+                    placeholder="e.g. 15 Ring Road"
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>
@@ -334,6 +342,7 @@
                     formControlName="addressLine2"
                     maxlength="255"
                     autocomplete="address-line2"
+                    placeholder="Apartment, suite or landmark (optional)"
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>
@@ -344,6 +353,7 @@
                     formControlName="city"
                     maxlength="120"
                     autocomplete="address-level2"
+                    placeholder="e.g. Ibadan"
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>
@@ -354,6 +364,7 @@
                     formControlName="stateOrRegion"
                     maxlength="120"
                     autocomplete="address-level1"
+                    placeholder="e.g. Oyo"
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>
@@ -365,6 +376,7 @@
                     formControlName="postalCode"
                     maxlength="30"
                     autocomplete="postal-code"
+                    placeholder="e.g. 200103"
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>

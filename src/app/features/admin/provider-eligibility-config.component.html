@@ -638,29 +638,31 @@
   </fieldset>
 }
 @if (pendingAction(); as action) {
-  <section
-    role="alertdialog"
-    aria-modal="true"
-    aria-labelledby="config-confirm-heading"
-    class="mt-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-5"
-  >
-    <h2 id="config-confirm-heading" class="text-xl font-bold">Confirm configuration change</h2>
-    <p class="mt-2">{{ action.label }}</p>
-    <div class="mt-4 flex gap-3">
-      <button
-        type="button"
-        (click)="confirmAction()"
-        [disabled]="mutating()"
-        class="rounded-lg bg-brand-700 px-5 py-3 font-bold text-white"
-      >
-        Confirm</button
-      ><button
-        type="button"
-        (click)="pendingAction.set(null)"
-        class="rounded-lg border px-5 py-3 font-bold"
-      >
-        Cancel
-      </button>
-    </div>
-  </section>
+  <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-5">
+    <section
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="config-confirm-heading"
+      class="w-full max-w-lg rounded-xl border-2 border-amber-300 bg-white p-6 shadow-2xl"
+    >
+      <h2 id="config-confirm-heading" class="text-xl font-bold">Confirm configuration change</h2>
+      <p class="mt-2">{{ action.label }}</p>
+      <div class="mt-4 flex gap-3">
+        <button
+          type="button"
+          (click)="confirmAction()"
+          [disabled]="mutating()"
+          class="rounded-lg bg-brand-700 px-5 py-3 font-bold text-white"
+        >
+          Confirm</button
+        ><button
+          type="button"
+          (click)="pendingAction.set(null)"
+          class="rounded-lg border px-5 py-3 font-bold"
+        >
+          Cancel
+        </button>
+      </div>
+    </section>
+  </div>
 }

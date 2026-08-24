@@ -105,7 +105,9 @@ Proposed public routes:
 | `/admin/access-denied`                        | Accessible recovery for authenticated users without an allowed role         |
 | `/admin/provider-assignments`                 | Guarded matching controls and operational assignment list                   |
 | `/admin/provider-assignments/:id`             | Guarded assignment detail and accepted-assignment confirmation              |
-| `/provider/offers`                            | Provider-owned actionable/recent offer list                                 |
+| `/provider/dashboard`                         | Role-scoped provider overview built from profile and offer APIs             |
+| `/provider/offers`                            | Provider-owned actionable offer list                                        |
+| `/provider/appointments`                      | Confirmed provider appointments and Health Check entry points               |
 | `/provider/offers/:id`                        | Safe offer detail and deliberate accept/decline actions                     |
 | `/provider/bookings/:reference/health-check`  | Provider-only encounter and structured measurement entry                    |
 | `/provider/access-denied`                     | Accessible recovery for users without the explicit PROVIDER role            |

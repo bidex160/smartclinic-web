@@ -84,7 +84,11 @@ describe('ProviderProfilePageComponent', () => {
         },
         {
           provide: AuthStateService,
-          useValue: { currentUser: () => ({ displayName: 'Ada' }), authenticated: () => true },
+          useValue: {
+            currentUser: () => ({ displayName: 'Ada' }),
+            authenticated: () => true,
+            loading: () => false,
+          },
         },
       ],
     }).overrideComponent(ProviderProfilePageComponent, {

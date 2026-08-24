@@ -1,5 +1,5 @@
 <app-provider-session-header />
-<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
+<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:ml-64 lg:px-10">
   <a
     routerLink="/provider/offers"
     class="rounded font-bold text-brand-700 underline focus:outline-none focus:ring-4 focus:ring-brand-200"
@@ -34,7 +34,11 @@
         <div class="mt-4 rounded-xl bg-brand-50 p-4">
           <p class="font-bold">Confirmed appointment</p>
           <p>
-            {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }} ·
+            {{ utilsService.formatDate(appointment.date) }} ·
+            {{ utilsService.formatTime(appointment.timeFrom) }}–{{
+              utilsService.formatTime(appointment.timeTo)
+            }}
+            ·
             {{ appointment.timezone }}
           </p>
           @if (appointment.providerLocationName) {
@@ -91,7 +95,11 @@
               Confirmed appointment
             </h2>
             <p class="mt-1">
-              {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }} ·
+              {{ utilsService.formatDate(appointment.date) }} ·
+              {{ utilsService.formatTime(appointment.timeFrom) }}–{{
+                utilsService.formatTime(appointment.timeTo)
+              }}
+              ·
               {{ appointment.timezone }}
             </p>
             @if (appointment.providerLocationName) {

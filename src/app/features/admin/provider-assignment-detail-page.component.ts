@@ -18,6 +18,7 @@ import {
 import { ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
+import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-provider-assignment-detail-page',
@@ -26,6 +27,8 @@ import { AdminSessionHeaderComponent } from './admin-session-header.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProviderAssignmentDetailPageComponent {
+  utilsService = inject(UtilsService);
+
   private readonly api = inject(AdminProviderAssignmentsApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

@@ -46,6 +46,14 @@ a {
   }
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   outline: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+  opacity: 0.8;
 }

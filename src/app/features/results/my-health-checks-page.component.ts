@@ -18,6 +18,7 @@ import {
   PatientHealthCheckHistoryResponse,
 } from '../../core/models/patient-health-check-history.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
+import { UtilsService } from '../../core/services/utils.service';
 
 const BOOKING_STATUSES: readonly PatientBookingStatus[] = [
   'DRAFT',
@@ -52,6 +53,8 @@ const EMPTY_RESPONSE: PatientHealthCheckHistoryResponse = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyHealthChecksPageComponent {
+  utilsService = inject(UtilsService);
+
   private readonly api = inject(HealthCheckResultsApiService);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('errorSummary');

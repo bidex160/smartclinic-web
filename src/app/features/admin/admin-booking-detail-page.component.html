@@ -222,7 +222,11 @@
               </div>
               <div>
                 <dt class="text-sm font-semibold text-slate-600">Time</dt>
-                <dd class="mt-1 font-bold">{{ appointment.timeFrom }}–{{ appointment.timeTo }}</dd>
+                <dd class="mt-1 font-bold">
+                  {{ utilsService.formatTime(appointment.timeFrom) }}–{{
+                    utilsService.formatTime(appointment.timeTo)
+                  }}
+                </dd>
               </div>
               <div>
                 <dt class="text-sm font-semibold text-slate-600">Timezone</dt>

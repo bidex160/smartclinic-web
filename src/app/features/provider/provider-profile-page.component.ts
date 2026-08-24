@@ -22,6 +22,7 @@ import { ProviderEligibilityApiService } from '../../core/services/provider-elig
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ProviderEligibilityConfigComponent } from '../admin/provider-eligibility-config.component';
 import { ProviderServiceAreasComponent } from './provider-service-areas.component';
+import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 
 @Component({
   selector: 'app-provider-profile-page',
@@ -30,6 +31,7 @@ import { ProviderServiceAreasComponent } from './provider-service-areas.componen
     RouterLink,
     ProviderEligibilityConfigComponent,
     ProviderServiceAreasComponent,
+    ProviderSessionHeaderComponent,
   ],
   providers: [
     ProviderSelfConfigurationApiService,

@@ -16,6 +16,7 @@ import { finalize } from 'rxjs';
 import { ProviderOffer, ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { ProviderSessionHeaderComponent } from './provider-session-header.component';
+import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-provider-offer-detail-page',
@@ -24,6 +25,8 @@ import { ProviderSessionHeaderComponent } from './provider-session-header.compon
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProviderOfferDetailPageComponent {
+  utilsService = inject(UtilsService);
+
   private readonly api = inject(ProviderOffersApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

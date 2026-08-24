@@ -26,8 +26,33 @@ describe('ProviderOffersPageComponent', () => {
     expect(api.getOffers).toHaveBeenLastCalledWith('EXPIRED');
   });
 
-  async function setup() {
-    const api = { getOffers: vi.fn(() => of([offer()])) };
+  it('keeps confirmed work out of the default offers view', async () => {
+    const api = {
+      getOffers: vi.fn(() =>
+        of([
+          offer(),
+          offer({
+            assignmentId: 'confirmed',
+            status: 'CONFIRMED',
+            confirmedSchedule: {
+              date: '2026-08-25',
+              timeFrom: '09:00',
+              timeTo: '09:15',
+              timezone: 'Africa/Lagos',
+              providerLocationName: null,
+            },
+          }),
+        ]),
+      ),
+    };
+    const { fixture } = await setup(api);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('confirmed');
+    expect(fixture.nativeElement.textContent).toContain('Essential Health Check');
+  });
+
+  async function setup(providedApi?: { getOffers: ReturnType<typeof vi.fn> }) {
+    const api = providedApi ?? { getOffers: vi.fn(() => of([offer()])) };
     await TestBed.configureTestingModule({
       imports: [ProviderOffersPageComponent],
       providers: [

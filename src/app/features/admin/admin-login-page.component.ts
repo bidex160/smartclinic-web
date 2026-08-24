@@ -54,7 +54,7 @@ export class AdminLoginPageComponent {
               next: (profile) =>
                 void this.router.navigate([
                   profile.onboardingStatus === 'APPROVED' && profile.status === 'ACTIVE'
-                    ? '/provider/offers'
+                    ? '/provider/dashboard'
                     : '/provider/profile',
                 ]),
               error: () => void this.router.navigate(['/provider/profile']),

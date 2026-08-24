@@ -33,6 +33,10 @@ The first authenticated operations feature provides ADMIN/OPERATIONS login and g
 
 Operations has a guarded provider-matching intervention queue. Normal matching begins automatically after payment; the queue preserves backend ordering/readiness, supports server-side filters and pagination, retries unfulfillable bookings deliberately, and links active/accepted offers into assignment management.
 
+The public shell is role-aware without changing authorization: guests see booking, provider acquisition, and sign-in actions; authenticated users see only entitled patient, provider, or operations portal destinations. The provider portal now has responsive workspace navigation, a dashboard composed from the existing provider profile/offers APIs, actionable offers, and a separate confirmed appointments view. Pending providers retain setup access while operational work remains gated by backend status and existing guards.
+
+User-facing appointment dates and times are formatted for readability while transport values remain unchanged. Requested appointments remain distinct from confirmed appointments. Forms retain visible labels and use examples or instructions as secondary placeholders where useful.
+
 A guarded operational booking detail links queue rows with provider assignments. It presents only the backend's safe operational projection and contains controlled retry, selected-provider assignment, audited override, and reassignment tools. Provider discovery in the browser is bounded and descriptive; the backend remains authoritative for eligibility and capacity.
 
 Operations can now formally schedule a confirmed provider assignment. Preferred scheduling remains clearly requested context; an explicit backend-validated action creates the authoritative `SCHEDULED` appointment. Provider-location bookings use active linked location choices, while home visits send no location. Patient and provider views display the returned confirmed appointment separately, and encounter start is offered only after scheduled eligibility is verified. Rescheduling remains deferred.

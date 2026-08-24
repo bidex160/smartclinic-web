@@ -128,12 +128,30 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'provider/dashboard',
+    title: 'Provider dashboard | SmartClinic',
+    canActivate: [providerGuard],
+    loadComponent: () =>
+      import('./features/provider/provider-dashboard-page.component').then(
+        (component) => component.ProviderDashboardPageComponent,
+      ),
+  },
+  {
     path: 'provider/profile',
     title: 'Provider onboarding profile | SmartClinic',
     canActivate: [providerGuard],
     loadComponent: () =>
       import('./features/provider/provider-profile-page.component').then(
         (component) => component.ProviderProfilePageComponent,
+      ),
+  },
+  {
+    path: 'provider/appointments',
+    title: 'Provider appointments | SmartClinic',
+    canActivate: [providerGuard],
+    loadComponent: () =>
+      import('./features/provider/provider-appointments-page.component').then(
+        (component) => component.ProviderAppointmentsPageComponent,
       ),
   },
   {

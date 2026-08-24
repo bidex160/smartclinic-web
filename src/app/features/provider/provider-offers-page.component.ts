@@ -8,6 +8,7 @@ import { finalize } from 'rxjs';
 import { ProviderOffer, ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { ProviderSessionHeaderComponent } from './provider-session-header.component';
+import { UtilsService } from '../../core/services/utils.service';
 
 const OFFER_STATUSES: readonly ProviderOfferStatus[] = [
   'OFFERED',
@@ -25,6 +26,8 @@ const OFFER_STATUSES: readonly ProviderOfferStatus[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProviderOffersPageComponent {
+  utilsService = inject(UtilsService);
+
   private readonly api = inject(ProviderOffersApiService);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly router = inject(Router);
@@ -50,7 +53,12 @@ export class ProviderOffersPageComponent {
       .getOffers(status)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (offers) => this.offers.set(offers),
+        next: (offers) =>
+          this.offers.set(
+            status
+              ? offers
+              : offers.filter((offer) => offer.status === 'OFFERED' || offer.status === 'ACCEPTED'),
+          ),
         error: (error: HttpErrorResponse) => this.handleError(error),
       });
   }

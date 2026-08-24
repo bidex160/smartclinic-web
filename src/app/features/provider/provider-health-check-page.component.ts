@@ -27,6 +27,7 @@ import { ProviderHealthCheckEncountersApiService } from '../../core/services/pro
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { ConfirmedScheduleSummary } from '../../core/models/booking-schedule.model';
 import { ProviderSessionHeaderComponent } from './provider-session-header.component';
+import { UtilsService } from '../../core/services/utils.service';
 
 function finiteFourDecimals(control: AbstractControl): ValidationErrors | null {
   if (control.value === '' || control.value === null) return null;
@@ -43,6 +44,8 @@ function finiteFourDecimals(control: AbstractControl): ValidationErrors | null {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProviderHealthCheckPageComponent {
+  utilsService = inject(UtilsService);
+
   private readonly api = inject(ProviderHealthCheckEncountersApiService);
   private readonly offersApi = inject(ProviderOffersApiService);
   private readonly route = inject(ActivatedRoute);

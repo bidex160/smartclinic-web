@@ -143,7 +143,7 @@ export class BookingConfirmationPageComponent {
         this.paymentResult.set(result);
         const checkoutUrl = safePaystackCheckoutUrl(result.checkoutUrl);
         const accessCode = result.accessCode;
-        if (result.bookingReference !== booking.bookingReference || (!checkoutUrl && !accessCode) ) {
+        if (result.bookingReference !== booking.bookingReference || (!checkoutUrl && !accessCode)) {
           this.paymentError.set(
             'Secure checkout could not be opened because the payment service returned an invalid destination. Please try again.',
           );
@@ -154,21 +154,21 @@ export class BookingConfirmationPageComponent {
         // if(checkoutUrl) {
         //  this.checkoutUrl.set(checkoutUrl);
         // } else{
-           this.popup.resumeTransaction(accessCode as string, {
+        this.popup.resumeTransaction(accessCode as string, {
           onSuccess: (tranx) => {
-             this.validateTrans(tranx.reference, result.bookingReference);
-                this.checkPaymentStatus();
+            this.validateTrans(tranx.reference, result.bookingReference);
+            this.checkPaymentStatus();
           },
-   
-           onError: (er) => {
-            this.paymentError.set('We could not initialize secure payment. No charge was made. Please try again.');
+
+          onError: (er) => {
+            this.paymentError.set(
+              'We could not initialize secure payment. No charge was made. Please try again.',
+            );
           },
-   
-         });
-       
+        });
+
         //  transaction
-      //  }
-     
+        //  }
       },
       error: (error: unknown) => {
         this.paymentPending.set(false);
@@ -178,9 +178,7 @@ export class BookingConfirmationPageComponent {
     });
   }
 
-  validateTrans(ref: string, bookingReference: string){
-
-  }
+  validateTrans(ref: string, bookingReference: string) {}
 
   continueToCheckout(): void {
     const checkoutUrl = safePaystackCheckoutUrl(this.checkoutUrl());

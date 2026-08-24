@@ -45,11 +45,11 @@ describe('AdminLoginPageComponent', () => {
     expect(router.navigate).not.toHaveBeenCalledWith(['/admin/package-prices']);
   });
 
-  it('routes a PROVIDER login to their offers without breaking admin priority', async () => {
+  it('routes an active PROVIDER login to the dashboard without breaking admin priority', async () => {
     const { component, router } = await setup(() => of(loginResponse(['PROVIDER'])));
     component.form.setValue({ email: 'provider@example.test', password: 'secret' });
     component.login();
-    expect(router.navigate).toHaveBeenCalledWith(['/provider/offers']);
+    expect(router.navigate).toHaveBeenCalledWith(['/provider/dashboard']);
   });
 
   it('routes a pending PROVIDER login to their onboarding profile', async () => {

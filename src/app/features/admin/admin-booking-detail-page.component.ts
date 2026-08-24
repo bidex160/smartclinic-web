@@ -27,6 +27,7 @@ import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
+import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-admin-booking-detail-page',
@@ -35,6 +36,7 @@ import { AdminSessionHeaderComponent } from './admin-session-header.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminBookingDetailPageComponent {
+  utilsService = inject(UtilsService);
   private readonly bookingsApi = inject(AdminBookingsApiService);
   private readonly assignmentsApi = inject(AdminProviderAssignmentsApiService);
   private readonly providersApi = inject(AdminProvidersApiService);

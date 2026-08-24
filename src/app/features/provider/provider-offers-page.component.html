@@ -1,11 +1,12 @@
 <app-provider-session-header />
 
-<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
+<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:ml-64 lg:px-10 lg:py-14">
   <div class="max-w-3xl">
     <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Provider workspace</p>
     <h1 class="mt-3 text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">My offers</h1>
     <p class="mt-4 text-lg leading-8 text-slate-600">
-      Review assignments offered to you and respond before their expiry time.
+      Review offers requiring a response or awaiting SmartClinic confirmation. Confirmed work is
+      organised under Appointments / Health Checks.
     </p>
   </div>
 
@@ -84,15 +85,17 @@
               <dd>{{ offer.participant.givenName }} {{ offer.participant.familyName }}</dd>
               <dt class="font-semibold text-slate-600">Fulfilment</dt>
               <dd>{{ offer.fulfilmentMode.name }}</dd>
-              <dt class="font-semibold text-slate-600">Preferred date</dt>
-              <dd>{{ offer.preferredDate || 'Not specified' }}</dd>
-              <dt class="font-semibold text-slate-600">Preferred time</dt>
+              <dt class="font-semibold text-slate-600">Appointment date</dt>
+              <dd>{{ utilsService.formatDate(offer.preferredDate) }}</dd>
+              <dt class="font-semibold text-slate-600">Appointment time</dt>
               <dd>
                 @if (offer.preferredTimeWindowStart && offer.preferredTimeWindowEnd) {
-                  {{ offer.preferredTimeWindowStart }}–{{ offer.preferredTimeWindowEnd }}
+                  {{ utilsService.formatTime(offer.preferredTimeWindowStart) }}–{{
+                    utilsService.formatTime(offer.preferredTimeWindowEnd)
+                  }}
                   {{ offer.preferredTimezone || '' }}
                 } @else if (offer.preferredTimeWindowStart) {
-                  Requested start: {{ offer.preferredTimeWindowStart }}
+                  {{ utilsService.formatTime(offer.preferredTimeWindowStart) }}
                   {{ offer.preferredTimezone || '' }}
                 } @else {
                   Not specified
@@ -103,7 +106,10 @@
               @if (offer.confirmedSchedule; as appointment) {
                 <dt class="font-semibold text-brand-800">Confirmed appointment</dt>
                 <dd class="font-bold text-brand-900">
-                  {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }}
+                  {{ utilsService.formatDate(appointment.date) }} ·
+                  {{ utilsService.formatTime(appointment.timeFrom) }}–{{
+                    utilsService.formatTime(appointment.timeTo)
+                  }}
                   {{ appointment.timezone }}
                   @if (appointment.providerLocationName) {
                     · {{ appointment.providerLocationName }}

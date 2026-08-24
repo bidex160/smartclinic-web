@@ -171,7 +171,9 @@
                 <dt class="font-bold text-brand-900">Confirmed appointment</dt>
                 @if (item.confirmedSchedule; as appointment) {
                   <dd class="mt-2 font-bold">
-                    {{ appointment.date }} · {{ appointment.timeFrom }}–{{ appointment.timeTo }}
+                    {{ appointment.date }} · {{ utilsService.formatTime(appointment.timeFrom) }}–{{
+                      utilsService.formatTime(appointment.timeTo)
+                    }}
                   </dd>
                   <dd class="text-sm text-slate-700">{{ appointment.timezone }}</dd>
                   <dd class="mt-1">Provider: {{ item.providerDisplayName ?? 'Not available' }}</dd>

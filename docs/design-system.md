@@ -62,3 +62,5 @@ Test at representative narrow, medium, wide, zoomed, and landscape sizes. Layout
 Use plain, reassuring language. Explain what happens next, how long a step may take when known, and which fields are required. Avoid diagnoses, guarantees, urgency cues without clinical basis, and claims that a package is suitable for a person unless the backend/product has an approved eligibility flow.
 
 Do not present `ESSENTIAL`, `COMPLETE`, `PROVIDER_LOCATION`, or `HOME_VISIT` by transforming enum strings directly for final copy. Map backend codes to approved user-facing labels and descriptions while treating the API as the source of availability.
+
+Keep labels visible. Use placeholders only for examples, expected formats, or concise instructions; never use them as labels or on native date/time and choice controls. Render customer-facing dates as `25 Aug 2026` and times without seconds in a locale-readable 12-hour form. Important confirmations use a visible backdrop, clear title, cancel action, and explicit confirmation action.

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
@@ -10,7 +11,7 @@ describe('ProviderSessionHeaderComponent', () => {
     const authSession = { logout: vi.fn(() => of(true)) };
     await TestBed.configureTestingModule({
       imports: [ProviderSessionHeaderComponent],
-      providers: [{ provide: AuthSessionService, useValue: authSession }],
+      providers: [provideRouter([]), { provide: AuthSessionService, useValue: authSession }],
     }).compileComponents();
     const fixture = TestBed.createComponent(ProviderSessionHeaderComponent);
     const state = TestBed.inject(AuthStateService);
@@ -27,5 +28,20 @@ describe('ProviderSessionHeaderComponent', () => {
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
     expect(authSession.logout).toHaveBeenCalledOnce();
+  });
+
+  it('shows setup navigation but hides operational work for a pending provider', async () => {
+    const authSession = { logout: vi.fn(() => of(true)) };
+    await TestBed.configureTestingModule({
+      imports: [ProviderSessionHeaderComponent],
+      providers: [provideRouter([]), { provide: AuthSessionService, useValue: authSession }],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ProviderSessionHeaderComponent);
+    fixture.componentRef.setInput('operational', false);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Provider setup');
+    expect(text).not.toContain('My Offers');
+    expect(text).not.toContain('Appointments / Health Checks');
   });
 });
