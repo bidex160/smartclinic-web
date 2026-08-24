@@ -26,12 +26,6 @@ function optionalPattern(
   return (control) => (!control.value || pattern.test(control.value) ? null : { pattern: true });
 }
 
-function validTimeWindow(control: AbstractControl): ValidationErrors | null {
-  const from = control.get('preferredTimeFrom')?.value as string | undefined;
-  const to = control.get('preferredTimeTo')?.value as string | undefined;
-  return from && to && to <= from ? { timeOrder: true } : null;
-}
-
 @Component({
   selector: 'app-booking-details-page',
   imports: [ReactiveFormsModule, RouterLink, BookingProgressComponent],
@@ -43,6 +37,7 @@ export class BookingDetailsPageComponent {
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly router = inject(Router);
   readonly bookingFlow = inject(BookingFlowStateService);
+  readonly isHomeVisit = this.bookingFlow.selectedFulfilmentMode()?.code === 'HOME_VISIT';
 
   readonly submitted = signal(false);
   readonly detailsSaved = signal(false);
@@ -70,22 +65,38 @@ export class BookingDetailsPageComponent {
       phone: ['', [optionalPattern(PHONE_PATTERN), Validators.maxLength(30)]],
       email: ['', [Validators.email, Validators.maxLength(254)]],
     }),
-    preferences: this.formBuilder.group(
-      {
-        preferredDate: ['', optionalPattern(DATE_PATTERN)],
-        preferredTimeFrom: ['', optionalPattern(TIME_PATTERN)],
-        preferredTimeTo: ['', optionalPattern(TIME_PATTERN)],
-        locationNote: ['', Validators.maxLength(1000)],
-        preferredTimezone: [
-      Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lagos',
-    ],
-
-      },
-      { validators: validTimeWindow },
-    ),
+    preferences: this.formBuilder.group({
+      preferredDate: ['', [Validators.required, Validators.pattern(DATE_PATTERN)]],
+      preferredTimeFrom: ['', [Validators.required, Validators.pattern(TIME_PATTERN)]],
+      locationNote: ['', Validators.maxLength(1000)],
+      preferredTimezone: [
+        Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        Validators.required,
+      ],
+    }),
+    visitAddress: this.formBuilder.group({
+      addressLine1: ['', [Validators.maxLength(255)]],
+      addressLine2: ['', Validators.maxLength(255)],
+      city: ['', Validators.maxLength(120)],
+      stateOrRegion: ['', Validators.maxLength(120)],
+      postalCode: ['', Validators.maxLength(30)],
+      countryCode: ['NG', Validators.pattern(/^[A-Z]{2}$/)],
+    }),
   });
 
   constructor() {
+    if (this.isHomeVisit) {
+      const address = this.form.controls.visitAddress.controls;
+      for (const control of [
+        address.addressLine1,
+        address.city,
+        address.stateOrRegion,
+        address.countryCode,
+      ]) {
+        control.addValidators([Validators.required, notBlank]);
+        control.updateValueAndValidity();
+      }
+    }
     const draft = this.bookingFlow.details();
     if (draft) this.form.setValue(draft);
   }

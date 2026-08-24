@@ -9,6 +9,7 @@ import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProviderAdminDetailPageComponent } from './provider-admin-detail-page.component';
 import { ProviderInvitationsApiService } from '../../core/services/provider-invitations-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { ProviderServiceAreasApiService } from '../../core/services/provider-service-areas-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 
@@ -318,6 +319,10 @@ describe('ProviderAdminDetailPageComponent', () => {
         { provide: ProviderEligibilityApiService, useValue: eligibilityApi() },
         { provide: HealthCheckPackagesApiService, useValue: { getPackages: () => of([]) } },
         { provide: FulfilmentModesApiService, useValue: { getFulfilmentModes: () => of([]) } },
+        {
+          provide: ProviderServiceAreasApiService,
+          useValue: { listOwn: () => of([]), listForAdmin: () => of([]) },
+        },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },
       ],
     }).compileComponents();

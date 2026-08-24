@@ -21,13 +21,22 @@ export interface ParticipantDetails {
 export interface BookingPreferences {
   readonly preferredDate: string;
   readonly preferredTimeFrom: string;
-  readonly preferredTimeTo: string;
   readonly preferredTimezone: string;
   readonly locationNote: string;
+}
+
+export interface VisitAddressDraft {
+  readonly addressLine1: string;
+  readonly addressLine2: string;
+  readonly city: string;
+  readonly stateOrRegion: string;
+  readonly postalCode: string;
+  readonly countryCode: string;
 }
 
 export interface BookingDetailsDraft {
   readonly booker: BookerDetails;
   readonly participant: ParticipantDetails;
   readonly preferences: BookingPreferences;
+  readonly visitAddress: VisitAddressDraft;
 }

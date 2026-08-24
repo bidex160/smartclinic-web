@@ -140,31 +140,54 @@
         <h2 id="review-preferences-title" class="text-xl font-bold text-brand-900">
           Booking preferences
         </h2>
+        @if (bookingFlow.selectedFulfilmentMode()?.code === 'HOME_VISIT') {
+          @if (bookingFlow.details()?.visitAddress; as address) {
+            <div class="mt-5 rounded-xl border border-brand-100 bg-brand-50 p-4">
+              <h3 class="font-bold text-brand-900">Visit address</h3>
+              <address class="mt-2 not-italic text-slate-800">
+                {{ address.addressLine1 }}
+                @if (address.addressLine2) {
+                  , {{ address.addressLine2 }}
+                }
+                <br />
+                {{ address.city }}, {{ address.stateOrRegion }}
+                @if (address.postalCode) {
+                  {{ address.postalCode }}
+                }
+                <br />
+                {{ address.countryCode === 'NG' ? 'Nigeria' : address.countryCode }}
+              </address>
+            </div>
+          }
+        }
         @if (
           bookingFlow.preferredDate() ||
           bookingFlow.preferredTimeFrom() ||
-          bookingFlow.preferredTimeTo() ||
+          bookingFlow.preferredTimezone() ||
           bookingFlow.locationNote()
         ) {
           <dl class="mt-5 grid gap-4 sm:grid-cols-2">
             @if (bookingFlow.preferredDate()) {
               <div>
-                <dt class="text-sm font-semibold text-slate-500">Preferred date</dt>
+                <dt class="text-sm font-semibold text-slate-500">Appointment date</dt>
                 <dd class="mt-1 text-slate-900">{{ bookingFlow.preferredDate() }}</dd>
               </div>
             }
-            @if (bookingFlow.preferredTimeFrom() || bookingFlow.preferredTimeTo()) {
+            @if (bookingFlow.preferredTimeFrom()) {
               <div>
-                <dt class="text-sm font-semibold text-slate-500">Preferred time</dt>
-                <dd class="mt-1 text-slate-900">
-                  {{ bookingFlow.preferredTimeFrom() || 'Any' }} –
-                  {{ bookingFlow.preferredTimeTo() || 'Any' }}
-                </dd>
+                <dt class="text-sm font-semibold text-slate-500">Appointment time</dt>
+                <dd class="mt-1 text-slate-900">{{ bookingFlow.preferredTimeFrom() }}</dd>
+              </div>
+            }
+            @if (bookingFlow.preferredTimezone()) {
+              <div>
+                <dt class="text-sm font-semibold text-slate-500">Timezone</dt>
+                <dd class="mt-1 text-slate-900">{{ bookingFlow.preferredTimezone() }}</dd>
               </div>
             }
             @if (bookingFlow.locationNote()) {
               <div class="sm:col-span-2">
-                <dt class="text-sm font-semibold text-slate-500">Location note</dt>
+                <dt class="text-sm font-semibold text-slate-500">Additional directions</dt>
                 <dd class="mt-1 whitespace-pre-wrap text-slate-900">
                   {{ bookingFlow.locationNote() }}
                 </dd>

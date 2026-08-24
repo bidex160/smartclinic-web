@@ -24,11 +24,16 @@ describe('BookingDetailsPageComponent', () => {
       prices: [],
       isActive: true,
     });
-    state.selectFulfilmentMode({ id: 'mode-id', code: 'API_MODE', name: 'Mode', isActive: true });
+    state.selectFulfilmentMode({
+      id: 'mode-id',
+      code: 'HOME_VISIT',
+      name: 'Home visit',
+      isActive: true,
+    });
     component = TestBed.createComponent(BookingDetailsPageComponent).componentInstance;
   });
 
-  it('rejects missing required details and invalid optional formats', () => {
+  it('requires appointment date, start time, and timezone with no end-time control', () => {
     component.form.controls.booker.patchValue({ email: 'not-an-email', phone: '12' });
     component.form.controls.participant.patchValue({
       givenName: '',
@@ -36,16 +41,51 @@ describe('BookingDetailsPageComponent', () => {
       email: 'invalid',
     });
     component.form.controls.preferences.patchValue({
-      preferredTimeFrom: '12:00',
-      preferredTimeTo: '09:00',
+      preferredDate: '',
+      preferredTimeFrom: '',
+      preferredTimezone: '',
     });
 
     component.submitDetails();
 
     expect(component.form.invalid).toBe(true);
     expect(component.form.controls.booker.controls.email.hasError('email')).toBe(true);
-    expect(component.form.controls.preferences.hasError('timeOrder')).toBe(true);
+    expect(component.form.controls.preferences.controls.preferredDate.hasError('required')).toBe(
+      true,
+    );
+    expect(
+      component.form.controls.preferences.controls.preferredTimeFrom.hasError('required'),
+    ).toBe(true);
+    expect(
+      component.form.controls.preferences.controls.preferredTimezone.hasError('required'),
+    ).toBe(true);
+    expect(component.form.get('preferences.preferredTimeTo')).toBeNull();
+    expect(component.form.controls.visitAddress.controls.addressLine1.hasError('required')).toBe(
+      true,
+    );
     expect(state.details()).toBeNull();
+  });
+
+  it('shows the structured home-visit address and keeps directions supplemental', () => {
+    const fixture = TestBed.createComponent(BookingDetailsPageComponent);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Home visit address');
+    expect(text).toContain('Additional directions');
+    expect(fixture.nativeElement.querySelector('#visit-address-one')).not.toBeNull();
+    expect(text).not.toContain('latitude');
+    expect(text).not.toContain('service-area ID');
+  });
+
+  it('renders appointment labels without an end-time or optional scheduling copy', () => {
+    const fixture = TestBed.createComponent(BookingDetailsPageComponent);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Appointment date');
+    expect(text).toContain('Appointment time');
+    expect(text).toContain('Timezone');
+    expect(fixture.nativeElement.querySelector('#preferred-time-to')).toBeNull();
+    expect(text).not.toContain('preferences are optional');
   });
 
   it('copies booker identity and contact fields for a SELF participant', () => {

@@ -27,6 +27,7 @@ export interface ProviderOffer {
   readonly preferredTimeWindowEnd: string | null;
   readonly preferredTimezone: string | null;
   readonly confirmedSchedule: import('./booking-schedule.model').ConfirmedScheduleSummary | null;
+  readonly visitAddress: import('./public-booking.model').OperationalVisitAddress | null;
   readonly responseReason: string | null;
 }
 

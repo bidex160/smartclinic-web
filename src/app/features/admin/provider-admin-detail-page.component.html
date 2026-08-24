@@ -549,103 +549,106 @@
     </p>
 
     @if (pendingRevokeId()) {
-              <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-
-      <section
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="revoke-heading"
-        class="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 p-6"
-      >
-        <h2 id="revoke-heading" class="text-xl font-bold text-red-950">Revoke this invitation?</h2>
-        <p class="mt-2 text-red-900">
-          The one-time link will stop working. The provider record will not be deleted.
-        </p>
-        <div class="mt-5 flex gap-3">
-          <button
-            type="button"
-            (click)="confirmRevoke()"
-            [disabled]="revoking()"
-            class="min-h-11 rounded-lg bg-red-800 px-5 font-bold text-white focus:ring-4 focus:ring-red-200"
-          >
-            {{ revoking() ? 'Revoking…' : 'Yes, revoke invitation' }}</button
-          ><button
-            type="button"
-            (click)="cancelRevoke()"
-            [disabled]="revoking()"
-            class="min-h-11 rounded-lg border px-5 font-bold focus:ring-4 focus:ring-brand-200"
-          >
-            Cancel
-          </button>
-        </div>
-      </section>
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <section
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="revoke-heading"
+          class="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 p-6"
+        >
+          <h2 id="revoke-heading" class="text-xl font-bold text-red-950">
+            Revoke this invitation?
+          </h2>
+          <p class="mt-2 text-red-900">
+            The one-time link will stop working. The provider record will not be deleted.
+          </p>
+          <div class="mt-5 flex gap-3">
+            <button
+              type="button"
+              (click)="confirmRevoke()"
+              [disabled]="revoking()"
+              class="min-h-11 rounded-lg bg-red-800 px-5 font-bold text-white focus:ring-4 focus:ring-red-200"
+            >
+              {{ revoking() ? 'Revoking…' : 'Yes, revoke invitation' }}</button
+            ><button
+              type="button"
+              (click)="cancelRevoke()"
+              [disabled]="revoking()"
+              class="min-h-11 rounded-lg border px-5 font-bold focus:ring-4 focus:ring-brand-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </section>
       </div>
     }
+    <app-provider-service-areas [providerId]="id" [editable]="false" />
     @if (confirmation(); as action) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <section
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirmation-heading"
-        class="mt-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6"
-      >
-        <h2 id="confirmation-heading" class="text-xl font-bold text-amber-950">
-          Confirm
-          {{
-            action === 'link'
-              ? 'account linking'
-              : action === 'unlink'
-                ? 'account unlinking'
-                : action === 'activate'
-                  ? 'provider activation'
-                  : action === 'suspend'
-                    ? 'provider suspension'
-                    : action === 'approve'
-                      ? 'provider approval'
-                      : 'provider rejection'
-          }}
-        </h2>
-        <p class="mt-2 text-amber-950">
-          @if (action === 'link' && selectedUser(); as user) {
-            You are linking {{ user.displayName || user.email || 'this user' }} to
-            {{ current.displayName }}. The backend remains authoritative for eligibility and role
-            changes.
-          } @else if (action === 'reject') {
-            <label for="review-note" class="font-bold"
-              >Review note <span class="font-normal">(optional)</span></label
-            ><textarea
-              id="review-note"
-              [formControl]="rejectionForm.controls.reviewNote"
-              maxlength="1000"
-              rows="4"
-              class="mt-2 w-full rounded-lg border border-amber-500 bg-white p-3"
-            ></textarea>
-            <p class="mt-2">
-              Rejecting keeps the provider account and record, but it does not activate the
-              provider.
-            </p>
-          } @else {
-            This is an explicit operational change. The backend will validate whether it is allowed.
-          }
-        </p>
-        <div class="mt-5 flex gap-3">
-          <button
-            type="button"
-            (click)="confirmAction()"
-            [disabled]="mutating()"
-            class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white focus:ring-4 focus:ring-brand-200"
-          >
-            {{ mutating() ? 'Updating…' : 'Confirm action' }}</button
-          ><button
-            type="button"
-            (click)="cancelConfirmation()"
-            [disabled]="mutating()"
-            class="min-h-11 rounded-lg border px-5 font-bold focus:ring-4 focus:ring-brand-200"
-          >
-            Cancel
-          </button>
-        </div>
-      </section>
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <section
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="confirmation-heading"
+          class="mt-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6"
+        >
+          <h2 id="confirmation-heading" class="text-xl font-bold text-amber-950">
+            Confirm
+            {{
+              action === 'link'
+                ? 'account linking'
+                : action === 'unlink'
+                  ? 'account unlinking'
+                  : action === 'activate'
+                    ? 'provider activation'
+                    : action === 'suspend'
+                      ? 'provider suspension'
+                      : action === 'approve'
+                        ? 'provider approval'
+                        : 'provider rejection'
+            }}
+          </h2>
+          <p class="mt-2 text-amber-950">
+            @if (action === 'link' && selectedUser(); as user) {
+              You are linking {{ user.displayName || user.email || 'this user' }} to
+              {{ current.displayName }}. The backend remains authoritative for eligibility and role
+              changes.
+            } @else if (action === 'reject') {
+              <label for="review-note" class="font-bold"
+                >Review note <span class="font-normal">(optional)</span></label
+              ><textarea
+                id="review-note"
+                [formControl]="rejectionForm.controls.reviewNote"
+                maxlength="1000"
+                rows="4"
+                class="mt-2 w-full rounded-lg border border-amber-500 bg-white p-3"
+              ></textarea>
+              <p class="mt-2">
+                Rejecting keeps the provider account and record, but it does not activate the
+                provider.
+              </p>
+            } @else {
+              This is an explicit operational change. The backend will validate whether it is
+              allowed.
+            }
+          </p>
+          <div class="mt-5 flex gap-3">
+            <button
+              type="button"
+              (click)="confirmAction()"
+              [disabled]="mutating()"
+              class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white focus:ring-4 focus:ring-brand-200"
+            >
+              {{ mutating() ? 'Updating…' : 'Confirm action' }}</button
+            ><button
+              type="button"
+              (click)="cancelConfirmation()"
+              [disabled]="mutating()"
+              class="min-h-11 rounded-lg border px-5 font-bold focus:ring-4 focus:ring-brand-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </section>
       </div>
     }
   }

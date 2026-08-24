@@ -44,9 +44,16 @@ describe('BookingFlowStateService', () => {
     preferences: {
       preferredDate: '2026-08-20',
       preferredTimeFrom: '09:00',
-      preferredTimeTo: '12:00',
       locationNote: '',
-      preferredTimezone: ''
+      preferredTimezone: 'Africa/Lagos',
+    },
+    visitAddress: {
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      stateOrRegion: '',
+      postalCode: '',
+      countryCode: 'NG',
     },
   };
 

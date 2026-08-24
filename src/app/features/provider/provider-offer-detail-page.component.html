@@ -79,10 +79,12 @@
           <div>
             <dt class="text-sm font-semibold text-slate-600">Preferred time</dt>
             <dd class="mt-1">
-              @if (currentOffer.preferredTimeWindowStart || currentOffer.preferredTimeWindowEnd) {
-                {{ currentOffer.preferredTimeWindowStart || 'Flexible' }}–{{
-                  currentOffer.preferredTimeWindowEnd || 'Flexible'
+              @if (currentOffer.preferredTimeWindowStart && currentOffer.preferredTimeWindowEnd) {
+                {{ currentOffer.preferredTimeWindowStart }}–{{
+                  currentOffer.preferredTimeWindowEnd
                 }}
+              } @else if (currentOffer.preferredTimeWindowStart) {
+                Requested start: {{ currentOffer.preferredTimeWindowStart }}
               } @else {
                 Not specified
               }
@@ -133,6 +135,34 @@
           <p>{{ appointment.timezone }}</p>
           @if (appointment.providerLocationName) {
             <p class="mt-1">{{ appointment.providerLocationName }}</p>
+          }
+        </section>
+      }
+
+      @if (
+        currentOffer.fulfilmentMode.code === 'HOME_VISIT' && currentOffer.visitAddress;
+        as address
+      ) {
+        <section
+          class="mt-8 rounded-xl border bg-slate-50 p-5"
+          aria-labelledby="provider-visit-address"
+        >
+          <h2 id="provider-visit-address" class="text-xl font-bold text-brand-900">
+            Visit address
+          </h2>
+          <address class="mt-3 not-italic">
+            {{ address.addressLine1 }}
+            @if (address.addressLine2) {
+              , {{ address.addressLine2 }}
+            }
+            <br />{{ address.city }}, {{ address.stateOrRegion }}
+            @if (address.postalCode) {
+              {{ address.postalCode }}
+            }
+            · {{ address.countryCode }}
+          </address>
+          @if (address.locationNote) {
+            <p class="mt-3"><strong>Additional directions:</strong> {{ address.locationNote }}</p>
           }
         </section>
       }

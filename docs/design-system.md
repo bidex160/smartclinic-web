@@ -62,4 +62,3 @@ Test at representative narrow, medium, wide, zoomed, and landscape sizes. Layout
 Use plain, reassuring language. Explain what happens next, how long a step may take when known, and which fields are required. Avoid diagnoses, guarantees, urgency cues without clinical basis, and claims that a package is suitable for a person unless the backend/product has an approved eligibility flow.
 
 Do not present `ESSENTIAL`, `COMPLETE`, `PROVIDER_LOCATION`, or `HOME_VISIT` by transforming enum strings directly for final copy. Map backend codes to approved user-facing labels and descriptions while treating the API as the source of availability.
-

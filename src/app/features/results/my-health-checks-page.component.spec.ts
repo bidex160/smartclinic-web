@@ -82,6 +82,34 @@ describe('MyHealthChecksPageComponent', () => {
     expect(component.encounterStatusLabel('COMPLETED')).toBe('Completed');
   });
 
+  it('renders a requested start safely when a new booking has no legacy end time', async () => {
+    const { component, fixture } = await setup(
+      response([item('START-ONLY', { preferredTimeTo: null })]),
+    );
+    const text = fixture.nativeElement.textContent as string;
+    expect(component.schedule('2026-08-20', '09:00', null, 'Africa/Lagos')).toBe(
+      '2026-08-20 · 09:00 · Africa/Lagos',
+    );
+    expect(text).not.toContain('09:00–null');
+    expect(text).not.toContain('09:00–Not specified');
+  });
+
+  it('renders only the safe home-visit area summary', async () => {
+    const { fixture } = await setup(
+      response([
+        item('HOME-1', {
+          visitAddressSummary: {
+            city: 'Ikeja',
+            stateOrRegion: 'Lagos',
+            countryCode: 'NG',
+          },
+        }),
+      ]),
+    );
+    expect(fixture.nativeElement.textContent).toContain('Ikeja, Lagos, NG');
+    expect(fixture.nativeElement.textContent).not.toContain('addressLine1');
+  });
+
   it('applies and clears explicit filters', async () => {
     const { component, api } = await setup(response([]));
     component.filterForm.setValue({
@@ -179,6 +207,7 @@ function item(
     preferredTimeTo: '11:00',
     preferredTimezone: 'Africa/Lagos',
     confirmedSchedule: null,
+    visitAddressSummary: null,
     providerDisplayName: 'Care Provider',
     encounterStatus: 'IN_PROGRESS',
     startedAt: '2026-08-18T09:00:00Z',

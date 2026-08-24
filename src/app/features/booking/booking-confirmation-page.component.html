@@ -65,22 +65,25 @@
         }
         @if (booking.preferredDate) {
           <div>
-            <dt class="text-sm font-semibold text-slate-500">Preferred date</dt>
+            <dt class="text-sm font-semibold text-slate-500">Appointment date</dt>
             <dd class="mt-1 text-slate-900">{{ booking.preferredDate }}</dd>
           </div>
         }
-        @if (booking.preferredTimeWindowStart || booking.preferredTimeWindowEnd) {
+        @if (booking.preferredTimeWindowStart) {
           <div>
-            <dt class="text-sm font-semibold text-slate-500">Preferred time</dt>
+            <dt class="text-sm font-semibold text-slate-500">Appointment time</dt>
             <dd class="mt-1 text-slate-900">
-              {{ booking.preferredTimeWindowStart || 'Any' }} –
-              {{ booking.preferredTimeWindowEnd || 'Any' }}
+              @if (booking.preferredTimeWindowEnd) {
+                {{ booking.preferredTimeWindowStart }}–{{ booking.preferredTimeWindowEnd }}
+              } @else {
+                {{ booking.preferredTimeWindowStart }}
+              }
             </dd>
           </div>
         }
         @if (booking.preferredTimezone) {
           <div>
-            <dt class="text-sm font-semibold text-slate-500">Preferred timezone</dt>
+            <dt class="text-sm font-semibold text-slate-500">Timezone</dt>
             <dd class="mt-1 text-slate-900">{{ booking.preferredTimezone }}</dd>
           </div>
         }

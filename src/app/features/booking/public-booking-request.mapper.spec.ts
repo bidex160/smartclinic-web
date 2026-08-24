@@ -28,8 +28,14 @@ describe('mapBookingFlowToPublicBookingRequest', () => {
         fulfilmentModeId: 'mode-id',
         preferredDate: '2026-08-20',
         preferredTimeFrom: '09:00',
-        preferredTimeTo: '12:00',
+        preferredTimezone: 'Africa/Lagos',
         locationNote: 'Front desk',
+        visitAddress: {
+          addressLine1: '1 Clinic Road',
+          city: 'Ikeja',
+          stateOrRegion: 'Lagos',
+          countryCode: 'NG',
+        },
       },
     });
   });
@@ -45,6 +51,15 @@ describe('mapBookingFlowToPublicBookingRequest', () => {
     expect(request.booking).toEqual({
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-id',
+      preferredDate: '2026-08-20',
+      preferredTimeFrom: '09:00',
+      preferredTimezone: 'Africa/Lagos',
+      visitAddress: {
+        addressLine1: '1 Clinic Road',
+        city: 'Ikeja',
+        stateOrRegion: 'Lagos',
+        countryCode: 'NG',
+      },
     });
     expect(request.booking).not.toHaveProperty('quotedAmount');
     expect(request.booking).not.toHaveProperty('quotedCurrency');
@@ -52,9 +67,22 @@ describe('mapBookingFlowToPublicBookingRequest', () => {
     expect(JSON.stringify(request)).not.toContain('quotedAmount');
     expect(JSON.stringify(request)).not.toContain('quotedCurrency');
   });
+
+  it('omits visitAddress and provider/service identifiers for provider-location bookings', () => {
+    const request = mapBookingFlowToPublicBookingRequest(
+      createCompleteState(false, 'PROVIDER_LOCATION'),
+    );
+    expect(request.booking).not.toHaveProperty('visitAddress');
+    expect(request.booking).not.toHaveProperty('serviceAreaId');
+    expect(request.booking).not.toHaveProperty('providerId');
+    expect(request.booking).not.toHaveProperty('providerLocationId');
+  });
 });
 
-function createCompleteState(emptyOptional = false): BookingFlowStateService {
+function createCompleteState(
+  emptyOptional = false,
+  modeCode = 'HOME_VISIT',
+): BookingFlowStateService {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({});
   const state = TestBed.inject(BookingFlowStateService);
@@ -68,7 +96,7 @@ function createCompleteState(emptyOptional = false): BookingFlowStateService {
     prices: [],
     isActive: true,
   });
-  state.selectFulfilmentMode({ id: 'mode-id', code: 'MODE', name: 'Mode', isActive: true });
+  state.selectFulfilmentMode({ id: 'mode-id', code: modeCode, name: 'Mode', isActive: true });
   state.saveDetails({
     booker: {
       givenName: ' Ada ',
@@ -85,11 +113,18 @@ function createCompleteState(emptyOptional = false): BookingFlowStateService {
       email: emptyOptional ? '' : 'ada@example.test',
     },
     preferences: {
-      preferredDate: emptyOptional ? '' : '2026-08-20',
-      preferredTimeFrom: emptyOptional ? '' : '09:00',
-      preferredTimeTo: emptyOptional ? '' : '12:00',
+      preferredDate: '2026-08-20',
+      preferredTimeFrom: '09:00',
       locationNote: emptyOptional ? ' ' : 'Front desk',
-      preferredTimezone: emptyOptional ? ' ' : '',
+      preferredTimezone: 'Africa/Lagos',
+    },
+    visitAddress: {
+      addressLine1: '1 Clinic Road',
+      addressLine2: '',
+      city: 'Ikeja',
+      stateOrRegion: 'Lagos',
+      postalCode: '',
+      countryCode: 'NG',
     },
   });
   return state;

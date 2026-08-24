@@ -5,6 +5,8 @@ import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { ProviderServiceAreasApiService } from '../../core/services/provider-service-areas-api.service';
+import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { ProviderProfilePageComponent } from './provider-profile-page.component';
@@ -77,12 +79,21 @@ describe('ProviderProfilePageComponent', () => {
         { provide: HealthCheckPackagesApiService, useValue: { getPackages: () => of([]) } },
         { provide: FulfilmentModesApiService, useValue: { getFulfilmentModes: () => of([]) } },
         {
+          provide: ProviderServiceAreasApiService,
+          useValue: { listOwn: () => of([]), listForAdmin: () => of([]) },
+        },
+        {
           provide: AuthStateService,
           useValue: { currentUser: () => ({ displayName: 'Ada' }), authenticated: () => true },
         },
       ],
     }).overrideComponent(ProviderProfilePageComponent, {
-      set: { providers: [{ provide: ProviderEligibilityApiService, useValue: eligibilityApi }] },
+      set: {
+        providers: [
+          { provide: ProviderEligibilityApiService, useValue: eligibilityApi },
+          { provide: ProviderSelfConfigurationApiService, useValue: eligibilityApi },
+        ],
+      },
     });
     await TestBed.compileComponents();
     const fixture = TestBed.createComponent(ProviderProfilePageComponent);

@@ -3,6 +3,7 @@ import { BookingStatus } from './admin-provider-assignment.model';
 import { PublicBookingFundingAttemptStatus } from './public-booking.model';
 import { ProviderOfferStatus } from './provider-offer.model';
 import { AdminConfirmedSchedule } from './booking-schedule.model';
+import { OperationalVisitAddress } from './public-booking.model';
 
 export type AdminBookingFundingType = 'SELF' | 'FAMILY' | 'SPONSOR' | 'ORGANISATION' | 'OTHER';
 
@@ -25,6 +26,7 @@ export interface AdminBookingDetail {
   readonly preferredTimeTo: string | null;
   readonly preferredTimezone: string | null;
   readonly locationNote: string | null;
+  readonly visitAddress: OperationalVisitAddress | null;
   readonly confirmedSchedule: AdminConfirmedSchedule | null;
   readonly quotedAmount: string | null;
   readonly quotedCurrency: string | null;

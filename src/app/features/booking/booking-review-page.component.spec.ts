@@ -22,6 +22,7 @@ describe('BookingReviewPageComponent', () => {
     preferredTimeWindowEnd: '12:00',
     preferredTimezone: 'Africa/Lagos',
     locationNote: null,
+    visitAddressSummary: null,
     createdAt: '2026-08-17T00:00:00.000Z',
     updatedAt: '2026-08-17T00:00:00.000Z',
   };
@@ -37,6 +38,12 @@ describe('BookingReviewPageComponent', () => {
     expect(text).toContain('Confirm Smart Health Check');
     expect(text).toContain('Booking price shown before confirmation');
     expect(text).toContain('API 12500.00');
+    expect(text).toContain('Appointment date');
+    expect(text).toContain('Appointment time');
+    expect(text).toContain('Timezone');
+    expect(text).toContain('Visit address');
+    expect(text).toContain('1 Clinic Road');
+    expect(text).not.toContain('Preferred end time');
     expect(text).not.toContain('quotedAmount');
   });
 
@@ -117,7 +124,7 @@ function seedState(state: BookingFlowStateService): void {
     prices: [
       {
         fulfilmentModeId: 'mode-id',
-        fulfilmentModeCode: 'MODE',
+        fulfilmentModeCode: 'HOME_VISIT',
         fulfilmentModeName: 'Home option',
         amount: '12500.00',
         currency: 'API',
@@ -125,7 +132,12 @@ function seedState(state: BookingFlowStateService): void {
     ],
     isActive: true,
   });
-  state.selectFulfilmentMode({ id: 'mode-id', code: 'MODE', name: 'Home option', isActive: true });
+  state.selectFulfilmentMode({
+    id: 'mode-id',
+    code: 'HOME_VISIT',
+    name: 'Home option',
+    isActive: true,
+  });
   state.saveDetails({
     booker: {
       givenName: 'Ada',
@@ -144,9 +156,16 @@ function seedState(state: BookingFlowStateService): void {
     preferences: {
       preferredDate: '2026-08-20',
       preferredTimeFrom: '09:00',
-      preferredTimeTo: '12:00',
       locationNote: '',
-      preferredTimezone: '',
+      preferredTimezone: 'Africa/Lagos',
+    },
+    visitAddress: {
+      addressLine1: '1 Clinic Road',
+      addressLine2: '',
+      city: 'Ikeja',
+      stateOrRegion: 'Lagos',
+      postalCode: '',
+      countryCode: 'NG',
     },
   });
 }

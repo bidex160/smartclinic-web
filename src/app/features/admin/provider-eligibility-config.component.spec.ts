@@ -83,10 +83,18 @@ describe('ProviderEligibilityConfigComponent', () => {
     });
     component.createAvailability();
     expect(api.createAvailability).not.toHaveBeenCalled();
+    component.availabilityForm.patchValue({
+      startTime: '09:00',
+      endTime: '17:00',
+      bookingStopTime: '09:00',
+    });
+    component.createAvailability();
+    expect(api.createAvailability).not.toHaveBeenCalled();
     component.availabilityForm.setValue({
       dayOfWeek: 'TUESDAY',
       startTime: '09:00',
       endTime: '17:00',
+      bookingStopTime: '16:30',
       timezone: 'Africa/Lagos',
       providerServiceId: 'service-location',
       providerLocationId: 'location-id',
@@ -97,6 +105,7 @@ describe('ProviderEligibilityConfigComponent', () => {
       expect.objectContaining({
         providerServiceId: 'service-location',
         providerLocationId: 'location-id',
+        bookingStopTime: '16:30',
       }),
     );
   });
@@ -106,6 +115,10 @@ describe('ProviderEligibilityConfigComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('MONDAY');
     expect(fixture.nativeElement.textContent).toContain('09:00');
+    expect(fixture.nativeElement.textContent).toContain('New bookings until 16:30:00');
+    component.availability.set([{ ...availabilityRows()[0], bookingStopTime: null }]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('New bookings until 17:00:00');
     component.exceptionForm.setValue({
       date: '2026-09-01',
       type: 'AVAILABLE',
@@ -257,6 +270,7 @@ function availabilityRows() {
       dayOfWeek: 'MONDAY' as const,
       startTime: '09:00:00',
       endTime: '17:00:00',
+      bookingStopTime: '16:30:00',
       timezone: 'Africa/Lagos',
       isActive: true,
       createdAt: '2026-01-01',

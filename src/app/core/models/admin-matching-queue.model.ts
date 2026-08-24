@@ -5,6 +5,7 @@ export type MatchingQueueReadiness =
   | 'READY'
   | 'FUNDING_INCOMPLETE'
   | 'INCOMPLETE_SCHEDULING'
+  | 'INCOMPLETE_VISIT_ADDRESS'
   | 'ACTIVE_OFFER'
   | 'ACCEPTED_AWAITING_CONFIRMATION'
   | 'UNFULFILLABLE'
@@ -23,6 +24,11 @@ export interface AdminMatchingQueueItem {
   readonly preferredTimeFrom: string | null;
   readonly preferredTimeTo: string | null;
   readonly preferredTimezone: string | null;
+  readonly visitArea: {
+    readonly city: string;
+    readonly stateOrRegion: string;
+    readonly countryCode: string;
+  } | null;
   readonly fundingStatus: MatchingQueueFundingStatus | null;
   readonly quotedAmount: string | null;
   readonly quotedCurrency: string | null;

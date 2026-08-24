@@ -26,6 +26,26 @@ describe('AdminBookingDetailPageComponent', () => {
     expect(text).not.toContain('1990-01-01');
   });
 
+  it('renders the full authorized home-visit address separately from directions', async () => {
+    const { fixture } = await setup({
+      booking: detail({
+        visitAddress: {
+          addressLine1: '1 Clinic Road',
+          addressLine2: 'Blue gate',
+          city: 'Ikeja',
+          stateOrRegion: 'Lagos',
+          postalCode: null,
+          countryCode: 'NG',
+        },
+        locationNote: 'Call on arrival',
+      }),
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Visit address');
+    expect(fixture.nativeElement.textContent).toContain('1 Clinic Road');
+    expect(fixture.nativeElement.textContent).toContain('Additional directions');
+  });
+
   it('handles absent funding, payment, assignment, and registered-booker fields without inference', async () => {
     const { fixture } = await setup({
       booking: detail({
@@ -377,6 +397,7 @@ function detail(changes: Partial<AdminBookingDetail> = {}): AdminBookingDetail {
     preferredTimeTo: '11:00',
     preferredTimezone: 'Africa/Lagos',
     locationNote: 'Reception',
+    visitAddress: null,
     confirmedSchedule: null,
     quotedAmount: '12500.00',
     quotedCurrency: 'NGN',

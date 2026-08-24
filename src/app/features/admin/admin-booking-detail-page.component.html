@@ -164,10 +164,12 @@
               <dd class="mt-1">{{ current.preferredDate || 'Not available' }}</dd>
             </div>
             <div>
-              <dt class="text-sm font-semibold text-slate-600">Preferred time</dt>
+              <dt class="text-sm font-semibold text-slate-600">Requested time</dt>
               <dd class="mt-1">
-                @if (current.preferredTimeFrom || current.preferredTimeTo) {
-                  {{ current.preferredTimeFrom || 'Open' }}–{{ current.preferredTimeTo || 'Open' }}
+                @if (current.preferredTimeFrom && current.preferredTimeTo) {
+                  {{ current.preferredTimeFrom }}–{{ current.preferredTimeTo }}
+                } @else if (current.preferredTimeFrom) {
+                  Requested start: {{ current.preferredTimeFrom }}
                 } @else {
                   Not available
                 }
@@ -178,12 +180,31 @@
               <dd class="mt-1">{{ current.preferredTimezone || 'Not available' }}</dd>
             </div>
             <div class="sm:col-span-2">
-              <dt class="text-sm font-semibold text-slate-600">Location note</dt>
+              <dt class="text-sm font-semibold text-slate-600">Additional directions</dt>
               <dd class="mt-1 whitespace-pre-wrap">
-                {{ current.locationNote || 'Not available' }}
+                {{ current.locationNote || 'No additional directions' }}
               </dd>
             </div>
           </dl>
+          @if (current.fulfilmentMode.code === 'HOME_VISIT' && current.visitAddress; as address) {
+            <section
+              class="mt-5 rounded-xl border bg-slate-50 p-4"
+              aria-labelledby="visit-address-heading"
+            >
+              <h3 id="visit-address-heading" class="font-bold">Visit address</h3>
+              <address class="mt-2 not-italic">
+                {{ address.addressLine1 }}
+                @if (address.addressLine2) {
+                  , {{ address.addressLine2 }}
+                }
+                <br />{{ address.city }}, {{ address.stateOrRegion }}
+                @if (address.postalCode) {
+                  {{ address.postalCode }}
+                }
+                · {{ address.countryCode }}
+              </address>
+            </section>
+          }
         </section>
 
         <section

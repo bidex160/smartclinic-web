@@ -21,10 +21,16 @@ import { ProviderOnboardingApiService } from '../../core/services/provider-onboa
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ProviderEligibilityConfigComponent } from '../admin/provider-eligibility-config.component';
+import { ProviderServiceAreasComponent } from './provider-service-areas.component';
 
 @Component({
   selector: 'app-provider-profile-page',
-  imports: [ReactiveFormsModule, RouterLink, ProviderEligibilityConfigComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    ProviderEligibilityConfigComponent,
+    ProviderServiceAreasComponent,
+  ],
   providers: [
     ProviderSelfConfigurationApiService,
     { provide: ProviderEligibilityApiService, useExisting: ProviderSelfConfigurationApiService },
@@ -164,6 +170,7 @@ export class ProviderProfilePageComponent {
       NO_ACTIVE_CAPABILITY: 'Add at least one active service',
       PROVIDER_LOCATION_WITHOUT_LOCATION:
         'Add an active location and link it to each provider-location service',
+      HOME_VISIT_WITHOUT_SERVICE_AREA: 'Add an active service area for each Home Visit service',
       NO_WEEKLY_AVAILABILITY: 'Add weekly availability',
     };
     return labels[blocker];

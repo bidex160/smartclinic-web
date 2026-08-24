@@ -1,0 +1,158 @@
+<section aria-labelledby="service-areas-heading" class="mt-6 rounded-2xl border bg-white p-6">
+  <h2 id="service-areas-heading" class="text-xl font-bold text-brand-900">
+    Home visit service areas
+  </h2>
+  @if (editable()) {
+    <p class="mt-2 text-slate-700">
+      Define where each Home Visit service is offered. Leave city blank to cover the whole state or
+      region. Add a city or postal code to narrow your coverage.
+    </p>
+  } @else {
+    <p class="mt-2 text-slate-700">
+      Service areas are maintained by the provider and shown here for onboarding review.
+    </p>
+  }
+  @if (status()) {
+    <p role="status" aria-live="polite" class="mt-4 rounded-lg bg-brand-50 p-3">{{ status() }}</p>
+  }
+  @if (error()) {
+    <p role="alert" class="mt-4 rounded-lg bg-red-50 p-3 text-red-900">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p role="status" class="mt-4">Loading service areas…</p>
+  } @else {
+    @if (areas().length) {
+      <ul class="mt-5 grid gap-3">
+        @for (area of areas(); track area.id) {
+          <li class="rounded-xl border p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="font-bold">{{ serviceLabel(area.providerServiceId) }}</h3>
+                <p class="mt-1">
+                  {{ area.stateOrRegion }}
+                  @if (area.city) {
+                    · {{ area.city }}
+                  }
+                  @if (area.postalCode) {
+                    · {{ area.postalCode }}
+                  }
+                  · {{ area.countryCode }}
+                </p>
+                <p class="mt-1 font-semibold">{{ area.isActive ? 'Active' : 'Inactive' }}</p>
+              </div>
+              @if (editable()) {
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    (click)="edit(area)"
+                    [disabled]="mutating()"
+                    class="rounded-lg border px-3 py-2 font-bold"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    (click)="toggle(area)"
+                    [disabled]="mutating()"
+                    class="rounded-lg border px-3 py-2 font-bold"
+                  >
+                    {{ area.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
+                </div>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="mt-4 rounded-lg bg-slate-50 p-4">No home-visit service areas configured.</p>
+    }
+    @if (editable()) {
+      <form
+        [formGroup]="form"
+        (ngSubmit)="save()"
+        class="mt-6 grid gap-4 border-t pt-6 md:grid-cols-2"
+      >
+        <h3 class="text-lg font-bold md:col-span-2">
+          {{ editingId() ? 'Edit service area' : 'Add service area' }}
+        </h3>
+        <div>
+          <label for="area-service" class="font-bold">Home Visit service</label>
+          <select
+            id="area-service"
+            formControlName="providerServiceId"
+            class="mt-2 min-h-12 w-full rounded-lg border px-3"
+          >
+            <option value="">Select a service</option>
+            @for (service of homeVisitServices(); track service.id) {
+              <option [value]="service.id">{{ serviceLabel(service.id) }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="area-country" class="font-bold">Country</label>
+          <select
+            id="area-country"
+            formControlName="countryCode"
+            class="mt-2 min-h-12 w-full rounded-lg border px-3"
+          >
+            <option value="NG">Nigeria</option>
+          </select>
+        </div>
+        <div>
+          <label for="area-state" class="font-bold">State / region</label
+          ><input
+            id="area-state"
+            formControlName="stateOrRegion"
+            maxlength="120"
+            class="mt-2 min-h-12 w-full rounded-lg border px-3"
+          />
+        </div>
+        <div>
+          <label for="area-city" class="font-bold"
+            >City <span class="font-normal">(optional)</span></label
+          ><input
+            id="area-city"
+            formControlName="city"
+            maxlength="120"
+            class="mt-2 min-h-12 w-full rounded-lg border px-3"
+          />
+        </div>
+        <div>
+          <label for="area-postal" class="font-bold"
+            >Postal code <span class="font-normal">(optional)</span></label
+          ><input
+            id="area-postal"
+            formControlName="postalCode"
+            maxlength="30"
+            class="mt-2 min-h-12 w-full rounded-lg border px-3"
+          />
+        </div>
+        @if (!homeVisitServices().length) {
+          <p class="md:col-span-2 rounded-lg bg-amber-50 p-3">
+            Add an active Home Visit service before creating a service area.
+          </p>
+        }
+        @if (form.touched && form.invalid) {
+          <p class="md:col-span-2 text-sm font-semibold text-red-700">
+            Select a Home Visit service and enter a state or region.
+          </p>
+        }
+        <div class="flex gap-3 md:col-span-2">
+          <button
+            type="submit"
+            [disabled]="mutating() || !homeVisitServices().length"
+            class="rounded-lg bg-brand-700 px-5 py-3 font-bold text-white"
+          >
+            {{ mutating() ? 'Saving…' : editingId() ? 'Save changes' : 'Add service area' }}
+          </button>
+          @if (editingId()) {
+            <button type="button" (click)="cancel()" class="rounded-lg border px-5 py-3 font-bold">
+              Cancel
+            </button>
+          }
+        </div>
+      </form>
+    }
+  }
+</section>

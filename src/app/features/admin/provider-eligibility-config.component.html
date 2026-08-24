@@ -337,6 +337,10 @@
     @if (activeTab() === 'availability') {
       <section aria-labelledby="availability-heading" class="mt-5 rounded-2xl border bg-white p-6">
         <h2 id="availability-heading" class="text-xl font-bold">Weekly availability</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-600">
+          Availability defines when you operate. Booking stop time optionally controls the latest
+          time a new Smart Health Check may start.
+        </p>
         <form
           [formGroup]="availabilityForm"
           (ngSubmit)="createAvailability()"
@@ -371,6 +375,19 @@
               formControlName="endTime"
               class="mt-2 min-h-11 w-full rounded-lg border px-3"
             />
+          </div>
+          <div>
+            <label for="availability-booking-stop" class="font-bold">Booking stop time</label>
+            <input
+              id="availability-booking-stop"
+              type="time"
+              formControlName="bookingStopTime"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+            <p class="mt-1 text-sm text-slate-600">
+              Optional. This is the latest time a new appointment may start. If left blank, the
+              availability end time is used.
+            </p>
           </div>
           <div>
             <label for="availability-timezone" class="font-bold">Timezone</label
@@ -415,6 +432,11 @@
               End time must be after start time.
             </p>
           }
+          @if (availabilityForm.hasError('bookingStopOrder')) {
+            <p class="text-sm font-bold text-red-700 md:col-span-3">
+              Booking stop time must be after the start time and no later than the end time.
+            </p>
+          }
           <button
             type="submit"
             [disabled]="mutating()"
@@ -432,8 +454,10 @@
                   @if (item.dayOfWeek === day) {
                     <li class="rounded-lg border p-3">
                       <span class="font-bold">{{ item.startTime }}–{{ item.endTime }}</span> ·
-                      {{ item.timezone }} · {{ item.isActive ? 'Active' : 'Inactive' }}<br /><span
-                        class="text-sm"
+                      {{ item.timezone }} · {{ item.isActive ? 'Active' : 'Inactive' }}<br />
+                      <span class="text-sm font-semibold">
+                        New bookings until {{ item.bookingStopTime || item.endTime }} </span
+                      ><br /><span class="text-sm"
                         >Service:
                         {{
                           item.providerServiceId

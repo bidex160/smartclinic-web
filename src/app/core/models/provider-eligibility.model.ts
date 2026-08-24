@@ -46,6 +46,7 @@ export interface ProviderAvailability {
   readonly dayOfWeek: DayOfWeek;
   readonly startTime: string;
   readonly endTime: string;
+  readonly bookingStopTime: string | null;
   readonly timezone: string;
   readonly isActive: boolean;
   readonly createdAt: string;
@@ -57,6 +58,7 @@ export interface ProviderAvailabilityRequest {
   readonly dayOfWeek: DayOfWeek;
   readonly startTime: string;
   readonly endTime: string;
+  readonly bookingStopTime?: string | null;
   readonly timezone: string;
 }
 export interface ProviderAvailabilityException {

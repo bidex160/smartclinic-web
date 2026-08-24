@@ -27,7 +27,13 @@ describe('BookingsApiService', () => {
     const request: PublicBookingRequest = {
       booker: { givenName: 'Ada', familyName: 'Okafor', phone: '+2348012345678' },
       participant: { relationship: 'SELF', givenName: 'Ada', familyName: 'Okafor' },
-      booking: { healthCheckPackageId: 'package-id', fulfilmentModeId: 'mode-id' },
+      booking: {
+        healthCheckPackageId: 'package-id',
+        fulfilmentModeId: 'mode-id',
+        preferredDate: '2026-09-01',
+        preferredTimeFrom: '09:00',
+        preferredTimezone: 'Africa/Lagos',
+      },
     };
     const response = { bookingReference: 'SC-REF' } as PublicBookingResponse;
 

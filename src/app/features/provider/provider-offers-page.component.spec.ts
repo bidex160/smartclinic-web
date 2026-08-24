@@ -58,6 +58,7 @@ export function offer(changes: Partial<ProviderOffer> = {}): ProviderOffer {
     preferredTimeWindowEnd: '11:00',
     preferredTimezone: 'Africa/Lagos',
     confirmedSchedule: null,
+    visitAddress: null,
     responseReason: null,
     ...changes,
   };

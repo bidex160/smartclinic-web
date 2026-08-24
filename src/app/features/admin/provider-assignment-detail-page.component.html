@@ -91,9 +91,13 @@
           <div>
             <dt class="text-sm font-semibold text-slate-600">Preferred time</dt>
             <dd class="mt-1">
-              {{ current.preferredTimeWindowStart || 'Flexible' }}–{{
-                current.preferredTimeWindowEnd || 'Flexible'
-              }}
+              @if (current.preferredTimeWindowStart && current.preferredTimeWindowEnd) {
+                {{ current.preferredTimeWindowStart }}–{{ current.preferredTimeWindowEnd }}
+              } @else if (current.preferredTimeWindowStart) {
+                Requested start: {{ current.preferredTimeWindowStart }}
+              } @else {
+                Not specified
+              }
               {{ current.preferredTimezone || '' }}
             </dd>
           </div>

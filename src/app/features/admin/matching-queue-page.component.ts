@@ -182,6 +182,7 @@ export class MatchingQueuePageComponent {
       READY: 'Ready for automatic matching',
       FUNDING_INCOMPLETE: 'Funding incomplete',
       INCOMPLETE_SCHEDULING: 'Scheduling incomplete',
+      INCOMPLETE_VISIT_ADDRESS: 'Visit address incomplete',
       ACTIVE_OFFER: 'Provider offer active',
       ACCEPTED_AWAITING_CONFIRMATION: 'Awaiting confirmation',
       UNFULFILLABLE: 'Provider match needs review',

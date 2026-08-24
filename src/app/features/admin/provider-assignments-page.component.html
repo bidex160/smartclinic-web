@@ -176,10 +176,16 @@
                 </td>
                 <td class="px-4 py-4">
                   {{ assignment.preferredDate || 'Not specified'
-                  }}<span class="block text-slate-500"
-                    >{{ assignment.preferredTimeWindowStart || 'Flexible' }}–{{
-                      assignment.preferredTimeWindowEnd || 'Flexible'
-                    }}
+                  }}<span class="block text-slate-500">
+                    @if (assignment.preferredTimeWindowStart && assignment.preferredTimeWindowEnd) {
+                      {{ assignment.preferredTimeWindowStart }}–{{
+                        assignment.preferredTimeWindowEnd
+                      }}
+                    } @else if (assignment.preferredTimeWindowStart) {
+                      Requested start: {{ assignment.preferredTimeWindowStart }}
+                    } @else {
+                      Not specified
+                    }
                     {{ assignment.preferredTimezone || '' }}</span
                   >
                   @if (assignment.confirmedSchedule; as appointment) {

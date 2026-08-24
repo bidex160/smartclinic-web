@@ -4,6 +4,8 @@
 
 The frontend is an API consumer. It owns presentation, input ergonomics, navigation, and transient UI state. The backend owns the catalogue, package/mode availability, business validation, pricing, booking creation, booking references, and authoritative booking state.
 
+New public booking requests carry required `preferredDate`, `preferredTimeFrom`, and `preferredTimezone`; they omit `preferredTimeTo`. Nullable end-time fields remain in response models for legacy bookings. The package's backend-owned expected duration determines the appointment window used during matching.
+
 ## Base URL configuration
 
 Provide a typed API configuration through Angular dependency injection. Build endpoint paths from a single base URL supplied by environment or runtime configuration. Do not reference `http://localhost:3000` in feature code.
@@ -219,7 +221,7 @@ Provider onboarding uses exact, separate contracts:
 - `POST /admin/providers` creates the full provider identity and initial invitation together; its `{ provider, invitation }` response carries provider-neutral delivery status and an ephemeral manual link only when needed.
 - `POST /admin/providers/:id/approve` and `/reject` are explicit review operations. Approval, not the frontend, produces `APPROVED` and `ACTIVE` state.
 
-Registration passwords and manual invitation links remain in component memory only. The frontend sends no roles, user IDs, provider status, onboarding status, or review metadata through registration/profile forms. A PROVIDER role is account authorization, not proof that onboarding is approved or that capability/location/availability prerequisites are met. Email delivery implementation details remain hidden, and HOME_VISIT service-area management is deferred.
+Registration passwords and manual invitation links remain in component memory only. The frontend sends no roles, user IDs, provider status, onboarding status, or review metadata through registration/profile forms. A PROVIDER role is account authorization, not proof that onboarding is approved or that capability/location/availability prerequisites are met. Email delivery implementation details remain hidden.
 
 ## Provider eligibility configuration
 
@@ -229,4 +231,12 @@ The provider self-service workspace consumes the parallel `/provider/services`, 
 
 Package and fulfilment selectors use the public catalogues and send their IDs only in capability requests. Location selectors contain provider-owned named records rather than exposing raw UUID inputs. Location coordinates are optional in the backend contract and are intentionally omitted. Availability defaults to the browser's IANA timezone but remains editable; client validation is structural only. Backend validation remains authoritative for ownership, active scope, timezones, overlaps, exceptions, reservations/capacity, and booking-specific matching eligibility.
 
-`GET /provider/profile` supplies the authoritative readiness flags, blocker codes, and counts used by the onboarding UI. `POST /provider/onboarding/submit` remains an explicit, non-replayed transition; it never approves or activates the provider. Operations reviews submitted configuration and alone calls approve/reject or operational suspend/reactivate actions. HOME_VISIT service-area configuration remains deferred, and physical location links are never presented as home-visit coverage.
+Provider availability retains `startTime` and `endTime` and may send nullable `bookingStopTime`. Booking stop time means the latest time a new appointment may start; when absent, the API applies the availability end. The browser checks only `startTime < bookingStopTime <= endTime` and does not use this field to calculate matching eligibility.
+
+`GET /provider/profile` supplies the authoritative readiness flags, blocker codes, and counts used by the onboarding UI. `POST /provider/onboarding/submit` remains an explicit, non-replayed transition; it never approves or activates the provider. Operations reviews submitted configuration and alone calls approve/reject or operational suspend/reactivate actions.
+
+Provider-owned `GET/POST/PATCH /provider/service-areas` operations configure deterministic `HOME_VISIT` coverage by country, state/region, and optional city/postal narrowing. Requests rely on authenticated provider context and never send `providerId`. The service selector is restricted to the provider's API-returned HOME_VISIT capabilities. `HOME_VISIT_WITHOUT_SERVICE_AREA` is displayed from backend readiness; Angular does not calculate geographic eligibility. Operations uses `GET /admin/providers/:id/service-areas` as a read-only review surface.
+
+Public booking creation sends `visitAddress` only for HOME_VISIT and continues using the credentialed booking-session flow. Admin booking detail and provider offers may render the full operational address returned to those authorized contexts. Matching queue and patient history render only the backend safe geographic summary. There are no maps, geocoding, radius, routing, GIS, or client-side service-area decisions.
+
+The current provider Health Check encounter DTO does not return a visit-address field. The encounter page therefore does not reconstruct or carry an address from offer state; adding an operational address there requires a backend safe read-contract extension.

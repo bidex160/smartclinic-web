@@ -47,6 +47,7 @@ describe('MatchingQueuePageComponent', () => {
       'READY',
       'FUNDING_INCOMPLETE',
       'INCOMPLETE_SCHEDULING',
+      'INCOMPLETE_VISIT_ADDRESS',
       'ACTIVE_OFFER',
       'ACCEPTED_AWAITING_CONFIRMATION',
       'UNFULFILLABLE',
@@ -63,6 +64,7 @@ describe('MatchingQueuePageComponent', () => {
     expect(text).toContain('Ready for automatic matching');
     expect(text).toContain('Funding incomplete');
     expect(text).toContain('Scheduling incomplete');
+    expect(text).toContain('Visit address incomplete');
     expect(text).toContain('Provider offer active');
     expect(text).toContain('Awaiting confirmation');
     expect(text).toContain('Provider match needs review');
@@ -72,6 +74,15 @@ describe('MatchingQueuePageComponent', () => {
     expect(text).not.toContain('patient@example.test');
     expect(text).not.toContain('1990-01-01');
     expect(text).not.toContain('candidate-provider');
+  });
+
+  it('renders only a safe geographic summary for home visits', async () => {
+    const { fixture } = await setup({
+      items: [item({ visitArea: { city: 'Ikeja', stateOrRegion: 'Lagos', countryCode: 'NG' } })],
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Visit area: Ikeja, Lagos, NG');
+    expect(fixture.nativeElement.textContent).not.toContain('street address');
   });
 
   it('sends applied catalogue and operational filters only on submit', async () => {
@@ -275,6 +286,7 @@ function item(changes: Partial<AdminMatchingQueueItem> = {}): AdminMatchingQueue
     preferredTimeFrom: '09:00',
     preferredTimeTo: '11:00',
     preferredTimezone: 'Africa/Lagos',
+    visitArea: null,
     fundingStatus: 'SETTLED',
     quotedAmount: '12500.00',
     quotedCurrency: 'NGN',

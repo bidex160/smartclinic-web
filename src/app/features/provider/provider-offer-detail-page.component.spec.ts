@@ -10,12 +10,29 @@ import { ProviderOfferDetailPageComponent } from './provider-offer-detail-page.c
 
 describe('ProviderOfferDetailPageComponent', () => {
   it('renders safe operational detail and actions only for OFFERED', async () => {
-    const { fixture } = await setup();
+    const { fixture } = await setup({
+      getOffer: () =>
+        of(
+          offer({
+            visitAddress: {
+              addressLine1: '1 Clinic Road',
+              addressLine2: null,
+              city: 'Ikeja',
+              stateOrRegion: 'Lagos',
+              postalCode: null,
+              countryCode: 'NG',
+              locationNote: 'Blue gate',
+            },
+          }),
+        ),
+    });
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Ada Okafor');
     expect(text).toContain('Accept offer');
     expect(text).toContain('Decline offer');
+    expect(text).toContain('Visit address');
+    expect(text).toContain('Blue gate');
     expect(text).not.toContain('sensitive free text');
   });
 
@@ -138,6 +155,7 @@ function offer(changes: Partial<ProviderOffer> = {}): ProviderOffer {
     preferredTimeWindowEnd: '11:00',
     preferredTimezone: 'Africa/Lagos',
     confirmedSchedule: null,
+    visitAddress: null,
     responseReason: null,
     ...changes,
   };

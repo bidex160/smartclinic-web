@@ -1,5 +1,27 @@
 export type PublicBookingRelationship = 'SELF' | 'FAMILY' | 'OTHER';
 
+export interface BookingVisitAddressInput {
+  readonly addressLine1: string;
+  readonly addressLine2?: string;
+  readonly city: string;
+  readonly stateOrRegion: string;
+  readonly postalCode?: string;
+  readonly countryCode: string;
+}
+
+export interface BookingVisitAddressSummary {
+  readonly city: string;
+  readonly stateOrRegion: string;
+  readonly postalCode?: string | null;
+  readonly countryCode: string;
+}
+
+export interface OperationalVisitAddress extends BookingVisitAddressSummary {
+  readonly addressLine1: string;
+  readonly addressLine2: string | null;
+  readonly locationNote?: string | null;
+}
+
 export interface PublicBookingRequest {
   readonly booker: {
     readonly givenName: string;
@@ -18,10 +40,11 @@ export interface PublicBookingRequest {
   readonly booking: {
     readonly healthCheckPackageId: string;
     readonly fulfilmentModeId: string;
-    readonly preferredDate?: string;
-    readonly preferredTimeFrom?: string;
-    readonly preferredTimeTo?: string;
+    readonly preferredDate: string;
+    readonly preferredTimeFrom: string;
+    readonly preferredTimezone: string;
     readonly locationNote?: string;
+    readonly visitAddress?: BookingVisitAddressInput;
   };
 }
 
@@ -38,6 +61,7 @@ export interface PublicBookingResponse {
   readonly preferredTimeWindowEnd: string | null;
   readonly preferredTimezone: string | null;
   readonly locationNote: string | null;
+  readonly visitAddressSummary: BookingVisitAddressSummary | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

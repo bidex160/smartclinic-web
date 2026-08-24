@@ -23,6 +23,7 @@ import { AdminProviderInvitation } from '../../core/models/provider-invitation.m
 import { ProviderInvitationsApiService } from '../../core/services/provider-invitations-api.service';
 import { AdminSessionHeaderComponent } from './admin-session-header.component';
 import { ProviderEligibilityConfigComponent } from './provider-eligibility-config.component';
+import { ProviderServiceAreasComponent } from '../provider/provider-service-areas.component';
 
 type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'unlink' | null;
 
@@ -31,6 +32,7 @@ type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'un
   imports: [
     AdminSessionHeaderComponent,
     ProviderEligibilityConfigComponent,
+    ProviderServiceAreasComponent,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -238,7 +240,7 @@ export class ProviderAdminDetailPageComponent {
   }
 
   requestConfirmation(action: Exclude<Confirmation, null>): void {
-    console.log(this.mutating(), 'this.mutating()',  action)
+    console.log(this.mutating(), 'this.mutating()', action);
     if (!this.mutating()) this.confirmation.set(action);
   }
   cancelConfirmation(): void {

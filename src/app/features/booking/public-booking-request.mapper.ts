@@ -37,21 +37,26 @@ export function mapBookingFlowToPublicBookingRequest(
     booking: {
       healthCheckPackageId: healthCheckPackage.id,
       fulfilmentModeId: fulfilmentMode.id,
-      ...(optional(details.preferences.preferredDate) && {
-        preferredDate: optional(details.preferences.preferredDate),
-      }),
-      ...(optional(details.preferences.preferredTimeFrom) && {
-        preferredTimeFrom: optional(details.preferences.preferredTimeFrom),
-      }),
-      ...(optional(details.preferences.preferredTimeTo) && {
-        preferredTimeTo: optional(details.preferences.preferredTimeTo),
-      }),
+      preferredDate: details.preferences.preferredDate.trim(),
+      preferredTimeFrom: details.preferences.preferredTimeFrom.trim(),
+      preferredTimezone: details.preferences.preferredTimezone.trim(),
       ...(optional(details.preferences.locationNote) && {
         locationNote: optional(details.preferences.locationNote),
       }),
-        ...(details.preferences.preferredTimezone && {
-        preferredTimezone: optional(details.preferences.preferredTimezone),
-  }),
+      ...(fulfilmentMode.code === 'HOME_VISIT' && {
+        visitAddress: {
+          addressLine1: details.visitAddress.addressLine1.trim(),
+          ...(optional(details.visitAddress.addressLine2) && {
+            addressLine2: optional(details.visitAddress.addressLine2),
+          }),
+          city: details.visitAddress.city.trim(),
+          stateOrRegion: details.visitAddress.stateOrRegion.trim(),
+          ...(optional(details.visitAddress.postalCode) && {
+            postalCode: optional(details.visitAddress.postalCode),
+          }),
+          countryCode: details.visitAddress.countryCode.trim().toUpperCase(),
+        },
+      }),
     },
   };
 }

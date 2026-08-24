@@ -21,12 +21,14 @@ export type ProviderOnboardingBlocker =
   | 'PROFILE_INCOMPLETE'
   | 'NO_ACTIVE_CAPABILITY'
   | 'PROVIDER_LOCATION_WITHOUT_LOCATION'
+  | 'HOME_VISIT_WITHOUT_SERVICE_AREA'
   | 'NO_WEEKLY_AVAILABILITY';
 
 export interface ProviderOnboardingReadiness {
   readonly profileComplete: boolean;
   readonly hasActiveCapability: boolean;
   readonly providerLocationReady: boolean;
+  readonly homeVisitReady?: boolean;
   readonly hasAvailability: boolean;
   readonly blockers: readonly ProviderOnboardingBlocker[];
   readonly capabilityCount: number;

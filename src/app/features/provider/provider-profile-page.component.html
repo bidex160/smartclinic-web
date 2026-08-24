@@ -18,6 +18,7 @@
     ><a href="#configuration" class="text-brand-700 underline">Locations</a
     ><a href="#configuration" class="text-brand-700 underline">Availability</a
     ><a href="#configuration" class="text-brand-700 underline">Exceptions</a>
+    <a href="#service-areas" class="text-brand-700 underline">Service areas</a>
     @if (profile()?.onboardingStatus === 'APPROVED' && profile()?.status === 'ACTIVE') {
       <a routerLink="/provider/offers" class="text-brand-700 underline">Offers</a>
     } @else {
@@ -258,6 +259,9 @@
         [showReadiness]="false"
         (changed)="load()"
       />
+    </section>
+    <section id="service-areas">
+      <app-provider-service-areas [editable]="configurationEditable(current)" (changed)="load()" />
     </section>
   }
 </main>

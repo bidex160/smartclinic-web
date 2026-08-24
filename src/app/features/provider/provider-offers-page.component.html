@@ -88,10 +88,11 @@
               <dd>{{ offer.preferredDate || 'Not specified' }}</dd>
               <dt class="font-semibold text-slate-600">Preferred time</dt>
               <dd>
-                @if (offer.preferredTimeWindowStart || offer.preferredTimeWindowEnd) {
-                  {{ offer.preferredTimeWindowStart || 'Flexible' }}–{{
-                    offer.preferredTimeWindowEnd || 'Flexible'
-                  }}
+                @if (offer.preferredTimeWindowStart && offer.preferredTimeWindowEnd) {
+                  {{ offer.preferredTimeWindowStart }}–{{ offer.preferredTimeWindowEnd }}
+                  {{ offer.preferredTimezone || '' }}
+                } @else if (offer.preferredTimeWindowStart) {
+                  Requested start: {{ offer.preferredTimeWindowStart }}
                   {{ offer.preferredTimezone || '' }}
                 } @else {
                   Not specified
@@ -107,6 +108,13 @@
                   @if (appointment.providerLocationName) {
                     · {{ appointment.providerLocationName }}
                   }
+                </dd>
+              }
+              @if (offer.fulfilmentMode.code === 'HOME_VISIT' && offer.visitAddress; as address) {
+                <dt class="font-semibold text-slate-600">Visit address</dt>
+                <dd>
+                  {{ address.addressLine1 }}, {{ address.city }}, {{ address.stateOrRegion }},
+                  {{ address.countryCode }}
                 </dd>
               }
             </dl>

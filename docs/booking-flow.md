@@ -30,11 +30,15 @@ The user sees API-provided benefits, estimated duration, and current prices by f
 
 Show only modes supported for the selected package by the backend contract. Initial known modes are `PROVIDER_LOCATION` and `HOME_VISIT`. The UI may map codes to approved labels, but must not assume both modes are always available.
 
+For `HOME_VISIT`, the details step collects a structured visit address (`addressLine1`, optional `addressLine2`, city, state/region, optional postal code, and country code) separately from optional additional directions. The request never sends provider, provider-location, or service-area identifiers. For `PROVIDER_LOCATION`, `visitAddress` is omitted. Appointment date, start time, and IANA timezone remain required; package duration and backend scheduling determine the appointment end.
+
+The review page presents the structured address before confirmation. Draft address data remains in memory only and is never written to browser storage. Geographic matching is entirely server-authoritative.
+
 Location, address, travel area, appointment time, and fee behavior remain subject to the API contract. Do not infer eligibility or calculate surcharges in the browser.
 
 ### 4. Enter details
 
-Use typed Reactive Forms. Collect only fields required by the confirmed booking request. Separate participant information from booking/contact information in the UI if that distinction helps users and matches the contract.
+Use typed Reactive Forms. Collect only fields required by the confirmed booking request. The patient supplies an appointment date, appointment start time, and visible IANA timezone; the patient does not select an end time. The selected package supplies expected duration, which the backend uses to derive the matching window. Separate participant information from booking/contact information in the UI if that distinction helps users and matches the contract.
 
 Client validation should cover required input, basic formatting, and clear correction guidance. Backend validation remains authoritative. Sensitive draft values remain in memory and must not be persisted to web storage, embedded in URLs, or sent to analytics.
 
@@ -105,7 +109,6 @@ Package, priced fulfilment, details, review, submission, secure confirmation rec
 - Whether one person may book for another, and requirements for minors or dependants.
 - Whether authentication, identity verification, consent, or terms acceptance is required.
 - Provider-location selection, home-visit service-area checks, address capture, and map/provider dependencies.
-- Whether date/time scheduling happens during booking or after submission.
 - Pricing, taxes, home-visit fees, promotions, payment timing, refunds, and cancellation/rescheduling.
 - User-facing copy and approved mappings for package and fulfilment codes.
 - Which future user-assisted recovery mechanism applies after the public booking session expires.

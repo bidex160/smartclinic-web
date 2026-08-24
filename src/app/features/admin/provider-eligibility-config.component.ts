@@ -42,7 +42,10 @@ interface PendingAction {
 function orderedTimes(control: AbstractControl): ValidationErrors | null {
   const start = control.get('startTime')?.value as string;
   const end = control.get('endTime')?.value as string;
-  return start && end && start >= end ? { timeOrder: true } : null;
+  const stop = control.get('bookingStopTime')?.value as string;
+  if (start && end && start >= end) return { timeOrder: true };
+  if (stop && start && end && (stop <= start || stop > end)) return { bookingStopOrder: true };
+  return null;
 }
 function pairedTimes(control: AbstractControl): ValidationErrors | null {
   const start = control.get('startTime')?.value as string;
@@ -160,6 +163,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       dayOfWeek: this.fb.control<DayOfWeek>('MONDAY'),
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
+      bookingStopTime: [''],
       timezone: [Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC', Validators.required],
       providerServiceId: [''],
       providerLocationId: [''],
@@ -284,6 +288,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
         dayOfWeek: v.dayOfWeek,
         startTime: v.startTime,
         endTime: v.endTime,
+        bookingStopTime: v.bookingStopTime || null,
         timezone: v.timezone.trim(),
         providerServiceId: v.providerServiceId || null,
         providerLocationId: v.providerLocationId || null,
@@ -293,6 +298,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       () =>
         this.availabilityForm.reset({
           dayOfWeek: 'MONDAY',
+          bookingStopTime: '',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
         }),
     );

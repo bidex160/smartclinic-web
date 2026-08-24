@@ -245,13 +245,23 @@
                 <td class="px-4 py-4">
                   {{ item.preferredDate || 'Not specified' }}
                   <span class="block text-slate-500">
-                    {{ item.preferredTimeFrom || 'Not specified' }}–{{
-                      item.preferredTimeTo || 'Not specified'
-                    }}
+                    @if (item.preferredTimeFrom && item.preferredTimeTo) {
+                      {{ item.preferredTimeFrom }}–{{ item.preferredTimeTo }}
+                    } @else if (item.preferredTimeFrom) {
+                      Requested start: {{ item.preferredTimeFrom }}
+                    } @else {
+                      Start not specified
+                    }
                   </span>
                   <span class="block text-slate-500">
                     {{ item.preferredTimezone || 'No timezone' }}
                   </span>
+                  @if (item.fulfilmentMode.code === 'HOME_VISIT' && item.visitArea; as area) {
+                    <span class="block text-slate-500"
+                      >Visit area: {{ area.city }}, {{ area.stateOrRegion }},
+                      {{ area.countryCode }}</span
+                    >
+                  }
                 </td>
                 <td class="px-4 py-4">
                   {{ fundingStatusLabel(item.fundingStatus) }}

@@ -270,12 +270,13 @@
         >
           <legend class="px-2 text-xl font-bold text-brand-900">Booking preferences</legend>
           <p class="mt-1 text-sm leading-6 text-slate-600">
-            These preferences are optional and do not guarantee availability.
+            Choose your appointment date and time so we can match you with an available provider.
+            Your appointment will be confirmed after provider assignment.
           </p>
           <div class="mt-6 grid gap-5 sm:grid-cols-2">
             <div class="sm:col-span-2">
               <label for="preferred-date" class="block text-sm font-bold text-slate-800"
-                >Preferred date <span class="font-normal text-slate-500">(optional)</span></label
+                >Appointment date</label
               >
               <input
                 id="preferred-date"
@@ -290,56 +291,119 @@
             </div>
             <div>
               <label for="preferred-time-from" class="block text-sm font-bold text-slate-800"
-                >From <span class="font-normal text-slate-500">(optional)</span></label
+                >Appointment time</label
               >
               <input
                 id="preferred-time-from"
                 type="time"
                 formControlName="preferredTimeFrom"
                 [attr.aria-invalid]="
-                  showError(form.controls.preferences.controls.preferredTimeFrom) ||
-                  form.controls.preferences.hasError('timeOrder')
+                  showError(form.controls.preferences.controls.preferredTimeFrom)
                 "
                 class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
               />
             </div>
-            <div>
-              <label for="preferred-time-to" class="block text-sm font-bold text-slate-800"
-                >To <span class="font-normal text-slate-500">(optional)</span></label
+            @if (showError(form.controls.preferences.controls.preferredTimeFrom)) {
+              <p class="mt-2 text-sm font-semibold text-red-700">Enter an appointment time.</p>
+            }
+            @if (isHomeVisit) {
+              <fieldset
+                [formGroup]="form.controls.visitAddress"
+                class="sm:col-span-2 grid gap-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5 sm:grid-cols-2"
               >
-              <input
-                id="preferred-time-to"
-                type="time"
-                formControlName="preferredTimeTo"
-                [attr.aria-invalid]="
-                  showError(form.controls.preferences.controls.preferredTimeTo) ||
-                  form.controls.preferences.hasError('timeOrder')
-                "
-                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
-              />
-            </div>
-            @if (
-              form.controls.preferences.hasError('timeOrder') &&
-              (form.controls.preferences.touched || submitted())
-            ) {
-              <p class="sm:col-span-2 text-sm font-semibold text-red-700">
-                The end time must be later than the start time.
-              </p>
+                <legend class="px-2 text-lg font-bold text-brand-900">Home visit address</legend>
+                <div class="sm:col-span-2">
+                  <label for="visit-address-one" class="block text-sm font-bold"
+                    >Address line 1</label
+                  >
+                  <input
+                    id="visit-address-one"
+                    formControlName="addressLine1"
+                    maxlength="255"
+                    autocomplete="address-line1"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+                  />
+                </div>
+                <div class="sm:col-span-2">
+                  <label for="visit-address-two" class="block text-sm font-bold"
+                    >Address line 2
+                    <span class="font-normal text-slate-500">(optional)</span></label
+                  >
+                  <input
+                    id="visit-address-two"
+                    formControlName="addressLine2"
+                    maxlength="255"
+                    autocomplete="address-line2"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+                  />
+                </div>
+                <div>
+                  <label for="visit-city" class="block text-sm font-bold">City</label
+                  ><input
+                    id="visit-city"
+                    formControlName="city"
+                    maxlength="120"
+                    autocomplete="address-level2"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+                  />
+                </div>
+                <div>
+                  <label for="visit-state" class="block text-sm font-bold">State / region</label
+                  ><input
+                    id="visit-state"
+                    formControlName="stateOrRegion"
+                    maxlength="120"
+                    autocomplete="address-level1"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+                  />
+                </div>
+                <div>
+                  <label for="visit-postal" class="block text-sm font-bold"
+                    >Postal code <span class="font-normal text-slate-500">(optional)</span></label
+                  ><input
+                    id="visit-postal"
+                    formControlName="postalCode"
+                    maxlength="30"
+                    autocomplete="postal-code"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+                  />
+                </div>
+                <div>
+                  <label for="visit-country" class="block text-sm font-bold">Country</label
+                  ><select
+                    id="visit-country"
+                    formControlName="countryCode"
+                    autocomplete="country"
+                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4"
+                  >
+                    <option value="NG">Nigeria</option>
+                  </select>
+                </div>
+                @if (form.controls.visitAddress.touched && form.controls.visitAddress.invalid) {
+                  <p class="sm:col-span-2 text-sm font-semibold text-red-700">
+                    Address line 1, city, state/region, and country are required for a home visit.
+                  </p>
+                }
+              </fieldset>
             }
             <div class="sm:col-span-2">
               <label for="location-note" class="block text-sm font-bold text-slate-800"
-                >Location note <span class="font-normal text-slate-500">(optional)</span></label
+                >Additional directions
+                <span class="font-normal text-slate-500">(optional)</span></label
               >
               <textarea
                 id="location-note"
                 formControlName="locationNote"
                 rows="4"
                 maxlength="1000"
-                placeholder="Share a helpful location note if needed."
+                placeholder="Landmark, gate instructions, or other directions for the provider."
                 [attr.aria-invalid]="showError(form.controls.preferences.controls.locationNote)"
                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
               ></textarea>
-              <p class="mt-2 text-sm text-slate-500">Do not include medical information here.</p>
+              <p class="mt-2 text-sm text-slate-500">
+                Landmark, gate instructions, or other directions for the provider. Do not include
+                medical information.
+              </p>
               @if (showError(form.controls.preferences.controls.locationNote)) {
                 <p class="mt-2 text-sm font-semibold text-red-700">
                   Keep the note under 1,000 characters.
@@ -347,25 +411,25 @@
               }
             </div>
             <div class="sm:col-span-2">
-  <label
-    for="preferred-timezone"
-    class="block text-sm font-bold text-slate-800"
-  >
-    Time zone
-  </label>
+              <label for="preferred-timezone" class="block text-sm font-bold text-slate-800">
+                Timezone
+              </label>
 
-  <input
-    id="preferred-timezone"
-    type="text"
-    formControlName="preferredTimezone"
-    readonly
-    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-700 sm:max-w-xs"
-  />
+              <input
+                id="preferred-timezone"
+                type="text"
+                formControlName="preferredTimezone"
+                readonly
+                [attr.aria-invalid]="
+                  showError(form.controls.preferences.controls.preferredTimezone)
+                "
+                class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-700 sm:max-w-xs"
+              />
 
-  <p class="mt-2 text-sm text-slate-500">
-    Times will be interpreted using this time zone.
-  </p>
-</div>
+              <p class="mt-2 text-sm text-slate-500">
+                Times will be interpreted using this time zone.
+              </p>
+            </div>
           </div>
         </fieldset>
 
