@@ -11,14 +11,24 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ProviderType } from '../../core/models/admin-provider.model';
-import { ProviderOnboardingProfile } from '../../core/models/provider-onboarding.model';
+import {
+  ProviderOnboardingBlocker,
+  ProviderOnboardingProfile,
+} from '../../core/models/provider-onboarding.model';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
+import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
+import { ProviderEligibilityConfigComponent } from '../admin/provider-eligibility-config.component';
 
 @Component({
   selector: 'app-provider-profile-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ProviderEligibilityConfigComponent],
+  providers: [
+    ProviderSelfConfigurationApiService,
+    { provide: ProviderEligibilityApiService, useExisting: ProviderSelfConfigurationApiService },
+  ],
   templateUrl: './provider-profile-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -65,14 +75,19 @@ export class ProviderProfilePageComponent {
             stateOrRegion: p.stateOrRegion ?? '',
             city: p.city ?? '',
           });
-          if (p.onboardingStatus === 'APPROVED') this.form.disable();
-          else this.form.enable();
+          if (this.profileEditable(p)) this.form.enable();
+          else this.form.disable();
         },
         error: (e) => this.handle(e),
       });
   }
   save(): void {
-    if (this.form.invalid || this.mutating() || this.profile()?.onboardingStatus === 'APPROVED') {
+    if (
+      this.form.invalid ||
+      this.mutating() ||
+      !this.profile() ||
+      !this.profileEditable(this.profile()!)
+    ) {
       this.form.markAllAsTouched();
       return;
     }
@@ -91,12 +106,23 @@ export class ProviderProfilePageComponent {
     );
   }
   requestSubmit(): void {
-    if (!this.form.invalid && !this.mutating()) this.confirmingSubmit.set(true);
+    const current = this.profile();
+    if (
+      current &&
+      this.profileEditable(current) &&
+      !this.form.invalid &&
+      !this.mutating() &&
+      current.readiness.blockers.length === 0
+    )
+      this.confirmingSubmit.set(true);
     else this.form.markAllAsTouched();
   }
   submit(): void {
     if (!this.confirmingSubmit() || this.mutating()) return;
-    this.run(this.api.submit(), 'Provider profile submitted for SmartClinic review.');
+    this.run(
+      this.api.submit(),
+      'Your provider configuration has been submitted for SmartClinic review.',
+    );
   }
   logout(): void {
     this.session.logout().subscribe(() => void this.router.navigate(['/admin/login']));
@@ -110,11 +136,37 @@ export class ProviderProfilePageComponent {
     operation.pipe(finalize(() => this.mutating.set(false))).subscribe({
       next: (p) => {
         this.profile.set(p);
+        if (!this.profileEditable(p)) this.form.disable();
         this.confirmingSubmit.set(false);
         this.statusMessage.set(message);
       },
       error: (e) => this.handle(e),
     });
+  }
+  configurationEditable(profile: ProviderOnboardingProfile): boolean {
+    return (
+      profile.onboardingStatus !== 'SUBMITTED' &&
+      profile.status !== 'SUSPENDED' &&
+      profile.status !== 'INACTIVE'
+    );
+  }
+  profileEditable(profile: ProviderOnboardingProfile): boolean {
+    return (
+      profile.onboardingStatus !== 'APPROVED' &&
+      profile.onboardingStatus !== 'SUBMITTED' &&
+      profile.status !== 'SUSPENDED' &&
+      profile.status !== 'INACTIVE'
+    );
+  }
+  blockerLabel(blocker: ProviderOnboardingBlocker): string {
+    const labels: Record<ProviderOnboardingBlocker, string> = {
+      PROFILE_INCOMPLETE: 'Complete your provider profile',
+      NO_ACTIVE_CAPABILITY: 'Add at least one active service',
+      PROVIDER_LOCATION_WITHOUT_LOCATION:
+        'Add an active location and link it to each provider-location service',
+      NO_WEEKLY_AVAILABILITY: 'Add weekly availability',
+    };
+    return labels[blocker];
   }
   private handle(error: HttpErrorResponse): void {
     this.error.set(

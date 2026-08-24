@@ -11,7 +11,21 @@
     </div>
   </div>
 </header>
-<main class="mx-auto max-w-4xl px-5 py-10">
+<nav aria-label="Provider workspace" class="border-b bg-white">
+  <div class="mx-auto flex max-w-6xl flex-wrap gap-4 px-5 py-3 text-sm font-bold">
+    <a href="#profile" class="text-brand-700 underline">Profile</a
+    ><a href="#configuration" class="text-brand-700 underline">Services</a
+    ><a href="#configuration" class="text-brand-700 underline">Locations</a
+    ><a href="#configuration" class="text-brand-700 underline">Availability</a
+    ><a href="#configuration" class="text-brand-700 underline">Exceptions</a>
+    @if (profile()?.onboardingStatus === 'APPROVED' && profile()?.status === 'ACTIVE') {
+      <a routerLink="/provider/offers" class="text-brand-700 underline">Offers</a>
+    } @else {
+      <span class="text-slate-500">Offers unavailable until approved and active</span>
+    }
+  </div>
+</nav>
+<main class="mx-auto max-w-6xl px-5 py-10">
   <p class="text-sm font-bold uppercase tracking-[.14em] text-brand-600">Provider onboarding</p>
   <h1 class="mt-2 text-3xl font-bold text-brand-900">Provider profile</h1>
   @if (statusMessage()) {
@@ -32,7 +46,7 @@
   @if (loading()) {
     <p role="status" class="mt-6">Loading provider profile…</p>
   } @else if (profile(); as current) {
-    <section class="mt-6 rounded-2xl border bg-white p-6">
+    <section id="profile" class="mt-6 rounded-2xl border bg-white p-6">
       <div class="flex flex-wrap justify-between gap-3">
         <div>
           <h2 class="text-xl font-bold">Onboarding status: {{ current.onboardingStatus }}</h2>
@@ -47,6 +61,7 @@
         }
       </div>
       @if (current.onboardingStatus === 'SUBMITTED') {
+        <h3 class="mt-4 font-bold text-amber-950">Awaiting SmartClinic review</h3>
         <p class="mt-4 rounded-lg bg-amber-50 p-4">
           Your application has been submitted and is pending SmartClinic review. An account and
           PROVIDER role do not mean the provider is operationally active.
@@ -63,6 +78,45 @@
         <p class="mt-4 rounded-lg bg-brand-50 p-4">
           Provider onboarding is approved. Operational access also requires ACTIVE status and later
           matching prerequisites.
+        </p>
+      }
+    </section>
+    <section
+      aria-labelledby="readiness-heading"
+      class="mt-6 rounded-2xl border border-brand-100 bg-white p-6"
+    >
+      <h2 id="readiness-heading" class="text-xl font-bold text-brand-900">Review readiness</h2>
+      <dl class="mt-4 grid gap-3 sm:grid-cols-2">
+        <div>
+          <dt>Profile complete</dt>
+          <dd class="font-bold">{{ current.readiness.profileComplete ? 'Yes' : 'No' }}</dd>
+        </div>
+        <div>
+          <dt>Active capability configured</dt>
+          <dd class="font-bold">{{ current.readiness.hasActiveCapability ? 'Yes' : 'No' }}</dd>
+        </div>
+        <div>
+          <dt>Provider-location configuration ready</dt>
+          <dd class="font-bold">{{ current.readiness.providerLocationReady ? 'Yes' : 'No' }}</dd>
+        </div>
+        <div>
+          <dt>Weekly availability configured</dt>
+          <dd class="font-bold">{{ current.readiness.hasAvailability ? 'Yes' : 'No' }}</dd>
+        </div>
+      </dl>
+      @if (current.readiness.blockers.length) {
+        <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
+          <h3 class="font-bold">Complete the following before submitting:</h3>
+          <ul class="mt-2 list-disc pl-5">
+            @for (blocker of current.readiness.blockers; track blocker) {
+              <li>{{ blockerLabel(blocker) }}</li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <p class="mt-5 rounded-xl bg-brand-50 p-4 font-semibold">
+          Your configuration is ready to submit for SmartClinic review. Final booking matching
+          remains backend-authoritative.
         </p>
       }
     </section>
@@ -142,7 +196,7 @@
           class="mt-2 min-h-12 w-full rounded-lg border px-3"
         />
       </div>
-      @if (current.onboardingStatus !== 'APPROVED') {
+      @if (profileEditable(current)) {
         <div class="flex flex-wrap gap-3 md:col-span-2">
           <button
             type="submit"
@@ -151,7 +205,9 @@
           >
             Save profile
           </button>
-          @if (current.onboardingStatus !== 'SUBMITTED') {
+          @if (
+            current.onboardingStatus !== 'SUBMITTED' && current.readiness.blockers.length === 0
+          ) {
             <button
               type="button"
               (click)="requestSubmit()"
@@ -193,5 +249,15 @@
         </div>
       </section>
     }
+    <section id="configuration" aria-label="Provider operational configuration">
+      <app-provider-eligibility-config
+        providerId="authenticated-provider"
+        [providerActive]="current.status === 'ACTIVE'"
+        [providerApproved]="current.onboardingStatus === 'APPROVED'"
+        [editable]="configurationEditable(current)"
+        [showReadiness]="false"
+        (changed)="load()"
+      />
+    </section>
   }
 </main>

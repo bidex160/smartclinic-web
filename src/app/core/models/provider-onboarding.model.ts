@@ -17,6 +17,25 @@ export interface RegisterProviderRequest extends ProviderProfileFields {
 
 export type UpdateProviderProfileRequest = Partial<ProviderProfileFields>;
 
+export type ProviderOnboardingBlocker =
+  | 'PROFILE_INCOMPLETE'
+  | 'NO_ACTIVE_CAPABILITY'
+  | 'PROVIDER_LOCATION_WITHOUT_LOCATION'
+  | 'NO_WEEKLY_AVAILABILITY';
+
+export interface ProviderOnboardingReadiness {
+  readonly profileComplete: boolean;
+  readonly hasActiveCapability: boolean;
+  readonly providerLocationReady: boolean;
+  readonly hasAvailability: boolean;
+  readonly blockers: readonly ProviderOnboardingBlocker[];
+  readonly capabilityCount: number;
+  readonly activeCapabilityCount: number;
+  readonly locationCount: number;
+  readonly activeLocationCount: number;
+  readonly availabilityCount: number;
+}
+
 export interface ProviderOnboardingProfile {
   readonly displayName: string;
   readonly email: string;
@@ -31,4 +50,10 @@ export interface ProviderOnboardingProfile {
   readonly submittedAt: string | null;
   readonly reviewedAt: string | null;
   readonly reviewNote: string | null;
+  readonly capabilityCount: number;
+  readonly activeCapabilityCount: number;
+  readonly locationCount: number;
+  readonly activeLocationCount: number;
+  readonly availabilityCount: number;
+  readonly readiness: ProviderOnboardingReadiness;
 }

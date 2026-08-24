@@ -543,6 +543,10 @@
       [providerApproved]="current.onboardingStatus === 'APPROVED'"
       (changed)="load()"
     />
+    <p class="mt-3 text-sm text-slate-600">
+      This may include provider-submitted configuration. Operations can review or make exceptional
+      corrections; approval remains an explicit admin action.
+    </p>
 
     @if (pendingRevokeId()) {
       <section

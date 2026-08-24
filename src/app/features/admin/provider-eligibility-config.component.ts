@@ -61,6 +61,8 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   readonly providerId = input.required<string>();
   readonly providerActive = input.required<boolean>();
   readonly providerApproved = input.required<boolean>();
+  readonly editable = input(true);
+  readonly showReadiness = input(true);
   readonly changed = output<void>();
   private readonly api = inject(ProviderEligibilityApiService);
   private readonly packagesApi = inject(HealthCheckPackagesApiService);
@@ -221,7 +223,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       });
   }
   createService() {
-    if (this.serviceForm.invalid || this.mutating()) {
+    if (!this.editable() || this.serviceForm.invalid || this.mutating()) {
       this.serviceForm.markAllAsTouched();
       return;
     }
@@ -233,7 +235,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     );
   }
   createLocation() {
-    if (this.locationForm.invalid || this.mutating()) {
+    if (!this.editable() || this.locationForm.invalid || this.mutating()) {
       this.locationForm.markAllAsTouched();
       return;
     }
@@ -272,7 +274,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     this.activeTab.set('locations');
   }
   createAvailability() {
-    if (this.availabilityForm.invalid || this.mutating()) {
+    if (!this.editable() || this.availabilityForm.invalid || this.mutating()) {
       this.availabilityForm.markAllAsTouched();
       return;
     }
@@ -296,7 +298,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     );
   }
   createException() {
-    if (this.exceptionForm.invalid || this.mutating()) {
+    if (!this.editable() || this.exceptionForm.invalid || this.mutating()) {
       this.exceptionForm.markAllAsTouched();
       return;
     }
@@ -352,6 +354,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     refresh: PendingAction['refresh'],
     success: string,
   ) {
+    if (!this.editable()) return;
     this.pendingAction.set({ label, run, refresh, success });
   }
   confirmAction() {
@@ -361,7 +364,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     this.mutate(a.run(), a.success, a.refresh);
   }
   link(serviceId: string, locationId: string) {
-    if (!locationId) return;
+    if (!this.editable() || !locationId) return;
     this.mutate(
       this.api.linkLocation(serviceId, locationId),
       'Location linked to capability.',

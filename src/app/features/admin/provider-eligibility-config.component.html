@@ -1,57 +1,65 @@
-<section
-  aria-labelledby="configuration-heading"
-  class="mt-8 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
->
-  <h2 id="configuration-heading" class="text-2xl font-bold text-brand-900">
-    Provider configuration
-  </h2>
-  <p class="mt-2 text-slate-600">
-    Configure matching prerequisites. The backend determines final eligibility for each booking.
-  </p>
-  <dl class="mt-5 grid gap-3 sm:grid-cols-3">
-    <div>
-      <dt class="text-sm font-semibold text-slate-600">Onboarding</dt>
-      <dd class="font-bold">{{ providerApproved() ? 'APPROVED' : 'NOT APPROVED' }}</dd>
-    </div>
-    <div>
-      <dt class="text-sm font-semibold text-slate-600">Operational status</dt>
-      <dd class="font-bold">{{ providerActive() ? 'ACTIVE' : 'NOT ACTIVE' }}</dd>
-    </div>
-    <div>
-      <dt class="text-sm font-semibold text-slate-600">Active capabilities</dt>
-      <dd class="font-bold">{{ activeServices().length }}</dd>
-    </div>
-    <div>
-      <dt class="text-sm font-semibold text-slate-600">Active locations</dt>
-      <dd class="font-bold">{{ activeLocations().length }}</dd>
-    </div>
-    <div>
-      <dt class="text-sm font-semibold text-slate-600">Provider-location links</dt>
-      <dd class="font-bold">{{ activeLinks() }}</dd>
-    </div>
-    <div>
-      <dt class="text-sm font-semibold text-slate-600">Weekly availability</dt>
-      <dd class="font-bold">
-        {{ availability().some((item) => item.isActive) ? 'Configured' : 'Not configured' }}
-      </dd>
-    </div>
-  </dl>
-  @if (blockers().length) {
-    <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
-      <h3 class="font-bold text-amber-950">Configuration blockers</h3>
-      <ul class="mt-2 list-disc pl-5">
-        @for (blocker of blockers(); track blocker) {
-          <li>{{ blocker }}</li>
-        }
-      </ul>
-    </div>
-  } @else {
-    <p class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4 font-semibold">
-      Minimum provider configuration is present. Final booking eligibility is determined during
-      matching.
+@if (showReadiness()) {
+  <section
+    aria-labelledby="configuration-heading"
+    class="mt-8 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft"
+  >
+    <h2 id="configuration-heading" class="text-2xl font-bold text-brand-900">
+      Provider configuration
+    </h2>
+    <p class="mt-2 text-slate-600">
+      Configure matching prerequisites. The backend determines final eligibility for each booking.
     </p>
-  }
-</section>
+    <dl class="mt-5 grid gap-3 sm:grid-cols-3">
+      <div>
+        <dt class="text-sm font-semibold text-slate-600">Onboarding</dt>
+        <dd class="font-bold">{{ providerApproved() ? 'APPROVED' : 'NOT APPROVED' }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-slate-600">Operational status</dt>
+        <dd class="font-bold">{{ providerActive() ? 'ACTIVE' : 'NOT ACTIVE' }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-slate-600">Active capabilities</dt>
+        <dd class="font-bold">{{ activeServices().length }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-slate-600">Active locations</dt>
+        <dd class="font-bold">{{ activeLocations().length }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-slate-600">Provider-location links</dt>
+        <dd class="font-bold">{{ activeLinks() }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-semibold text-slate-600">Weekly availability</dt>
+        <dd class="font-bold">
+          {{ availability().some((item) => item.isActive) ? 'Configured' : 'Not configured' }}
+        </dd>
+      </div>
+    </dl>
+    @if (blockers().length) {
+      <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
+        <h3 class="font-bold text-amber-950">Configuration blockers</h3>
+        <ul class="mt-2 list-disc pl-5">
+          @for (blocker of blockers(); track blocker) {
+            <li>{{ blocker }}</li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <p class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4 font-semibold">
+        Minimum provider configuration is present. Final booking eligibility is determined during
+        matching.
+      </p>
+    }
+  </section>
+}
+@if (!editable()) {
+  <p role="status" class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+    Configuration is read-only while your submission awaits review or operational changes are
+    restricted.
+  </p>
+}
 
 <nav aria-label="Provider configuration sections" class="mt-6 flex flex-wrap gap-2">
   <button
@@ -106,501 +114,504 @@
 @if (loading()) {
   <p role="status" class="mt-5">Loading provider configuration…</p>
 } @else {
-  @if (activeTab() === 'services') {
-    <section aria-labelledby="services-heading" class="mt-5 rounded-2xl border bg-white p-6">
-      <h2 id="services-heading" class="text-xl font-bold">Services and capabilities</h2>
-      <form
-        [formGroup]="serviceForm"
-        (ngSubmit)="createService()"
-        class="mt-5 grid gap-4 sm:grid-cols-3"
-      >
-        <div>
-          <label for="service-package" class="font-bold">Health Check package</label
-          ><select
-            id="service-package"
-            formControlName="healthCheckPackageId"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            <option value="">Select package</option>
-            @for (item of packages(); track item.id) {
-              <option [value]="item.id">{{ item.name }} ({{ item.code }})</option>
-            }
-          </select>
-        </div>
-        <div>
-          <label for="service-mode" class="font-bold">Fulfilment mode</label
-          ><select
-            id="service-mode"
-            formControlName="fulfilmentModeId"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            <option value="">Select mode</option>
-            @for (item of modes(); track item.id) {
-              <option [value]="item.id">{{ item.name }} ({{ item.code }})</option>
-            }
-          </select>
-        </div>
-        <button
-          type="submit"
-          [disabled]="mutating()"
-          class="self-end min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white disabled:opacity-60"
+  <fieldset [disabled]="!editable()" class="contents">
+    <legend class="sr-only">Provider configuration controls</legend>
+    @if (activeTab() === 'services') {
+      <section aria-labelledby="services-heading" class="mt-5 rounded-2xl border bg-white p-6">
+        <h2 id="services-heading" class="text-xl font-bold">Services and capabilities</h2>
+        <form
+          [formGroup]="serviceForm"
+          (ngSubmit)="createService()"
+          class="mt-5 grid gap-4 sm:grid-cols-3"
         >
-          Add service
-        </button>
-      </form>
-      <div class="mt-6 space-y-4">
-        @for (item of services(); track item.id) {
-          <article class="rounded-xl border p-5">
-            <div class="flex flex-wrap justify-between gap-3">
-              <div>
-                <h3 class="font-bold">
-                  {{ package(item.healthCheckPackageId)?.name || 'Catalogue item unavailable' }} ·
-                  {{ mode(item.fulfilmentModeId)?.name || 'Mode unavailable' }}
-                </h3>
-                <p class="text-sm">
-                  Capability state: <strong>{{ item.isActive ? 'Active' : 'Inactive' }}</strong>
-                </p>
-              </div>
-              <button
-                type="button"
-                (click)="toggleService(item)"
-                class="rounded-lg border px-4 py-2 font-bold"
-              >
-                {{ item.isActive ? 'Deactivate' : 'Activate' }}
-              </button>
-            </div>
-            @if (mode(item.fulfilmentModeId)?.code === 'PROVIDER_LOCATION') {
-              <div class="mt-4 border-t pt-4">
-                <h4 class="font-bold">Available at</h4>
-                @if (item.providerLocationIds.length) {
-                  <ul class="mt-2 space-y-2">
-                    @for (id of item.providerLocationIds; track id) {
-                      <li class="flex items-center justify-between gap-3">
-                        <span
-                          >{{ location(id)?.name || 'Location unavailable' }} —
-                          {{ location(id)?.isActive ? 'Active' : 'Inactive' }}</span
-                        ><button
-                          type="button"
-                          (click)="unlink(item.id, id)"
-                          class="font-bold text-red-800 underline"
-                        >
-                          Unlink
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <p class="mt-2 text-amber-900">No location linked.</p>
-                }
-                @if (availableLocations(item).length) {
-                  <label [for]="'link-' + item.id" class="mt-3 block font-bold"
-                    >Link active location</label
-                  ><select
-                    #locationChoice
-                    [id]="'link-' + item.id"
-                    (change)="link(item.id, locationChoice.value); locationChoice.value = ''"
-                    class="mt-2 min-h-11 w-full rounded-lg border px-3"
-                  >
-                    <option value="">Select location</option>
-                    @for (place of availableLocations(item); track place.id) {
-                      <option [value]="place.id">{{ place.name }} — {{ place.city }}</option>
-                    }
-                  </select>
-                }
-              </div>
-            } @else if (mode(item.fulfilmentModeId)?.code === 'HOME_VISIT') {
-              <p class="mt-4 rounded-lg bg-slate-50 p-3">
-                Home-visit service-area configuration is not available yet.
-              </p>
-            }
-          </article>
-        } @empty {
-          <p>No provider services configured.</p>
-        }
-      </div>
-    </section>
-  }
-  @if (activeTab() === 'locations') {
-    <section aria-labelledby="locations-heading" class="mt-5 rounded-2xl border bg-white p-6">
-      <h2 id="locations-heading" class="text-xl font-bold">Provider locations</h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Coordinates are not required by the backend and are not collected here.
-      </p>
-      <form
-        [formGroup]="locationForm"
-        (ngSubmit)="createLocation()"
-        class="mt-5 grid gap-4 sm:grid-cols-2"
-      >
-        <div>
-          <label for="location-name" class="font-bold">Location name</label
-          ><input
-            id="location-name"
-            formControlName="name"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="address-one" class="font-bold">Address line 1</label
-          ><input
-            id="address-one"
-            formControlName="addressLine1"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="address-two" class="font-bold">Address line 2 (optional)</label
-          ><input
-            id="address-two"
-            formControlName="addressLine2"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="location-city" class="font-bold">City</label
-          ><input
-            id="location-city"
-            formControlName="city"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="location-state" class="font-bold">State or region</label
-          ><input
-            id="location-state"
-            formControlName="state"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="location-country" class="font-bold">Country code</label
-          ><input
-            id="location-country"
-            maxlength="2"
-            formControlName="countryCode"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3 uppercase"
-          />
-        </div>
-        <button
-          type="submit"
-          [disabled]="mutating()"
-          class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
-        >
-          {{ editingLocation() ? 'Save location' : 'Add location' }}
-        </button>
-      </form>
-      <div class="mt-6 grid gap-4 md:grid-cols-2">
-        @for (item of locations(); track item.id) {
-          <article class="rounded-xl border p-5">
-            <h3 class="font-bold">{{ item.name }}</h3>
-            <address class="mt-2 not-italic">
-              {{ item.addressLine1 }}
-              @if (item.addressLine2) {
-                <br />{{ item.addressLine2 }}
-              }
-              <br />{{ item.city }}, {{ item.state }} · {{ item.countryCode }}
-            </address>
-            <p class="mt-2">
-              Location state: <strong>{{ item.isActive ? 'Active' : 'Inactive' }}</strong>
-            </p>
-            <div class="mt-4 flex gap-3">
-              <button
-                type="button"
-                (click)="editLocation(item)"
-                class="font-bold text-brand-700 underline"
-              >
-                Edit</button
-              ><button
-                type="button"
-                (click)="toggleLocation(item)"
-                class="font-bold text-brand-700 underline"
-              >
-                {{ item.isActive ? 'Deactivate' : 'Activate' }}
-              </button>
-            </div>
-          </article>
-        } @empty {
-          <p>No provider locations configured.</p>
-        }
-      </div>
-    </section>
-  }
-  @if (activeTab() === 'availability') {
-    <section aria-labelledby="availability-heading" class="mt-5 rounded-2xl border bg-white p-6">
-      <h2 id="availability-heading" class="text-xl font-bold">Weekly availability</h2>
-      <form
-        [formGroup]="availabilityForm"
-        (ngSubmit)="createAvailability()"
-        class="mt-5 grid gap-4 md:grid-cols-3"
-      >
-        <div>
-          <label for="availability-day" class="font-bold">Weekday</label
-          ><select
-            id="availability-day"
-            formControlName="dayOfWeek"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            @for (day of weekdays; track day) {
-              <option [value]="day">{{ day }}</option>
-            }
-          </select>
-        </div>
-        <div>
-          <label for="availability-start" class="font-bold">Start time</label
-          ><input
-            id="availability-start"
-            type="time"
-            formControlName="startTime"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="availability-end" class="font-bold">End time</label
-          ><input
-            id="availability-end"
-            type="time"
-            formControlName="endTime"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="availability-timezone" class="font-bold">Timezone</label
-          ><input
-            id="availability-timezone"
-            formControlName="timezone"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-          <p class="text-sm text-slate-600">Editable IANA timezone.</p>
-        </div>
-        <div>
-          <label for="availability-service" class="font-bold">Service scope (optional)</label
-          ><select
-            id="availability-service"
-            formControlName="providerServiceId"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            <option value="">Provider-wide</option>
-            @for (item of activeServices(); track item.id) {
-              <option [value]="item.id">
-                {{ package(item.healthCheckPackageId)?.name }} ·
-                {{ mode(item.fulfilmentModeId)?.name }}
-              </option>
-            }
-          </select>
-        </div>
-        <div>
-          <label for="availability-location" class="font-bold">Location scope (optional)</label
-          ><select
-            id="availability-location"
-            formControlName="providerLocationId"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            <option value="">All locations</option>
-            @for (item of activeLocations(); track item.id) {
-              <option [value]="item.id">{{ item.name }}</option>
-            }
-          </select>
-        </div>
-        @if (availabilityForm.hasError('timeOrder')) {
-          <p class="text-sm font-bold text-red-700 md:col-span-3">
-            End time must be after start time.
-          </p>
-        }
-        <button
-          type="submit"
-          [disabled]="mutating()"
-          class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
-        >
-          Add availability
-        </button>
-      </form>
-      <div class="mt-7 space-y-5">
-        @for (day of weekdays; track day) {
-          <section [attr.aria-labelledby]="'day-' + day">
-            <h3 [id]="'day-' + day" class="font-bold text-brand-900">{{ day }}</h3>
-            <ul class="mt-2 space-y-2">
-              @for (item of availability(); track item.id) {
-                @if (item.dayOfWeek === day) {
-                  <li class="rounded-lg border p-3">
-                    <span class="font-bold">{{ item.startTime }}–{{ item.endTime }}</span> ·
-                    {{ item.timezone }} · {{ item.isActive ? 'Active' : 'Inactive' }}<br /><span
-                      class="text-sm"
-                      >Service:
-                      {{
-                        item.providerServiceId
-                          ? package(service(item.providerServiceId)?.healthCheckPackageId || '')
-                              ?.name || 'Unavailable'
-                          : 'All services'
-                      }}
-                      · Location:
-                      {{
-                        item.providerLocationId
-                          ? location(item.providerLocationId)?.name || 'Unavailable'
-                          : 'All locations'
-                      }}</span
-                    ><button
-                      type="button"
-                      (click)="toggleAvailability(item)"
-                      class="ml-3 font-bold text-brand-700 underline"
-                    >
-                      {{ item.isActive ? 'Deactivate' : 'Activate' }}
-                    </button>
-                  </li>
-                }
-              }
-            </ul>
-          </section>
-        }
-      </div>
-    </section>
-  }
-  @if (activeTab() === 'exceptions') {
-    <section aria-labelledby="exceptions-heading" class="mt-5 rounded-2xl border bg-white p-6">
-      <h2 id="exceptions-heading" class="text-xl font-bold">Availability exceptions</h2>
-      <form
-        [formGroup]="exceptionForm"
-        (ngSubmit)="createException()"
-        class="mt-5 grid gap-4 md:grid-cols-3"
-      >
-        <div>
-          <label for="exception-date" class="font-bold">Date</label
-          ><input
-            id="exception-date"
-            type="date"
-            formControlName="date"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="exception-type" class="font-bold">Exception type</label
-          ><select
-            id="exception-type"
-            formControlName="type"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            <option value="UNAVAILABLE">Unavailable</option>
-            <option value="AVAILABLE">Available</option>
-          </select>
-        </div>
-        <div>
-          <label for="exception-timezone" class="font-bold">Timezone</label
-          ><input
-            id="exception-timezone"
-            formControlName="timezone"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        <label class="flex items-center gap-2"
-          ><input type="checkbox" formControlName="fullDay" /> Full-day exception</label
-        >
-        @if (!exceptionForm.controls.fullDay.value) {
           <div>
-            <label for="exception-start" class="font-bold">Start time</label
+            <label for="service-package" class="font-bold">Health Check package</label
+            ><select
+              id="service-package"
+              formControlName="healthCheckPackageId"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            >
+              <option value="">Select package</option>
+              @for (item of packages(); track item.id) {
+                <option [value]="item.id">{{ item.name }} ({{ item.code }})</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="service-mode" class="font-bold">Fulfilment mode</label
+            ><select
+              id="service-mode"
+              formControlName="fulfilmentModeId"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            >
+              <option value="">Select mode</option>
+              @for (item of modes(); track item.id) {
+                <option [value]="item.id">{{ item.name }} ({{ item.code }})</option>
+              }
+            </select>
+          </div>
+          <button
+            type="submit"
+            [disabled]="mutating()"
+            class="self-end min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white disabled:opacity-60"
+          >
+            Add service
+          </button>
+        </form>
+        <div class="mt-6 space-y-4">
+          @for (item of services(); track item.id) {
+            <article class="rounded-xl border p-5">
+              <div class="flex flex-wrap justify-between gap-3">
+                <div>
+                  <h3 class="font-bold">
+                    {{ package(item.healthCheckPackageId)?.name || 'Catalogue item unavailable' }} ·
+                    {{ mode(item.fulfilmentModeId)?.name || 'Mode unavailable' }}
+                  </h3>
+                  <p class="text-sm">
+                    Capability state: <strong>{{ item.isActive ? 'Active' : 'Inactive' }}</strong>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  (click)="toggleService(item)"
+                  class="rounded-lg border px-4 py-2 font-bold"
+                >
+                  {{ item.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+              </div>
+              @if (mode(item.fulfilmentModeId)?.code === 'PROVIDER_LOCATION') {
+                <div class="mt-4 border-t pt-4">
+                  <h4 class="font-bold">Available at</h4>
+                  @if (item.providerLocationIds.length) {
+                    <ul class="mt-2 space-y-2">
+                      @for (id of item.providerLocationIds; track id) {
+                        <li class="flex items-center justify-between gap-3">
+                          <span
+                            >{{ location(id)?.name || 'Location unavailable' }} —
+                            {{ location(id)?.isActive ? 'Active' : 'Inactive' }}</span
+                          ><button
+                            type="button"
+                            (click)="unlink(item.id, id)"
+                            class="font-bold text-red-800 underline"
+                          >
+                            Unlink
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="mt-2 text-amber-900">No location linked.</p>
+                  }
+                  @if (availableLocations(item).length) {
+                    <label [for]="'link-' + item.id" class="mt-3 block font-bold"
+                      >Link active location</label
+                    ><select
+                      #locationChoice
+                      [id]="'link-' + item.id"
+                      (change)="link(item.id, locationChoice.value); locationChoice.value = ''"
+                      class="mt-2 min-h-11 w-full rounded-lg border px-3"
+                    >
+                      <option value="">Select location</option>
+                      @for (place of availableLocations(item); track place.id) {
+                        <option [value]="place.id">{{ place.name }} — {{ place.city }}</option>
+                      }
+                    </select>
+                  }
+                </div>
+              } @else if (mode(item.fulfilmentModeId)?.code === 'HOME_VISIT') {
+                <p class="mt-4 rounded-lg bg-slate-50 p-3">
+                  Home-visit service-area configuration is not available yet.
+                </p>
+              }
+            </article>
+          } @empty {
+            <p>No provider services configured.</p>
+          }
+        </div>
+      </section>
+    }
+    @if (activeTab() === 'locations') {
+      <section aria-labelledby="locations-heading" class="mt-5 rounded-2xl border bg-white p-6">
+        <h2 id="locations-heading" class="text-xl font-bold">Provider locations</h2>
+        <p class="mt-2 text-sm text-slate-600">
+          Coordinates are not required by the backend and are not collected here.
+        </p>
+        <form
+          [formGroup]="locationForm"
+          (ngSubmit)="createLocation()"
+          class="mt-5 grid gap-4 sm:grid-cols-2"
+        >
+          <div>
+            <label for="location-name" class="font-bold">Location name</label
             ><input
-              id="exception-start"
+              id="location-name"
+              formControlName="name"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <div>
+            <label for="address-one" class="font-bold">Address line 1</label
+            ><input
+              id="address-one"
+              formControlName="addressLine1"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <div>
+            <label for="address-two" class="font-bold">Address line 2 (optional)</label
+            ><input
+              id="address-two"
+              formControlName="addressLine2"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <div>
+            <label for="location-city" class="font-bold">City</label
+            ><input
+              id="location-city"
+              formControlName="city"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <div>
+            <label for="location-state" class="font-bold">State or region</label
+            ><input
+              id="location-state"
+              formControlName="state"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <div>
+            <label for="location-country" class="font-bold">Country code</label
+            ><input
+              id="location-country"
+              maxlength="2"
+              formControlName="countryCode"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3 uppercase"
+            />
+          </div>
+          <button
+            type="submit"
+            [disabled]="mutating()"
+            class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
+          >
+            {{ editingLocation() ? 'Save location' : 'Add location' }}
+          </button>
+        </form>
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+          @for (item of locations(); track item.id) {
+            <article class="rounded-xl border p-5">
+              <h3 class="font-bold">{{ item.name }}</h3>
+              <address class="mt-2 not-italic">
+                {{ item.addressLine1 }}
+                @if (item.addressLine2) {
+                  <br />{{ item.addressLine2 }}
+                }
+                <br />{{ item.city }}, {{ item.state }} · {{ item.countryCode }}
+              </address>
+              <p class="mt-2">
+                Location state: <strong>{{ item.isActive ? 'Active' : 'Inactive' }}</strong>
+              </p>
+              <div class="mt-4 flex gap-3">
+                <button
+                  type="button"
+                  (click)="editLocation(item)"
+                  class="font-bold text-brand-700 underline"
+                >
+                  Edit</button
+                ><button
+                  type="button"
+                  (click)="toggleLocation(item)"
+                  class="font-bold text-brand-700 underline"
+                >
+                  {{ item.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <p>No provider locations configured.</p>
+          }
+        </div>
+      </section>
+    }
+    @if (activeTab() === 'availability') {
+      <section aria-labelledby="availability-heading" class="mt-5 rounded-2xl border bg-white p-6">
+        <h2 id="availability-heading" class="text-xl font-bold">Weekly availability</h2>
+        <form
+          [formGroup]="availabilityForm"
+          (ngSubmit)="createAvailability()"
+          class="mt-5 grid gap-4 md:grid-cols-3"
+        >
+          <div>
+            <label for="availability-day" class="font-bold">Weekday</label
+            ><select
+              id="availability-day"
+              formControlName="dayOfWeek"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            >
+              @for (day of weekdays; track day) {
+                <option [value]="day">{{ day }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="availability-start" class="font-bold">Start time</label
+            ><input
+              id="availability-start"
               type="time"
               formControlName="startTime"
               class="mt-2 min-h-11 w-full rounded-lg border px-3"
             />
           </div>
           <div>
-            <label for="exception-end" class="font-bold">End time</label
+            <label for="availability-end" class="font-bold">End time</label
             ><input
-              id="exception-end"
+              id="availability-end"
               type="time"
               formControlName="endTime"
               class="mt-2 min-h-11 w-full rounded-lg border px-3"
             />
           </div>
-        }
-        <div>
-          <label for="exception-service" class="font-bold">Service scope (optional)</label
-          ><select
-            id="exception-service"
-            formControlName="providerServiceId"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
+          <div>
+            <label for="availability-timezone" class="font-bold">Timezone</label
+            ><input
+              id="availability-timezone"
+              formControlName="timezone"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+            <p class="text-sm text-slate-600">Editable IANA timezone.</p>
+          </div>
+          <div>
+            <label for="availability-service" class="font-bold">Service scope (optional)</label
+            ><select
+              id="availability-service"
+              formControlName="providerServiceId"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            >
+              <option value="">Provider-wide</option>
+              @for (item of activeServices(); track item.id) {
+                <option [value]="item.id">
+                  {{ package(item.healthCheckPackageId)?.name }} ·
+                  {{ mode(item.fulfilmentModeId)?.name }}
+                </option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="availability-location" class="font-bold">Location scope (optional)</label
+            ><select
+              id="availability-location"
+              formControlName="providerLocationId"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            >
+              <option value="">All locations</option>
+              @for (item of activeLocations(); track item.id) {
+                <option [value]="item.id">{{ item.name }}</option>
+              }
+            </select>
+          </div>
+          @if (availabilityForm.hasError('timeOrder')) {
+            <p class="text-sm font-bold text-red-700 md:col-span-3">
+              End time must be after start time.
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="mutating()"
+            class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
           >
-            <option value="">Provider-wide</option>
-            @for (item of activeServices(); track item.id) {
-              <option [value]="item.id">{{ package(item.healthCheckPackageId)?.name }}</option>
-            }
-          </select>
+            Add availability
+          </button>
+        </form>
+        <div class="mt-7 space-y-5">
+          @for (day of weekdays; track day) {
+            <section [attr.aria-labelledby]="'day-' + day">
+              <h3 [id]="'day-' + day" class="font-bold text-brand-900">{{ day }}</h3>
+              <ul class="mt-2 space-y-2">
+                @for (item of availability(); track item.id) {
+                  @if (item.dayOfWeek === day) {
+                    <li class="rounded-lg border p-3">
+                      <span class="font-bold">{{ item.startTime }}–{{ item.endTime }}</span> ·
+                      {{ item.timezone }} · {{ item.isActive ? 'Active' : 'Inactive' }}<br /><span
+                        class="text-sm"
+                        >Service:
+                        {{
+                          item.providerServiceId
+                            ? package(service(item.providerServiceId)?.healthCheckPackageId || '')
+                                ?.name || 'Unavailable'
+                            : 'All services'
+                        }}
+                        · Location:
+                        {{
+                          item.providerLocationId
+                            ? location(item.providerLocationId)?.name || 'Unavailable'
+                            : 'All locations'
+                        }}</span
+                      ><button
+                        type="button"
+                        (click)="toggleAvailability(item)"
+                        class="ml-3 font-bold text-brand-700 underline"
+                      >
+                        {{ item.isActive ? 'Deactivate' : 'Activate' }}
+                      </button>
+                    </li>
+                  }
+                }
+              </ul>
+            </section>
+          }
         </div>
-        <div>
-          <label for="exception-location" class="font-bold">Location scope (optional)</label
-          ><select
-            id="exception-location"
-            formControlName="providerLocationId"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          >
-            <option value="">All locations</option>
-            @for (item of activeLocations(); track item.id) {
-              <option [value]="item.id">{{ item.name }}</option>
-            }
-          </select>
-        </div>
-        <div>
-          <label for="exception-reason" class="font-bold">Reason (optional)</label
-          ><input
-            id="exception-reason"
-            formControlName="reason"
-            class="mt-2 min-h-11 w-full rounded-lg border px-3"
-          />
-        </div>
-        @if (exceptionForm.hasError('pairedTimes') || exceptionForm.hasError('timeOrder')) {
-          <p class="text-sm font-bold text-red-700 md:col-span-3">
-            Provide both times, with end after start, or choose full day.
-          </p>
-        }
-        <button
-          type="submit"
-          [disabled]="mutating()"
-          class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
+      </section>
+    }
+    @if (activeTab() === 'exceptions') {
+      <section aria-labelledby="exceptions-heading" class="mt-5 rounded-2xl border bg-white p-6">
+        <h2 id="exceptions-heading" class="text-xl font-bold">Availability exceptions</h2>
+        <form
+          [formGroup]="exceptionForm"
+          (ngSubmit)="createException()"
+          class="mt-5 grid gap-4 md:grid-cols-3"
         >
-          {{ editingException() ? 'Save exception' : 'Add exception' }}
-        </button>
-      </form>
-      <div class="mt-6 space-y-3">
-        @for (item of exceptions(); track item.id) {
-          <article class="rounded-xl border p-4">
-            <h3 class="font-bold">{{ item.date }} · {{ item.type }}</h3>
-            <p>
-              {{
-                item.startTime && item.endTime ? item.startTime + '–' + item.endTime : 'Full day'
-              }}
-              · {{ item.timezone }} · {{ item.isActive ? 'Active' : 'Inactive' }}
-            </p>
-            <p class="text-sm">
-              Service: {{ item.providerServiceId ? 'Scoped' : 'All services' }} · Location:
-              {{
-                item.providerLocationId
-                  ? location(item.providerLocationId)?.name || 'Unavailable'
-                  : 'All locations'
-              }}
-            </p>
-            @if (item.reason) {
-              <p class="mt-1 text-sm">Reason: {{ item.reason }}</p>
-            }
-            <button
-              type="button"
-              (click)="editException(item)"
-              class="mt-2 mr-3 font-bold text-brand-700 underline"
+          <div>
+            <label for="exception-date" class="font-bold">Date</label
+            ><input
+              id="exception-date"
+              type="date"
+              formControlName="date"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <div>
+            <label for="exception-type" class="font-bold">Exception type</label
+            ><select
+              id="exception-type"
+              formControlName="type"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
             >
-              Edit
-            </button>
-            <button
-              type="button"
-              (click)="toggleException(item)"
-              class="mt-2 font-bold text-brand-700 underline"
+              <option value="UNAVAILABLE">Unavailable</option>
+              <option value="AVAILABLE">Available</option>
+            </select>
+          </div>
+          <div>
+            <label for="exception-timezone" class="font-bold">Timezone</label
+            ><input
+              id="exception-timezone"
+              formControlName="timezone"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          <label class="flex items-center gap-2"
+            ><input type="checkbox" formControlName="fullDay" /> Full-day exception</label
+          >
+          @if (!exceptionForm.controls.fullDay.value) {
+            <div>
+              <label for="exception-start" class="font-bold">Start time</label
+              ><input
+                id="exception-start"
+                type="time"
+                formControlName="startTime"
+                class="mt-2 min-h-11 w-full rounded-lg border px-3"
+              />
+            </div>
+            <div>
+              <label for="exception-end" class="font-bold">End time</label
+              ><input
+                id="exception-end"
+                type="time"
+                formControlName="endTime"
+                class="mt-2 min-h-11 w-full rounded-lg border px-3"
+              />
+            </div>
+          }
+          <div>
+            <label for="exception-service" class="font-bold">Service scope (optional)</label
+            ><select
+              id="exception-service"
+              formControlName="providerServiceId"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
             >
-              {{ item.isActive ? 'Deactivate' : 'Activate' }}
-            </button>
-          </article>
-        } @empty {
-          <p>No availability exceptions configured.</p>
-        }
-      </div>
-    </section>
-  }
+              <option value="">Provider-wide</option>
+              @for (item of activeServices(); track item.id) {
+                <option [value]="item.id">{{ package(item.healthCheckPackageId)?.name }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="exception-location" class="font-bold">Location scope (optional)</label
+            ><select
+              id="exception-location"
+              formControlName="providerLocationId"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            >
+              <option value="">All locations</option>
+              @for (item of activeLocations(); track item.id) {
+                <option [value]="item.id">{{ item.name }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="exception-reason" class="font-bold">Reason (optional)</label
+            ><input
+              id="exception-reason"
+              formControlName="reason"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
+          @if (exceptionForm.hasError('pairedTimes') || exceptionForm.hasError('timeOrder')) {
+            <p class="text-sm font-bold text-red-700 md:col-span-3">
+              Provide both times, with end after start, or choose full day.
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="mutating()"
+            class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
+          >
+            {{ editingException() ? 'Save exception' : 'Add exception' }}
+          </button>
+        </form>
+        <div class="mt-6 space-y-3">
+          @for (item of exceptions(); track item.id) {
+            <article class="rounded-xl border p-4">
+              <h3 class="font-bold">{{ item.date }} · {{ item.type }}</h3>
+              <p>
+                {{
+                  item.startTime && item.endTime ? item.startTime + '–' + item.endTime : 'Full day'
+                }}
+                · {{ item.timezone }} · {{ item.isActive ? 'Active' : 'Inactive' }}
+              </p>
+              <p class="text-sm">
+                Service: {{ item.providerServiceId ? 'Scoped' : 'All services' }} · Location:
+                {{
+                  item.providerLocationId
+                    ? location(item.providerLocationId)?.name || 'Unavailable'
+                    : 'All locations'
+                }}
+              </p>
+              @if (item.reason) {
+                <p class="mt-1 text-sm">Reason: {{ item.reason }}</p>
+              }
+              <button
+                type="button"
+                (click)="editException(item)"
+                class="mt-2 mr-3 font-bold text-brand-700 underline"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                (click)="toggleException(item)"
+                class="mt-2 font-bold text-brand-700 underline"
+              >
+                {{ item.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+            </article>
+          } @empty {
+            <p>No availability exceptions configured.</p>
+          }
+        </div>
+      </section>
+    }
+  </fieldset>
 }
 @if (pendingAction(); as action) {
   <section
