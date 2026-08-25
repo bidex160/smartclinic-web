@@ -313,12 +313,23 @@
             @if (showError(form.controls.preferences.controls.preferredTimeFrom)) {
               <p class="mt-2 text-sm font-semibold text-red-700">Enter an appointment time.</p>
             }
-            @if (isHomeVisit) {
+            @if (requiresVisitAddress) {
               <fieldset
                 [formGroup]="form.controls.visitAddress"
                 class="sm:col-span-2 grid gap-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5 sm:grid-cols-2"
               >
-                <legend class="px-2 text-lg font-bold text-brand-900">Home visit address</legend>
+                <legend class="px-2 text-lg font-bold text-brand-900">
+                  {{ isHomeVisit ? 'Home visit address' : 'Your location' }}
+                </legend>
+                <p class="sm:col-span-2 text-sm leading-6 text-slate-600">
+                  @if (isHomeVisit) {
+                    Enter the address where the provider should perform your Health Check.
+                  } @else {
+                    We use your location to match you with an appropriate SmartClinic provider
+                    location. This is not the confirmed appointment location and does not guarantee
+                    the nearest branch.
+                  }
+                </p>
                 <div class="sm:col-span-2">
                   <label for="visit-address-one" class="block text-sm font-bold"
                     >Address line 1</label
@@ -393,7 +404,7 @@
                 </div>
                 @if (form.controls.visitAddress.touched && form.controls.visitAddress.invalid) {
                   <p class="sm:col-span-2 text-sm font-semibold text-red-700">
-                    Address line 1, city, state/region, and country are required for a home visit.
+                    Address line 1, city, state/region, and country are required.
                   </p>
                 }
               </fieldset>
@@ -413,8 +424,12 @@
                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
               ></textarea>
               <p class="mt-2 text-sm text-slate-500">
-                Landmark, gate instructions, or other directions for the provider. Do not include
-                medical information.
+                @if (isHomeVisit) {
+                  Landmark, gate instructions, or other directions for the provider. Do not include
+                  medical information.
+                } @else {
+                  Supplemental directions only. These do not affect geographic matching.
+                }
               </p>
               @if (showError(form.controls.preferences.controls.locationNote)) {
                 <p class="mt-2 text-sm font-semibold text-red-700">

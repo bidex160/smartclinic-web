@@ -164,6 +164,14 @@ export const routes: Routes = [
         (component) => component.AdminLoginPageComponent,
       ),
   },
+      {
+    path: 'provider/register',
+    title: 'Provider application | SmartClinic',
+    loadComponent: () =>
+      import('./features/provider/provider-register-page.component').then(
+        (component) => component.ProviderRegisterPageComponent,
+      ),
+  },
 
   {
     path: 'provider',
@@ -175,14 +183,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/provider/provider-access-denied-page.component').then(
             (component) => component.ProviderAccessDeniedPageComponent,
-          ),
-      },
-      {
-        path: 'register',
-        title: 'Provider application | SmartClinic',
-        loadComponent: () =>
-          import('./features/provider/provider-register-page.component').then(
-            (component) => component.ProviderRegisterPageComponent,
           ),
       },
       {
@@ -253,6 +253,16 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminLayoutComponent,
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        title: 'Operations dashboard | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-dashboard-page.component').then(
+            (component) => component.AdminDashboardPageComponent,
+          ),
+      },
       {
         path: 'access-denied',
         title: 'Access denied | SmartClinic',

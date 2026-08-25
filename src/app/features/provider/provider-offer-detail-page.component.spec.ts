@@ -29,7 +29,7 @@ describe('ProviderOfferDetailPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Ada Okafor');
-    expect(text).toContain('Accept offer');
+    expect(text).toContain('Accept appointment');
     expect(text).toContain('Decline offer');
     expect(text).toContain('Visit address');
     expect(text).toContain('Blue gate');
@@ -59,18 +59,34 @@ describe('ProviderOfferDetailPageComponent', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Open Smart Health Check');
   });
 
-  it('accepts once, prevents duplicate submission, and updates the offer', async () => {
+  it('confirms acceptance explicitly, prevents duplicates, and renders scheduled state', async () => {
     const pending = new Subject<ProviderOffer>();
-    const { component, api } = await setup({ acceptOffer: () => pending });
+    const { component, api, fixture } = await setup({ acceptOffer: () => pending });
 
+    component.requestAcceptance();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alertdialog"]')).not.toBeNull();
     component.accept();
     component.accept();
     expect(api.acceptOffer).toHaveBeenCalledTimes(1);
 
-    pending.next(offer({ status: 'ACCEPTED', acceptedAt: '2026-08-24T08:10:00Z' }));
+    pending.next(
+      offer({
+        status: 'CONFIRMED',
+        acceptedAt: '2026-08-24T08:10:00Z',
+        confirmedSchedule: {
+          date: '2026-08-24',
+          timeFrom: '09:00',
+          timeTo: '09:30',
+          timezone: 'Africa/Lagos',
+          providerLocationName: null,
+        },
+      }),
+    );
     pending.complete();
-    expect(component.offer()?.status).toBe('ACCEPTED');
-    expect(component.statusMessage()).toContain('accepted');
+    expect(component.offer()?.status).toBe('CONFIRMED');
+    expect(component.statusMessage()).toContain('scheduled');
+    expect(component.acceptConfirmationOpen()).toBe(false);
   });
 
   it('declines with an optional trimmed reason and updates state', async () => {

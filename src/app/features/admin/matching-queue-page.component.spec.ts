@@ -66,7 +66,7 @@ describe('MatchingQueuePageComponent', () => {
     expect(text).toContain('Scheduling incomplete');
     expect(text).toContain('Visit address incomplete');
     expect(text).toContain('Provider offer active');
-    expect(text).toContain('Awaiting confirmation');
+    expect(text).toContain('Provider response needs recovery review');
     expect(text).toContain('Provider match needs review');
     expect(text).toContain('Provider assigned');
     expect(text).toContain('Ada Okafor');

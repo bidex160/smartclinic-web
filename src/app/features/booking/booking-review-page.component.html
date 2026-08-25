@@ -140,10 +140,19 @@
         <h2 id="review-preferences-title" class="text-xl font-bold text-brand-900">
           Booking preferences
         </h2>
-        @if (bookingFlow.selectedFulfilmentMode()?.code === 'HOME_VISIT') {
+        @if (
+          bookingFlow.selectedFulfilmentMode()?.code === 'HOME_VISIT' ||
+          bookingFlow.selectedFulfilmentMode()?.code === 'PROVIDER_LOCATION'
+        ) {
           @if (bookingFlow.details()?.visitAddress; as address) {
             <div class="mt-5 rounded-xl border border-brand-100 bg-brand-50 p-4">
-              <h3 class="font-bold text-brand-900">Visit address</h3>
+              <h3 class="font-bold text-brand-900">
+                {{
+                  bookingFlow.selectedFulfilmentMode()?.code === 'HOME_VISIT'
+                    ? 'Home visit address'
+                    : 'Your location'
+                }}
+              </h3>
               <address class="mt-2 not-italic text-slate-800">
                 {{ address.addressLine1 }}
                 @if (address.addressLine2) {
@@ -157,6 +166,12 @@
                 <br />
                 {{ address.countryCode === 'NG' ? 'Nigeria' : address.countryCode }}
               </address>
+              @if (bookingFlow.selectedFulfilmentMode()?.code === 'PROVIDER_LOCATION') {
+                <p class="mt-3 text-sm text-slate-600">
+                  SmartClinic will use this location to match an appropriate provider branch. Your
+                  confirmed appointment location will be shown separately once available.
+                </p>
+              }
             </div>
           }
         }

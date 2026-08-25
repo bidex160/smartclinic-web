@@ -47,7 +47,7 @@ export class AdminLoginPageComponent {
         next: (response) => {
           this.authState.setSession(response);
           if (this.authState.canManagePricing()) {
-            void this.router.navigate(['/admin/package-prices']);
+            void this.router.navigate(['/admin/dashboard']);
             return;
           }
           if (this.authState.isProvider()) {

@@ -156,6 +156,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     addressLine2: ['', Validators.maxLength(255)],
     city: ['', [Validators.required, Validators.maxLength(120)]],
     state: ['', [Validators.required, Validators.maxLength(120)]],
+    postalCode: ['', Validators.maxLength(30)],
     countryCode: ['NG', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
   });
   readonly availabilityForm = this.fb.group(
@@ -250,6 +251,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       ...(v.addressLine2.trim() && { addressLine2: v.addressLine2.trim() }),
       city: v.city.trim(),
       state: v.state.trim(),
+      ...(v.postalCode.trim() && { postalCode: v.postalCode.trim() }),
       countryCode: v.countryCode.toUpperCase(),
     };
     const operation = this.editingLocation()
@@ -273,6 +275,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       addressLine2: value.addressLine2 ?? '',
       city: value.city,
       state: value.state,
+      postalCode: value.postalCode ?? '',
       countryCode: value.countryCode,
     });
     this.activeTab.set('locations');

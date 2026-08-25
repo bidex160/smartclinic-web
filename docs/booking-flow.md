@@ -30,7 +30,7 @@ The user sees API-provided benefits, estimated duration, and current prices by f
 
 Show only modes supported for the selected package by the backend contract. Initial known modes are `PROVIDER_LOCATION` and `HOME_VISIT`. The UI may map codes to approved labels, but must not assume both modes are always available.
 
-For `HOME_VISIT`, the details step collects a structured visit address (`addressLine1`, optional `addressLine2`, city, state/region, optional postal code, and country code) separately from optional additional directions. The request never sends provider, provider-location, or service-area identifiers. For `PROVIDER_LOCATION`, `visitAddress` is omitted. Appointment date, start time, and IANA timezone remain required; package duration and backend scheduling determine the appointment end.
+Both `HOME_VISIT` and `PROVIDER_LOCATION` collect a structured `visitAddress` (`addressLine1`, optional `addressLine2`, city, state/region, optional postal code, and country code) separately from optional additional directions. For a home visit it is the service destination; for provider-location fulfilment it is the patient's origin used for deterministic geographic matching. A later backend-returned ProviderLocation is the distinct appointment destination. The request never sends provider, provider-location, or service-area identifiers. Appointment date, start time, and IANA timezone remain required; package duration determines the appointment end.
 
 The review page presents the structured address before confirmation. Draft address data remains in memory only and is never written to browser storage. Geographic matching is entirely server-authoritative.
 

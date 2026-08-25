@@ -185,12 +185,14 @@
               </dd>
             </div>
           </dl>
-          @if (current.fulfilmentMode.code === 'HOME_VISIT' && current.visitAddress; as address) {
+          @if (current.visitAddress; as address) {
             <section
               class="mt-5 rounded-xl border bg-slate-50 p-4"
               aria-labelledby="visit-address-heading"
             >
-              <h3 id="visit-address-heading" class="font-bold">Visit address</h3>
+              <h3 id="visit-address-heading" class="font-bold">
+                {{ current.fulfilmentMode.code === 'HOME_VISIT' ? 'Home visit address' : 'Patient origin' }}
+              </h3>
               <address class="mt-2 not-italic">
                 {{ address.addressLine1 }}
                 @if (address.addressLine2) {
@@ -202,6 +204,12 @@
                 }
                 · {{ address.countryCode }}
               </address>
+              @if (current.fulfilmentMode.code === 'PROVIDER_LOCATION') {
+                <p class="mt-2 text-sm text-slate-600">
+                  Used for geographic matching; this is separate from the confirmed appointment
+                  location.
+                </p>
+              }
             </section>
           }
         </section>
@@ -237,14 +245,18 @@
               </div>
               @if (appointment.providerLocation; as location) {
                 <div class="sm:col-span-2">
-                  <dt class="text-sm font-semibold text-slate-600">Provider location</dt>
+                  <dt class="text-sm font-semibold text-slate-600">Appointment location</dt>
                   <dd class="mt-1 font-bold">{{ location.name }}</dd>
                   <dd class="text-sm text-slate-700">
                     {{ location.addressLine1 }}
                     @if (location.addressLine2) {
                       , {{ location.addressLine2 }}
                     }
-                    , {{ location.city }}, {{ location.state }}, {{ location.countryCode }}
+                    , {{ location.city }}, {{ location.state }}
+                    @if (location.postalCode) {
+                      · {{ location.postalCode }}
+                    }
+                    · {{ location.countryCode }}
                   </dd>
                 </div>
               }
@@ -567,6 +579,7 @@
                 Assign provider
               </button>
             </div>
+            @if (current.fulfilmentMode.code !== 'PROVIDER_LOCATION') {
             <details class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
               <summary class="cursor-pointer font-bold text-amber-950">
                 Advanced intervention
@@ -583,6 +596,12 @@
                 Override provider assignment
               </button>
             </details>
+            } @else {
+              <p class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                Provider-location override is unavailable because an explicit compatible branch
+                cannot be selected by the current override contract. Use normal assignment or retry.
+              </p>
+            }
           } @else {
             <p class="mt-2 text-sm leading-6 text-slate-700">
               Matching is unavailable until the backend reports this booking as ready.
@@ -778,13 +797,14 @@
             }
 
             @if (confirmingIntervention()) {
-              <div
+              <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <section
                 role="alertdialog"
                 aria-modal="true"
                 aria-labelledby="confirm-intervention"
-                class="mt-5 rounded-xl border border-slate-300 bg-slate-50 p-5"
+                class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
               >
-                <h3 id="confirm-intervention" class="font-bold">Confirm intervention</h3>
+                <h3 id="confirm-intervention" class="text-xl font-bold">Confirm intervention</h3>
                 <p class="mt-2">Booking: {{ current.bookingReference }}</p>
                 <p class="mt-1">
                   Provider: {{ selectedProviderName() || 'Automatic provider selection' }}
@@ -805,6 +825,7 @@
                     Back
                   </button>
                 </div>
+              </section>
               </div>
             }
             <button

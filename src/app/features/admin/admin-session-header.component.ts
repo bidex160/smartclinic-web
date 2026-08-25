@@ -83,7 +83,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         <div class="grid gap-1">
           <!-- Dashboard -->
           <a
-            routerLink="/admin"
+            routerLink="/admin/dashboard"
             routerLinkActive="!bg-brand-700 !text-white"
             [routerLinkActiveOptions]="{ exact: true }"
             class="
@@ -285,7 +285,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         "
       >
         <a
-          routerLink="/admin"
+          routerLink="/admin/dashboard"
           class="
             inline-flex items-center gap-2
             rounded-lg
@@ -371,7 +371,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           class="grid gap-1"
         >
           <a
-            routerLink="/admin"
+            routerLink="/admin/dashboard"
             routerLinkActive="bg-brand-100 text-brand-900"
             [routerLinkActiveOptions]="{ exact: true }"
             class="

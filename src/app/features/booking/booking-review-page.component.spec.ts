@@ -41,7 +41,7 @@ describe('BookingReviewPageComponent', () => {
     expect(text).toContain('Appointment date');
     expect(text).toContain('Appointment time');
     expect(text).toContain('Timezone');
-    expect(text).toContain('Visit address');
+    expect(text).toContain('Home visit address');
     expect(text).toContain('1 Clinic Road');
     expect(text).not.toContain('Preferred end time');
     expect(text).not.toContain('quotedAmount');

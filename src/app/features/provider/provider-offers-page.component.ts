@@ -57,7 +57,7 @@ export class ProviderOffersPageComponent {
           this.offers.set(
             status
               ? offers
-              : offers.filter((offer) => offer.status === 'OFFERED' || offer.status === 'ACCEPTED'),
+              : offers.filter((offer) => offer.status === 'OFFERED'),
           ),
         error: (error: HttpErrorResponse) => this.handleError(error),
       });
@@ -66,7 +66,7 @@ export class ProviderOffersPageComponent {
   statusLabel(status: ProviderOfferStatus): string {
     const labels: Record<ProviderOfferStatus, string> = {
       OFFERED: 'Awaiting response',
-      ACCEPTED: 'Accepted',
+      ACCEPTED: 'Accepted (refreshing)',
       CONFIRMED: 'Confirmed',
       DECLINED: 'Declined',
       EXPIRED: 'Expired',

@@ -93,6 +93,26 @@
             <dd class="mt-1 whitespace-pre-wrap text-slate-900">{{ booking.locationNote }}</dd>
           </div>
         }
+        @if (booking.visitAddressSummary; as address) {
+          <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <dt class="text-sm font-semibold text-slate-600">
+              {{ booking.fulfilmentMode.code === 'HOME_VISIT' ? 'Home visit area' : 'Your location' }}
+            </dt>
+            <dd class="mt-1 text-slate-900">
+              {{ address.city }}, {{ address.stateOrRegion }}
+              @if (address.postalCode) {
+                · {{ address.postalCode }}
+              }
+              · {{ address.countryCode }}
+            </dd>
+            @if (booking.fulfilmentMode.code === 'PROVIDER_LOCATION') {
+              <p class="mt-2 text-xs leading-5 text-slate-600">
+                This origin was used for matching. Your confirmed appointment location is a
+                separate provider branch returned by SmartClinic.
+              </p>
+            }
+          </div>
+        }
       </dl>
       <p class="mt-7 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
         This reference identifies your booking but is not proof of identity or authorization to

@@ -43,7 +43,7 @@ export function mapBookingFlowToPublicBookingRequest(
       ...(optional(details.preferences.locationNote) && {
         locationNote: optional(details.preferences.locationNote),
       }),
-      ...(fulfilmentMode.code === 'HOME_VISIT' && {
+      ...(['HOME_VISIT', 'PROVIDER_LOCATION'].includes(fulfilmentMode.code) && {
         visitAddress: {
           addressLine1: details.visitAddress.addressLine1.trim(),
           ...(optional(details.visitAddress.addressLine2) && {

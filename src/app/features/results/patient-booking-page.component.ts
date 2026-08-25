@@ -108,9 +108,20 @@ import { UtilsService } from '../../core/services/utils.service';
             </div>
           </div>
         </section>
-        @if (isHomeVisit()) {
+        @if (requiresVisitAddress()) {
           <fieldset formGroupName="visitAddress" class="rounded-2xl border bg-white p-6">
-            <legend class="px-2 text-xl font-bold">Home visit address</legend>
+            <legend class="px-2 text-xl font-bold">
+              {{ isHomeVisit() ? 'Home visit address' : 'Your location' }}
+            </legend>
+            <p class="mt-2 text-sm leading-6 text-slate-600">
+              @if (isHomeVisit()) {
+                Enter the address where the provider should perform your Health Check.
+              } @else {
+                We use your location to match you with an appropriate SmartClinic provider
+                location. This is not the confirmed appointment location and does not guarantee the
+                nearest branch.
+              }
+            </p>
             <div class="mt-4 grid gap-5 sm:grid-cols-2">
               <div class="sm:col-span-2">
                 <label for="self-address1" class="block text-sm font-bold">Address line 1</label
@@ -210,6 +221,30 @@ import { UtilsService } from '../../core/services/utils.service';
                 <dt class="text-sm text-slate-600">Timezone</dt>
                 <dd class="font-bold">{{ form.value.preferredTimezone }}</dd>
               </div>
+              @if (requiresVisitAddress()) {
+                <div class="sm:col-span-2">
+                  <dt class="text-sm text-slate-600">
+                    {{ isHomeVisit() ? 'Home visit address' : 'Your location' }}
+                  </dt>
+                  <dd class="font-bold">
+                    {{ form.value.visitAddress?.addressLine1 }},
+                    @if (form.value.visitAddress?.addressLine2) {
+                      {{ form.value.visitAddress?.addressLine2 }},
+                    }
+                    {{ form.value.visitAddress?.city }}, {{ form.value.visitAddress?.stateOrRegion }}
+                    @if (form.value.visitAddress?.postalCode) {
+                      · {{ form.value.visitAddress?.postalCode }}
+                    }
+                    · {{ form.value.visitAddress?.countryCode }}
+                  </dd>
+                  @if (!isHomeVisit()) {
+                    <p class="mt-2 text-sm font-normal text-slate-600">
+                      SmartClinic will use this origin to match an appropriate provider branch. The
+                      confirmed appointment location will be shown separately.
+                    </p>
+                  }
+                </div>
+              }
             </dl>
             <p class="mt-4 text-sm text-slate-600">
               Submitting creates an awaiting-funding booking for your authenticated SELF Patient.
@@ -281,6 +316,9 @@ export class PatientBookingPageComponent {
       this.packages().find((x) => x.id === this.form.controls.healthCheckPackageId.value) ?? null,
   );
   readonly isHomeVisit = computed(() => this.selectedMode()?.code === 'HOME_VISIT');
+  readonly requiresVisitAddress = computed(() =>
+    ['HOME_VISIT', 'PROVIDER_LOCATION'].includes(this.selectedMode()?.code ?? ''),
+  );
   constructor() {
     forkJoin({ packages: this.packageApi.getPackages(), modes: this.modeApi.getFulfilmentModes() })
       .pipe(finalize(() => this.loading.set(false)))
@@ -306,10 +344,10 @@ export class PatientBookingPageComponent {
     const v = this.form.getRawValue();
     const a = v.visitAddress;
     if (
-      this.isHomeVisit() &&
+      this.requiresVisitAddress() &&
       (!a.addressLine1.trim() || !a.city.trim() || !a.stateOrRegion.trim())
     ) {
-      this.error.set('Complete the required home visit address fields.');
+      this.error.set('Complete the required address fields.');
       return;
     }
     this.pending.set(true);
@@ -323,7 +361,7 @@ export class PatientBookingPageComponent {
         ...(v.preferredLocationNote.trim() && {
           preferredLocationNote: v.preferredLocationNote.trim(),
         }),
-        ...(this.isHomeVisit() && {
+        ...(this.requiresVisitAddress() && {
           visitAddress: {
             addressLine1: a.addressLine1.trim(),
             ...(a.addressLine2.trim() && { addressLine2: a.addressLine2.trim() }),

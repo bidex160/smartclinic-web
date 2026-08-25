@@ -68,11 +68,17 @@ describe('mapBookingFlowToPublicBookingRequest', () => {
     expect(JSON.stringify(request)).not.toContain('quotedCurrency');
   });
 
-  it('omits visitAddress and provider/service identifiers for provider-location bookings', () => {
+  it('sends visitAddress but omits provider/service identifiers for provider-location bookings', () => {
     const request = mapBookingFlowToPublicBookingRequest(
       createCompleteState(false, 'PROVIDER_LOCATION'),
     );
-    expect(request.booking).not.toHaveProperty('visitAddress');
+    expect(request.booking.visitAddress).toEqual({
+      addressLine1: '1 Clinic Road',
+      city: 'Ikeja',
+      stateOrRegion: 'Lagos',
+      countryCode: 'NG',
+    });
+    expect(request.booking).not.toHaveProperty('providerLocationId');
     expect(request.booking).not.toHaveProperty('serviceAreaId');
     expect(request.booking).not.toHaveProperty('providerId');
     expect(request.booking).not.toHaveProperty('providerLocationId');

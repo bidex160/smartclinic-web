@@ -255,9 +255,10 @@
                   <span class="block text-slate-500">
                     {{ item.preferredTimezone || 'No timezone' }}
                   </span>
-                  @if (item.fulfilmentMode.code === 'HOME_VISIT' && item.visitArea; as area) {
+                  @if (item.visitArea; as area) {
                     <span class="block text-slate-500"
-                      >Visit area: {{ area.city }}, {{ area.stateOrRegion }},
+                      >{{ item.fulfilmentMode.code === 'HOME_VISIT' ? 'Visit area' : 'Patient area' }}:
+                      {{ area.city }}, {{ area.stateOrRegion }},
                       {{ area.countryCode }}</span
                     >
                   }
@@ -300,7 +301,7 @@
                     >
                       {{
                         item.readiness === 'ACCEPTED_AWAITING_CONFIRMATION'
-                          ? 'Review / Confirm'
+                          ? 'Review stale state'
                           : 'View offer'
                       }}
                     </a>

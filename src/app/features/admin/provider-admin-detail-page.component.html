@@ -548,12 +548,12 @@
     </p>
 
     @if (pendingRevokeId()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="revoke-heading"
-          class="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 p-6"
+          class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-red-300 bg-red-50 p-6 shadow-xl"
         >
           <h2 id="revoke-heading" class="text-xl font-bold text-red-950">
             Revoke this invitation?
@@ -583,12 +583,12 @@
     }
     <app-provider-service-areas [providerId]="id" [editable]="false" />
     @if (confirmation(); as action) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="confirmation-heading"
-          class="mt-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6"
+          class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
           <h2 id="confirmation-heading" class="text-xl font-bold text-amber-950">
             Confirm

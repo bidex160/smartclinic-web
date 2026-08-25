@@ -14,7 +14,7 @@ describe('ProvidersAdminPageComponent', () => {
     expect(text).toContain('Linked to Operator');
     expect(text).not.toContain('passwordHash');
     expect(text).not.toContain('refreshToken');
-    expect(fixture.nativeElement.querySelector('a[href="/admin/providers"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/providers/provider-id"]')).toBeTruthy();
   });
 
   it('applies server filters, clears them, and paginates', async () => {

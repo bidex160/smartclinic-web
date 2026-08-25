@@ -41,6 +41,7 @@ export class ProviderOfferDetailPageComponent {
   readonly statusMessage = signal<string | null>(null);
   readonly notFound = signal(false);
   readonly declineOpen = signal(false);
+  readonly acceptConfirmationOpen = signal(false);
   readonly conflictLocked = signal(false);
   readonly canRespond = computed(
     () => this.offer()?.status === 'OFFERED' && !this.conflictLocked(),
@@ -70,6 +71,14 @@ export class ProviderOfferDetailPageComponent {
       });
   }
 
+  requestAcceptance(): void {
+    if (this.canRespond()) this.acceptConfirmationOpen.set(true);
+  }
+
+  cancelAcceptance(): void {
+    if (!this.mutating()) this.acceptConfirmationOpen.set(false);
+  }
+
   accept(): void {
     if (this.mutating() || !this.canRespond()) return;
     this.beginMutation();
@@ -79,7 +88,10 @@ export class ProviderOfferDetailPageComponent {
       .subscribe({
         next: (offer) => {
           this.offer.set(offer);
-          this.statusMessage.set('Offer accepted. The assignment is awaiting confirmation.');
+          this.acceptConfirmationOpen.set(false);
+          this.statusMessage.set(
+            'Appointment accepted and scheduled. It is now available under Appointments / Health Checks.',
+          );
         },
         error: (error: HttpErrorResponse) => this.handleMutationError(error),
       });
@@ -118,7 +130,7 @@ export class ProviderOfferDetailPageComponent {
   statusLabel(status: ProviderOfferStatus): string {
     const labels: Record<ProviderOfferStatus, string> = {
       OFFERED: 'Awaiting response',
-      ACCEPTED: 'Accepted',
+      ACCEPTED: 'Accepted (refreshing)',
       CONFIRMED: 'Confirmed',
       DECLINED: 'Declined',
       EXPIRED: 'Expired',

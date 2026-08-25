@@ -62,8 +62,13 @@ describe('PackagePricesAdminPageComponent', () => {
   });
 
   it('requires confirmation and deactivates without deletion', async () => {
-    const { component, pricesApi } = await setup();
+    const { component, pricesApi, fixture } = await setup();
     component.requestDeactivation('price-id');
+    fixture.detectChanges();
+    const dialog = fixture.nativeElement.querySelector('[role="alertdialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(dialog.parentElement.classList.contains('fixed')).toBe(true);
     expect(pricesApi.deactivatePackagePrice).not.toHaveBeenCalled();
     component.confirmDeactivation('price-id');
     expect(pricesApi.deactivatePackagePrice).toHaveBeenCalledWith('price-id');

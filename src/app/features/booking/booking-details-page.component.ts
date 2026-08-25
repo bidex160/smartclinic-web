@@ -37,7 +37,11 @@ export class BookingDetailsPageComponent {
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly router = inject(Router);
   readonly bookingFlow = inject(BookingFlowStateService);
-  readonly isHomeVisit = this.bookingFlow.selectedFulfilmentMode()?.code === 'HOME_VISIT';
+  readonly fulfilmentModeCode = this.bookingFlow.selectedFulfilmentMode()?.code;
+  readonly isHomeVisit = this.fulfilmentModeCode === 'HOME_VISIT';
+  readonly requiresVisitAddress = ['HOME_VISIT', 'PROVIDER_LOCATION'].includes(
+    this.fulfilmentModeCode ?? '',
+  );
 
   readonly submitted = signal(false);
   readonly detailsSaved = signal(false);
@@ -85,7 +89,7 @@ export class BookingDetailsPageComponent {
   });
 
   constructor() {
-    if (this.isHomeVisit) {
+    if (this.requiresVisitAddress) {
       const address = this.form.controls.visitAddress.controls;
       for (const control of [
         address.addressLine1,

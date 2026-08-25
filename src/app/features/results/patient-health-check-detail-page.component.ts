@@ -41,6 +41,22 @@ import { UtilsService } from '../../core/services/utils.service';
             @if (d.confirmedSchedule; as s) {
               <p class="mt-3">{{ utils.formatAppointment(s.date, s.timeFrom, s.timeTo) }}</p>
               <p class="text-sm text-slate-600">{{ s.timezone }}</p>
+              @if (d.fulfilmentMode.code === 'PROVIDER_LOCATION' && s.providerLocation; as l) {
+                <div class="mt-4 border-t pt-4">
+                  <h3 class="font-bold">Appointment location</h3>
+                  <address class="mt-2 not-italic">
+                    <strong>{{ l.name }}</strong><br />{{ l.addressLine1 }}
+                    @if (l.addressLine2) {
+                      <br />{{ l.addressLine2 }}
+                    }
+                    <br />{{ l.city }}, {{ l.stateOrRegion }}
+                    @if (l.postalCode) {
+                      · {{ l.postalCode }}
+                    }
+                    · {{ l.countryCode }}
+                  </address>
+                </div>
+              }
             } @else {
               <p class="mt-3 text-slate-600">Not confirmed yet</p>
             }
@@ -83,6 +99,16 @@ import { UtilsService } from '../../core/services/utils.service';
                   <strong>Additional directions:</strong> {{ a.locationNote }}
                 </p>
               }
+            </section>
+          }
+          @if (d.fulfilmentMode.code === 'PROVIDER_LOCATION' && d.visitAddressSummary; as a) {
+            <section class="rounded-2xl border bg-white p-6">
+              <h2 class="text-xl font-bold">Your location</h2>
+              <p class="mt-3">{{ a.city }}, {{ a.stateOrRegion }}, {{ a.countryCode }}</p>
+              <p class="mt-2 text-sm text-slate-600">
+                This submitted origin was used for matching and is separate from your confirmed
+                appointment location.
+              </p>
             </section>
           }
         </div>

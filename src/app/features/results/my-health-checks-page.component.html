@@ -164,14 +164,17 @@
                       utilsService.formatAppointment(s.date, s.timeFrom, s.timeTo)
                     }}<br /><small>{{ s.timezone }}</small>
                     @if (s.providerLocationName) {
-                      <br /><small>{{ s.providerLocationName }}</small>
+                      <br /><small>Appointment location: {{ s.providerLocationName }}</small>
                     }
                   }
                 </td>
                 <td class="p-4">
                   {{ item.fulfilmentMode.name }}
                   @if (item.visitAddressSummary; as a) {
-                    <br /><small>{{ a.city }}, {{ a.stateOrRegion }}, {{ a.countryCode }}</small>
+                    <br /><small
+                      >{{ item.fulfilmentMode.code === 'HOME_VISIT' ? 'Home visit' : 'Your location' }}:
+                      {{ a.city }}, {{ a.stateOrRegion }}, {{ a.countryCode }}</small
+                    >
                   }
                 </td>
                 <td class="p-4">{{ item.providerDisplayName ?? 'Not assigned yet' }}</td>

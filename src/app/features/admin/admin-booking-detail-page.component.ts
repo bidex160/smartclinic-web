@@ -325,7 +325,7 @@ export class AdminBookingDetailPageComponent {
       INCOMPLETE_SCHEDULING: 'Scheduling incomplete',
       INCOMPLETE_VISIT_ADDRESS: 'Visit address incomplete',
       ACTIVE_OFFER: 'Provider offer active',
-      ACCEPTED_AWAITING_CONFIRMATION: 'Awaiting confirmation',
+      ACCEPTED_AWAITING_CONFIRMATION: 'Provider response needs recovery review',
       UNFULFILLABLE: 'Provider match needs review',
       ALREADY_ASSIGNED: 'Provider assigned',
     };
