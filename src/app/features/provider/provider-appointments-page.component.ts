@@ -5,11 +5,10 @@ import { finalize } from 'rxjs';
 import { ProviderOffer } from '../../core/models/provider-offer.model';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { UtilsService } from '../../core/services/utils.service';
-import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 
 @Component({
   selector: 'app-provider-appointments-page',
-  imports: [RouterLink, ProviderSessionHeaderComponent],
+  imports: [RouterLink],
   templateUrl: './provider-appointments-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

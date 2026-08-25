@@ -357,51 +357,92 @@
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>
-                <div>
-                  <label for="visit-city" class="block text-sm font-bold">City</label
-                  ><input
-                    id="visit-city"
-                    formControlName="city"
-                    maxlength="120"
-                    autocomplete="address-level2"
-                    placeholder="e.g. Ibadan"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
-                  />
-                </div>
-                <div>
-                  <label for="visit-state" class="block text-sm font-bold">State / region</label
-                  ><input
-                    id="visit-state"
-                    formControlName="stateOrRegion"
-                    maxlength="120"
-                    autocomplete="address-level1"
-                    placeholder="e.g. Oyo"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
-                  />
-                </div>
-                <div>
-                  <label for="visit-postal" class="block text-sm font-bold"
-                    >Postal code <span class="font-normal text-slate-500">(optional)</span></label
-                  ><input
-                    id="visit-postal"
-                    formControlName="postalCode"
-                    maxlength="30"
-                    autocomplete="postal-code"
-                    placeholder="e.g. 200103"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
-                  />
-                </div>
-                <div>
-                  <label for="visit-country" class="block text-sm font-bold">Country</label
-                  ><select
-                    id="visit-country"
-                    formControlName="countryCode"
-                    autocomplete="country"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4"
-                  >
-                    <option value="NG">Nigeria</option>
-                  </select>
-                </div>
+              <!-- Country -->
+<div>
+  <label for="visit-country" class="block text-sm font-bold">
+    Country
+  </label>
+
+  <select
+    id="visit-country"
+    formControlName="countryCode"
+    autocomplete="country"
+    (change)="onVisitCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State / Region -->
+<div>
+  <label for="visit-state" class="block text-sm font-bold">
+    State / region
+  </label>
+
+  <select
+    id="visit-state"
+    [value]="selectedVisitStateCode"
+    (change)="onVisitStateChange($any($event.target).value)"
+    [disabled]="!visitingForm.controls['countryCode']['value']"
+    autocomplete="address-level1"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state / region</option>
+
+    @for (state of visitStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="visit-city" class="block text-sm font-bold">
+    City
+  </label>
+
+  <select
+    id="visit-city"
+    formControlName="city"
+    [disabled]="!selectedVisitStateCode"
+    autocomplete="address-level2"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of visitCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- Postal Code -->
+<div>
+  <label for="visit-postal" class="block text-sm font-bold">
+    Postal code
+    <span class="font-normal text-slate-500">(optional)</span>
+  </label>
+
+  <input
+    id="visit-postal"
+    formControlName="postalCode"
+    maxlength="30"
+    autocomplete="postal-code"
+    placeholder="e.g. 200103"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+  />
+</div>
                 @if (form.controls.visitAddress.touched && form.controls.visitAddress.invalid) {
                   <p class="sm:col-span-2 text-sm font-semibold text-red-700">
                     Address line 1, city, state/region, and country are required.

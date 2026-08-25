@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '
 import {
   AbstractControl,
   FormBuilder,
+  FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
@@ -11,6 +12,8 @@ import { Router, RouterLink } from '@angular/router';
 import { BookingDetailsDraft, ParticipantRelationship } from './booking-flow.models';
 import { BookingFlowStateService } from './booking-flow-state.service';
 import { BookingProgressComponent } from './booking-progress.component';
+import { LocationDataService } from '../../core/services/location-data.service';
+import { ICountry, IState, ICity } from 'country-state-city';
 
 const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -88,6 +91,16 @@ export class BookingDetailsPageComponent {
     }),
   });
 
+  private readonly locationData = inject(LocationDataService);
+
+readonly countries: ICountry[] =
+  this.locationData.getCountries();
+
+visitStates: IState[] = [];
+visitCities: ICity[] = [];
+
+selectedVisitStateCode = '';
+
   constructor() {
     if (this.requiresVisitAddress) {
       const address = this.form.controls.visitAddress.controls;
@@ -103,6 +116,7 @@ export class BookingDetailsPageComponent {
     }
     const draft = this.bookingFlow.details();
     if (draft) this.form.setValue(draft);
+    this.onVisitCountryChange('NG')
   }
 
   copyBookerToParticipant(): void {
@@ -138,4 +152,43 @@ export class BookingDetailsPageComponent {
   showError(control: AbstractControl): boolean {
     return control.invalid && (control.touched || this.submitted());
   }
+
+   get visitingForm(): FormGroup {
+    return this.form.controls['visitAddress'] as FormGroup
+   }
+
+  onVisitCountryChange(countryCode: string): void {
+  this.visitStates =
+    this.locationData.getStates(countryCode);
+
+  this.visitCities = [];
+  this.selectedVisitStateCode = '';
+
+  this.visitingForm.patchValue({
+    stateOrRegion: '',
+    city: '',
+  });
+}
+
+onVisitStateChange(stateCode: string): void {
+  const countryCode =
+    this.visitingForm.controls['countryCode']['value'] ?? '';
+
+  const selectedState = this.visitStates.find(
+    (state) => state.isoCode === stateCode,
+  );
+
+  this.selectedVisitStateCode = stateCode;
+
+  this.visitCities =
+    this.locationData.getCities(
+      countryCode,
+      stateCode,
+    );
+
+  this.visitingForm.patchValue({
+    stateOrRegion: selectedState?.name ?? '',
+    city: '',
+  });
+}
 }

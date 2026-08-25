@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, finalize } from 'rxjs';
 import { FulfilmentMode } from '../../core/models/fulfilment-mode.model';
@@ -10,6 +10,8 @@ import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { UtilsService } from '../../core/services/utils.service';
+import { LocationDataService } from '../../core/services/location-data.service';
+import { ICountry, IState, ICity } from 'country-state-city';
 
 @Component({
   selector: 'app-patient-booking-page',
@@ -142,44 +144,91 @@ import { UtilsService } from '../../core/services/utils.service';
                   class="mt-2 min-h-12 w-full rounded-xl border px-3"
                 />
               </div>
-              <div>
-                <label for="self-city" class="block text-sm font-bold">City</label
-                ><input
-                  id="self-city"
-                  formControlName="city"
-                  placeholder="e.g. Ibadan"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
-                />
-              </div>
-              <div>
-                <label for="self-region" class="block text-sm font-bold">State / region</label
-                ><input
-                  id="self-region"
-                  formControlName="stateOrRegion"
-                  placeholder="e.g. Oyo"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
-                />
-              </div>
-              <div>
-                <label for="self-postal" class="block text-sm font-bold"
-                  >Postal code <span class="font-normal">(optional)</span></label
-                ><input
-                  id="self-postal"
-                  formControlName="postalCode"
-                  placeholder="e.g. 200103"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
-                />
-              </div>
-              <div>
-                <label for="self-country" class="block text-sm font-bold">Country</label
-                ><select
-                  id="self-country"
-                  formControlName="countryCode"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
-                >
-                  <option value="NG">Nigeria</option>
-                </select>
-              </div>
+           <!-- Country -->
+<div>
+  <label for="self-country" class="block text-sm font-bold">
+    Country
+  </label>
+
+  <select
+    id="self-country"
+    formControlName="countryCode"
+    (change)="onSelfCountryChange($any($event.target).value)"
+    autocomplete="country"
+    class="mt-2 min-h-12 w-full rounded-xl border bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State / Region -->
+<div>
+  <label for="self-region" class="block text-sm font-bold">
+    State / region
+  </label>
+
+  <select
+    id="self-region"
+    [value]="selectedSelfStateCode"
+    (change)="onSelfStateChange($any($event.target).value)"
+    [disabled]="!visitionForm.controls['countryCode']['value']"
+    autocomplete="address-level1"
+    class="mt-2 min-h-12 w-full rounded-xl border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state / region</option>
+
+    @for (state of selfStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="self-city" class="block text-sm font-bold">
+    City
+  </label>
+
+  <select
+    id="self-city"
+    formControlName="city"
+    [disabled]="!selectedSelfStateCode"
+    autocomplete="address-level2"
+    class="mt-2 min-h-12 w-full rounded-xl border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of selfCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- Postal Code -->
+<div>
+  <label for="self-postal" class="block text-sm font-bold">
+    Postal code
+    <span class="font-normal text-slate-500">(optional)</span>
+  </label>
+
+  <input
+    id="self-postal"
+    formControlName="postalCode"
+    autocomplete="postal-code"
+    placeholder="e.g. 200103"
+    class="mt-2 min-h-12 w-full rounded-xl border px-3"
+  />
+</div>
             </div>
           </fieldset>
         }
@@ -308,6 +357,16 @@ export class PatientBookingPageComponent {
       countryCode: ['NG'],
     }),
   });
+
+  private readonly locationData = inject(LocationDataService);
+
+readonly countries: ICountry[] =
+  this.locationData.getCountries();
+
+selfStates: IState[] = [];
+selfCities: ICity[] = [];
+
+selectedSelfStateCode = '';
   readonly selectedMode = computed(
     () => this.modes().find((x) => x.id === this.form.controls.fulfilmentModeId.value) ?? null,
   );
@@ -320,6 +379,7 @@ export class PatientBookingPageComponent {
     ['HOME_VISIT', 'PROVIDER_LOCATION'].includes(this.selectedMode()?.code ?? ''),
   );
   constructor() {
+    this.onSelfCountryChange('NG')
     forkJoin({ packages: this.packageApi.getPackages(), modes: this.modeApi.getFulfilmentModes() })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
@@ -383,4 +443,44 @@ export class PatientBookingPageComponent {
           ),
       });
   }
+
+  get visitionForm(){
+   return this.form.controls['visitAddress'] as FormGroup
+  }
+onSelfCountryChange(countryCode: string): void {
+  this.selfStates =
+    this.locationData.getStates(countryCode);
+
+  this.selfCities = [];
+  this.selectedSelfStateCode = '';
+
+  this.visitionForm.patchValue({
+    stateOrRegion: '',
+    city: '',
+  });
+}
+
+onSelfStateChange(stateCode: string): void {
+  const countryCode =
+    this.visitionForm['controls']['countryCode']['value'] ?? '';
+
+  const selectedState = this.selfStates.find(
+    (state) => state.isoCode === stateCode,
+  );
+
+  this.selectedSelfStateCode = stateCode;
+
+  this.selfCities =
+    this.locationData.getCities(
+      countryCode,
+      stateCode,
+    );
+
+  this.visitionForm.patchValue({
+    // Store state NAME for backend matching.
+    stateOrRegion: selectedState?.name ?? '',
+    city: '',
+  });
+}
+  
 }

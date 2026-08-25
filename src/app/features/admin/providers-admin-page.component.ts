@@ -20,11 +20,11 @@ import {
   ProviderType,
 } from '../../core/models/admin-provider.model';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
+import { ICountry, Country, IState, ICity, City, State } from 'country-state-city';
 
 @Component({
   selector: 'app-providers-admin-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './providers-admin-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -56,13 +56,21 @@ export class ProvidersAdminPageComponent {
     phone: ['', [Validators.minLength(7), Validators.maxLength(32)]],
     professionalReference: ['', Validators.maxLength(200)],
     providerType: this.formBuilder.control<ProviderType>('INDIVIDUAL', Validators.required),
-    countryCode: ['NG', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
-    stateOrRegion: ['', [Validators.required, Validators.maxLength(120)]],
-    city: ['', [Validators.required, Validators.maxLength(120)]],
+    countryCode: ['NG', [Validators.required]],
+    stateOrRegion: ['', [Validators.required]],
+    city: ['', [Validators.required]],
   });
 
+  readonly countries: ICountry[] =
+  Country.getAllCountries();
+
+states: IState[] = [];
+cities: ICity[] = [];
+
+selectedStateCode = '';
   constructor() {
     this.load(1);
+    this.onCountryChange('NG')
   }
 
   applyFilters(): void {
@@ -136,6 +144,42 @@ export class ProvidersAdminPageComponent {
       this.error.set('The invitation link could not be copied. Select and copy it manually.');
     }
   }
+
+  onCountryChange(countryCode: string): void {
+  this.states =
+    State.getStatesOfCountry(countryCode);
+
+  this.cities = [];
+  this.selectedStateCode = '';
+
+  this.createForm.patchValue({
+    stateOrRegion: '',
+    city: '',
+  });
+}
+
+onStateChange(stateCode: string): void {
+  const countryCode =
+    this.createForm.controls.countryCode.value ?? '';
+
+  const state = this.states.find(
+    (item) => item.isoCode === stateCode,
+  );
+
+  this.selectedStateCode = stateCode;
+
+  this.cities =
+    City.getCitiesOfState(
+      countryCode,
+      stateCode,
+    );
+
+  this.createForm.patchValue({
+    // Backend receives the state NAME, not ISO code.
+    stateOrRegion: state?.name ?? '',
+    city: '',
+  });
+}
 
   private load(page: number): void {
     if (this.loading()) return;

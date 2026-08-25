@@ -19,6 +19,8 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ProviderServiceAreasApiService } from '../../core/services/provider-service-areas-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
+import { ICountry, IState, ICity } from 'country-state-city';
 
 @Component({
   selector: 'app-provider-service-areas',
@@ -47,14 +49,24 @@ export class ProviderServiceAreasComponent implements OnInit {
   readonly editingId = signal<string | null>(null);
   readonly form = this.fb.group({
     providerServiceId: ['', Validators.required],
-    countryCode: ['NG', [Validators.required, Validators.pattern(/^[A-Z]{2}$/)]],
-    stateOrRegion: ['', [Validators.required, Validators.maxLength(120)]],
-    city: ['', Validators.maxLength(120)],
+    countryCode: ['NG', [Validators.required]],
+    stateOrRegion: ['', [Validators.required]],
+    city: [''],
     postalCode: ['', Validators.maxLength(30)],
   });
+private readonly locationData = inject(LocationDataService);
+
+readonly countries: ICountry[] =
+  this.locationData.getCountries();
+
+areaStates: IState[] = [];
+areaCities: ICity[] = [];
+
+selectedAreaStateCode = '';
 
   ngOnInit(): void {
     this.load();
+    this.onAreaCountryChange('NG')
   }
 
   load(): void {
@@ -145,6 +157,41 @@ export class ProviderServiceAreasComponent implements OnInit {
     if (!globalThis.confirm(`Confirm ${action} for this service area?`)) return;
     this.run(this.areasApi.setActive(area.id, !area.isActive), `Service area ${action}d.`);
   }
+
+  onAreaCountryChange(countryCode: string): void {
+  this.areaStates =
+    this.locationData.getStates(countryCode);
+
+  this.areaCities = [];
+  this.selectedAreaStateCode = '';
+
+  this.form.patchValue({
+    stateOrRegion: '',
+    city: '',
+  });
+}
+
+onAreaStateChange(stateCode: string): void {
+  const countryCode =
+    this.form.controls.countryCode.value ?? '';
+
+  const selectedState = this.areaStates.find(
+    (state) => state.isoCode === stateCode,
+  );
+
+  this.selectedAreaStateCode = stateCode;
+
+  this.areaCities =
+    this.locationData.getCities(
+      countryCode,
+      stateCode,
+    );
+
+  this.form.patchValue({
+    stateOrRegion: selectedState?.name ?? '',
+    city: '',
+  });
+}
 
   private run(
     operation: ReturnType<ProviderServiceAreasApiService['create']>,

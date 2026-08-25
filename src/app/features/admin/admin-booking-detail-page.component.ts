@@ -26,12 +26,11 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-admin-booking-detail-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [ DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-booking-detail-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

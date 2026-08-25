@@ -7,7 +7,6 @@ import { finalize } from 'rxjs';
 
 import { ProviderOffer, ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
-import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 const OFFER_STATUSES: readonly ProviderOfferStatus[] = [
@@ -21,7 +20,7 @@ const OFFER_STATUSES: readonly ProviderOfferStatus[] = [
 
 @Component({
   selector: 'app-provider-offers-page',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, ProviderSessionHeaderComponent],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './provider-offers-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

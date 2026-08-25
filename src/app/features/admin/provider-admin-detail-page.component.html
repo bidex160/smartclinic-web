@@ -345,31 +345,69 @@
               <option value="OTHER">Other</option>
             </select>
           </div>
-          <div>
-            <label for="edit-country" class="font-bold">Country code</label
-            ><input
-              id="edit-country"
-              formControlName="countryCode"
-              maxlength="2"
-              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 uppercase"
-            />
-          </div>
-          <div>
-            <label for="edit-region" class="font-bold">State or region</label
-            ><input
-              id="edit-region"
-              formControlName="stateOrRegion"
-              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3"
-            />
-          </div>
-          <div>
-            <label for="edit-city" class="font-bold">City</label
-            ><input
-              id="edit-city"
-              formControlName="city"
-              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3"
-            />
-          </div>
+        <div>
+  <label for="edit-country" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="edit-country"
+    formControlName="countryCode"
+    (change)="onCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<div>
+  <label for="edit-region" class="font-bold">
+    State or region
+  </label>
+
+  <select
+    id="edit-region"
+    [value]="selectedStateCode"
+    (change)="onStateChange($any($event.target).value)"
+    [disabled]="!profileForm.controls.countryCode.value"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of states; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<div>
+  <label for="edit-city" class="font-bold">
+    City
+  </label>
+
+  <select
+    id="edit-city"
+    formControlName="city"
+    [disabled]="!selectedStateCode"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of cities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
           <div>
             <label for="edit-reference" class="font-bold"
               >Professional reference

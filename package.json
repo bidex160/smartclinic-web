@@ -18,6 +18,7 @@
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
     "@paystack/inline-js": "^2.22.2",
+    "country-state-city": "^3.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

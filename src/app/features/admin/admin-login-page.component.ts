@@ -7,11 +7,10 @@ import { finalize } from 'rxjs';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
 
 @Component({
   selector: 'app-admin-login-page',
-  imports: [ReactiveFormsModule, RouterLink, AdminSessionHeaderComponent],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './admin-login-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

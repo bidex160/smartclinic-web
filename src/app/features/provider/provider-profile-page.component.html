@@ -149,34 +149,72 @@
           <option value="OTHER">Other</option>
         </select>
       </div>
-      <div>
-        <label for="profile-country" class="font-bold">Country code</label
-        ><input
-          id="profile-country"
-          placeholder="e.g. NG"
-          maxlength="2"
-          formControlName="countryCode"
-          class="mt-2 min-h-12 w-full rounded-lg border px-3"
-        />
-      </div>
-      <div>
-        <label for="profile-region" class="font-bold">State or region</label
-        ><input
-          id="profile-region"
-          placeholder="e.g. Oyo"
-          formControlName="stateOrRegion"
-          class="mt-2 min-h-12 w-full rounded-lg border px-3"
-        />
-      </div>
-      <div>
-        <label for="profile-city" class="font-bold">City</label
-        ><input
-          id="profile-city"
-          placeholder="e.g. Ibadan"
-          formControlName="city"
-          class="mt-2 min-h-12 w-full rounded-lg border px-3"
-        />
-      </div>
+    <!-- Country -->
+<div>
+  <label for="profile-country" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="profile-country"
+    formControlName="countryCode"
+    (change)="onProfileCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State -->
+<div>
+  <label for="profile-region" class="font-bold">
+    State or region
+  </label>
+
+  <select
+    id="profile-region"
+    [value]="selectedProfileStateCode"
+    (change)="onProfileStateChange($any($event.target).value)"
+    [disabled]="!form.controls.countryCode.value"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of profileStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="profile-city" class="font-bold">
+    City
+  </label>
+
+  <select
+    id="profile-city"
+    formControlName="city"
+    [disabled]="!selectedProfileStateCode"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of profileCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
       @if (profileEditable(current)) {
         <div class="flex flex-wrap gap-3 md:col-span-2">
           <button

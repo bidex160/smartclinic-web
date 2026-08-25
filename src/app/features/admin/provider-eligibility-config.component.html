@@ -265,43 +265,91 @@
               class="mt-2 min-h-11 w-full rounded-lg border px-3"
             />
           </div>
-          <div>
-            <label for="location-city" class="font-bold">City</label
-            ><input
-              id="location-city"
-              formControlName="city"
-              class="mt-2 min-h-11 w-full rounded-lg border px-3"
-            />
-          </div>
-          <div>
-            <label for="location-state" class="font-bold">State or region</label
-            ><input
-              id="location-state"
-              formControlName="state"
-              class="mt-2 min-h-11 w-full rounded-lg border px-3"
-            />
-          </div>
-          <div>
-            <label for="location-postal" class="font-bold"
-              >Postal code <span class="font-normal text-slate-500">(optional)</span></label
-            ><input
-              id="location-postal"
-              formControlName="postalCode"
-              maxlength="30"
-              autocomplete="postal-code"
-              placeholder="e.g. 200103"
-              class="mt-2 min-h-11 w-full rounded-lg border px-3"
-            />
-          </div>
-          <div>
-            <label for="location-country" class="font-bold">Country code</label
-            ><input
-              id="location-country"
-              maxlength="2"
-              formControlName="countryCode"
-              class="mt-2 min-h-11 w-full rounded-lg border px-3 uppercase"
-            />
-          </div>
+         <!-- Country -->
+<div>
+  <label for="location-country" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="location-country"
+    formControlName="countryCode"
+    (change)="onLocationCountryChange($any($event.target).value)"
+    class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State -->
+<div>
+  <label for="location-state" class="font-bold">
+    State or region
+  </label>
+
+  <select
+    id="location-state"
+    [value]="selectedLocationStateCode"
+    (change)="onLocationStateChange($any($event.target).value)"
+    [disabled]="!locationForm.controls.countryCode.value"
+    class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of locationStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="location-city" class="font-bold">
+    City
+  </label>
+
+  <select
+    id="location-city"
+    formControlName="city"
+    [disabled]="!selectedLocationStateCode"
+    class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of locationCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- Postal code -->
+<div>
+  <label for="location-postal" class="font-bold">
+    Postal code
+    <span class="font-normal text-slate-500">
+      (optional)
+    </span>
+  </label>
+
+  <input
+    id="location-postal"
+    formControlName="postalCode"
+    maxlength="30"
+    autocomplete="postal-code"
+    placeholder="e.g. 200103"
+    class="mt-2 min-h-11 w-full rounded-lg border px-3"
+  />
+</div>
           <button
             type="submit"
             [disabled]="mutating()"

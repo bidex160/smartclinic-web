@@ -19,7 +19,6 @@ import {
 } from '../../core/models/admin-provider-assignment.model';
 import { ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
 
 const ASSIGNMENT_STATUSES: readonly ProviderOfferStatus[] = [
   'OFFERED',

@@ -15,12 +15,11 @@ import { finalize } from 'rxjs';
 
 import { ProviderOffer, ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
-import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-provider-offer-detail-page',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, ProviderSessionHeaderComponent],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './provider-offer-detail-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
