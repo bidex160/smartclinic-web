@@ -5,7 +5,9 @@ export interface ReferralSummary {
   readonly referralCode: string;
   readonly links: Record<ReferralTargetType, string>;
   readonly availablePoints: number;
+  readonly reservedPoints: number;
   readonly lifetimeEarnedPoints: number;
+  readonly lifetimeRedeemedPoints: number;
   readonly currentLevel: { readonly code: string; readonly name: string } | null;
   readonly nextLevel: { readonly code: string; readonly name: string } | null;
   readonly progress: { readonly patients: ReferralProgress; readonly clinics: ReferralProgress; readonly laboratories: ReferralProgress; readonly pharmacies: ReferralProgress };

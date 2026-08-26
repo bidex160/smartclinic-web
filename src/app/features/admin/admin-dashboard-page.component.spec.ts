@@ -29,7 +29,7 @@ describe('AdminDashboardPageComponent', () => {
   });
 });
 
-async function setup(summary: any = { bookings: { awaitingFunding: 21, pendingProviderMatch: 22, scheduled: 23, inProgress: 24, completed: 25, needsAttention: 26 }, matching: { activeOffers: 27 }, providers: { pendingReview: 28, active: 29 }, referrals: { registered: 31, qualified: 32, level1Achieved: 33, pointsIssued: 34 } }, fail = false) {
+async function setup(summary: any = { bookings: { awaitingFunding: 21, pendingProviderMatch: 22, scheduled: 23, inProgress: 24, completed: 25, needsAttention: 26 }, matching: { activeOffers: 27 }, providers: { pendingReview: 28, active: 29 }, referrals: { registered: 31, qualified: 32, level1Achieved: 33, pointsIssued: 34 }, withdrawals: { requested: 35, processing: 36, paid: 37, failed: 38, pointsReserved: 39 } }, fail = false) {
   const summaryApi = { getSummary: vi.fn(() => fail ? throwError(() => new Error('raw')) : of(summary)) };
   const queueApi = { getQueue: vi.fn(() => of({ items: [], page: 1, limit: 5, total: 0, totalPages: 0 })) };
   await TestBed.configureTestingModule({ imports: [AdminDashboardPageComponent], providers: [provideRouter([]), { provide: AdminDashboardApiService, useValue: summaryApi }, { provide: AdminMatchingQueueApiService, useValue: queueApi }] }).compileComponents();

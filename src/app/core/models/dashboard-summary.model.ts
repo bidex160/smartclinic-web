@@ -17,4 +17,5 @@ export interface AdminDashboardSummary {
   readonly matching: { readonly activeOffers: number };
   readonly providers: { readonly pendingReview: number; readonly active: number };
   readonly referrals: { readonly registered: number; readonly qualified: number; readonly level1Achieved: number; readonly pointsIssued: number };
+  readonly withdrawals: { readonly requested: number; readonly processing: number; readonly paid: number; readonly failed: number; readonly pointsReserved: number };
 }

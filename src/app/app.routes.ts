@@ -306,6 +306,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/admin-referrals-page.component').then((c) => c.AdminReferralsPageComponent),
       },
       {
+        path: 'reward-withdrawals', title: 'Reward withdrawals | SmartClinic', canActivate: [adminPricingGuard],
+        loadComponent: () => import('./features/admin/admin-reward-withdrawals-page.component').then((c) => c.AdminRewardWithdrawalsPageComponent),
+      },
+      {
+        path: 'reward-withdrawals/:reference', title: 'Reward withdrawal detail | SmartClinic', canActivate: [adminPricingGuard],
+        loadComponent: () => import('./features/admin/admin-reward-withdrawal-detail-page.component').then((c) => c.AdminRewardWithdrawalDetailPageComponent),
+      },
+      {
         path: 'providers',
         title: 'Providers | SmartClinic',
         canActivate: [adminPricingGuard],
