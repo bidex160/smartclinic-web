@@ -104,15 +104,6 @@ export class BookingConfirmationPageComponent {
   constructor() {
     if (this.confirmation()) this.loadPaymentStatus();
     else this.recoverConfirmation();
-        this.route.queryParams.subscribe((params)=>{
-      if(params['trxref']){
-        const reference = this.route.snapshot.paramMap.get('reference')
-        if(reference){
-          console.log(reference)
-          this.checkPaymentStatus(reference)
-        }
-      }
-    })
   }
 
   recoverConfirmation(): void {

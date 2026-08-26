@@ -81,6 +81,7 @@ export class PatientLayoutComponent {
     { label: 'Dashboard', route: '/me/dashboard', exact: true },
     { label: 'My Health Checks', route: '/me/health-checks', exact: true },
     { label: 'Book Health Check', route: '/me/book', exact: true },
+    { label: 'Referrals & Rewards', route: '/me/referrals', exact: true },
     { label: 'Profile', route: '/me/profile', exact: true },
   ] as const;
   logout(): void {

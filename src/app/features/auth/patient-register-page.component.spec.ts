@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
@@ -40,5 +40,13 @@ describe('PatientRegisterPageComponent', () => {
     expect(TestBed.inject(AuthStateService).authenticated()).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('Account created');
     expect(fixture.nativeElement.querySelector('select[name="role"]')).toBeNull();
+  });
+  it('captures an explicit referral query value without browser persistence', async () => {
+    const register = vi.fn(() => of({}));
+    await TestBed.configureTestingModule({ imports: [PatientRegisterPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ ref: 'SC-ABC123' }) } } }, { provide: AuthApiService, useValue: { register } }] }).compileComponents();
+    const component = TestBed.createComponent(PatientRegisterPageComponent).componentInstance;
+    component.form.setValue({ givenName: 'Ada', familyName: 'Okafor', email: 'ada@example.test', phone: '', password: 'secure-password' }); component.register();
+    expect(register).toHaveBeenCalledWith(expect.objectContaining({ referralCode: 'SC-ABC123' }));
+    expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(0);
   });
 });

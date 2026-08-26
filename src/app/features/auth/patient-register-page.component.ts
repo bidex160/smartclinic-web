@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthApiService } from '../../core/services/auth-api.service';
 
@@ -14,6 +14,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
 export class PatientRegisterPageComponent {
   private readonly fb = inject(FormBuilder).nonNullable;
   private readonly api = inject(AuthApiService);
+  private readonly referralCode = inject(ActivatedRoute).snapshot.queryParamMap.get('ref')?.trim() || null;
   readonly pending = signal(false);
   readonly submitted = signal(false);
   readonly success = signal(false);
@@ -42,6 +43,7 @@ export class PatientRegisterPageComponent {
         email: value.email.trim().toLowerCase(),
         ...(value.phone.trim() && { phone: value.phone.trim() }),
         password: value.password,
+        ...(this.referralCode && { referralCode: this.referralCode }),
       })
       .pipe(finalize(() => this.pending.set(false)))
       .subscribe({
@@ -51,7 +53,9 @@ export class PatientRegisterPageComponent {
         },
         error: (error: HttpErrorResponse) => {
           this.error.set(
-            error.status === 409
+            this.referralCode && error.status === 400
+              ? 'This referral link is no longer valid. Ask the person who invited you for a new link.'
+              : error.status === 409
               ? 'An account already exists for this email. Sign in instead.'
               : error.status === 0
                 ? 'SmartClinic could not be reached. Check your connection and try again.'

@@ -72,6 +72,14 @@ export const routes: Routes = [
       ),
   },
   {
+  path: 'login',
+  title: 'Sign in to My SmartClinic | SmartClinic',
+  loadComponent: () =>
+    import('./features/auth/login-page.component').then(
+      (component) => component.LoginPageComponent,
+    ),
+},
+  {
     path: 'me',
     component: PatientLayoutComponent,
     children: [
@@ -100,6 +108,10 @@ export const routes: Routes = [
           import('./features/results/patient-profile-page.component').then(
             (c) => c.PatientProfilePageComponent,
           ),
+      },
+      {
+        path: 'referrals', title: 'Referrals & Rewards | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/results/referrals-page.component').then((c) => c.ReferralsPageComponent),
       },
       {
         path: 'book',
@@ -135,6 +147,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/results/patient-health-check-detail-page.component').then(
             (c) => c.PatientHealthCheckDetailPageComponent,
+          ),
+      },
+      {
+        path: 'payment-return/:reference',
+        title: 'Verify Health Check payment | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-payment-return-page.component').then(
+            (c) => c.PatientPaymentReturnPageComponent,
           ),
       },
       {
@@ -279,6 +300,10 @@ export const routes: Routes = [
           import('./features/admin/package-prices-admin-page.component').then(
             (component) => component.PackagePricesAdminPageComponent,
           ),
+      },
+      {
+        path: 'referrals', title: 'Referrals | SmartClinic', canActivate: [adminPricingGuard],
+        loadComponent: () => import('./features/admin/admin-referrals-page.component').then((c) => c.AdminReferralsPageComponent),
       },
       {
         path: 'providers',

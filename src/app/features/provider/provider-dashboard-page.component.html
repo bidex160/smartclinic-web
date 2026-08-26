@@ -40,6 +40,7 @@
             <article class="rounded-2xl border bg-white p-5"><p class="font-semibold text-slate-600">In Progress</p><p class="mt-2 text-4xl font-bold text-brand-800">{{ totals.healthChecks.inProgress }}</p><a routerLink="/provider/appointments" class="mt-4 inline-flex font-bold text-brand-700 underline">View Health Checks</a></article>
             <article class="rounded-2xl border bg-white p-5"><p class="font-semibold text-slate-600">Completed</p><p class="mt-2 text-4xl font-bold text-brand-800">{{ totals.healthChecks.completed }}</p><p class="mt-4 text-sm text-slate-500">Completed work total</p></article>
           </div>
+          @if (totals.referrals; as rewards) { <section class="mt-8 rounded-2xl border bg-white p-6"><h2 class="text-xl font-bold text-brand-900">Referrals & Rewards</h2><p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p><p class="mt-2">{{ rewards.currentLevel?.name ?? 'Working toward Level 1' }}</p><p class="mt-2 text-sm text-slate-600">Patients {{ rewards.qualifiedPatients }} · Clinics {{ rewards.qualifiedClinics }} · Laboratories {{ rewards.qualifiedLaboratories }} · Pharmacies {{ rewards.qualifiedPharmacies }}</p><p class="mt-3 text-sm text-slate-500">Referral details are available only to provider accounts that also have USER patient-portal authority.</p></section> }
         }
       </section>
 

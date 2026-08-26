@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
+import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { PatientDashboardPageComponent } from './patient-dashboard-page.component';
 
 describe('PatientDashboardPageComponent', () => {
@@ -32,7 +33,7 @@ describe('PatientDashboardPageComponent', () => {
     };
     await TestBed.configureTestingModule({
       imports: [PatientDashboardPageComponent],
-      providers: [provideRouter([]), { provide: HealthCheckResultsApiService, useValue: api }],
+      providers: [provideRouter([]), { provide: HealthCheckResultsApiService, useValue: api }, { provide: ReferralsApiService, useValue: { summary: () => of({ availablePoints: 340, completed: false, progress: { patients: { qualified: 7, required: 10 }, clinics: { qualified: 1, required: 2 }, laboratories: { qualified: 2, required: 2 }, pharmacies: { qualified: 0, required: 2 } } }) } }],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientDashboardPageComponent);
     fixture.detectChanges();
@@ -43,5 +44,6 @@ describe('PatientDashboardPageComponent', () => {
     expect(writeText).toHaveBeenCalledWith('SCP-8K4M-27QD');
     expect(fixture.nativeElement.textContent).toContain('Patient ID copied');
     expect(fixture.nativeElement.textContent).not.toContain('balance');
+    expect(fixture.nativeElement.textContent).toContain('340 points');
   });
 });

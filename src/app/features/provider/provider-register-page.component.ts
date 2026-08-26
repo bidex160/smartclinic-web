@@ -8,7 +8,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ReferralTargetType } from '../../core/models/referral.model';
 import { finalize } from 'rxjs';
 import { ProviderType } from '../../core/models/admin-provider.model';
 import { ProviderOnboardingProfile } from '../../core/models/provider-onboarding.model';
@@ -25,6 +26,9 @@ import { ICountry, IState, ICity } from 'country-state-city';
 export class ProviderRegisterPageComponent {
   private readonly api = inject(ProviderOnboardingApiService);
   private readonly fb = inject(FormBuilder).nonNullable;
+  private readonly route = inject(ActivatedRoute);
+  private readonly referralCode = this.route.snapshot.queryParamMap.get('ref')?.trim() || null;
+  private readonly intendedReferralType = this.readReferralType();
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('errorSummary');
   readonly submitting = signal(false);
   readonly result = signal<ProviderOnboardingProfile | null>(null);
@@ -75,6 +79,8 @@ constructor(){
         countryCode: value.countryCode.trim().toUpperCase(),
         stateOrRegion: value.stateOrRegion.trim(),
         city: value.city.trim(),
+        ...(this.referralCode && { referralCode: this.referralCode }),
+        ...(this.intendedReferralType && { intendedReferralType: this.intendedReferralType }),
       })
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
@@ -93,6 +99,11 @@ constructor(){
           queueMicrotask(() => this.errorSummary()?.nativeElement.focus());
         },
       });
+  }
+
+  private readReferralType(): ReferralTargetType | null {
+    const value = this.route.snapshot.queryParamMap.get('type');
+    return value === 'CLINIC' || value === 'LABORATORY' || value === 'PHARMACY' ? value : null;
   }
 
   onRegisterCountryChange(countryCode: string): void {

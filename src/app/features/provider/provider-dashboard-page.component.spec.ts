@@ -43,7 +43,7 @@ describe('ProviderDashboardPageComponent', () => {
   });
 });
 
-async function setup(onboardingStatus = 'APPROVED', status = 'ACTIVE', summary: any = { offers: { new: 11 }, appointments: { today: 12, upcoming: 13 }, healthChecks: { inProgress: 14, completed: 15 } }, failSummary = false) {
+async function setup(onboardingStatus = 'APPROVED', status = 'ACTIVE', summary: any = { offers: { new: 11 }, appointments: { today: 12, upcoming: 13 }, healthChecks: { inProgress: 14, completed: 15 }, referrals: { availablePoints: 300, currentLevel: null, nextLevel: { code: 'LEVEL_1', name: 'Level 1' }, qualifiedPatients: 7, qualifiedClinics: 1, qualifiedLaboratories: 2, qualifiedPharmacies: 0 } }, failSummary = false) {
   const summaryApi = { getSummary: vi.fn(() => failSummary ? throwError(() => new Error('raw')) : of(summary)) };
   const offersApi = { getOffers: vi.fn(() => of([offer()])) };
   await TestBed.configureTestingModule({ imports: [ProviderDashboardPageComponent], providers: [provideRouter([]), { provide: AuthSessionService, useValue: { logout: () => of(true) } }, { provide: ProviderDashboardApiService, useValue: summaryApi }, { provide: ProviderOffersApiService, useValue: offersApi }, { provide: ProviderOnboardingApiService, useValue: { getProfile: () => of({ displayName: 'Provider', status, onboardingStatus }) } }] }).compileComponents();

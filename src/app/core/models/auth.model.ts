@@ -12,6 +12,7 @@ export interface CurrentUser {
 export interface LoginRequest {
   readonly email: string;
   readonly password: string;
+  readonly referralCode?: string;
 }
 
 export interface LoginResponse {

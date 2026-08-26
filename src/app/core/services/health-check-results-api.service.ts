@@ -12,6 +12,11 @@ import {
   CreateSelfHealthCheckRequest,
 } from '../models/patient-health-check-history.model';
 import { PublicBookingResponse } from '../models/public-booking.model';
+import {
+  PublicBookingCheckoutOption,
+  PublicBookingPaymentInitiationResult,
+  PublicBookingPaymentStatus,
+} from '../models/public-booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class HealthCheckResultsApiService {
@@ -48,6 +53,29 @@ export class HealthCheckResultsApiService {
 
   createMyHealthCheck(request: CreateSelfHealthCheckRequest): Observable<PublicBookingResponse> {
     return this.http.post<PublicBookingResponse>(`${this.baseUrl}/me/health-checks`, request);
+  }
+
+  initiateMyHealthCheckPayment(
+    reference: string,
+    option: PublicBookingCheckoutOption,
+  ): Observable<PublicBookingPaymentInitiationResult> {
+    return this.http.post<PublicBookingPaymentInitiationResult>(
+      `${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/payment`,
+      { option },
+    );
+  }
+
+  getMyHealthCheckPayment(reference: string): Observable<PublicBookingPaymentStatus> {
+    return this.http.get<PublicBookingPaymentStatus>(
+      `${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/payment`,
+    );
+  }
+
+  verifyMyHealthCheckPayment(reference: string): Observable<PublicBookingPaymentStatus> {
+    return this.http.post<PublicBookingPaymentStatus>(
+      `${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/payment/verify`,
+      null,
+    );
   }
 
   getGuestResult(token: string): Observable<HealthCheckResult> {

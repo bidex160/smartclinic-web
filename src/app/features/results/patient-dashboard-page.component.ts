@@ -7,6 +7,8 @@ import {
   PatientPortalProfile,
 } from '../../core/models/patient-health-check-history.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
+import { ReferralSummary } from '../../core/models/referral.model';
+import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
 @Component({
   selector: 'app-patient-dashboard-page',
@@ -71,6 +73,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
           }
         </div>
       </section>
+      <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="dashboard-rewards-heading"><h2 id="dashboard-rewards-heading" class="text-2xl font-bold text-brand-900">Referrals & Rewards</h2>@if (referralsLoading()) { <p role="status" class="mt-3">Loading rewards…</p> } @else if (referralsError()) { <div role="alert" class="mt-3"><p>We could not load your referral information.</p><button type="button" (click)="loadReferrals()" class="mt-2 font-bold text-brand-700 underline">Try again</button></div> } @else if (referrals(); as rewards) { <p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p><p class="mt-2">{{ rewards.completed ? 'Level 1 achieved' : 'Working toward Level 1' }}</p><p class="mt-2 text-sm text-slate-600">Patients {{ rewards.progress.patients.qualified }}/{{ rewards.progress.patients.required }} · Clinics {{ rewards.progress.clinics.qualified }}/{{ rewards.progress.clinics.required }} · Laboratories {{ rewards.progress.laboratories.qualified }}/{{ rewards.progress.laboratories.required }} · Pharmacies {{ rewards.progress.pharmacies.qualified }}/{{ rewards.progress.pharmacies.required }}</p><a routerLink="/me/referrals" class="mt-4 inline-flex font-bold text-brand-700 underline">View Referrals & Rewards</a> }</section>
       @if (history()?.items?.length === 0) {
         <section class="mt-8 rounded-2xl bg-white p-7 text-center">
           <h2 class="text-xl font-bold">No Health Checks yet.</h2>
@@ -99,11 +102,13 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 })
 export class PatientDashboardPageComponent {
   private readonly api = inject(HealthCheckResultsApiService);
+  private readonly referralsApi = inject(ReferralsApiService);
   readonly profile = signal<PatientPortalProfile | null>(null);
   readonly history = signal<PatientHealthCheckHistoryResponse | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly copyFeedback = signal('');
+  readonly referrals = signal<ReferralSummary|null>(null); readonly referralsLoading = signal(false); readonly referralsError = signal(false);
   readonly summary = computed(() => {
     const items = this.history()?.items ?? [];
     const count = (category: string) =>
@@ -117,7 +122,9 @@ export class PatientDashboardPageComponent {
   });
   constructor() {
     this.load();
+    this.loadReferrals();
   }
+  loadReferrals(): void { if(this.referralsLoading())return;this.referralsLoading.set(true);this.referralsError.set(false);this.referralsApi.summary().pipe(finalize(()=>this.referralsLoading.set(false))).subscribe({next:v=>this.referrals.set(v),error:()=>this.referralsError.set(true)}); }
   load(): void {
     if (this.loading()) return;
     this.loading.set(true);

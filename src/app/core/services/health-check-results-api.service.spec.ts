@@ -101,6 +101,24 @@ describe('HealthCheckResultsApiService', () => {
     expect(pending.request.body.visitAddress.city).toBe('Ibadan');
     pending.flush({});
   });
+  it('uses authenticated current-patient payment endpoints without ownership identifiers', () => {
+    const { api, http } = setup();
+    api.initiateMyHealthCheckPayment('SC/1', 'PAY_NOW').subscribe();
+    const initialize = http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1/payment');
+    expect(initialize.request.method).toBe('POST');
+    expect(initialize.request.body).toEqual({ option: 'PAY_NOW' });
+    expect(initialize.request.body).not.toEqual(expect.objectContaining({ patientId: expect.anything(), userId: expect.anything(), amount: expect.anything() }));
+    initialize.flush({});
+    api.getMyHealthCheckPayment('SC/1').subscribe();
+    const status = http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1/payment');
+    expect(status.request.method).toBe('GET');
+    status.flush({});
+    api.verifyMyHealthCheckPayment('SC/1').subscribe();
+    const verify = http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1/payment/verify');
+    expect(verify.request.method).toBe('POST');
+    expect(verify.request.body).toBeNull();
+    verify.flush({});
+  });
   function setup() {
     TestBed.configureTestingModule({
       providers: [

@@ -4,10 +4,11 @@ import { finalize } from 'rxjs';
 import { PatientHealthCheckDetail } from '../../core/models/patient-health-check-history.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { UtilsService } from '../../core/services/utils.service';
+import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
 
 @Component({
   selector: 'app-patient-health-check-detail-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PatientPaymentPanelComponent],
   template: `
     <main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
       <a routerLink="/me/health-checks" class="font-bold text-brand-700">← My Health Checks</a>
@@ -112,6 +113,11 @@ import { UtilsService } from '../../core/services/utils.service';
             </section>
           }
         </div>
+        @if (d.fundingStatus !== 'SETTLED' && d.bookingStatus === 'AWAITING_FUNDING') {
+          <div class="mt-7"><app-patient-payment-panel [reference]="d.bookingReference" (statusChanged)="paymentChanged()" /></div>
+        } @else if (d.fundingStatus === 'SETTLED') {
+          <p class="mt-7 rounded-xl bg-green-50 p-4 font-bold text-green-950">Funding settled · {{ statusLabel(d.bookingStatus) }}</p>
+        }
         @if (d.hasCompletedResult) {
           <a
             [routerLink]="['/me/health-checks', d.bookingReference, 'results']"
@@ -134,11 +140,17 @@ export class PatientHealthCheckDetailPageComponent {
   readonly loading = signal(true);
   readonly error = signal(false);
   constructor() {
+    this.load();
+  }
+  load(): void {
+    this.loading.set(true);
+    this.error.set(false);
     this.api
       .getMyHealthCheck(this.reference)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({ next: (detail) => this.detail.set(detail), error: () => this.error.set(true) });
   }
+  paymentChanged(): void { this.load(); }
   statusLabel(status: string): string {
     return (
       (

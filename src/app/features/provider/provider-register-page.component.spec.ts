@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { ProviderRegisterPageComponent } from './provider-register-page.component';
@@ -50,11 +50,15 @@ describe('ProviderRegisterPageComponent', () => {
     expect(conflict.component.error()).toContain('already exists');
     expect(conflict.component.error()).not.toContain('raw identity');
   });
-  async function setup(register = () => of(profile())) {
+  it.each(['CLINIC', 'LABORATORY', 'PHARMACY'] as const)('captures %s referral intent without overriding provider selection', async (type) => {
+    const { component, api } = await setup(() => of(profile()), { ref: 'SC-ABC123', type }); component.form.setValue(valid()); component.register();
+    expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ referralCode: 'SC-ABC123', intendedReferralType: type, providerType: 'INDIVIDUAL' }));
+  });
+  async function setup(register = () => of(profile()), query: Record<string,string> = {}) {
     const api = { register: vi.fn(register) };
     await TestBed.configureTestingModule({
       imports: [ProviderRegisterPageComponent],
-      providers: [provideRouter([]), { provide: ProviderOnboardingApiService, useValue: api }],
+      providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(query) } } }, { provide: ProviderOnboardingApiService, useValue: api }],
     }).compileComponents();
     return {
       component: TestBed.createComponent(ProviderRegisterPageComponent).componentInstance,
