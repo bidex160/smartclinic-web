@@ -9,6 +9,6 @@ export const providerGuard: CanActivateFn = async () => {
 
   await authState.waitForInitialization();
 
-  if (!authState.authenticated()) return router.createUrlTree(['/admin/login']);
+  if (!authState.authenticated()) return router.createUrlTree(['/login']);
   return authState.isProvider() ? true : router.createUrlTree(['/provider/access-denied']);
 };

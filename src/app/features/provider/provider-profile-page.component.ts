@@ -143,7 +143,7 @@ selectedProfileStateCode = '';
     );
   }
   logout(): void {
-    this.session.logout().subscribe(() => void this.router.navigate(['/admin/login']));
+    this.session.logout().subscribe(() => void this.router.navigate(['/login']));
   }
   private run(
     operation: ReturnType<ProviderOnboardingApiService['submit']>,

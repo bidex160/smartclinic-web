@@ -63,7 +63,7 @@ export class AuthSessionService {
 
   handleRefreshFailure(error: unknown): void {
     this.authState.clear();
-    void this.router.navigate(['/admin/login']);
+    void this.router.navigate(['/login']);
     if (!(error instanceof HttpErrorResponse && error.status === 401)) {
       this.authState.setError('Your session ended. Please sign in again.');
     }
@@ -75,7 +75,7 @@ export class AuthSessionService {
       catchError(() => of(false)),
       finalize(() => {
         this.authState.clear();
-        void this.router.navigate(['/admin/login']);
+        void this.router.navigate(['/login']);
       }),
     );
   }

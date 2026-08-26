@@ -32,6 +32,7 @@ export class AppComponent {
         this.currentUrl.set(event.urlAfterRedirects);
         this.menuOpen.set(false);
       });
+      console.log(this.authState.currentUser())
   }
 
   logout(): void {

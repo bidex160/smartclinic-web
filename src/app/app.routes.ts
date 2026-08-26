@@ -177,14 +177,6 @@ export const routes: Routes = [
         (component) => component.GuestHealthCheckResultPageComponent,
       ),
   },
-  {
-    path: 'admin/login',
-    title: 'Staff sign in | SmartClinic',
-    loadComponent: () =>
-      import('./features/admin/admin-login-page.component').then(
-        (component) => component.AdminLoginPageComponent,
-      ),
-  },
       {
     path: 'provider/register',
     title: 'Provider application | SmartClinic',

@@ -62,7 +62,7 @@ describe('authenticatedUserGuard', () => {
     expect(settled).toBe(false);
     state.completeInitialization();
     expect(await result).not.toBe(true);
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/admin/login']);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
   function setup() {
     const router = { createUrlTree: vi.fn(() => ({ redirect: true }) as unknown as UrlTree) };

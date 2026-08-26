@@ -97,7 +97,7 @@ Proposed public routes:
 | `/book/review`                                | Review the draft; submission occurs only on explicit confirmation           |
 | `/book/confirmation/:reference`               | Display or securely recover confirmation and initialize guest funding       |
 | `/bookings/:reference`                        | Retrieve a booking where the authorization/verification contract permits it |
-| `/admin/login`                                | In-memory administrator and operations login                                |
+| `/login`                                | In-memory administrator and operations login                                |
 | `/admin/package-prices`                       | Role-guarded package-price operations                                       |
 | `/admin/providers`                            | Guarded provider listing, filtering, and creation                           |
 | `/admin/providers/:id`                        | Guarded provider profile, status, and account-link operations               |

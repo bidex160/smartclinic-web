@@ -18,7 +18,7 @@ describe('adminPricingGuard', () => {
     const { state, router } = setup();
     state.completeInitialization();
     expect(await runGuard()).not.toBe(true);
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/admin/login']);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
 
   it('redirects an authenticated USER to access denied', async () => {

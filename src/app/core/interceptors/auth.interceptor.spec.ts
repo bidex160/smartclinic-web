@@ -96,7 +96,7 @@ describe('authInterceptor', () => {
       .flush({}, { status: 401, statusText: 'Unauthorized' });
 
     expect(auth.authenticated()).toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(['/admin/login']);
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
     http.verify();
   });
 
