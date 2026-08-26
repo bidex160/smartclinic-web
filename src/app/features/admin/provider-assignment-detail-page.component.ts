@@ -17,12 +17,11 @@ import {
 } from '../../core/models/admin-provider-assignment.model';
 import { ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-provider-assignment-detail-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink],
   templateUrl: './provider-assignment-detail-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

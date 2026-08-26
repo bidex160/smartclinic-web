@@ -51,7 +51,7 @@ describe('AuthSessionService', () => {
 
     expect(api.logout).toHaveBeenCalledOnce();
     expect(state.authenticated()).toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(['/admin/login']);
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
   it('clears local state when backend logout fails', async () => {

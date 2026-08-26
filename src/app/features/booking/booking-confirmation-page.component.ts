@@ -276,13 +276,14 @@ export class BookingConfirmationPageComponent {
     });
   }
 
-  checkPaymentStatus(): void {
+  checkPaymentStatus(bookingReference?: string): void {
     const booking = this.confirmation();
-    if (!booking || this.paymentStatusRefreshing()) return;
+    if ((!booking || this.paymentStatusRefreshing()) && !bookingReference) return;
+    console.log(bookingReference)
 
     this.paymentStatusRefreshing.set(true);
     this.paymentStatusError.set(null);
-    this.bookingsApi.refreshPaymentStatus(booking.bookingReference).subscribe({
+    this.bookingsApi.refreshPaymentStatus(booking?.bookingReference || bookingReference!).subscribe({
       next: (status) => {
         this.applyPaymentStatus(status);
         this.paymentStatusRefreshing.set(false);

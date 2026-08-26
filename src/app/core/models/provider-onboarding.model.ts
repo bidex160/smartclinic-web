@@ -13,6 +13,8 @@ export interface ProviderProfileFields {
 export interface RegisterProviderRequest extends ProviderProfileFields {
   readonly email: string;
   readonly password: string;
+  readonly referralCode?: string;
+  readonly intendedReferralType?: import('./referral.model').ReferralTargetType;
 }
 
 export type UpdateProviderProfileRequest = Partial<ProviderProfileFields>;

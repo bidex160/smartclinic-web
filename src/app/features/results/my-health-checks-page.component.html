@@ -1,33 +1,46 @@
-<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-  <header class="max-w-3xl">
-    <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Your care</p>
-    <h1 class="mt-3 text-3xl font-bold text-brand-900 sm:text-4xl">My Health Checks</h1>
-    <p class="mt-4 text-lg text-slate-600">
-      Review your Smart Health Check history and open completed measurement results.
-    </p>
+<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Patient Portal</p>
+      <h1 class="mt-2 text-3xl font-bold text-brand-900">My Health Checks</h1>
+      <p class="mt-3 text-slate-600">
+        Review your appointments and open completed measurement results.
+      </p>
+    </div>
     <a
-      routerLink="/me/link-health-history"
-      class="mt-4 inline-flex rounded font-bold text-brand-700 underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-brand-200"
-      >Link previous guest history</a
+      routerLink="/me/book"
+      class="inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white"
+      >Book Health Check</a
     >
   </header>
-
+  <nav aria-label="Health Check groups" class="mt-7 flex gap-2 overflow-x-auto pb-2">
+    @for (category of categories; track category.value) {
+      <button
+        type="button"
+        (click)="selectedCategory.set(category.value)"
+        [attr.aria-pressed]="selectedCategory() === category.value"
+        class="min-h-11 shrink-0 rounded-full border px-4 font-semibold aria-pressed:border-brand-700 aria-pressed:bg-brand-50 aria-pressed:text-brand-900"
+      >
+        {{ category.label }}
+      </button>
+    }
+  </nav>
   <section
-    class="mt-8 rounded-2xl border border-brand-100 bg-white p-5 shadow-soft sm:p-7"
-    aria-labelledby="history-filters"
+    class="mt-6 rounded-2xl border border-brand-100 bg-white p-5"
+    aria-labelledby="filters-heading"
   >
-    <h2 id="history-filters" class="text-xl font-bold text-brand-900">Filter Health Checks</h2>
+    <h2 id="filters-heading" class="text-lg font-bold">Additional filters</h2>
     <form
       [formGroup]="filterForm"
       (ngSubmit)="applyFilters()"
-      class="mt-5 grid gap-4 sm:grid-cols-3"
+      class="mt-4 grid gap-4 sm:grid-cols-3"
     >
       <div>
         <label for="patient-booking-status" class="block text-sm font-bold">Booking status</label
         ><select
           id="patient-booking-status"
           formControlName="bookingStatus"
-          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-12 w-full rounded-xl border px-3"
         >
           <option value="">All booking statuses</option>
           @for (status of bookingStatuses; track status) {
@@ -41,7 +54,7 @@
         ><select
           id="patient-encounter-status"
           formControlName="encounterStatus"
-          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-12 w-full rounded-xl border px-3"
         >
           <option value="">All Health Check statuses</option>
           @for (status of encounterStatuses; track status) {
@@ -54,177 +67,169 @@
         ><select
           id="patient-page-size"
           formControlName="limit"
-          class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+          class="mt-2 min-h-12 w-full rounded-xl border px-3"
         >
           @for (size of pageSizes; track size) {
             <option [ngValue]="size">{{ size }}</option>
           }
         </select>
       </div>
-      <div class="flex flex-wrap gap-3 sm:col-span-3">
+      <div class="flex gap-3 sm:col-span-3">
         <button
           type="submit"
           [disabled]="loading()"
-          class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+          class="rounded-xl bg-brand-700 px-6 py-3 font-bold text-white"
         >
           Apply filters</button
         ><button
           type="button"
           (click)="clearFilters()"
           [disabled]="loading()"
-          class="min-h-12 rounded-xl border border-brand-600 px-6 font-bold text-brand-700 focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+          class="rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700"
         >
           Clear filters
         </button>
       </div>
     </form>
   </section>
-
   @if (loading()) {
-    <p role="status" aria-live="polite" class="mt-6 rounded-xl bg-brand-50 p-5">
-      Loading your Smart Health Checks…
-    </p>
+    <p role="status" class="mt-6 rounded-xl bg-brand-50 p-5">Loading your Health Checks…</p>
   }
   @if (error()) {
-    <section
-      #errorSummary
-      tabindex="-1"
-      role="alert"
-      class="mt-6 rounded-xl border border-red-200 bg-red-50 p-5 outline-none focus:ring-4 focus:ring-red-200"
-    >
-      <h2 class="font-bold">Health Checks unavailable</h2>
-      <p class="mt-1">{{ error() }}</p>
+    <section #errorSummary tabindex="-1" role="alert" class="mt-6 rounded-xl bg-red-50 p-5">
+      <h2 class="font-bold">We couldn't load your Health Checks.</h2>
+      <p class="mt-1 font-semibold">Health Checks unavailable</p>
       <button
         type="button"
         (click)="load()"
-        class="mt-4 min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white"
+        class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
       >
         Try again
       </button>
     </section>
   }
-
   @if (!loading() && !error() && response().items.length === 0) {
-    <section class="mt-6 rounded-2xl border border-brand-100 bg-white p-7 text-center shadow-soft">
-      <h2 class="text-xl font-bold text-brand-900">No Health Checks yet</h2>
+    <section class="mt-7 rounded-2xl bg-white p-8 text-center">
+      <h2 class="text-xl font-bold">No Health Checks yet.</h2>
       <p class="mt-2 text-slate-600">No Smart Health Checks are available for this account yet.</p>
       <a
-        routerLink="/health-check/packages"
-        class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200"
-        >Book a Smart Health Check</a
+        routerLink="/me/book"
+        class="mt-5 inline-flex rounded-xl bg-brand-700 px-6 py-3 font-bold text-white"
+        >Book your first Health Check</a
       >
     </section>
   }
-
-  @if (response().items.length > 0) {
-    <section class="mt-8" aria-labelledby="history-heading">
-      <div class="flex items-end justify-between gap-4">
+  @if (!loading() && !error() && response().items.length > 0 && visibleItems().length === 0) {
+    <p class="mt-7 rounded-xl bg-white p-6 text-slate-600">
+      No Health Checks are in this group on the current page.
+    </p>
+  }
+  @if (visibleItems().length > 0) {
+    <section class="mt-7" aria-labelledby="history-heading">
+      <div class="flex justify-between">
         <h2 id="history-heading" class="text-2xl font-bold text-brand-900">Health Check history</h2>
-        <p class="text-sm text-slate-600">{{ response().total }} total</p>
+        <p>{{ response().total }} total</p>
       </div>
-      <ul class="mt-4 grid gap-5 lg:grid-cols-2">
-        @for (item of response().items; track item.bookingReference) {
-          <li class="rounded-2xl border border-brand-100 bg-white p-6 shadow-soft">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="text-sm font-bold text-brand-700">{{ item.bookingReference }}</p>
-                <h3 class="mt-1 text-xl font-bold text-brand-900">
-                  {{ item.healthCheckPackage.name }}
-                </h3>
-                <p class="text-slate-600">{{ item.fulfilmentMode.name }}</p>
-              </div>
-              <span class="rounded-full bg-brand-50 px-3 py-2 text-sm font-bold text-brand-900">{{
-                bookingStatusLabel(item.bookingStatus)
-              }}</span>
-            </div>
-            <dl class="mt-5 grid gap-3 sm:grid-cols-2">
-              <div>
-                <dt class="text-sm text-slate-600">Health Check status</dt>
-                <dd class="font-semibold">{{ encounterStatusLabel(item.encounterStatus) }}</dd>
-              </div>
-              @if (item.fulfilmentMode.code === 'HOME_VISIT' && item.visitAddressSummary; as area) {
-                <div>
-                  <dt class="text-sm text-slate-600">Home visit area</dt>
-                  <dd class="font-semibold">
-                    {{ area.city }}, {{ area.stateOrRegion }}, {{ area.countryCode }}
-                  </dd>
-                </div>
-              }
-              <div>
-                <dt class="text-sm text-slate-600">Provider</dt>
-                <dd class="font-semibold">{{ item.providerDisplayName ?? 'Not assigned yet' }}</dd>
-              </div>
-              <div class="sm:col-span-2">
-                <dt class="text-sm text-slate-600">Preferred schedule</dt>
-                <dd class="font-semibold">
-                  {{
-                    schedule(
+      <div class="mt-4 overflow-x-auto rounded-2xl border border-brand-100 bg-white">
+        <table class="min-w-[70rem] w-full text-left">
+          <thead class="bg-brand-50 text-sm">
+            <tr>
+              <th class="p-4">Date</th>
+              <th class="p-4">Booking</th>
+              <th class="p-4">Health Check</th>
+              <th class="p-4">Appointment</th>
+              <th class="p-4">Fulfilment</th>
+              <th class="p-4">Provider</th>
+              <th class="p-4">Payment</th>
+              <th class="p-4">Status</th>
+              <th class="p-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of visibleItems(); track item.bookingReference) {
+              <tr class="border-t align-top">
+                <td class="p-4">{{ utilsService.formatDate(item.createdAt) }}</td>
+                <td class="p-4 font-mono font-bold">{{ item.bookingReference }}</td>
+                <td class="p-4 font-semibold">{{ item.healthCheckPackage.name }}</td>
+                <td class="p-4">
+                  <strong>Requested appointment</strong><br />{{
+                    utilsService.formatAppointment(
                       item.preferredDate,
                       item.preferredTimeFrom,
-                      item.preferredTimeTo,
-                      item.preferredTimezone
+                      item.preferredTimeTo
                     )
-                  }}
-                </dd>
-              </div>
-              <div class="sm:col-span-2 rounded-xl border border-brand-100 bg-brand-50 p-4">
-                <dt class="font-bold text-brand-900">Confirmed appointment</dt>
-                @if (item.confirmedSchedule; as appointment) {
-                  <dd class="mt-2 font-bold">
-                    {{ appointment.date }} · {{ utilsService.formatTime(appointment.timeFrom) }}–{{
-                      utilsService.formatTime(appointment.timeTo)
-                    }}
-                  </dd>
-                  <dd class="text-sm text-slate-700">{{ appointment.timezone }}</dd>
-                  <dd class="mt-1">Provider: {{ item.providerDisplayName ?? 'Not available' }}</dd>
-                  @if (appointment.providerLocationName) {
-                    <dd>Location: {{ appointment.providerLocationName }}</dd>
+                  }}<br /><small>{{ item.preferredTimezone }}</small>
+                  @if (item.confirmedSchedule; as s) {
+                    <br /><strong class="mt-2 inline-block">Confirmed appointment</strong><br />{{
+                      utilsService.formatAppointment(s.date, s.timeFrom, s.timeTo)
+                    }}<br /><small>{{ s.timezone }}</small>
+                    @if (s.providerLocationName) {
+                      <br /><small>Appointment location: {{ s.providerLocationName }}</small>
+                    }
                   }
-                } @else {
-                  <dd class="mt-2 text-slate-600">Not scheduled</dd>
-                }
-              </div>
-              <div>
-                <dt class="text-sm text-slate-600">Created</dt>
-                <dd>{{ item.createdAt | date: 'mediumDate' }}</dd>
-              </div>
-              <div>
-                <dt class="text-sm text-slate-600">Results</dt>
-                <dd>{{ item.hasCompletedResult ? 'Available' : 'Results not available yet' }}</dd>
-              </div>
-            </dl>
-            @if (item.hasCompletedResult) {
-              <a
-                [routerLink]="['/me/health-checks', item.bookingReference, 'results']"
-                class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white focus:ring-4 focus:ring-brand-200"
-                >View results</a
-              >
+                </td>
+                <td class="p-4">
+                  {{ item.fulfilmentMode.name }}
+                  @if (item.visitAddressSummary; as a) {
+                    <br /><small
+                      >{{ item.fulfilmentMode.code === 'HOME_VISIT' ? 'Home visit' : 'Your location' }}:
+                      {{ a.city }}, {{ a.stateOrRegion }}, {{ a.countryCode }}</small
+                    >
+                  }
+                </td>
+                <td class="p-4">{{ item.providerDisplayName ?? 'Not assigned yet' }}</td>
+                <td class="p-4">
+                  {{ item.fundingStatus === 'SETTLED' ? 'Payment confirmed' : 'Awaiting payment' }}
+                </td>
+                <td class="p-4">
+                  <strong>{{ bookingStatusLabel(item.bookingStatus) }}</strong
+                  ><br /><small>{{ encounterStatusLabel(item.encounterStatus) }}</small>
+                </td>
+                <td class="p-4">
+                  <a
+                    [routerLink]="['/me/health-checks', item.bookingReference]"
+                    class="font-bold text-brand-700 underline"
+                    >View details</a
+                  >
+                  @if (item.hasCompletedResult) {
+                    <br /><a
+                      [routerLink]="['/me/health-checks', item.bookingReference, 'results']"
+                      class="font-bold text-brand-700 underline"
+                      >View results</a
+                    >
+                  } @else {
+                    <br /><small>Results not available yet</small>
+                  }
+                </td>
+              </tr>
             }
-          </li>
-        }
-      </ul>
-      <nav
-        class="mt-7 flex items-center justify-between gap-4"
-        aria-label="Health Check history pages"
-      >
+          </tbody>
+        </table>
+      </div>
+      <nav class="mt-6 flex items-center justify-between" aria-label="Health Check pages">
         <button
           type="button"
           (click)="goToPage(response().page - 1)"
-          [disabled]="loading() || response().page <= 1"
-          class="min-h-11 rounded-xl border border-brand-600 px-5 font-bold text-brand-700 focus:ring-4 focus:ring-brand-200 disabled:opacity-50"
+          [disabled]="response().page <= 1"
+          class="rounded-xl border px-5 py-3 font-bold disabled:opacity-50"
         >
           Previous
         </button>
-        <p aria-live="polite">Page {{ response().page }} of {{ response().totalPages }}</p>
+        <p>Page {{ response().page }} of {{ response().totalPages }}</p>
         <button
           type="button"
           (click)="goToPage(response().page + 1)"
-          [disabled]="loading() || response().page >= response().totalPages"
-          class="min-h-11 rounded-xl border border-brand-600 px-5 font-bold text-brand-700 focus:ring-4 focus:ring-brand-200 disabled:opacity-50"
+          [disabled]="response().page >= response().totalPages"
+          class="rounded-xl border px-5 py-3 font-bold disabled:opacity-50"
         >
           Next
         </button>
       </nav>
     </section>
   }
+  <a
+    routerLink="/me/link-health-history"
+    class="mt-8 inline-flex font-bold text-brand-700 underline"
+    >Link previous guest history</a
+  >
 </main>

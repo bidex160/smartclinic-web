@@ -188,15 +188,18 @@
       @if (canRespond()) {
         <section class="mt-8 border-t border-slate-100 pt-6" aria-labelledby="response-title">
           <h2 id="response-title" class="text-xl font-bold text-brand-900">Respond to offer</h2>
-          <p class="mt-2 text-slate-600">Review the assignment before recording your response.</p>
+          <p class="mt-2 text-slate-600">
+            Review the appointment before recording your response. Accepting confirms and schedules
+            this work; no routine operations confirmation follows.
+          </p>
           <div class="mt-5 flex flex-wrap gap-3">
             <button
               type="button"
-              (click)="accept()"
+              (click)="requestAcceptance()"
               [disabled]="mutating()"
               class="min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
             >
-              {{ mutating() ? 'Submitting…' : 'Accept offer' }}
+              Accept appointment
             </button>
             <button
               type="button"
@@ -209,11 +212,19 @@
           </div>
 
           @if (declineOpen()) {
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <form
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="decline-offer-title"
               [formGroup]="declineForm"
               (ngSubmit)="decline()"
-              class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-5"
+              class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
             >
+              <h3 id="decline-offer-title" class="text-xl font-bold text-red-900">
+                Decline this offer?
+              </h3>
+              <p class="mt-2 text-slate-700">SmartClinic will record that you cannot take this appointment.</p>
               <label for="decline-reason" class="block font-bold text-slate-900"
                 >Reason <span class="font-normal text-slate-600">(optional)</span></label
               >
@@ -246,12 +257,55 @@
                 </button>
               </div>
             </form>
+            </div>
           }
         </section>
       } @else {
         <p class="mt-8 rounded-xl bg-slate-50 p-4 text-slate-700">
           This offer is no longer actionable and has no available response actions.
         </p>
+      }
+      @if (acceptConfirmationOpen()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="accept-appointment-title"
+            class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <h2 id="accept-appointment-title" class="text-xl font-bold text-brand-900">
+              Accept appointment?
+            </h2>
+            <p class="mt-3 text-slate-700">
+              By accepting, you confirm that you can perform this Health Check at the scheduled
+              appointment time. SmartClinic will confirm and schedule the appointment immediately.
+            </p>
+            @if (currentOffer.fulfilmentMode.code === 'PROVIDER_LOCATION') {
+              <p class="mt-3 text-sm text-slate-600">
+                The matched provider location is selected by SmartClinic; you are not selecting a
+                branch here.
+              </p>
+            }
+            <div class="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                (click)="accept()"
+                [disabled]="mutating()"
+                class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:opacity-60"
+              >
+                {{ mutating() ? 'Accepting…' : 'Yes, accept appointment' }}
+              </button>
+              <button
+                type="button"
+                (click)="cancelAcceptance()"
+                [disabled]="mutating()"
+                class="min-h-11 rounded-lg border px-5 font-bold focus:outline-none focus:ring-4 focus:ring-brand-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </section>
+        </div>
       }
     </article>
   }

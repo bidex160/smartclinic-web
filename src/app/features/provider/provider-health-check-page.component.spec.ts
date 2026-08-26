@@ -91,6 +91,11 @@ describe('ProviderHealthCheckPageComponent', () => {
     ready.component.complete();
     expect(ready.api.complete).not.toHaveBeenCalled();
     ready.component.requestCompletion();
+    ready.fixture.detectChanges();
+    const dialog = ready.fixture.nativeElement.querySelector('[role="alertdialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(dialog.parentElement.classList.contains('fixed')).toBe(true);
     ready.component.complete();
     expect(ready.api.complete).toHaveBeenCalledOnce();
     expect(ready.component.completed()).toBe(true);

@@ -15,7 +15,8 @@ describe('ProviderAssignmentDetailPageComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Care Provider');
     expect(text).toContain('Ada Okafor');
-    expect(text).toContain('Confirm provider assignment');
+    expect(text).toContain('stale or transitional');
+    expect(text).not.toContain('Confirm provider assignment');
     expect(text).not.toContain('+2348000000000');
     expect(text).not.toContain('payer@example.test');
     expect(

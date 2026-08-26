@@ -23,6 +23,7 @@ export interface ProviderLocation {
   readonly addressLine2: string | null;
   readonly city: string;
   readonly state: string;
+  readonly postalCode: string | null;
   readonly countryCode: string;
   readonly latitude: number | null;
   readonly longitude: number | null;
@@ -36,6 +37,7 @@ export interface ProviderLocationRequest {
   readonly addressLine2?: string | null;
   readonly city: string;
   readonly state: string;
+  readonly postalCode?: string | null;
   readonly countryCode: string;
 }
 export interface ProviderAvailability {

@@ -22,7 +22,8 @@ import { ProviderEligibilityApiService } from '../../core/services/provider-elig
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ProviderEligibilityConfigComponent } from '../admin/provider-eligibility-config.component';
 import { ProviderServiceAreasComponent } from './provider-service-areas.component';
-import { ProviderSessionHeaderComponent } from './provider-session-header.component';
+import { LocationDataService } from '../../core/services/location-data.service';
+import { ICountry, IState, ICity } from 'country-state-city';
 
 @Component({
   selector: 'app-provider-profile-page',
@@ -31,7 +32,6 @@ import { ProviderSessionHeaderComponent } from './provider-session-header.compon
     RouterLink,
     ProviderEligibilityConfigComponent,
     ProviderServiceAreasComponent,
-    ProviderSessionHeaderComponent,
   ],
   providers: [
     ProviderSelfConfigurationApiService,
@@ -59,9 +59,19 @@ export class ProviderProfilePageComponent {
     professionalReference: ['', Validators.maxLength(200)],
     providerType: this.fb.control<ProviderType>('INDIVIDUAL'),
     countryCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
-    stateOrRegion: ['', [Validators.required, Validators.maxLength(120)]],
-    city: ['', [Validators.required, Validators.maxLength(120)]],
+    stateOrRegion: ['', [Validators.required]],
+    city: ['', [Validators.required]],
   });
+
+  private readonly locationData = inject(LocationDataService);
+
+readonly countries: ICountry[] =
+  this.locationData.getCountries();
+
+profileStates: IState[] = [];
+profileCities: ICity[] = [];
+
+selectedProfileStateCode = '';
   constructor() {
     this.load();
   }
@@ -133,7 +143,7 @@ export class ProviderProfilePageComponent {
     );
   }
   logout(): void {
-    this.session.logout().subscribe(() => void this.router.navigate(['/admin/login']));
+    this.session.logout().subscribe(() => void this.router.navigate(['/login']));
   }
   private run(
     operation: ReturnType<ProviderOnboardingApiService['submit']>,
@@ -177,6 +187,41 @@ export class ProviderProfilePageComponent {
     };
     return labels[blocker];
   }
+
+  onProfileCountryChange(countryCode: string): void {
+  this.profileStates =
+    this.locationData.getStates(countryCode);
+
+  this.profileCities = [];
+  this.selectedProfileStateCode = '';
+
+  this.form.patchValue({
+    stateOrRegion: '',
+    city: '',
+  });
+}
+
+onProfileStateChange(stateCode: string): void {
+  const countryCode =
+    this.form.controls.countryCode.value ?? '';
+
+  const selectedState = this.profileStates.find(
+    (state) => state.isoCode === stateCode,
+  );
+
+  this.selectedProfileStateCode = stateCode;
+
+  this.profileCities =
+    this.locationData.getCities(
+      countryCode,
+      stateCode,
+    );
+
+  this.form.patchValue({
+    stateOrRegion: selectedState?.name ?? '',
+    city: '',
+  });
+}
   private handle(error: HttpErrorResponse): void {
     this.error.set(
       error.status === 409

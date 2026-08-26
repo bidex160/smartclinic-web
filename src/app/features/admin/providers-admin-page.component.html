@@ -142,31 +142,72 @@
           <option value="OTHER">Other</option>
         </select>
       </div>
-      <div>
-        <label for="country-code" class="font-bold">Country code</label
-        ><input
-          id="country-code"
-          maxlength="2"
-          formControlName="countryCode"
-          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 uppercase focus:ring-4 focus:ring-brand-200"
-        />
-      </div>
-      <div>
-        <label for="provider-region" class="font-bold">State or region</label
-        ><input
-          id="provider-region"
-          formControlName="stateOrRegion"
-          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
-        />
-      </div>
-      <div>
-        <label for="provider-city" class="font-bold">City</label
-        ><input
-          id="provider-city"
-          formControlName="city"
-          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
-        />
-      </div>
+    <!-- Country -->
+<div>
+  <label for="country-code" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="country-code"
+    formControlName="countryCode"
+    (change)="onCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 focus:ring-4 focus:ring-brand-200"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State / Region -->
+<div>
+  <label for="provider-region" class="font-bold">
+    State or region
+  </label>
+
+  <select
+    id="provider-region"
+    [value]="selectedStateCode"
+    (change)="onStateChange($any($event.target).value)"
+    [disabled]="!createForm.controls.countryCode.value"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of states; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="provider-city" class="font-bold">
+    City
+  </label>
+
+  <select
+    id="provider-city"
+    formControlName="city"
+    [disabled]="!selectedStateCode"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of cities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
       <button
         type="submit"
         [disabled]="creating()"

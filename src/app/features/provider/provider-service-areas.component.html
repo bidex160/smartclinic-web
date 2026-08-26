@@ -89,35 +89,81 @@
             }
           </select>
         </div>
-        <div>
-          <label for="area-country" class="font-bold">Country</label>
-          <select
-            id="area-country"
-            formControlName="countryCode"
-            class="mt-2 min-h-12 w-full rounded-lg border px-3"
-          >
-            <option value="NG">Nigeria</option>
-          </select>
-        </div>
-        <div>
-          <label for="area-state" class="font-bold">State / region</label
-          ><input
-            id="area-state"
-            formControlName="stateOrRegion"
-            maxlength="120"
-            class="mt-2 min-h-12 w-full rounded-lg border px-3"
-          />
-        </div>
-        <div>
-          <label for="area-city" class="font-bold"
-            >City <span class="font-normal">(optional)</span></label
-          ><input
-            id="area-city"
-            formControlName="city"
-            maxlength="120"
-            class="mt-2 min-h-12 w-full rounded-lg border px-3"
-          />
-        </div>
+       <!-- Country -->
+<div>
+  <label for="area-country" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="area-country"
+    formControlName="countryCode"
+    (change)="onAreaCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State / Region -->
+<div>
+  <label for="area-state" class="font-bold">
+    State / region
+  </label>
+
+  <select
+    id="area-state"
+    [value]="selectedAreaStateCode"
+    (change)="onAreaStateChange($any($event.target).value)"
+    [disabled]="!form.controls.countryCode.value"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state / region</option>
+
+    @for (state of areaStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="area-city" class="font-bold">
+    City
+    <span class="font-normal text-slate-500">
+      (optional)
+    </span>
+  </label>
+
+  <select
+    id="area-city"
+    formControlName="city"
+    [disabled]="!selectedAreaStateCode"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">
+      All cities in selected state
+    </option>
+
+    @for (city of areaCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+
+  <p class="mt-1 text-sm text-slate-500">
+    Leave city as “All cities” to cover the entire selected state.
+  </p>
+</div>
         <div>
           <label for="area-postal" class="font-bold"
             >Postal code <span class="font-normal">(optional)</span></label

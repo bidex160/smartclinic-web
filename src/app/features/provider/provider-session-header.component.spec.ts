@@ -40,7 +40,7 @@ describe('ProviderSessionHeaderComponent', () => {
     fixture.componentRef.setInput('operational', false);
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Provider setup');
+    expect(text).toContain('Setup');
     expect(text).not.toContain('My Offers');
     expect(text).not.toContain('Appointments / Health Checks');
   });

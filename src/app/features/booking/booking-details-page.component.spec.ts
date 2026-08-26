@@ -77,6 +77,27 @@ describe('BookingDetailsPageComponent', () => {
     expect(text).not.toContain('service-area ID');
   });
 
+  it('shows and requires structured origin address for provider-location matching', () => {
+    state.selectFulfilmentMode({
+      id: 'provider-location-id',
+      code: 'PROVIDER_LOCATION',
+      name: 'Visit provider location',
+      isActive: true,
+    });
+    const fixture = TestBed.createComponent(BookingDetailsPageComponent);
+    fixture.detectChanges();
+    const providerLocationComponent = fixture.componentInstance;
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Your location');
+    expect(text).toContain('match you with an appropriate SmartClinic provider location');
+    expect(text).not.toContain('provider should perform your Health Check');
+    expect(
+      providerLocationComponent.form.controls.visitAddress.controls.addressLine1.hasError(
+        'required',
+      ),
+    ).toBe(true);
+  });
+
   it('renders appointment labels without an end-time or optional scheduling copy', () => {
     const fixture = TestBed.createComponent(BookingDetailsPageComponent);
     fixture.detectChanges();

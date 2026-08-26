@@ -9,6 +9,7 @@ import { providerGuard } from './features/provider/provider-auth.guard';
 import { authenticatedUserGuard } from './features/results/authenticated-user.guard';
 import { AdminLayoutComponent } from './features/admin/admin-layout.component';
 import { ProviderLayoutComponent } from './features/provider/provider-layout.component';
+import { PatientLayoutComponent } from './features/results/patient-layout.component';
 
 export const routes: Routes = [
   {
@@ -63,31 +64,110 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'me/link-health-history',
-    title: 'Link existing health history | SmartClinic',
-    canActivate: [authenticatedUserGuard],
+    path: 'register',
+    title: 'Create a patient account | SmartClinic',
     loadComponent: () =>
-      import('./features/results/link-health-history-page.component').then(
-        (component) => component.LinkHealthHistoryPageComponent,
+      import('./features/auth/patient-register-page.component').then(
+        (component) => component.PatientRegisterPageComponent,
       ),
   },
   {
-    path: 'me/health-checks',
-    title: 'My Health Checks | SmartClinic',
-    canActivate: [authenticatedUserGuard],
-    loadComponent: () =>
-      import('./features/results/my-health-checks-page.component').then(
-        (component) => component.MyHealthChecksPageComponent,
-      ),
-  },
+  path: 'login',
+  title: 'Sign in to My SmartClinic | SmartClinic',
+  loadComponent: () =>
+    import('./features/auth/login-page.component').then(
+      (component) => component.LoginPageComponent,
+    ),
+},
   {
-    path: 'me/health-checks/:bookingReference/results',
-    title: 'My Smart Health Check result | SmartClinic',
-    canActivate: [authenticatedUserGuard],
-    loadComponent: () =>
-      import('./features/results/registered-health-check-result-page.component').then(
-        (component) => component.RegisteredHealthCheckResultPageComponent,
-      ),
+    path: 'me',
+    component: PatientLayoutComponent,
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'access-denied',
+        loadComponent: () =>
+          import('./features/results/patient-access-denied-page.component').then(
+            (c) => c.PatientAccessDeniedPageComponent,
+          ),
+      },
+      {
+        path: 'dashboard',
+        title: 'Patient dashboard | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-dashboard-page.component').then(
+            (c) => c.PatientDashboardPageComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        title: 'My profile | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-profile-page.component').then(
+            (c) => c.PatientProfilePageComponent,
+          ),
+      },
+      {
+        path: 'referrals', title: 'Referrals & Rewards | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/results/referrals-page.component').then((c) => c.ReferralsPageComponent),
+      },
+      {
+        path: 'book',
+        title: 'Book a Health Check | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-booking-page.component').then(
+            (c) => c.PatientBookingPageComponent,
+          ),
+      },
+      {
+        path: 'link-health-history',
+        title: 'Link existing health history | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/link-health-history-page.component').then(
+            (c) => c.LinkHealthHistoryPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks',
+        title: 'My Health Checks | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/my-health-checks-page.component').then(
+            (c) => c.MyHealthChecksPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks/:reference',
+        title: 'Health Check detail | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-health-check-detail-page.component').then(
+            (c) => c.PatientHealthCheckDetailPageComponent,
+          ),
+      },
+      {
+        path: 'payment-return/:reference',
+        title: 'Verify Health Check payment | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-payment-return-page.component').then(
+            (c) => c.PatientPaymentReturnPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks/:bookingReference/results',
+        title: 'My Smart Health Check result | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/registered-health-check-result-page.component').then(
+            (c) => c.RegisteredHealthCheckResultPageComponent,
+          ),
+      },
+    ],
   },
   {
     path: 'health-results/:token',
@@ -97,175 +177,189 @@ export const routes: Routes = [
         (component) => component.GuestHealthCheckResultPageComponent,
       ),
   },
-  {
-    path: 'admin/login',
-    title: 'Staff sign in | SmartClinic',
-    loadComponent: () =>
-      import('./features/admin/admin-login-page.component').then(
-        (component) => component.AdminLoginPageComponent,
-      ),
-  },
-
-    {
-    path: 'provider',
-    component: ProviderLayoutComponent,
-    children: [
-  {
-    path: 'access-denied',
-    title: 'Provider access required | SmartClinic',
-    loadComponent: () =>
-      import('./features/provider/provider-access-denied-page.component').then(
-        (component) => component.ProviderAccessDeniedPageComponent,
-      ),
-  },
-  {
-    path: 'register',
+      {
+    path: 'provider/register',
     title: 'Provider application | SmartClinic',
     loadComponent: () =>
       import('./features/provider/provider-register-page.component').then(
         (component) => component.ProviderRegisterPageComponent,
       ),
   },
+
   {
-    path: 'setup/:token',
-    title: 'Provider account setup | SmartClinic',
-    loadComponent: () =>
-      import('./features/provider/provider-setup-page.component').then(
-        (component) => component.ProviderSetupPageComponent,
-      ),
+    path: 'provider',
+    component: ProviderLayoutComponent,
+    children: [
+      {
+        path: 'access-denied',
+        title: 'Provider access required | SmartClinic',
+        loadComponent: () =>
+          import('./features/provider/provider-access-denied-page.component').then(
+            (component) => component.ProviderAccessDeniedPageComponent,
+          ),
+      },
+      {
+        path: 'setup/:token',
+        title: 'Provider account setup | SmartClinic',
+        loadComponent: () =>
+          import('./features/provider/provider-setup-page.component').then(
+            (component) => component.ProviderSetupPageComponent,
+          ),
+      },
+      {
+        path: 'dashboard',
+        title: 'Provider dashboard | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-dashboard-page.component').then(
+            (component) => component.ProviderDashboardPageComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        title: 'Provider onboarding profile | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-profile-page.component').then(
+            (component) => component.ProviderProfilePageComponent,
+          ),
+      },
+      {
+        path: 'appointments',
+        title: 'Provider appointments | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-appointments-page.component').then(
+            (component) => component.ProviderAppointmentsPageComponent,
+          ),
+      },
+      {
+        path: 'offers',
+        title: 'My offers | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-offers-page.component').then(
+            (component) => component.ProviderOffersPageComponent,
+          ),
+      },
+      {
+        path: 'offers/:id',
+        title: 'Offer details | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-offer-detail-page.component').then(
+            (component) => component.ProviderOfferDetailPageComponent,
+          ),
+      },
+      {
+        path: 'bookings/:reference/health-check',
+        title: 'Smart Health Check encounter | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-health-check-page.component').then(
+            (component) => component.ProviderHealthCheckPageComponent,
+          ),
+      },
+    ],
   },
-  {
-    path: 'dashboard',
-    title: 'Provider dashboard | SmartClinic',
-    canActivate: [providerGuard],
-    loadComponent: () =>
-      import('./features/provider/provider-dashboard-page.component').then(
-        (component) => component.ProviderDashboardPageComponent,
-      ),
-  },
-  {
-    path: 'profile',
-    title: 'Provider onboarding profile | SmartClinic',
-    canActivate: [providerGuard],
-    loadComponent: () =>
-      import('./features/provider/provider-profile-page.component').then(
-        (component) => component.ProviderProfilePageComponent,
-      ),
-  },
-  {
-    path: 'appointments',
-    title: 'Provider appointments | SmartClinic',
-    canActivate: [providerGuard],
-    loadComponent: () =>
-      import('./features/provider/provider-appointments-page.component').then(
-        (component) => component.ProviderAppointmentsPageComponent,
-      ),
-  },
-  {
-    path: 'offers',
-    title: 'My offers | SmartClinic',
-    canActivate: [providerGuard],
-    loadComponent: () =>
-      import('./features/provider/provider-offers-page.component').then(
-        (component) => component.ProviderOffersPageComponent,
-      ),
-  },
-  {
-    path: 'offers/:id',
-    title: 'Offer details | SmartClinic',
-    canActivate: [providerGuard],
-    loadComponent: () =>
-      import('./features/provider/provider-offer-detail-page.component').then(
-        (component) => component.ProviderOfferDetailPageComponent,
-      ),
-  },
-  {
-    path: 'bookings/:reference/health-check',
-    title: 'Smart Health Check encounter | SmartClinic',
-    canActivate: [providerGuard],
-    loadComponent: () =>
-      import('./features/provider/provider-health-check-page.component').then(
-        (component) => component.ProviderHealthCheckPageComponent,
-      ),
-  },
-    ]
-    }, 
   {
     path: 'admin',
     component: AdminLayoutComponent,
-  children: [
-  {
-    path: 'access-denied',
-    title: 'Access denied | SmartClinic',
-    loadComponent: () =>
-      import('./features/admin/admin-access-denied-page.component').then(
-        (component) => component.AdminAccessDeniedPageComponent,
-      ),
-  },
-  {
-    path: 'package-prices',
-    title: 'Package pricing | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/package-prices-admin-page.component').then(
-        (component) => component.PackagePricesAdminPageComponent,
-      ),
-  },
-  {
-    path: 'providers',
-    title: 'Providers | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/providers-admin-page.component').then(
-        (component) => component.ProvidersAdminPageComponent,
-      ),
-  },
-  {
-    path: 'providers/:id',
-    title: 'Provider details | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/provider-admin-detail-page.component').then(
-        (component) => component.ProviderAdminDetailPageComponent,
-      ),
-  },
-  {
-    path: 'matching-queue',
-    title: 'Provider matching queue | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/matching-queue-page.component').then(
-        (component) => component.MatchingQueuePageComponent,
-      ),
-  },
-  {
-    path: 'provider-assignments',
-    title: 'Provider assignments | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/provider-assignments-page.component').then(
-        (component) => component.ProviderAssignmentsPageComponent,
-      ),
-  },
-  {
-    path: 'bookings/:reference',
-    title: 'Operational booking detail | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/admin-booking-detail-page.component').then(
-        (component) => component.AdminBookingDetailPageComponent,
-      ),
-  },
-  {
-    path: 'provider-assignments/:id',
-    title: 'Provider assignment details | SmartClinic',
-    canActivate: [adminPricingGuard],
-    loadComponent: () =>
-      import('./features/admin/provider-assignment-detail-page.component').then(
-        (component) => component.ProviderAssignmentDetailPageComponent,
-      ),
-  },
-    ]
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        title: 'Operations dashboard | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-dashboard-page.component').then(
+            (component) => component.AdminDashboardPageComponent,
+          ),
+      },
+      {
+        path: 'access-denied',
+        title: 'Access denied | SmartClinic',
+        loadComponent: () =>
+          import('./features/admin/admin-access-denied-page.component').then(
+            (component) => component.AdminAccessDeniedPageComponent,
+          ),
+      },
+      {
+        path: 'package-prices',
+        title: 'Package pricing | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/package-prices-admin-page.component').then(
+            (component) => component.PackagePricesAdminPageComponent,
+          ),
+      },
+      {
+        path: 'referrals', title: 'Referrals | SmartClinic', canActivate: [adminPricingGuard],
+        loadComponent: () => import('./features/admin/admin-referrals-page.component').then((c) => c.AdminReferralsPageComponent),
+      },
+      {
+        path: 'reward-withdrawals', title: 'Reward withdrawals | SmartClinic', canActivate: [adminPricingGuard],
+        loadComponent: () => import('./features/admin/admin-reward-withdrawals-page.component').then((c) => c.AdminRewardWithdrawalsPageComponent),
+      },
+      {
+        path: 'reward-withdrawals/:reference', title: 'Reward withdrawal detail | SmartClinic', canActivate: [adminPricingGuard],
+        loadComponent: () => import('./features/admin/admin-reward-withdrawal-detail-page.component').then((c) => c.AdminRewardWithdrawalDetailPageComponent),
+      },
+      {
+        path: 'providers',
+        title: 'Providers | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/providers-admin-page.component').then(
+            (component) => component.ProvidersAdminPageComponent,
+          ),
+      },
+      {
+        path: 'providers/:id',
+        title: 'Provider details | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/provider-admin-detail-page.component').then(
+            (component) => component.ProviderAdminDetailPageComponent,
+          ),
+      },
+      {
+        path: 'matching-queue',
+        title: 'Provider matching queue | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/matching-queue-page.component').then(
+            (component) => component.MatchingQueuePageComponent,
+          ),
+      },
+      {
+        path: 'provider-assignments',
+        title: 'Provider assignments | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/provider-assignments-page.component').then(
+            (component) => component.ProviderAssignmentsPageComponent,
+          ),
+      },
+      {
+        path: 'bookings/:reference',
+        title: 'Operational booking detail | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-booking-detail-page.component').then(
+            (component) => component.AdminBookingDetailPageComponent,
+          ),
+      },
+      {
+        path: 'provider-assignments/:id',
+        title: 'Provider assignment details | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/provider-assignment-detail-page.component').then(
+            (component) => component.ProviderAssignmentDetailPageComponent,
+          ),
+      },
+    ],
   },
 
   {

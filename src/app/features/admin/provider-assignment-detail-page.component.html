@@ -147,54 +147,14 @@
       </section>
 
       @if (current.status === 'ACCEPTED') {
-        <section class="mt-8 border-t border-slate-100 pt-6" aria-labelledby="confirm-title">
-          <h2 id="confirm-title" class="text-xl font-bold text-brand-900">Confirm assignment</h2>
-          <p class="mt-2 text-slate-600">
-            Confirmation makes this provider active for the booking and advances the booking to
-            Provider assigned.
-          </p>
-          @if (!confirmationOpen()) {
-            <button
-              type="button"
-              (click)="requestConfirmation()"
-              class="mt-5 min-h-12 rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
-            >
-              Confirm provider assignment
-            </button>
-          } @else {
-            <div
-              role="group"
-              aria-label="Confirm provider assignment"
-              class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-5"
-            >
-              <p class="font-bold text-amber-950">
-                Confirm {{ current.provider.displayName }} for {{ current.bookingReference }}?
-              </p>
-              <div class="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  (click)="confirmAssignment()"
-                  [disabled]="confirming()"
-                  class="min-h-11 rounded-lg bg-brand-600 px-5 py-2 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-wait disabled:opacity-60"
-                >
-                  {{ confirming() ? 'Confirming…' : 'Yes, confirm assignment' }}
-                </button>
-                <button
-                  type="button"
-                  (click)="cancelConfirmation()"
-                  [disabled]="confirming()"
-                  class="min-h-11 rounded-lg px-5 py-2 font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-brand-200"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          }
-        </section>
+        <p class="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          This accepted state is stale or transitional. Provider acceptance normally confirms and
+          schedules the appointment automatically; refresh or use recovery tooling outside the
+          routine assignment flow.
+        </p>
       } @else {
         <p class="mt-8 rounded-xl bg-slate-50 p-4 text-slate-700">
-          Only an accepted provider response can be confirmed. This assignment is
-          {{ assignmentStatusLabel(current.status).toLowerCase() }}.
+          Assignment status: {{ assignmentStatusLabel(current.status) }}.
         </p>
       }
     </article>

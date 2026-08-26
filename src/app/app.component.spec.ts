@@ -48,7 +48,7 @@ describe('AppComponent', () => {
     const link = [...fixture.nativeElement.querySelectorAll('a')].find((item: HTMLAnchorElement) =>
       item.textContent?.includes('My Health'),
     ) as HTMLAnchorElement;
-    expect(link.getAttribute('href')).toBe('/me/health-checks');
+    expect(link.getAttribute('href')).toBe('/me/dashboard');
     expect(fixture.nativeElement.textContent).toContain('Admin Portal');
     expect(fixture.nativeElement.textContent).not.toContain('Provider Portal');
   });

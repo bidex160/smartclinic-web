@@ -4,6 +4,15 @@ export interface ConfirmedScheduleSummary {
   readonly timeTo: string;
   readonly timezone: string;
   readonly providerLocationName: string | null;
+  readonly providerLocation?: {
+    readonly name: string;
+    readonly addressLine1: string;
+    readonly addressLine2: string | null;
+    readonly city: string;
+    readonly stateOrRegion: string;
+    readonly postalCode: string | null;
+    readonly countryCode: string;
+  } | null;
 }
 
 export interface AdminConfirmedSchedule {
@@ -19,6 +28,7 @@ export interface AdminConfirmedSchedule {
     readonly addressLine2: string | null;
     readonly city: string;
     readonly state: string;
+    readonly postalCode: string | null;
     readonly countryCode: string;
   } | null;
 }
@@ -60,6 +70,7 @@ export interface AdminProviderLocation {
   readonly addressLine2: string | null;
   readonly city: string;
   readonly state: string;
+  readonly postalCode: string | null;
   readonly countryCode: string;
   readonly isActive: boolean;
 }

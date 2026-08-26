@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../config/api-config.token';
-import { CurrentUser, LoginRequest, LoginResponse } from '../models/auth.model';
+import { CurrentUser, LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
@@ -14,6 +14,10 @@ export class AuthApiService {
     return this.http.post<LoginResponse>(`${this.apiConfig.baseUrl}/auth/login`, request, {
       withCredentials: true,
     });
+  }
+
+  register(request: RegisterRequest): Observable<CurrentUser> {
+    return this.http.post<CurrentUser>(`${this.apiConfig.baseUrl}/auth/register`, request);
   }
 
   refresh(): Observable<LoginResponse> {

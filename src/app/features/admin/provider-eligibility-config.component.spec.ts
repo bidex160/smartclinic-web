@@ -50,6 +50,7 @@ describe('ProviderEligibilityConfigComponent', () => {
       addressLine2: '',
       city: 'Ikeja',
       state: 'Lagos',
+      postalCode: '100271',
       countryCode: 'ng',
     });
     component.createLocation();
@@ -58,6 +59,7 @@ describe('ProviderEligibilityConfigComponent', () => {
       addressLine1: '2 Road',
       city: 'Ikeja',
       state: 'Lagos',
+      postalCode: '100271',
       countryCode: 'NG',
     });
     fixture.detectChanges();

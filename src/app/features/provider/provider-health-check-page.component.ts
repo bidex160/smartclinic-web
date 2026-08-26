@@ -26,7 +26,6 @@ import {
 import { ProviderHealthCheckEncountersApiService } from '../../core/services/provider-health-check-encounters-api.service';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { ConfirmedScheduleSummary } from '../../core/models/booking-schedule.model';
-import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 function finiteFourDecimals(control: AbstractControl): ValidationErrors | null {
@@ -39,7 +38,7 @@ function finiteFourDecimals(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-provider-health-check-page',
-  imports: [DatePipe, ProviderSessionHeaderComponent, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './provider-health-check-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

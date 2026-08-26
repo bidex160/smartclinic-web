@@ -31,6 +31,7 @@ import {
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { ICountry, Country, IState, ICity, City, State } from 'country-state-city';
 
 type Tab = 'services' | 'locations' | 'availability' | 'exceptions';
 interface PendingAction {
@@ -154,9 +155,10 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(255)]],
     addressLine1: ['', [Validators.required, Validators.maxLength(255)]],
     addressLine2: ['', Validators.maxLength(255)],
-    city: ['', [Validators.required, Validators.maxLength(120)]],
-    state: ['', [Validators.required, Validators.maxLength(120)]],
-    countryCode: ['NG', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
+    city: ['', [Validators.required]],
+    state: ['', [Validators.required]],
+    postalCode: ['', Validators.maxLength(30)],
+    countryCode: ['NG', [Validators.required]],
   });
   readonly availabilityForm = this.fb.group(
     {
@@ -184,8 +186,16 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     },
     { validators: pairedTimes },
   );
+  readonly countries: ICountry[] =
+  Country.getAllCountries();
+
+locationStates: IState[] = [];
+locationCities: ICity[] = [];
+
+selectedLocationStateCode = '';
   ngOnInit() {
     this.loadAll();
+    this.onLocationCountryChange('NG')
   }
   selectTab(tab: Tab) {
     this.activeTab.set(tab);
@@ -250,6 +260,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       ...(v.addressLine2.trim() && { addressLine2: v.addressLine2.trim() }),
       city: v.city.trim(),
       state: v.state.trim(),
+      ...(v.postalCode.trim() && { postalCode: v.postalCode.trim() }),
       countryCode: v.countryCode.toUpperCase(),
     };
     const operation = this.editingLocation()
@@ -273,6 +284,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
       addressLine2: value.addressLine2 ?? '',
       city: value.city,
       state: value.state,
+      postalCode: value.postalCode ?? '',
       countryCode: value.countryCode,
     });
     this.activeTab.set('locations');
@@ -420,6 +432,42 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   availableLocations(service: ProviderService) {
     return this.activeLocations().filter((l) => !service.providerLocationIds.includes(l.id));
   }
+  onLocationCountryChange(countryCode: string): void {
+  this.locationStates =
+    State.getStatesOfCountry(countryCode);
+
+  this.locationCities = [];
+  this.selectedLocationStateCode = '';
+
+  this.locationForm.patchValue({
+    state: '',
+    city: '',
+  });
+}
+
+onLocationStateChange(stateCode: string): void {
+  const countryCode =
+    this.locationForm.controls.countryCode.value ?? '';
+
+  const state = this.locationStates.find(
+    (item) => item.isoCode === stateCode,
+  );
+
+  this.selectedLocationStateCode = stateCode;
+
+  this.locationCities =
+    City.getCitiesOfState(
+      countryCode,
+      stateCode,
+    );
+
+  this.locationForm.patchValue({
+    // Save the NAME because this is what your backend
+    // matching currently compares against.
+    state: state?.name ?? '',
+    city: '',
+  });
+}
   private mutate(
     operation: Observable<unknown>,
     success: string,

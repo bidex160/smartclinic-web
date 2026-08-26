@@ -28,6 +28,7 @@ export class AuthStateService {
   readonly isProvider = computed(
     () => this.currentUserState()?.roles.includes('PROVIDER') ?? false,
   );
+  readonly isPatient = computed(() => this.currentUserState()?.roles.includes('USER') ?? false);
 
   setSession(response: LoginResponse): void {
     this.accessTokenState.set(response.accessToken);

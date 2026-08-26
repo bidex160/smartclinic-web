@@ -345,31 +345,69 @@
               <option value="OTHER">Other</option>
             </select>
           </div>
-          <div>
-            <label for="edit-country" class="font-bold">Country code</label
-            ><input
-              id="edit-country"
-              formControlName="countryCode"
-              maxlength="2"
-              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 uppercase"
-            />
-          </div>
-          <div>
-            <label for="edit-region" class="font-bold">State or region</label
-            ><input
-              id="edit-region"
-              formControlName="stateOrRegion"
-              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3"
-            />
-          </div>
-          <div>
-            <label for="edit-city" class="font-bold">City</label
-            ><input
-              id="edit-city"
-              formControlName="city"
-              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3"
-            />
-          </div>
+        <div>
+  <label for="edit-country" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="edit-country"
+    formControlName="countryCode"
+    (change)="onCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<div>
+  <label for="edit-region" class="font-bold">
+    State or region
+  </label>
+
+  <select
+    id="edit-region"
+    [value]="selectedStateCode"
+    (change)="onStateChange($any($event.target).value)"
+    [disabled]="!profileForm.controls.countryCode.value"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of states; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<div>
+  <label for="edit-city" class="font-bold">
+    City
+  </label>
+
+  <select
+    id="edit-city"
+    formControlName="city"
+    [disabled]="!selectedStateCode"
+    class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of cities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
           <div>
             <label for="edit-reference" class="font-bold"
               >Professional reference
@@ -548,12 +586,12 @@
     </p>
 
     @if (pendingRevokeId()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="revoke-heading"
-          class="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 p-6"
+          class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-red-300 bg-red-50 p-6 shadow-xl"
         >
           <h2 id="revoke-heading" class="text-xl font-bold text-red-950">
             Revoke this invitation?
@@ -583,12 +621,12 @@
     }
     <app-provider-service-areas [providerId]="id" [editable]="false" />
     @if (confirmation(); as action) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="confirmation-heading"
-          class="mt-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6"
+          class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
           <h2 id="confirmation-heading" class="text-xl font-bold text-amber-950">
             Confirm

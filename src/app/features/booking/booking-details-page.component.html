@@ -281,7 +281,7 @@
             Your appointment will be confirmed after provider assignment.
           </p>
           <div class="mt-6 grid gap-5 sm:grid-cols-2">
-            <div class="sm:col-span-2">
+            <div class="">
               <label for="preferred-date" class="block text-sm font-bold text-slate-800"
                 >Appointment date</label
               >
@@ -313,12 +313,23 @@
             @if (showError(form.controls.preferences.controls.preferredTimeFrom)) {
               <p class="mt-2 text-sm font-semibold text-red-700">Enter an appointment time.</p>
             }
-            @if (isHomeVisit) {
+            @if (requiresVisitAddress) {
               <fieldset
                 [formGroup]="form.controls.visitAddress"
                 class="sm:col-span-2 grid gap-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5 sm:grid-cols-2"
               >
-                <legend class="px-2 text-lg font-bold text-brand-900">Home visit address</legend>
+                <legend class="px-2 text-lg font-bold text-brand-900">
+                  {{ isHomeVisit ? 'Home visit address' : 'Your location' }}
+                </legend>
+                <p class="sm:col-span-2 text-sm leading-6 text-slate-600">
+                  @if (isHomeVisit) {
+                    Enter the address where the provider should perform your Health Check.
+                  } @else {
+                    We use your location to match you with an appropriate SmartClinic provider
+                    location. This is not the confirmed appointment location and does not guarantee
+                    the nearest branch.
+                  }
+                </p>
                 <div class="sm:col-span-2">
                   <label for="visit-address-one" class="block text-sm font-bold"
                     >Address line 1</label
@@ -346,54 +357,95 @@
                     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
                   />
                 </div>
-                <div>
-                  <label for="visit-city" class="block text-sm font-bold">City</label
-                  ><input
-                    id="visit-city"
-                    formControlName="city"
-                    maxlength="120"
-                    autocomplete="address-level2"
-                    placeholder="e.g. Ibadan"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
-                  />
-                </div>
-                <div>
-                  <label for="visit-state" class="block text-sm font-bold">State / region</label
-                  ><input
-                    id="visit-state"
-                    formControlName="stateOrRegion"
-                    maxlength="120"
-                    autocomplete="address-level1"
-                    placeholder="e.g. Oyo"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
-                  />
-                </div>
-                <div>
-                  <label for="visit-postal" class="block text-sm font-bold"
-                    >Postal code <span class="font-normal text-slate-500">(optional)</span></label
-                  ><input
-                    id="visit-postal"
-                    formControlName="postalCode"
-                    maxlength="30"
-                    autocomplete="postal-code"
-                    placeholder="e.g. 200103"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
-                  />
-                </div>
-                <div>
-                  <label for="visit-country" class="block text-sm font-bold">Country</label
-                  ><select
-                    id="visit-country"
-                    formControlName="countryCode"
-                    autocomplete="country"
-                    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4"
-                  >
-                    <option value="NG">Nigeria</option>
-                  </select>
-                </div>
+              <!-- Country -->
+<div>
+  <label for="visit-country" class="block text-sm font-bold">
+    Country
+  </label>
+
+  <select
+    id="visit-country"
+    formControlName="countryCode"
+    autocomplete="country"
+    (change)="onVisitCountryChange($any($event.target).value)"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State / Region -->
+<div>
+  <label for="visit-state" class="block text-sm font-bold">
+    State / region
+  </label>
+
+  <select
+    id="visit-state"
+    [value]="selectedVisitStateCode"
+    (change)="onVisitStateChange($any($event.target).value)"
+    [disabled]="!visitingForm.controls['countryCode']['value']"
+    autocomplete="address-level1"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state / region</option>
+
+    @for (state of visitStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="visit-city" class="block text-sm font-bold">
+    City
+  </label>
+
+  <select
+    id="visit-city"
+    formControlName="city"
+    [disabled]="!selectedVisitStateCode"
+    autocomplete="address-level2"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of visitCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- Postal Code -->
+<div>
+  <label for="visit-postal" class="block text-sm font-bold">
+    Postal code
+    <span class="font-normal text-slate-500">(optional)</span>
+  </label>
+
+  <input
+    id="visit-postal"
+    formControlName="postalCode"
+    maxlength="30"
+    autocomplete="postal-code"
+    placeholder="e.g. 200103"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4"
+  />
+</div>
                 @if (form.controls.visitAddress.touched && form.controls.visitAddress.invalid) {
                   <p class="sm:col-span-2 text-sm font-semibold text-red-700">
-                    Address line 1, city, state/region, and country are required for a home visit.
+                    Address line 1, city, state/region, and country are required.
                   </p>
                 }
               </fieldset>
@@ -413,8 +465,12 @@
                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
               ></textarea>
               <p class="mt-2 text-sm text-slate-500">
-                Landmark, gate instructions, or other directions for the provider. Do not include
-                medical information.
+                @if (isHomeVisit) {
+                  Landmark, gate instructions, or other directions for the provider. Do not include
+                  medical information.
+                } @else {
+                  Supplemental directions only. These do not affect geographic matching.
+                }
               </p>
               @if (showError(form.controls.preferences.controls.locationNote)) {
                 <p class="mt-2 text-sm font-semibold text-red-700">

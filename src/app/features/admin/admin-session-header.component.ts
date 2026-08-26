@@ -83,7 +83,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         <div class="grid gap-1">
           <!-- Dashboard -->
           <a
-            routerLink="/admin"
+            routerLink="/admin/dashboard"
             routerLinkActive="!bg-brand-700 !text-white"
             [routerLinkActiveOptions]="{ exact: true }"
             class="
@@ -155,6 +155,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Provider Assignments
           </a>
+          <a routerLink="/admin/referrals" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Referrals</a>
+          <a routerLink="/admin/reward-withdrawals" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Reward Withdrawals</a>
 
           <!-- PROVIDERS -->
           <p
@@ -285,7 +287,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         "
       >
         <a
-          routerLink="/admin"
+          routerLink="/admin/dashboard"
           class="
             inline-flex items-center gap-2
             rounded-lg
@@ -371,7 +373,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           class="grid gap-1"
         >
           <a
-            routerLink="/admin"
+            routerLink="/admin/dashboard"
             routerLinkActive="bg-brand-100 text-brand-900"
             [routerLinkActiveOptions]="{ exact: true }"
             class="
@@ -426,6 +428,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Provider Assignments
           </a>
+          <a routerLink="/admin/referrals" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Referrals</a>
+          <a routerLink="/admin/reward-withdrawals" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Reward Withdrawals</a>
 
           <p
             class="

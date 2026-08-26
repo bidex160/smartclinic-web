@@ -7,7 +7,6 @@ import { finalize } from 'rxjs';
 
 import { ProviderOffer, ProviderOfferStatus } from '../../core/models/provider-offer.model';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
-import { ProviderSessionHeaderComponent } from './provider-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 const OFFER_STATUSES: readonly ProviderOfferStatus[] = [
@@ -21,7 +20,7 @@ const OFFER_STATUSES: readonly ProviderOfferStatus[] = [
 
 @Component({
   selector: 'app-provider-offers-page',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, ProviderSessionHeaderComponent],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './provider-offers-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -57,7 +56,7 @@ export class ProviderOffersPageComponent {
           this.offers.set(
             status
               ? offers
-              : offers.filter((offer) => offer.status === 'OFFERED' || offer.status === 'ACCEPTED'),
+              : offers.filter((offer) => offer.status === 'OFFERED'),
           ),
         error: (error: HttpErrorResponse) => this.handleError(error),
       });
@@ -66,7 +65,7 @@ export class ProviderOffersPageComponent {
   statusLabel(status: ProviderOfferStatus): string {
     const labels: Record<ProviderOfferStatus, string> = {
       OFFERED: 'Awaiting response',
-      ACCEPTED: 'Accepted',
+      ACCEPTED: 'Accepted (refreshing)',
       CONFIRMED: 'Confirmed',
       DECLINED: 'Declined',
       EXPIRED: 'Expired',

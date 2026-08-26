@@ -279,11 +279,12 @@
         }
       </form>
       @if (completionConfirmation()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="complete-heading"
-          class="mt-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6"
+          class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
           <h2 id="complete-heading" class="text-xl font-bold text-amber-950">
             Complete Health Check?
@@ -309,6 +310,7 @@
             </button>
           </div>
         </section>
+        </div>
       }
     </article>
   }

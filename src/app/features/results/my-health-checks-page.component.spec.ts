@@ -64,10 +64,10 @@ describe('MyHealthChecksPageComponent', () => {
     });
     const { fixture } = await setup(response([scheduled]));
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Preferred schedule');
-    expect(text).toContain('2026-08-20');
+    expect(text).toContain('Requested appointment');
+    expect(text).toContain('20 Aug 2026');
     expect(text).toContain('Confirmed appointment');
-    expect(text).toContain('2026-08-25');
+    expect(text).toContain('25 Aug 2026');
     expect(text).toContain('Central Clinic');
     expect(text).toContain('Scheduled');
     expect(text).not.toContain('location-id');
@@ -213,6 +213,10 @@ function item(
     startedAt: '2026-08-18T09:00:00Z',
     completedAt: null,
     hasCompletedResult: true,
+    portalCategory: 'UPCOMING_ACTIVE',
+    fundingStatus: 'PENDING',
+    checkoutOption: 'PAY_NOW',
+    paymentStatus: 'AWAITING_CUSTOMER_ACTION',
     createdAt: '2026-08-18T08:00:00Z',
     updatedAt: '2026-08-18T09:00:00Z',
     ...changes,

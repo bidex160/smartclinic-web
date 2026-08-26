@@ -26,12 +26,11 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { AdminProviderAssignmentsApiService } from '../../core/services/admin-provider-assignments-api.service';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
 import { UtilsService } from '../../core/services/utils.service';
 
 @Component({
   selector: 'app-admin-booking-detail-page',
-  imports: [AdminSessionHeaderComponent, DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [ DatePipe, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-booking-detail-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -325,7 +324,7 @@ export class AdminBookingDetailPageComponent {
       INCOMPLETE_SCHEDULING: 'Scheduling incomplete',
       INCOMPLETE_VISIT_ADDRESS: 'Visit address incomplete',
       ACTIVE_OFFER: 'Provider offer active',
-      ACCEPTED_AWAITING_CONFIRMATION: 'Awaiting confirmation',
+      ACCEPTED_AWAITING_CONFIRMATION: 'Provider response needs recovery review',
       UNFULFILLABLE: 'Provider match needs review',
       ALREADY_ASSIGNED: 'Provider assigned',
     };

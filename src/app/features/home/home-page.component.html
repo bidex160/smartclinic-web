@@ -20,14 +20,24 @@
       <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
         Choose a Smart Health Check that fits your needs and begin a simple, guided booking journey.
       </p>
-      <div class="mt-9">
-        <a
-          routerLink="/health-check/packages"
-          class="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-brand-600 px-7 py-4 text-center text-base font-bold text-white shadow-soft transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:ring-offset-2 sm:w-auto"
-        >
-          Book My Smart Health Check <span class="ml-2" aria-hidden="true">→</span>
-        </a>
-      </div>
+ <div class="mt-8">
+  <a
+    routerLink="/health-check/packages"
+    class="inline-flex min-h-12 items-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
+  >
+    Book My Smart Health Check →
+  </a>
+
+  <p class="mt-4 text-sm text-slate-600">
+    Already registered?
+    <a
+      routerLink="/login"
+      class="font-bold text-brand-700 underline underline-offset-4"
+    >
+      Open My SmartClinic
+    </a>
+  </p>
+</div>
       <p class="mt-4 text-sm leading-6 text-slate-500">
         Browse available packages before entering any personal information.
       </p>
@@ -102,7 +112,7 @@
         >Become a SmartClinic Provider</a
       >
       <a
-        routerLink="/admin/login"
+        routerLink="/login"
         class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-700 px-6 font-bold text-brand-800 focus:ring-4 focus:ring-brand-200"
         >Provider Sign In</a
       >

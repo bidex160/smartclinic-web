@@ -21,16 +21,16 @@ import { AdminProvidersApiService } from '../../core/services/admin-providers-ap
 import { AdminUserSearchApiService } from '../../core/services/admin-user-search-api.service';
 import { AdminProviderInvitation } from '../../core/models/provider-invitation.model';
 import { ProviderInvitationsApiService } from '../../core/services/provider-invitations-api.service';
-import { AdminSessionHeaderComponent } from './admin-session-header.component';
 import { ProviderEligibilityConfigComponent } from './provider-eligibility-config.component';
 import { ProviderServiceAreasComponent } from '../provider/provider-service-areas.component';
+import { City, ICity, ICountry, IState, State } from 'country-state-city';
+import { LocationDataService } from '../../core/services/location-data.service';
 
 type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'unlink' | null;
 
 @Component({
   selector: 'app-provider-admin-detail-page',
   imports: [
-    AdminSessionHeaderComponent,
     ProviderEligibilityConfigComponent,
     ProviderServiceAreasComponent,
     DatePipe,
@@ -42,6 +42,7 @@ type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'un
 })
 export class ProviderAdminDetailPageComponent {
   private readonly api = inject(AdminProvidersApiService);
+    private readonly locationDataService = inject(LocationDataService);
   private readonly usersApi = inject(AdminUserSearchApiService);
   private readonly invitationsApi = inject(ProviderInvitationsApiService);
   private readonly document = inject(DOCUMENT);
@@ -75,9 +76,9 @@ export class ProviderAdminDetailPageComponent {
     providerType: this.formBuilder.control<'INDIVIDUAL' | 'CLINIC' | 'DIAGNOSTIC_CENTRE' | 'OTHER'>(
       'INDIVIDUAL',
     ),
-    countryCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
-    stateOrRegion: ['', [Validators.required, Validators.maxLength(120)]],
-    city: ['', [Validators.required, Validators.maxLength(120)]],
+    countryCode: ['', [Validators.required]],
+    stateOrRegion: ['', [Validators.required]],
+    city: ['', [Validators.required]],
   });
   readonly rejectionForm = this.formBuilder.group({ reviewNote: ['', Validators.maxLength(1000)] });
   readonly userSearchForm = this.formBuilder.group({
@@ -86,6 +87,12 @@ export class ProviderAdminDetailPageComponent {
   readonly invitationForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
   });
+
+    countries: ICountry[] = this.locationDataService.getCountries();
+  states: IState[] = [];
+  cities: ICity[] = [];
+
+  selectedStateCode = '';
 
   constructor() {
     this.load();
@@ -392,5 +399,40 @@ export class ProviderAdminDetailPageComponent {
         : (messages[error.status] ?? fallback),
     );
     queueMicrotask(() => this.errorSummary()?.nativeElement.focus());
+  }
+
+   onCountryChange(countryCode: string): void {
+    this.states = State.getStatesOfCountry(countryCode);
+    this.cities = [];
+    this.selectedStateCode = '';
+
+    this.profileForm.patchValue({
+      stateOrRegion: '',
+      city: '',
+    });
+  }
+
+  onStateChange(stateCode: string): void {
+    const countryCode = this.profileForm.controls.countryCode.value ?? '';
+
+    const state = this.states.find(
+      (item) => item.isoCode === stateCode,
+    );
+
+    this.selectedStateCode = stateCode;
+
+    this.cities = City.getCitiesOfState(
+      countryCode,
+      stateCode,
+    );
+
+    this.profileForm.patchValue({
+      stateOrRegion: state?.name ?? '',
+      city: '',
+    });
+  }
+
+  onCityChange(cityName: string): void {
+    this.profileForm.controls.city.setValue(cityName);
   }
 }

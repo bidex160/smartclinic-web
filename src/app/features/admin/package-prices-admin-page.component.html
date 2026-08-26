@@ -185,11 +185,21 @@
                     </button>
                   }
                   @if (pendingDeactivateId() === price.id) {
-                    <div
-                      role="group"
-                      aria-label="Confirm price deactivation"
-                      class="flex items-center gap-2"
+                    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <section
+                      role="alertdialog"
+                      aria-modal="true"
+                      aria-labelledby="deactivate-price-title"
+                      class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
                     >
+                      <h2 id="deactivate-price-title" class="text-xl font-bold text-red-900">
+                        Deactivate this package price?
+                      </h2>
+                      <p class="mt-2 text-slate-700">
+                        New bookings will no longer use this active price once the backend accepts
+                        the change.
+                      </p>
+                      <div class="mt-5 flex flex-wrap gap-3">
                       <button
                         type="button"
                         (click)="confirmDeactivation(price.id)"
@@ -204,6 +214,8 @@
                       >
                         Cancel
                       </button>
+                      </div>
+                    </section>
                     </div>
                   }
                 </td>

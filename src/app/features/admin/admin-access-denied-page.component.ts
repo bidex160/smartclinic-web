@@ -11,7 +11,7 @@ import { RouterLink } from '@angular/router';
       An ADMIN or OPERATIONS role is required for this area.
     </p>
     <a
-      routerLink="/admin/login"
+      routerLink="/login"
       class="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-600 px-6 py-3 font-bold text-white focus:outline-none focus:ring-4 focus:ring-brand-200"
       >Return to admin sign in</a
     >

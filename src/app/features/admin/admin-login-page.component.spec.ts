@@ -10,7 +10,7 @@ import { ProviderOnboardingApiService } from '../../core/services/provider-onboa
 import { AdminLoginPageComponent } from './admin-login-page.component';
 
 describe('AdminLoginPageComponent', () => {
-  it('stores an ADMIN login and navigates to pricing', async () => {
+  it('stores an ADMIN login and navigates to the operations dashboard', async () => {
     const response = loginResponse(['ADMIN']);
     const { component, authState, router } = await setup(() => of(response));
     component.form.setValue({ email: 'admin@example.test', password: 'secret' });
@@ -19,7 +19,14 @@ describe('AdminLoginPageComponent', () => {
 
     expect(authState.accessToken()).toBe('access-token');
     expect(authState.currentUser()).toEqual(response.user);
-    expect(router.navigate).toHaveBeenCalledWith(['/admin/package-prices']);
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
+  });
+
+  it('routes an OPERATIONS login to the operations dashboard', async () => {
+    const { component, router } = await setup(() => of(loginResponse(['OPERATIONS'])));
+    component.form.setValue({ email: 'ops@example.test', password: 'secret' });
+    component.login();
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
   });
 
   it('shows a safe error for invalid login', async () => {
@@ -32,17 +39,18 @@ describe('AdminLoginPageComponent', () => {
 
     expect(authState.error()).toBe('We could not sign you in with those details.');
     expect(authState.error()).not.toContain('raw detail');
-    expect(router.navigate).not.toHaveBeenCalledWith(['/admin/package-prices']);
+    expect(router.navigate).not.toHaveBeenCalledWith(['/admin/dashboard']);
   });
 
-  it('denies a USER-only login without navigating to pricing', async () => {
+  it('routes a USER-only login to the patient dashboard', async () => {
     const { component, router } = await setup(() => of(loginResponse(['USER'])));
     component.form.setValue({ email: 'user@example.test', password: 'secret' });
 
     component.login();
 
-    expect(component.accessDenied()).toBe(true);
-    expect(router.navigate).not.toHaveBeenCalledWith(['/admin/package-prices']);
+    expect(component.accessDenied()).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard']);
+    expect(router.navigate).not.toHaveBeenCalledWith(['/admin/dashboard']);
   });
 
   it('routes an active PROVIDER login to the dashboard without breaking admin priority', async () => {

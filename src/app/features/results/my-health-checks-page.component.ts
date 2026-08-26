@@ -1,8 +1,8 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   inject,
   signal,
@@ -16,6 +16,7 @@ import {
   PatientEncounterStatus,
   PatientHealthCheckHistoryFilters,
   PatientHealthCheckHistoryResponse,
+  PatientPortalCategory,
 } from '../../core/models/patient-health-check-history.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { UtilsService } from '../../core/services/utils.service';
@@ -48,7 +49,7 @@ const EMPTY_RESPONSE: PatientHealthCheckHistoryResponse = {
 
 @Component({
   selector: 'app-my-health-checks-page',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './my-health-checks-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -64,6 +65,21 @@ export class MyHealthChecksPageComponent {
   readonly bookingStatuses = BOOKING_STATUSES;
   readonly encounterStatuses = ENCOUNTER_STATUSES;
   readonly pageSizes = [10, 20, 50] as const;
+  readonly selectedCategory = signal<PatientPortalCategory | 'ALL'>('ALL');
+  readonly categories: readonly { value: PatientPortalCategory | 'ALL'; label: string }[] = [
+    { value: 'ALL', label: 'All' },
+    { value: 'AWAITING_PAYMENT', label: 'Awaiting payment' },
+    { value: 'UPCOMING_ACTIVE', label: 'Upcoming / Active' },
+    { value: 'COMPLETED_HISTORY', label: 'Completed' },
+    { value: 'NEEDS_ATTENTION', label: 'Needs attention' },
+    { value: 'CLOSED', label: 'Closed' },
+  ];
+  readonly visibleItems = computed(() => {
+    const selected = this.selectedCategory();
+    return selected === 'ALL'
+      ? this.response().items
+      : this.response().items.filter((item) => item.portalCategory === selected);
+  });
   readonly filterForm = this.formBuilder.group({
     bookingStatus: this.formBuilder.control<PatientBookingStatus | ''>(''),
     encounterStatus: this.formBuilder.control<PatientEncounterStatus | ''>(''),

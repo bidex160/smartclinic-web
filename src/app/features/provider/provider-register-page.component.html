@@ -29,7 +29,7 @@
         operationally active. Normal login is required.
       </p>
       <a
-        routerLink="/admin/login"
+        routerLink="/login"
         class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white"
         >Sign in</a
       >
@@ -108,34 +108,75 @@
           <option value="OTHER">Other</option>
         </select>
       </div>
-      <div>
-        <label for="register-country" class="font-bold">Country code</label
-        ><input
-          id="register-country"
-          maxlength="2"
-          formControlName="countryCode"
-          placeholder="e.g. NG"
-          class="mt-2 min-h-12 w-full rounded-lg border px-3 uppercase"
-        />
-      </div>
-      <div>
-        <label for="register-region" class="font-bold">State or region</label
-        ><input
-          id="register-region"
-          formControlName="stateOrRegion"
-          placeholder="e.g. Oyo"
-          class="mt-2 min-h-12 w-full rounded-lg border px-3"
-        />
-      </div>
-      <div>
-        <label for="register-city" class="font-bold">City</label
-        ><input
-          id="register-city"
-          formControlName="city"
-          placeholder="e.g. Ibadan"
-          class="mt-2 min-h-12 w-full rounded-lg border px-3"
-        />
-      </div>
+   <!-- Country -->
+<div>
+  <label for="register-country" class="font-bold">
+    Country
+  </label>
+
+  <select
+    id="register-country"
+    formControlName="countryCode"
+    (change)="onRegisterCountryChange($any($event.target).value)"
+    autocomplete="country"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- State / Region -->
+<div>
+  <label for="register-region" class="font-bold">
+    State or region
+  </label>
+
+  <select
+    id="register-region"
+    [value]="selectedRegisterStateCode"
+    (change)="onRegisterStateChange($any($event.target).value)"
+    [disabled]="!form.controls.countryCode.value"
+    autocomplete="address-level1"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of registerStates; track state.isoCode) {
+      <option [value]="state.isoCode">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+</div>
+
+<!-- City -->
+<div>
+  <label for="register-city" class="font-bold">
+    City
+  </label>
+
+  <select
+    id="register-city"
+    formControlName="city"
+    [disabled]="!selectedRegisterStateCode"
+    autocomplete="address-level2"
+    class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of registerCities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+</div>
       @if (form.touched && form.invalid) {
         <p role="alert" class="md:col-span-2 text-sm font-semibold text-red-700">
           Complete all required fields with valid values. Passwords require 12–128 characters.

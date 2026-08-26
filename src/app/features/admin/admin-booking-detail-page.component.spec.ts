@@ -41,7 +41,7 @@ describe('AdminBookingDetailPageComponent', () => {
       }),
     });
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Visit address');
+    expect(fixture.nativeElement.textContent).toContain('Home visit address');
     expect(fixture.nativeElement.textContent).toContain('1 Clinic Road');
     expect(fixture.nativeElement.textContent).toContain('Additional directions');
   });
@@ -159,6 +159,22 @@ describe('AdminBookingDetailPageComponent', () => {
     component.booking.set(detail({ status: 'SCHEDULED' }));
     fixture.detectChanges();
     expect(button(fixture, 'Reassign provider')).toBeFalsy();
+  });
+
+  it('does not offer provider-location override without an explicit branch contract', async () => {
+    const { fixture } = await setup({
+      booking: detail({
+        status: 'UNFULFILLABLE',
+        readiness: 'UNFULFILLABLE',
+        fulfilmentMode: { code: 'PROVIDER_LOCATION', name: 'Visit provider location' },
+        assignment: emptyAssignment(),
+      }),
+    });
+    fixture.detectChanges();
+    expect(button(fixture, 'Override provider assignment')).toBeFalsy();
+    expect(fixture.nativeElement.textContent).toContain(
+      'Provider-location override is unavailable',
+    );
   });
 
   it('shows scheduling only for PROVIDER_ASSIGNED with a confirmed assignment and prefills preferences', async () => {

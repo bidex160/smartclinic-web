@@ -6,6 +6,31 @@ import { API_CONFIG } from '../config/api-config.token';
 import { AuthApiService } from './auth-api.service';
 
 describe('AuthApiService', () => {
+  it('registers a patient account without roles or patient identifiers', () => {
+    const { api, http } = setup();
+    api
+      .register({
+        givenName: 'Ada',
+        familyName: 'Okafor',
+        email: 'ada@example.test',
+        phone: '+2348000000000',
+        password: 'secure-password',
+      })
+      .subscribe();
+    const request = http.expectOne('http://api.example.test/api/v1/auth/register');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      givenName: 'Ada',
+      familyName: 'Okafor',
+      email: 'ada@example.test',
+      phone: '+2348000000000',
+      password: 'secure-password',
+    });
+    expect(request.request.body).not.toEqual(
+      expect.objectContaining({ roles: expect.anything(), patientId: expect.anything() }),
+    );
+    request.flush(session().user);
+  });
   it.each(['login', 'refresh', 'logout', 'logout-all'])(
     'sends credentials for the %s request',
     (operation) => {
