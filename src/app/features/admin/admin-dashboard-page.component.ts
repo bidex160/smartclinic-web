@@ -49,4 +49,8 @@ export class AdminDashboardPageComponent {
         error: () => this.attentionError.set('We could not load bookings needing attention.'),
       });
   }
+
+  sortedReferralLevels(levels: AdminDashboardSummary['referrals']['levels']) {
+    return [...levels].sort((left, right) => left.ordinal - right.ordinal);
+  }
 }

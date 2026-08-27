@@ -78,4 +78,8 @@ export class ProviderDashboardPageComponent {
       error: () => this.offersError.set('We could not load your latest offers.'),
     });
   }
+
+  referralTargetLabel(target: string): string {
+    return ({ PATIENT: 'Patients', CLINIC: 'Clinics', LABORATORY: 'Laboratories', PHARMACY: 'Pharmacies' } as Record<string, string>)[target] ?? target;
+  }
 }

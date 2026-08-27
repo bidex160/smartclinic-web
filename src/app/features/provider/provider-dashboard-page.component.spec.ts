@@ -18,6 +18,9 @@ describe('ProviderDashboardPageComponent', () => {
     expect(summaryApi.getSummary).toHaveBeenCalledOnce();
     expect(offersApi.getOffers).toHaveBeenCalledWith('OFFERED');
     expect(text).not.toMatch(/earnings|revenue|settlement/i);
+    expect(text).toContain('Level 2 achieved');
+    expect(text).toContain('Working toward Level 3');
+    expect(text).toContain('22/30');
   });
 
   it('renders legitimate zero values only after a successful response', async () => {
@@ -43,7 +46,7 @@ describe('ProviderDashboardPageComponent', () => {
   });
 });
 
-async function setup(onboardingStatus = 'APPROVED', status = 'ACTIVE', summary: any = { offers: { new: 11 }, appointments: { today: 12, upcoming: 13 }, healthChecks: { inProgress: 14, completed: 15 }, referrals: { availablePoints: 300, currentLevel: null, nextLevel: { code: 'LEVEL_1', name: 'Level 1' }, qualifiedPatients: 7, qualifiedClinics: 1, qualifiedLaboratories: 2, qualifiedPharmacies: 0 } }, failSummary = false) {
+async function setup(onboardingStatus = 'APPROVED', status = 'ACTIVE', summary: any = { offers: { new: 11 }, appointments: { today: 12, upcoming: 13 }, healthChecks: { inProgress: 14, completed: 15 }, referrals: { availablePoints: 300, reservedPoints: 40, currentLevel: { code:'LEVEL_2',name:'Level 2',ordinal:2 }, nextLevel: { code: 'LEVEL_3', name: 'Level 3', ordinal:3 }, nextLevelRequirements:[{targetType:'PATIENT',qualified:22,required:30,remaining:8,completed:false}],highestConfiguredLevelReached:false,qualifiedPatients:22,qualifiedClinics:5,qualifiedLaboratories:4,qualifiedPharmacies:4 } }, failSummary = false) {
   const summaryApi = { getSummary: vi.fn(() => failSummary ? throwError(() => new Error('raw')) : of(summary)) };
   const offersApi = { getOffers: vi.fn(() => of([offer()])) };
   await TestBed.configureTestingModule({ imports: [ProviderDashboardPageComponent], providers: [provideRouter([]), { provide: AuthSessionService, useValue: { logout: () => of(true) } }, { provide: ProviderDashboardApiService, useValue: summaryApi }, { provide: ProviderOffersApiService, useValue: offersApi }, { provide: ProviderOnboardingApiService, useValue: { getProfile: () => of({ displayName: 'Provider', status, onboardingStatus }) } }] }).compileComponents();

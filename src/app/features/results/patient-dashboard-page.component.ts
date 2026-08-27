@@ -73,7 +73,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
           }
         </div>
       </section>
-      <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="dashboard-rewards-heading"><h2 id="dashboard-rewards-heading" class="text-2xl font-bold text-brand-900">Referrals & Rewards</h2>@if (referralsLoading()) { <p role="status" class="mt-3">Loading rewards…</p> } @else if (referralsError()) { <div role="alert" class="mt-3"><p>We could not load your referral information.</p><button type="button" (click)="loadReferrals()" class="mt-2 font-bold text-brand-700 underline">Try again</button></div> } @else if (referrals(); as rewards) { <p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p><p class="mt-2">{{ rewards.completed ? 'Level 1 achieved' : 'Working toward Level 1' }}</p><p class="mt-2 text-sm text-slate-600">Patients {{ rewards.progress.patients.qualified }}/{{ rewards.progress.patients.required }} · Clinics {{ rewards.progress.clinics.qualified }}/{{ rewards.progress.clinics.required }} · Laboratories {{ rewards.progress.laboratories.qualified }}/{{ rewards.progress.laboratories.required }} · Pharmacies {{ rewards.progress.pharmacies.qualified }}/{{ rewards.progress.pharmacies.required }}</p><a routerLink="/me/referrals" class="mt-4 inline-flex font-bold text-brand-700 underline">View Referrals & Rewards</a> }</section>
+      <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="dashboard-rewards-heading"><h2 id="dashboard-rewards-heading" class="text-2xl font-bold text-brand-900">Referrals & Rewards</h2>@if (referralsLoading()) { <p role="status" class="mt-3">Loading rewards…</p> } @else if (referralsError()) { <div role="alert" class="mt-3"><p>We could not load your referral progress.</p><button type="button" (click)="loadReferrals()" class="mt-2 font-bold text-brand-700 underline">Try again</button></div> } @else if (referrals(); as rewards) { <p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p>@if (rewards.levelProgress.currentLevel; as current) { <p class="mt-2 font-semibold">{{ current.name }} achieved</p> } @else { <p class="mt-2 font-semibold">No level achieved yet</p> }@if (rewards.levelProgress.highestConfiguredLevelReached) { <p class="mt-1 text-sm text-slate-600">Highest level reached</p> } @else if (rewards.levelProgress.nextLevel; as next) { <p class="mt-1 text-sm text-slate-600">Next: {{ next.name }}</p><div class="mt-3 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">@for (requirement of rewards.levelProgress.requirements; track requirement.targetType) { <p>{{ dashboardTargetLabel(requirement.targetType) }} {{ requirement.qualified }}/{{ requirement.required }}</p> }</div> }<a routerLink="/me/referrals" class="mt-4 inline-flex font-bold text-brand-700 underline">View Referrals & Rewards</a> }</section>
       @if (history()?.items?.length === 0) {
         <section class="mt-8 rounded-2xl bg-white p-7 text-center">
           <h2 class="text-xl font-bold">No Health Checks yet.</h2>
@@ -156,5 +156,8 @@ export class PatientDashboardPageComponent {
     } catch {
       this.copyFeedback.set('Copy was unavailable. Select the Patient ID to copy it manually.');
     }
+  }
+  dashboardTargetLabel(target: string): string {
+    return ({ PATIENT: 'Patients', CLINIC: 'Clinics', LABORATORY: 'Labs', PHARMACY: 'Pharmacies' } as Record<string, string>)[target] ?? target;
   }
 }

@@ -33,7 +33,7 @@ describe('PatientDashboardPageComponent', () => {
     };
     await TestBed.configureTestingModule({
       imports: [PatientDashboardPageComponent],
-      providers: [provideRouter([]), { provide: HealthCheckResultsApiService, useValue: api }, { provide: ReferralsApiService, useValue: { summary: () => of({ availablePoints: 340, completed: false, progress: { patients: { qualified: 7, required: 10 }, clinics: { qualified: 1, required: 2 }, laboratories: { qualified: 2, required: 2 }, pharmacies: { qualified: 0, required: 2 } } }) } }],
+      providers: [provideRouter([]), { provide: HealthCheckResultsApiService, useValue: api }, { provide: ReferralsApiService, useValue: { summary: () => of({ availablePoints: 340, levelProgress: { currentLevel: { code: 'LEVEL_2', name: 'Level 2', ordinal: 2 }, nextLevel: { code: 'LEVEL_3', name: 'Level 3', ordinal: 3 }, highestLevelAchieved: 2, requirements: [{ targetType: 'PATIENT', qualified: 22, required: 30, remaining: 8, completed: false }], highestConfiguredLevelReached: false, qualifiedCounts: { PATIENT: 22, CLINIC: 5, LABORATORY: 4, PHARMACY: 4 } } }) } }],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientDashboardPageComponent);
     fixture.detectChanges();
@@ -45,5 +45,8 @@ describe('PatientDashboardPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Patient ID copied');
     expect(fixture.nativeElement.textContent).not.toContain('balance');
     expect(fixture.nativeElement.textContent).toContain('340 points');
+    expect(fixture.nativeElement.textContent).toContain('Level 2 achieved');
+    expect(fixture.nativeElement.textContent).toContain('Next: Level 3');
+    expect(fixture.nativeElement.textContent).toContain('Patients 22/30');
   });
 });

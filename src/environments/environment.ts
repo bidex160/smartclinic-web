@@ -1,4 +1,6 @@
 export const environment = {
   production: false,
-  api: { baseUrl: 'http://localhost:3000/api/v1' },
+  api: { baseUrl: 'https://api.smartclinicnetwork.com/api/v1'
+
+  },
 } as const;

@@ -14,6 +14,8 @@ describe('AdminDashboardPageComponent', () => {
     expect(summaryApi.getSummary).toHaveBeenCalledOnce();
     expect(queueApi.getQueue).toHaveBeenCalledWith({ bookingStatus: 'UNFULFILLABLE', page: 1, limit: 5 });
     expect(text).not.toMatch(/revenue|earnings|trend|%/i);
+    expect(text).toContain('Referral Levels');
+    expect(text.indexOf('Level 1')).toBeLessThan(text.indexOf('Level 2'));
   });
 
   it('keeps zero metrics visible after loading', async () => {
@@ -27,9 +29,17 @@ describe('AdminDashboardPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('We could not load the operations summary.');
     component.loadSummary(); expect(summaryApi.getSummary).toHaveBeenCalledTimes(2);
   });
+
+  it('renders every backend referral level without a frontend cap', async () => {
+    const { fixture, component } = await setup();
+    const current = component.summary()!;
+    component.summary.set({ ...current, referrals: { ...current.referrals, levels: Array.from({ length: 6 }, (_, index) => ({ code: `LEVEL_${index + 1}`, name: `Tier ${index + 1}`, ordinal: index + 1, achieved: 10 - index })) } });
+    fixture.detectChanges();
+    for (let index = 1; index <= 6; index += 1) expect(fixture.nativeElement.textContent).toContain(`Tier ${index}`);
+  });
 });
 
-async function setup(summary: any = { bookings: { awaitingFunding: 21, pendingProviderMatch: 22, scheduled: 23, inProgress: 24, completed: 25, needsAttention: 26 }, matching: { activeOffers: 27 }, providers: { pendingReview: 28, active: 29 }, referrals: { registered: 31, qualified: 32, level1Achieved: 33, pointsIssued: 34 }, withdrawals: { requested: 35, processing: 36, paid: 37, failed: 38, pointsReserved: 39 } }, fail = false) {
+async function setup(summary: any = { bookings: { awaitingFunding: 21, pendingProviderMatch: 22, scheduled: 23, inProgress: 24, completed: 25, needsAttention: 26 }, matching: { activeOffers: 27 }, providers: { pendingReview: 28, active: 29 }, referrals: { registered: 31, qualified: 32, level1Achieved: 33, levels:[{code:'LEVEL_3',name:'Level 3',ordinal:3,achieved:3},{code:'LEVEL_1',name:'Level 1',ordinal:1,achieved:20},{code:'LEVEL_2',name:'Level 2',ordinal:2,achieved:9}], pointsIssued: 34 }, withdrawals: { requested: 35, processing: 36, paid: 37, failed: 38, pointsReserved: 39 } }, fail = false) {
   const summaryApi = { getSummary: vi.fn(() => fail ? throwError(() => new Error('raw')) : of(summary)) };
   const queueApi = { getQueue: vi.fn(() => of({ items: [], page: 1, limit: 5, total: 0, totalPages: 0 })) };
   await TestBed.configureTestingModule({ imports: [AdminDashboardPageComponent], providers: [provideRouter([]), { provide: AdminDashboardApiService, useValue: summaryApi }, { provide: AdminMatchingQueueApiService, useValue: queueApi }] }).compileComponents();
