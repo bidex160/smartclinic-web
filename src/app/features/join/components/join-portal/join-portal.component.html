@@ -1,0 +1,437 @@
+<section class="join-portal" id="join-portal">
+  <div class="join-intro">
+    <p class="kicker">Choose who you are connecting</p>
+    <h2>Build healthcare one person, family and community at a time.</h2>
+    <p>
+      Join as a builder or healthcare professional, or use a personal link
+      to connect an individual, family, care provider or group.
+    </p>
+  </div>
+
+  <div class="join-switch entrance-grid">
+    @for (item of entrances; track item.mode) {
+      <button
+        type="button"
+        [class.active]="mode() === item.mode"
+        (click)="selectMode(item.mode)"
+      >
+        <b>{{ item.title }}</b>
+        <span>{{ item.detail }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="people-points">
+    <strong>Simple verified credit</strong>
+    <span>Individual / new builder <b>1 pt</b></span>
+    <span>Verified professional <b>5 pts</b></span>
+    <span>Family <b>1 pt/member</b></span>
+    <span>Community <b>1 pt/member</b></span>
+    <span>Care provider <b>15 pts</b></span>
+    <small>
+      New points appear immediately as captured. Individuals and builders
+      activate their point with one tap; larger claims still require team verification.
+    </small>
+  </div>
+
+  @if (status() === 'success') {
+    <div class="portal-success">
+      <div class="check">✓</div>
+      <p class="kicker">Registered successfully</p>
+      <h2>{{ successTitle }}</h2>
+      <p>
+        @if (mode() === 'Builder') {
+          This is your personal builder code. Use it to return to My Impact and present your tracked links to partners.
+        } @else if (mode() === 'Professional') {
+          Your facility is recorded as introduced—not yet an approved partner. Our team will verify your professional profile and contact an authorised facility representative before activation.
+        } @else if (registration()?.referredByCode) {
+          {{ registration()?.registeredName }} is linked to the inviting builder. Send the confirmation link below so the captured point can be activated.
+        } @else {
+          The registration has been captured. Confirm it below to complete this connection.
+        }
+      </p>
+
+      @if (registration(); as r) {
+        <section class="new-identity-card">
+          <span>Your Smart Clinic Exchange identity</span>
+          <strong>{{ r.referralCode }}</strong>
+          <p>Use <b>{{ r.email }}</b> and this code to open My Impact. This is also the code attached to every invitation you share.</p>
+          <div>
+            <button (click)="copy(r.referralCode)">Copy my code</button>
+            <a href="/my-impact">Open My Impact</a>
+          </div>
+          <small>
+            @if (r.referredByCode) {
+              Invited by {{ r.referrerName }} · {{ r.referredByCode }}
+            } @else {
+              Joined directly · no referring builder was credited
+            }
+          </small>
+        </section>
+
+        <section class="confirmation-share">
+          <div class="confirmation-step"><b>1</b><span><strong>Registration captured</strong><small>The inviting builder can already see it as pending.</small></span></div>
+          <div class="confirmation-step"><b>2</b><span><strong>Send to {{ r.registeredName }}</strong><small>They tap the link and confirm in one step.</small></span></div>
+          <div class="confirmation-actions">
+            <a class="whatsapp-confirm" [href]="confirmationWhatsApp">Send confirmation on WhatsApp</a>
+            <a [href]="confirmationEmail">Send confirmation by email</a>
+            <a [href]="r.confirmationLink">Confirm now on this device</a>
+            <button (click)="copy(r.confirmationLink)">Copy confirmation link</button>
+          </div>
+          <small class="confirmation-note">
+            Individual and builder points activate immediately after confirmation. Families, groups, professionals and care providers still require team verification of member or professional details.
+          </small>
+        </section>
+      }
+
+      <div class="referral-share">
+        <strong>
+          {{ mode() === 'Builder' || mode() === 'Professional' ? 'Your builder code' : 'Account code' }}:
+          {{ referralCode }}
+        </strong>
+        <code>{{ link }}</code>
+        <div>
+          <button (click)="copy(link)">Copy link</button>
+          <a [href]="shareWhatsAppLink">Share on WhatsApp</a>
+          <a href="/my-impact">View my impact</a>
+        </div>
+      </div>
+
+      <button (click)="resetToForm()" class="secondary">
+        Onboard another person, family or organisation
+      </button>
+    </div>
+  } @else {
+    <form class="card form portal-form" id="join-form" #joinForm (submit)="submit($event)">
+      <input type="hidden" name="accountType" [value]="mode()" />
+
+      @if (isEntity) {
+        <section>
+          <div class="sectionhead">
+            <span>01</span>
+            <div>
+              <h2>
+                @if (mode() === 'Family') {
+                  Tell us about the family
+                } @else if (mode() === 'Group') {
+                  Tell us about the group
+                } @else {
+                  Tell us about the care provider
+                }
+              </h2>
+              <p>Give us enough information to identify and verify who has joined.</p>
+            </div>
+          </div>
+          <div class="grid two">
+            @if (mode() === 'Family') {
+              <label>
+                Family / household name *
+                <input name="organizationName" placeholder="e.g. The Archibong Family" required />
+              </label>
+              <label>
+                People in this family *
+                <input type="number" name="memberCount" min="2" max="30" value="2" required />
+              </label>
+            } @else {
+              <label>
+                {{ mode() === 'Group' ? 'Group type' : 'Provider type' }} *
+                <select name="organizationType" required>
+                  <option value="" disabled selected>Select type</option>
+                  @for (x of (mode() === 'Group' ? groupTypes : providerTypes); track x) {
+                    <option>{{ x }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                {{ mode() === 'Group' ? 'Group name' : 'Organisation name' }} *
+                <input name="organizationName" placeholder="Official or commonly known name" required />
+              </label>
+              @if (mode() === 'Group') {
+                <label>
+                  Approximate number of members *
+                  <input type="number" name="memberCount" min="2" max="100000" value="10" required />
+                </label>
+              }
+            }
+          </div>
+        </section>
+      }
+
+      <section>
+        <div class="sectionhead">
+          <span>{{ isEntity ? '02' : '01' }}</span>
+          <div>
+            <h2>
+              @if (mode() === 'Builder') {
+                Start with you
+              } @else if (mode() === 'Individual') {
+                About the individual
+              } @else {
+                Primary contact
+              }
+            </h2>
+            <p>
+              @if (mode() === 'Builder') {
+                Help us know where you are and what you bring.
+              } @else if (mode() === 'Individual') {
+                Connect this person to the growing care network.
+              } @else {
+                Who should our activation team speak with?
+              }
+            </p>
+          </div>
+        </div>
+        <div class="grid two">
+          <label>
+            Full name *
+            <input name="fullName" placeholder="Full name" required />
+          </label>
+          <label>
+            Phone / WhatsApp *
+            <input name="phone" type="tel" placeholder="Include country code" required />
+          </label>
+          <label>
+            Email address *
+            <input name="email" type="email" placeholder="Needed to retrieve progress" required />
+          </label>
+
+          @if (mode() === 'Builder' || mode() === 'Professional') {
+            <label>
+              {{ mode() === 'Professional' ? 'Specialty / profession *' : 'Profession / current work *' }}
+              <input
+                name="profession"
+                [placeholder]="mode() === 'Professional' ? 'Dentist, doctor, nurse, pharmacist…' : 'Doctor, designer, student…'"
+                required
+              />
+            </label>
+          } @else if (isEntity) {
+            <label>
+              Relationship / role *
+              <input
+                name="contactRole"
+                [placeholder]="mode() === 'Family' ? 'Parent, guardian, family member…' : 'Owner, manager, group leader…'"
+                required
+              />
+            </label>
+          } @else {
+            <label>
+              Profession / current work
+              <input name="profession" placeholder="Optional" />
+            </label>
+          }
+
+          <app-location-fields />
+        </div>
+      </section>
+
+      @if (mode() === 'Builder') {
+        <section>
+          <div class="sectionhead">
+            <span>02</span>
+            <div>
+              <h2>Find your place</h2>
+              <p>Choose the contribution that feels most natural.</p>
+            </div>
+          </div>
+          <label>
+            Your preferred builder role *
+            <select name="role" required>
+              <option value="" disabled selected>Select one role</option>
+              @for (r of roles; track r) {
+                <option>{{ r }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            What healthcare problem would you like to help solve? *
+            <textarea name="problem" rows="3" required></textarea>
+          </label>
+          <label>
+            Which provider, family, organisation or community can you potentially connect?
+            <textarea name="connection" rows="3"></textarea>
+          </label>
+        </section>
+        <section>
+          <div class="sectionhead">
+            <span>03</span>
+            <div>
+              <h2>Own one next step</h2>
+              <p>Choose something real you can complete in seven days.</p>
+            </div>
+          </div>
+          <fieldset>
+            <legend>My seven-day action *</legend>
+            <div class="choices">
+              @for (c of commitments; track c) {
+                <label class="choice">
+                  <input type="radio" name="commitment" [value]="c" required />
+                  <span>{{ c }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+          <div class="grid two">
+            <label>
+              Time you can contribute weekly *
+              <select name="availability" required>
+                <option value="" disabled selected>Select time</option>
+                <option>1–2 hours</option>
+                <option>3–5 hours</option>
+                <option>6–10 hours</option>
+                <option>More than 10 hours</option>
+                <option>Project-based / as needed</option>
+              </select>
+            </label>
+            <label>
+              Support you need
+              <input name="support" placeholder="Introductions, training, tools…" />
+            </label>
+          </div>
+        </section>
+      } @else if (mode() === 'Professional') {
+        <section>
+          <div class="sectionhead">
+            <span>02</span>
+            <div>
+              <h2>Verify your professional profile</h2>
+              <p>We use this information to confirm your identity before displaying you or sending patient requests.</p>
+            </div>
+          </div>
+          <div class="grid two">
+            <label>
+              Professional licence / registration number *
+              <input name="licenseNumber" placeholder="MDCN, NMCN, PCN or relevant number" required />
+            </label>
+            <label>
+              Department or service
+              <input name="department" placeholder="Dental clinic, family medicine…" />
+            </label>
+            <label>
+              Main facility where you practise *
+              <input name="organizationName" placeholder="e.g. Gwarinpa General Hospital" required />
+            </label>
+            <label>
+              Your relationship to the facility *
+              <input name="contactRole" placeholder="Dentist, medical officer, visiting consultant…" required />
+            </label>
+            <label>
+              Preferred contact method *
+              <select name="preferredContact" required>
+                <option selected>WhatsApp</option>
+                <option>Phone call</option>
+                <option>Email</option>
+              </select>
+            </label>
+            <label>
+              Receive patient requests now? *
+              <select name="acceptingRequests" required>
+                <option value="yes" selected>Yes, contact me to confirm availability</option>
+                <option value="no">Not yet</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Services you provide *
+            <textarea name="servicesOffered" rows="3" placeholder="Consultations, procedures, clinic days or areas of focus" required></textarea>
+          </label>
+        </section>
+        <section>
+          <div class="sectionhead">
+            <span>03</span>
+            <div>
+              <h2>Introduce your facility safely</h2>
+              <p>You are introducing the facility for follow-up. Only an authorised representative can claim and activate its profile.</p>
+            </div>
+          </div>
+          <label>
+            Anything our provider-network team should know?
+            <textarea name="support" rows="3" placeholder="Best person to contact, retainership/HMO desk, clinic days…"></textarea>
+          </label>
+          <input type="hidden" name="organizationType" value="Healthcare facility" />
+        </section>
+      } @else {
+        <section>
+          <div class="sectionhead">
+            <span>{{ isEntity ? '03' : '02' }}</span>
+            <div>
+              <h2>Prepare for connection</h2>
+              <p>Tell us what would make this connection useful.</p>
+            </div>
+          </div>
+          <label>
+            {{ mode() === 'Individual' ? 'Healthcare access or support needed' : 'Services, members or community served' }}
+            <textarea
+              name="problem"
+              rows="3"
+              [placeholder]="mode() === 'Individual' ? 'Appointments, medicines, health information…' : 'Consultations, laboratory services, students, association members…'"
+            ></textarea>
+          </label>
+          <label>
+            Support needed
+            <textarea name="support" rows="3" placeholder="Onboarding, provider connections, patient access, training…"></textarea>
+          </label>
+        </section>
+      }
+
+      <section class="referrer-entry">
+        <div class="sectionhead compact">
+          <span>↗</span>
+          <div>
+            <h2>Who invited you?</h2>
+            <p>Enter the builder code so the right person receives credit. A code from a personal link appears here automatically.</p>
+          </div>
+        </div>
+        <label>
+          Referring builder code <small>(optional if you found us directly)</small>
+          <input
+            name="referredByCode"
+            [value]="referralCodeInput()"
+            (input)="onReferralInput($any($event.target).value)"
+            (blur)="checkReferrer($any($event.target).value)"
+            placeholder="e.g. SCN00025"
+            autocapitalize="characters"
+          />
+        </label>
+        @if (referralStatus() === 'checking') {
+          <p class="referrer-feedback">Checking builder code…</p>
+        }
+        @if (referralStatus() === 'valid') {
+          <p class="referrer-feedback valid">✓ Invited by {{ referrerName() }}. This registration will be credited correctly.</p>
+        }
+        @if (referralStatus() === 'invalid') {
+          <p class="referrer-feedback invalid">We cannot find that code. Check it before submitting, or leave it blank only if nobody invited you.</p>
+        }
+        @if (referralStatus() === 'idle' && !referralCodeInput()) {
+          <p class="referrer-feedback direct">No code means this will be recorded as a direct registration.</p>
+        }
+      </section>
+
+      <div class="consent">
+        <input [id]="'consent-' + mode()" name="consent" type="checkbox" required />
+        <label [for]="'consent-' + mode()">
+          I agree to be contacted about onboarding, activation and Smart Clinic Exchange activities.
+        </label>
+      </div>
+
+      @if (mode() === 'Builder' || mode() === 'Professional') {
+        <div class="consent optional">
+          <input id="publicLeaderboard" name="publicLeaderboard" type="checkbox" />
+          <label for="publicLeaderboard">
+            Show my first name, city and achievements on the public leaderboard.
+          </label>
+        </div>
+      }
+
+      @if (status() === 'error') {
+        <p class="error">Registration was not submitted. Check the required fields and try again.</p>
+      }
+
+      <button class="submit" [disabled]="status() === 'submitting'">
+        {{ status() === 'submitting' ? 'Submitting…' : mode() === 'Professional' ? 'Join the Provider Network →' : 'Complete ' + mode().toLowerCase() + ' onboarding →' }}
+      </button>
+      <p class="privacy">
+        Joining through a personal partner link automatically credits the builder who invited you.
+      </p>
+    </form>
+  }
+</section>

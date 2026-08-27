@@ -20,6 +20,14 @@ export const routes: Routes = [
         (component) => component.HomePageComponent,
       ),
   },
+    {
+    path: 'join',
+    title: 'Choose a Smart Health Check | SmartClinic',
+    loadComponent: () =>
+      import('./features/join/join.component').then(
+        (component) => component.JoinComponent,
+      ),
+  },
   {
     path: 'health-check/packages',
     title: 'Choose a Smart Health Check | SmartClinic',
@@ -28,6 +36,7 @@ export const routes: Routes = [
         (component) => component.PackageSelectionPageComponent,
       ),
   },
+
   {
     path: 'book/fulfilment',
     title: 'Choose fulfilment | SmartClinic',
@@ -112,6 +121,10 @@ export const routes: Routes = [
       {
         path: 'referrals', title: 'Referrals & Rewards | SmartClinic', canActivate: [authenticatedUserGuard],
         loadComponent: () => import('./features/results/referrals-page.component').then((c) => c.ReferralsPageComponent),
+      },
+      {
+        path: 'impact', title: 'My Impact | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/results/my-impact-page.component').then((c) => c.MyImpactPageComponent),
       },
       {
         path: 'book',

@@ -40,3 +40,26 @@ export interface ReferralSummary {
 export interface ReferralHistoryItem { readonly targetType: ReferralTargetType; readonly status: ReferralStatus; readonly registeredAt: string; readonly qualifiedAt: string | null; readonly pointsEarned?: number }
 export interface ReferralHistoryResponse { readonly items: ReferralHistoryItem[]; readonly page: number; readonly limit: number; readonly total: number; readonly totalPages: number }
 export interface ReferralHistoryFilters { readonly page: number; readonly limit: number; readonly targetType?: ReferralTargetType; readonly status?: ReferralStatus; readonly referrerEmail?: string; readonly qualifiedFrom?: string; readonly qualifiedTo?: string }
+
+export interface ReferralImpact {
+  readonly referralCode: string;
+  readonly balances: {
+    readonly availablePoints: number;
+    readonly reservedPoints: number;
+    readonly lifetimeEarnedPoints: number;
+    readonly lifetimeRedeemedPoints: number;
+  };
+  readonly levelProgress: MultiLevelReferralProgress;
+  readonly qualifiedCounts: Record<ReferralTargetType, number>;
+  readonly summary: {
+    readonly registeredReferrals: number;
+    readonly qualifiedReferrals: number;
+    readonly pendingReferrals: number;
+  };
+  readonly inviteLinks: Record<ReferralTargetType, string>;
+  readonly leaderboard: { readonly optedIn: boolean; readonly position: number | null };
+}
+
+export interface ReferralLeaderboardPreference {
+  readonly publicLeaderboard: boolean;
+}
