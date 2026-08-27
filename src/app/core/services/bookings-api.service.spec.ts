@@ -186,5 +186,10 @@ function paymentStatus(): PublicBookingPaymentStatus {
     amount: '12500.00',
     currency: 'NGN',
     paidAt: null,
+    bookingTotal: '12500.00',
+    pointsReserved: 0,
+    pointsAmount: '0.00',
+    remainingExternalAmount: '12500.00',
+    redemptionStatus: null,
   };
 }

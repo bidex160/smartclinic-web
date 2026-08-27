@@ -1,38 +1,32 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
 
-describe('PatientPaymentPanelComponent', () => {
-  it('defaults to PAY_NOW and verifies after Popup success', async () => {
-    const { fixture, api, resume } = await setup(); fixture.detectChanges();
-    fixture.componentInstance.initiate();
-    expect(api.initiateMyHealthCheckPayment).toHaveBeenCalledWith('SC-1', 'PAY_NOW');
-    const callbacks = resume.mock.calls[0][1]; callbacks.onSuccess();
-    expect(api.verifyMyHealthCheckPayment).toHaveBeenCalledWith('SC-1');
-  });
-  it('renders and copies a PAYMENT_LINK without invoking Popup', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
-    const { fixture, api, resume } = await setup('PAYMENT_LINK'); fixture.detectChanges();
-    fixture.componentInstance.select('PAYMENT_LINK'); fixture.componentInstance.initiate(); fixture.detectChanges();
-    expect(api.initiateMyHealthCheckPayment).toHaveBeenCalledWith('SC-1', 'PAYMENT_LINK');
-    expect(fixture.nativeElement.textContent).toContain('Payment link ready'); expect(resume).not.toHaveBeenCalled();
-    await fixture.componentInstance.copyLink(); expect(writeText).toHaveBeenCalledWith('https://checkout.paystack.com/safe');
-  });
-  it('accepts nullable PAY_LATER response and keeps funding outstanding', async () => {
-    const { fixture, resume } = await setup('PAY_LATER'); fixture.detectChanges();
-    fixture.componentInstance.select('PAY_LATER'); fixture.componentInstance.initiate(); fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Booking saved — payment still required'); expect(resume).not.toHaveBeenCalled();
-  });
+describe('PatientPaymentPanelComponent reward redemption', () => {
+  it('keeps Paystack available when no points are available', async () => { const {fixture,api}=await setup({availablePoints:0,maximumRedeemablePoints:1000});fixture.detectChanges();expect(fixture.nativeElement.textContent).toContain("don't have reward points");fixture.componentInstance.initiate();expect(api.initiateMyHealthCheckPayment).toHaveBeenCalledWith('SC-1','PAY_NOW'); });
+
+  it('uses the backend split values and sends no amount when starting Paystack', async () => { const {fixture,api,resume}=await setup();fixture.detectChanges();fixture.componentInstance.pointsForm.controls.points.setValue(500);fixture.componentInstance.applyPoints();fixture.detectChanges();const text=fixture.nativeElement.textContent as string;expect(text).toContain('500 points reserved');expect(text).toContain('₦4,000.00');expect(text).toContain('₦6,000.00');fixture.componentInstance.initiate();expect(api.initiateMyHealthCheckPayment).toHaveBeenCalledWith('SC-1','PAY_NOW');expect(api.initiateMyHealthCheckPayment.mock.calls[0]).toHaveLength(2);expect(resume).toHaveBeenCalled(); });
+
+  it('settles points-only without invoking Paystack', async () => { const {fixture,resume}=await setup({availablePoints:1200}, {pointsReserved:1000,pointsAmount:'10000.00',remainingExternalAmount:'0.00',requiresExternalPayment:false,fundingStatus:'SETTLED',redemptionStatus:'SETTLED'});fixture.detectChanges();fixture.componentInstance.pointsForm.controls.points.setValue(1000);fixture.componentInstance.applyPoints();fixture.detectChanges();expect(fixture.nativeElement.textContent).toContain('Paid with reward points');expect(resume).not.toHaveBeenCalled(); });
+
+  it('fills the server maximum and disables duplicate apply', async () => { const {fixture,api}=await setup({maximumRedeemablePoints:725,availablePoints:900});fixture.detectChanges();fixture.componentInstance.useMaximum();expect(fixture.componentInstance.pointsForm.controls.points.value).toBe(725);fixture.componentInstance.applying.set(true);fixture.componentInstance.applyPoints();expect(api.applyMyHealthCheckRewards).not.toHaveBeenCalled(); });
+
+  it('reconstructs and releases a reserved redemption from API state', async () => { const {fixture,api}=await setup({},undefined,true);fixture.detectChanges();expect(fixture.nativeElement.textContent).toContain('500 points reserved');fixture.componentInstance.releasePoints();fixture.detectChanges();expect(api.releaseMyHealthCheckRewards).toHaveBeenCalledWith('SC-1');expect(fixture.nativeElement.textContent).not.toContain('500 points reserved'); });
+
+  it('keeps the reservation displayed when release is rejected', async () => { const {fixture,api}=await setup({},undefined,true,true);fixture.detectChanges();fixture.componentInstance.releasePoints();fixture.detectChanges();expect(api.releaseMyHealthCheckRewards).toHaveBeenCalled();expect(fixture.nativeElement.textContent).toContain('500 points reserved');expect(fixture.nativeElement.textContent).toContain("can't be changed while a payment is in progress"); });
+
+  it('keeps reserved language after a failed popup and allows retry', async () => { const {fixture,resume}=await setup({},undefined,true);fixture.detectChanges();fixture.componentInstance.initiate();resume.mock.calls[0][1].onError();fixture.detectChanges();expect(fixture.nativeElement.textContent).toContain('remain reserved');expect(fixture.nativeElement.textContent).not.toContain('refunded'); });
+
+  it('renders and copies a reduced PAYMENT_LINK without invoking Popup', async () => { const writeText=vi.fn().mockResolvedValue(undefined);Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText}});const {fixture,resume}=await setup({},undefined,true);fixture.detectChanges();fixture.componentInstance.select('PAYMENT_LINK');fixture.componentInstance.initiate();fixture.detectChanges();expect(fixture.nativeElement.textContent).toContain('Payment link ready');expect(resume).not.toHaveBeenCalled();await fixture.componentInstance.copyLink();expect(writeText).toHaveBeenCalledWith('https://checkout.paystack.com/safe'); });
 });
 
-async function setup(option: 'PAY_NOW'|'PAYMENT_LINK'|'PAY_LATER' = 'PAY_NOW') {
-  const pending = { bookingReference: 'SC-1', bookingStatus: 'AWAITING_FUNDING', fundingStatus: 'PENDING', checkoutOption: option, paymentStatus: null, paymentAttemptReference: null, amount: '100', currency: 'NGN', paidAt: null };
-  const api = { getMyHealthCheckPayment: vi.fn(() => of(pending)), verifyMyHealthCheckPayment: vi.fn(() => of({ ...pending, fundingStatus: 'SETTLED', paymentStatus: 'SUCCEEDED', bookingStatus: 'PENDING_PROVIDER_MATCH' })), initiateMyHealthCheckPayment: vi.fn(() => of({ bookingReference: 'SC-1', fundingStatus: 'PENDING', checkoutOption: option, paymentAttemptReference: option === 'PAY_LATER' ? null : 'attempt', status: option === 'PAY_LATER' ? null : 'AWAITING_CUSTOMER_ACTION', amount: '100', currency: 'NGN', checkoutUrl: option === 'PAYMENT_LINK' ? 'https://checkout.paystack.com/safe' : null, accessCode: option === 'PAY_NOW' ? 'access-code' : null })) };
-  await TestBed.configureTestingModule({ imports: [PatientPaymentPanelComponent], providers: [provideRouter([]), { provide: HealthCheckResultsApiService, useValue: api }, { provide: EXTERNAL_NAVIGATOR, useValue: vi.fn() }] }).compileComponents();
-  const fixture = TestBed.createComponent(PatientPaymentPanelComponent); fixture.componentRef.setInput('reference', 'SC-1');
-  const resume = vi.fn(); fixture.componentInstance.popup.resumeTransaction = resume; return { fixture, api, resume };
+async function setup(previewOverrides:any={},applyOverrides:any={},existing=false,releaseFails=false){
+ let preview:any={availablePoints:900,maximumRedeemablePoints:1000,bookingOutstandingAmount:'10000.00',currency:'NGN',activeRedemption:existing?{pointsReserved:500,pointsAmount:'4000.00',remainingExternalAmount:'6000.00',currency:'NGN',status:'RESERVED'}:null,...previewOverrides};
+ let status:any={bookingReference:'SC-1',bookingStatus:'AWAITING_FUNDING',fundingStatus:'PENDING',checkoutOption:'PAY_NOW',paymentStatus:null,paymentAttemptReference:null,amount:existing?'6000.00':'10000.00',currency:'NGN',paidAt:null,bookingTotal:'10000.00',pointsReserved:existing?500:0,pointsAmount:existing?'4000.00':'0.00',remainingExternalAmount:existing?'6000.00':'10000.00',redemptionStatus:existing?'RESERVED':null};
+ const applied:any={bookingReference:'SC-1',bookingTotal:'10000.00',pointsReserved:500,pointsAmount:'4000.00',remainingExternalAmount:'6000.00',currency:'NGN',redemptionStatus:'RESERVED',fundingStatus:'PENDING',requiresExternalPayment:true,...applyOverrides};
+ const api:any={previewMyHealthCheckRewards:vi.fn(()=>of(preview)),getMyHealthCheckPayment:vi.fn(()=>of(status)),verifyMyHealthCheckPayment:vi.fn(()=>of({...status,fundingStatus:'SETTLED',paymentStatus:'SUCCEEDED',bookingStatus:'PENDING_PROVIDER_MATCH',redemptionStatus:status.pointsReserved?'SETTLED':null})),applyMyHealthCheckRewards:vi.fn(()=>{status={...status,fundingStatus:applied.fundingStatus,pointsReserved:applied.pointsReserved,pointsAmount:applied.pointsAmount,remainingExternalAmount:applied.remainingExternalAmount,redemptionStatus:applied.redemptionStatus,bookingStatus:applied.fundingStatus==='SETTLED'?'PENDING_PROVIDER_MATCH':status.bookingStatus};preview={...preview,availablePoints:preview.availablePoints-applied.pointsReserved,activeRedemption:{pointsReserved:applied.pointsReserved,pointsAmount:applied.pointsAmount,remainingExternalAmount:applied.remainingExternalAmount,currency:applied.currency,status:applied.redemptionStatus}};return of(applied)}),releaseMyHealthCheckRewards:vi.fn(()=>releaseFails?throwError(()=>({status:409})):of((status={...status,pointsReserved:0,pointsAmount:'0.00',remainingExternalAmount:'10000.00',redemptionStatus:'RELEASED'},preview={...preview,activeRedemption:null},{}))),initiateMyHealthCheckPayment:vi.fn((_r:string,option:string)=>of({bookingReference:'SC-1',fundingStatus:'PENDING',checkoutOption:option,paymentAttemptReference:option==='PAY_LATER'?null:'attempt',status:option==='PAY_LATER'?null:'AWAITING_CUSTOMER_ACTION',amount:status.remainingExternalAmount,currency:'NGN',checkoutUrl:option==='PAYMENT_LINK'?'https://checkout.paystack.com/safe':null,accessCode:option==='PAY_NOW'?'access-code':null}))};
+ await TestBed.configureTestingModule({imports:[PatientPaymentPanelComponent],providers:[provideRouter([]),{provide:HealthCheckResultsApiService,useValue:api},{provide:EXTERNAL_NAVIGATOR,useValue:vi.fn()}]}).compileComponents();const fixture=TestBed.createComponent(PatientPaymentPanelComponent);fixture.componentRef.setInput('reference','SC-1');const resume=vi.fn();fixture.componentInstance.popup.resumeTransaction=resume;return{fixture,api,resume};
 }

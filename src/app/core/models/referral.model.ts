@@ -22,6 +22,8 @@ export interface ReferralSummary {
   readonly links: Record<ReferralTargetType, string>;
   readonly availablePoints: number;
   readonly reservedPoints: number;
+  readonly withdrawalReservedPoints: number;
+  readonly healthCheckReservedPoints: number;
   readonly lifetimeEarnedPoints: number;
   readonly lifetimeRedeemedPoints: number;
   readonly levelProgress: MultiLevelReferralProgress;

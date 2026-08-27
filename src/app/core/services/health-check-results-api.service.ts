@@ -17,6 +17,7 @@ import {
   PublicBookingPaymentInitiationResult,
   PublicBookingPaymentStatus,
 } from '../models/public-booking.model';
+import { AppliedHealthCheckRewardRedemption, HealthCheckRewardPreview, ReleasedHealthCheckRewardRedemption } from '../models/health-check-reward-redemption.model';
 
 @Injectable({ providedIn: 'root' })
 export class HealthCheckResultsApiService {
@@ -76,6 +77,18 @@ export class HealthCheckResultsApiService {
       `${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/payment/verify`,
       null,
     );
+  }
+
+  previewMyHealthCheckRewards(reference: string): Observable<HealthCheckRewardPreview> {
+    return this.http.get<HealthCheckRewardPreview>(`${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/rewards/preview`);
+  }
+
+  applyMyHealthCheckRewards(reference: string, points: number): Observable<AppliedHealthCheckRewardRedemption> {
+    return this.http.post<AppliedHealthCheckRewardRedemption>(`${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/rewards/apply`, { points });
+  }
+
+  releaseMyHealthCheckRewards(reference: string): Observable<ReleasedHealthCheckRewardRedemption> {
+    return this.http.delete<ReleasedHealthCheckRewardRedemption>(`${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/rewards`);
   }
 
   getGuestResult(token: string): Observable<HealthCheckResult> {

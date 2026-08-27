@@ -119,6 +119,19 @@ describe('HealthCheckResultsApiService', () => {
     expect(verify.request.body).toBeNull();
     verify.flush({});
   });
+  it('uses owned reward redemption endpoints and sends only points when applying', () => {
+    const { api, http } = setup();
+    api.previewMyHealthCheckRewards('SC/1').subscribe();
+    expect(http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1/rewards/preview').request.method).toBe('GET');
+    api.applyMyHealthCheckRewards('SC/1', 500).subscribe();
+    const apply = http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1/rewards/apply');
+    expect(apply.request.method).toBe('POST');
+    expect(apply.request.body).toEqual({ points: 500 });
+    expect(apply.request.body).not.toEqual(expect.objectContaining({ amount: expect.anything(), userId: expect.anything(), patientId: expect.anything() }));
+    apply.flush({});
+    api.releaseMyHealthCheckRewards('SC/1').subscribe();
+    expect(http.expectOne('http://api.test/api/v1/me/health-checks/SC%2F1/rewards').request.method).toBe('DELETE');
+  });
   function setup() {
     TestBed.configureTestingModule({
       providers: [

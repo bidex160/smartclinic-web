@@ -111,4 +111,9 @@ export interface PublicBookingPaymentStatus {
   readonly amount: string | null;
   readonly currency: string | null;
   readonly paidAt: string | null;
+  readonly bookingTotal: string | null;
+  readonly pointsReserved: number;
+  readonly pointsAmount: string;
+  readonly remainingExternalAmount: string | null;
+  readonly redemptionStatus: import('./health-check-reward-redemption.model').HealthCheckRewardRedemptionStatus | null;
 }
