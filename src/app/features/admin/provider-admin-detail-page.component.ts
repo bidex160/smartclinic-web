@@ -73,7 +73,7 @@ export class ProviderAdminDetailPageComponent {
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
     phone: ['', [Validators.minLength(7), Validators.maxLength(32)]],
     professionalReference: ['', Validators.maxLength(200)],
-    providerType: this.formBuilder.control<'INDIVIDUAL' | 'CLINIC' | 'DIAGNOSTIC_CENTRE' | 'OTHER'>(
+    providerType: this.formBuilder.control<'INDIVIDUAL' | 'CLINIC' | 'DIAGNOSTIC_CENTRE' | 'PHARMACY' | 'OTHER'>(
       'INDIVIDUAL',
     ),
     countryCode: ['', [Validators.required]],

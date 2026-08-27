@@ -1,56 +1,120 @@
-@if (data(); as d) {
-  <section class="community-board">
-    <div class="board-head">
-      <div>
-        <p class="kicker">Impact leaderboard</p>
-        <h2>Connections that change care.</h2>
-        <p>
-          One point per verified person. Fifteen points per verified care
-          provider. The leaderboard rewards completed, attributable growth.
-        </p>
-      </div>
-      <div class="reward-key">
-        <span>Builder <b>100+</b></span>
-        <span>Connector <b>300+</b></span>
-        <span>Ambassador <b>500+</b></span>
-        <span>Hub Champion <b>1,000+</b></span>
-      </div>
+<section class="community-board">
+  <div class="board-head">
+    <div>
+      <p class="kicker">Impact leaderboard</p>
+
+      <h2>Connections that change care.</h2>
+
+      <p>
+        Rankings reflect verified SmartClinic referral impact and lifetime
+        reward points earned.
+      </p>
     </div>
 
-    <div class="board-tabs">
-      <button [class.active]="tab() === 'cities'" (click)="setTab('cities')">Cities</button>
-      <button [class.active]="tab() === 'countries'" (click)="setTab('countries')">Countries</button>
-      <button [class.active]="tab() === 'people'" (click)="setTab('people')">Builders</button>
-    </div>
+    <div class="reward-key">
+      <span>
+        Qualified referrals
+        <b>count</b>
+      </span>
 
+      <span>
+        Lifetime rewards
+        <b>rank</b>
+      </span>
+
+      <span>
+        Referral levels
+        <b>verified</b>
+      </span>
+    </div>
+  </div>
+
+  <div
+    class="board-tabs"
+    role="tablist"
+    aria-label="Impact leaderboard categories"
+  >
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === 'cities'"
+      [class.active]="tab() === 'cities'"
+      (click)="setTab('cities')"
+    >
+      Cities
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === 'countries'"
+      [class.active]="tab() === 'countries'"
+      (click)="setTab('countries')"
+    >
+      Countries
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === 'people'"
+      [class.active]="tab() === 'people'"
+      (click)="setTab('people')"
+    >
+      Builders
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="board-empty" aria-live="polite">
+      Loading verified impact…
+    </div>
+  } @else if (error()) {
+    <div class="board-empty" role="alert">
+      <p>Leaderboard is temporarily unavailable.</p>
+
+      <button type="button" (click)="loadLeaderboard()">
+        Try again
+      </button>
+    </div>
+  } @else {
     <div class="ranking">
-      @if (rows.length) {
-        @for (r of rows; track r.name + '-' + $index; let i = $index) {
+      @if (rows().length) {
+        @for (row of rows(); track row.name + '-' + $index; let i = $index) {
           <article [class]="i < 3 ? 'podium p' + (i + 1) : ''">
-            <b class="rank">{{ i + 1 }}</b>
+            <b class="rank">
+              {{ i + 1 }}
+            </b>
+
             <div>
-              <strong>{{ r.name }}</strong>
+              <strong>
+                {{ row.name }}
+              </strong>
+
               <small>
                 @if (tab() === 'people') {
-                  {{ r.city }}, {{ r.country }} · {{ r.level }}{{ r.peopleReached ? ' · ' + r.peopleReached + ' people reached' : '' }}
+                  {{ personMeta($any(row)) }}
                 } @else {
                   Combined verified impact
                 }
               </small>
             </div>
-            <span>{{ r.points }} pts</span>
+
+            <span>
+              {{ row.points | number }} pts
+            </span>
           </article>
         }
       } @else {
         <div class="board-empty">
-          The first achievements will appear here. Take action and set the pace.
+          The first verified achievements will appear here.
         </div>
       }
     </div>
+  }
 
-    <p class="board-note">
-      Pending registrations do not affect rankings. Families and communities
-      earn one point per verified member; individual rankings are opt-in.
-    </p>
-  </section>
-}
+  <p class="board-note">
+    Only qualified referrals contribute to referral totals. Public individual
+    rankings are opt-in.
+  </p>
+</section>

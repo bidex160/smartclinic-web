@@ -1,170 +1,449 @@
 <main>
-  <header class="brandbar">
-    <a class="brand" href="#top">
-      <span class="brandmark">S</span>
-      <span><strong>SMART CLINIC</strong><small>EXCHANGE</small></span>
-    </a>
-    <nav class="public-nav">
-      <a routerLink="/request-care">Request care</a>
-      <a routerLink="/my-impact">My Impact</a>
-    </nav>
-  </header>
-
   <section class="hero" id="top">
-    <div class="eyebrow">The provider and community network for connected care</div>
-    <h1>Build access. Grow impact. <em>Connect care.</em></h1>
+    <div class="eyebrow">
+      The provider and community network for connected care
+    </div>
+
+    <h1>
+      Build access. Grow impact. <em>Connect care.</em>
+    </h1>
+
     <p>
       Smart Clinic Exchange connects people, healthcare professionals and trusted
-      facilities—so communities can find care and providers can receive coordinated requests.
+      facilities—so communities can find care and providers can receive
+      coordinated requests.
     </p>
+
     <div class="hero-actions">
-      <a routerLink="/" [queryParams]="{ type: 'Professional' }" fragment="join-portal">
+      <a
+        routerLink="/join"
+        [queryParams]="{ type: 'Professional' }"
+        fragment="join-portal"
+      >
         Join the Provider Network
       </a>
-      <a routerLink="/request-care" data-kind="organisation">Request an appointment</a>
-      <a href="#join-portal" data-kind="impact">Start building</a>
+
+      <a routerLink="/request-care" data-kind="organisation">
+        Request an appointment
+      </a>
+
+      <a href="#join-portal" data-kind="impact">
+        Start building
+      </a>
     </div>
+
     <div class="path">
-      <span><b>01</b> Join or introduce</span>
-      <span><b>02</b> Verify and activate</span>
-      <span><b>03</b> Connect people to care</span>
+      <span>
+        <b>01</b>
+        Join or introduce
+      </span>
+
+      <span>
+        <b>02</b>
+        Verify and activate
+      </span>
+
+      <span>
+        <b>03</b>
+        Connect people to care
+      </span>
     </div>
   </section>
 
+  <!--
+    Network pulse is temporarily disabled.
+
+    The current SmartClinic public leaderboard endpoint does not provide
+    authoritative network-wide totals for builders, families, groups and
+    people reached.
+
+    Re-enable this when a dedicated public network statistics endpoint exists.
+  -->
   <app-network-pulse />
 
   <section class="provider-network">
     <div>
-      <p class="kicker">For doctors, dentists and health professionals</p>
-      <h2>Your professional network can become a care network.</h2>
-      <p>
-        Create your profile, link the facility where you practise, receive patient
-        requests after verification and invite trusted colleagues with your own tracked link.
+      <p class="kicker">
+        For doctors, dentists and health professionals
       </p>
+
+      <h2>
+        Your professional network can become a care network.
+      </h2>
+
+      <p>
+        Create your profile, link the facility where you practise, receive
+        patient requests after verification and invite trusted colleagues
+        through SmartClinic.
+      </p>
+
       <div class="provider-steps">
-        <span><b>1</b>Join as a professional</span>
-        <span><b>2</b>Introduce your facility</span>
-        <span><b>3</b>Invite colleagues</span>
-        <span><b>4</b>Receive confirmed requests</span>
+        <span>
+          <b>1</b>
+          Join as a professional
+        </span>
+
+        <span>
+          <b>2</b>
+          Introduce your facility
+        </span>
+
+        <span>
+          <b>3</b>
+          Invite trusted connections
+        </span>
+
+        <span>
+          <b>4</b>
+          Receive confirmed requests
+        </span>
       </div>
+
       <small>
-        Introducing a hospital does not make it an approved partner. An authorised
-        representative must claim and activate the facility profile.
+        Introducing a hospital or healthcare facility does not automatically
+        make it an approved SmartClinic provider. Provider onboarding,
+        verification and activation must still be completed before the
+        organisation can receive bookings.
       </small>
     </div>
+
     <aside>
-      <strong>Provider referral &amp; retainership network</strong>
+      <strong>
+        Provider referral &amp; retainership network
+      </strong>
+
       <p>
-        A familiar pathway for facilities: introduce the service, confirm the
-        liaison, agree the care pathway and activate referrals.
+        Introduce trusted healthcare providers, establish the right contact
+        and help them complete the SmartClinic onboarding and verification
+        process.
       </p>
-      <a routerLink="/" [queryParams]="{ type: 'Professional' }" fragment="join-portal">
-        Create my Clinical Builder profile →
+
+      <a
+        routerLink="/join"
+        [queryParams]="{ type: 'Professional' }"
+        fragment="join-portal"
+      >
+        Join the Provider Network →
       </a>
     </aside>
   </section>
 
+  <!-- =========================================================
+       CURRENT SMARTCLINIC REFERRAL PROGRESSION
+       ========================================================= -->
+
   <section class="member-journey">
     <div class="journey-head">
-      <p class="kicker">One simple impact ladder</p>
-      <h2>Every verified connection moves the network forward.</h2>
-      <p>
-        Use your personal link to connect individuals, families, professionals,
-        facilities and communities. Pending activity appears immediately; points
-        enter your score only after verification.
+      <p class="kicker">
+        Your SmartClinic impact journey
       </p>
-      <a class="journey-cta" href="#join-form">Get my personal joining link ↓</a>
+
+      <h2>
+        Every qualified connection moves you forward.
+      </h2>
+
+      <p>
+        Use your SmartClinic referral link to connect patients, clinics,
+        laboratories and pharmacies. Your referral level progresses when
+        those direct referrals complete the required SmartClinic
+        qualification process.
+      </p>
+
+      <a class="journey-cta" href="#join-portal">
+        Start building your impact ↓
+      </a>
     </div>
+
+    <!-- =====================================================
+         LEVEL 1–5
+
+         These are cumulative qualified DIRECT referral totals.
+
+         Example:
+         Level 2 requires 20 patients total, not another 20
+         after Level 1.
+         ===================================================== -->
+
     <div class="level-road">
       <article>
-        <b>LEVEL 01 · 100 POINTS</b>
-        <span>Builder</span>
-        <strong>Prove your first network</strong>
-        <small>Seven verified care providers equal 105 points. Or combine professionals, families, groups and facilities to reach the same goal.</small>
-        <em>Unlock ₦3,000 data support and reseller eligibility.</em>
+        <b>LEVEL 01</b>
+
+        <span>Build your foundation</span>
+
+        <strong>
+          Make your first qualified connections
+        </strong>
+
+        <small>
+          Reach a total of
+          <b>10 qualified patients</b>,
+          <b>2 clinics</b>,
+          <b>2 laboratories</b> and
+          <b>2 pharmacies</b>.
+        </small>
+
+        <em>
+          This is your first SmartClinic referral achievement.
+        </em>
       </article>
+
       <article>
-        <b>LEVEL 02 · 300 POINTS</b>
-        <span>Connector</span>
-        <strong>Help connections activate</strong>
-        <small>Follow up with professionals and facility liaisons until profiles, services and referral contacts are confirmed.</small>
-        <em>Verified follow-through creates a usable network.</em>
+        <b>LEVEL 02</b>
+
+        <span>Expand your network</span>
+
+        <strong>
+          Grow across every part of the care pathway
+        </strong>
+
+        <small>
+          Reach cumulative totals of
+          <b>20 qualified patients</b>,
+          <b>4 clinics</b>,
+          <b>4 laboratories</b> and
+          <b>4 pharmacies</b>.
+        </small>
+
+        <em>
+          Level progress uses your total qualified direct referrals.
+        </em>
       </article>
+
       <article>
-        <b>LEVEL 03 · 500 POINTS</b>
-        <span>Ambassador</span>
-        <strong>Grow trusted local coverage</strong>
-        <small>Connect more provider types and communities while keeping every introduction accurate, active and ready to serve.</small>
-        <em>Reach matters; trust matters more.</em>
+        <b>LEVEL 03</b>
+
+        <span>Strengthen local coverage</span>
+
+        <strong>
+          Build a broader verified care network
+        </strong>
+
+        <small>
+          Reach cumulative totals of
+          <b>30 qualified patients</b>,
+          <b>6 clinics</b>,
+          <b>6 laboratories</b> and
+          <b>6 pharmacies</b>.
+        </small>
+
+        <em>
+          Every category must meet its qualification requirement.
+        </em>
       </article>
+
       <article>
-        <b>LEVEL 04 · 1,000 POINTS</b>
-        <span>Hub Champion</span>
-        <strong>Build a community care hub</strong>
-        <small>Bring people, professionals, facilities and local groups into one functioning pathway for access and referrals.</small>
-        <em>The network becomes infrastructure.</em>
+        <b>LEVEL 04</b>
+
+        <span>Deepen your impact</span>
+
+        <strong>
+          Connect more people with trusted care
+        </strong>
+
+        <small>
+          Reach cumulative totals of
+          <b>40 qualified patients</b>,
+          <b>8 clinics</b>,
+          <b>8 laboratories</b> and
+          <b>8 pharmacies</b>.
+        </small>
+
+        <em>
+          Keep building verified, direct healthcare connections.
+        </em>
+      </article>
+
+      <article>
+        <b>LEVEL 05</b>
+
+        <span>Reach the highest configured level</span>
+
+        <strong>
+          Build a substantial SmartClinic care network
+        </strong>
+
+        <small>
+          Reach cumulative totals of
+          <b>50 qualified patients</b>,
+          <b>10 clinics</b>,
+          <b>10 laboratories</b> and
+          <b>10 pharmacies</b>.
+        </small>
+
+        <em>
+          Level 5 is currently the highest configured SmartClinic referral
+          level.
+        </em>
       </article>
     </div>
+
+    <!-- =====================================================
+         SIMPLE REFERRAL ACTIONS
+         ===================================================== -->
+
     <div class="easy-actions">
-      <p>Know a <b>doctor or dentist?</b><span>Send the professional link.</span></p>
-      <p>Know a <b>clinic, lab or pharmacy?</b><span>Introduce its liaison.</span></p>
-      <p>Know a <b>family or association?</b><span>Connect every verified member.</span></p>
-      <p>Need care now?<span>Submit an appointment request.</span></p>
+      <p>
+        Know someone who needs care?
+        <span>Invite a patient.</span>
+      </p>
+
+      <p>
+        Know a <b>clinic?</b>
+        <span>Connect them to SmartClinic.</span>
+      </p>
+
+      <p>
+        Know a <b>laboratory?</b>
+        <span>Invite them to the provider network.</span>
+      </p>
+
+      <p>
+        Know a <b>pharmacy?</b>
+        <span>Help them begin SmartClinic onboarding.</span>
+      </p>
     </div>
+
+    <!-- =====================================================
+         HOW REFERRAL PROGRESSION WORKS
+         ===================================================== -->
+
     <div class="impact-rules">
-      <div><strong>Invite</strong><span>Share your own trackable link with a person or organisation.</span></div>
-      <div><strong>Activate</strong><span>Follow up until onboarding and services are confirmed.</span></div>
-      <div><strong>Earn impact</strong><span>Verified results move you up the leaderboard and unlock rewards.</span></div>
+      <div>
+        <strong>Invite</strong>
+
+        <span>
+          Share your SmartClinic referral link with a patient or healthcare
+          provider.
+        </span>
+      </div>
+
+      <div>
+        <strong>Qualify</strong>
+
+        <span>
+          The referred patient or provider completes the required SmartClinic
+          registration and qualification process.
+        </span>
+      </div>
+
+      <div>
+        <strong>Progress</strong>
+
+        <span>
+          Qualified direct referrals contribute toward your referral level and
+          eligible SmartClinic rewards.
+        </span>
+      </div>
     </div>
+
     <p class="fair-note">
-      <b>How scoring stays fair:</b> sending a link alone does not earn points.
-      The person, professional or organisation must complete the required step and be verified.
+      <b>How progression stays fair:</b>
+      sending an invitation or completing a registration alone does not
+      complete a referral level. Only referrals that reach SmartClinic's
+      qualified status count toward the Level 1–5 requirements.
+    </p>
+
+    <p class="fair-note">
+      <b>Levels are cumulative:</b>
+      Level 2 requires 20 qualified patients in total—not 10 additional
+      patients after Level 1. The same cumulative rule applies to clinics,
+      laboratories and pharmacies at every level.
     </p>
   </section>
 
+  <!-- =========================================================
+       JOIN / ONBOARDING
+       ========================================================= -->
+
   <app-join-portal />
+
+  <!-- =========================================================
+       PUBLIC LEADERBOARD
+       ========================================================= -->
+
   <app-community-leaderboard />
+
+  <!-- =========================================================
+       NETWORK STORY
+       ========================================================= -->
 
   <section class="story">
     <div class="storylead">
-      <p class="kicker">One network. Many local builders.</p>
-      <h2>Healthcare exists. The connections are missing.</h2>
+      <p class="kicker">
+        One network. Many local builders.
+      </p>
+
+      <h2>
+        Healthcare exists. The connections are missing.
+      </h2>
+
       <p>
-        Patients still struggle to know where to go, who to call and how to move
-        between consultations, diagnostics, medicines and follow-up. Smart Clinic
-        Exchange is building the trusted connection between these parts of care.
+        Patients still struggle to know where to go, who to call and how to
+        move between consultations, diagnostics, medicines and follow-up.
+        Smart Clinic Exchange is building trusted connections between these
+        parts of care.
       </p>
     </div>
+
     <div class="visiongrid">
       <article>
         <span>01</span>
-        <h3>Physical access hubs</h3>
-        <p>Help points in hospitals, communities and campuses where people can register, book and connect to care.</p>
+
+        <h3>
+          Physical access hubs
+        </h3>
+
+        <p>
+          Help points in hospitals, communities and campuses where people can
+          register, book and connect to care.
+        </p>
       </article>
+
       <article>
         <span>02</span>
-        <h3>Connected providers</h3>
-        <p>Hospitals, clinics, laboratories, pharmacies, diagnostics and professionals working as a coordinated network.</p>
+
+        <h3>
+          Connected providers
+        </h3>
+
+        <p>
+          Clinics, laboratories, pharmacies, diagnostics and healthcare
+          professionals working as a coordinated network.
+        </p>
       </article>
+
       <article>
         <span>03</span>
-        <h3>Local ownership</h3>
-        <p>Builders open doors, organise providers and create practical access pathways in their own communities.</p>
+
+        <h3>
+          Local ownership
+        </h3>
+
+        <p>
+          Community builders open doors, connect trusted providers and create
+          practical access pathways in the places they know best.
+        </p>
       </article>
     </div>
+
     <div class="howjoin">
-      <p class="kicker">You do not have to code or own a hospital</p>
-      <h2>There is a practical place for you.</h2>
-      <p>
-        Build a hub. Connect a provider. Mobilise a community. Support patients.
-        Start with what you know, where you are and who you can reach.
+      <p class="kicker">
+        You do not have to code or own a hospital
       </p>
-      <a href="#join-form">Choose how you will join ↓</a>
+
+      <h2>
+        There is a practical place for you.
+      </h2>
+
+      <p>
+        Connect a patient. Introduce a clinic. Invite a laboratory or pharmacy.
+        Help trusted providers join the network. Start with what you know,
+        where you are and who you can reach.
+      </p>
+
+      <a href="#join-portal">
+        Choose how you will join ↓
+      </a>
     </div>
   </section>
-
-  <footer>
-    <strong>Smart Clinic Exchange</strong>
-    <span>Connecting care. Building access. Creating ownership.</span>
-  </footer>
 </main>

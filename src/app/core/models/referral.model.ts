@@ -1,7 +1,14 @@
 export type ReferralTargetType = 'PATIENT' | 'CLINIC' | 'LABORATORY' | 'PHARMACY';
 export type ReferralStatus = 'REGISTERED' | 'QUALIFIED' | 'REJECTED' | 'CANCELLED';
-export interface ReferralProgress { readonly qualified: number; readonly required: number }
-export interface ReferralLevel { readonly code: string; readonly name: string; readonly ordinal: number }
+export interface ReferralProgress {
+  readonly qualified: number;
+  readonly required: number;
+}
+export interface ReferralLevel {
+  readonly code: string;
+  readonly name: string;
+  readonly ordinal: number;
+}
 export interface ReferralLevelRequirement {
   readonly targetType: ReferralTargetType;
   readonly qualified: number;
@@ -32,14 +39,39 @@ export interface ReferralSummary {
   /** @deprecated Temporary backend rollout compatibility; use levelProgress. */
   readonly nextLevel: { readonly code: string; readonly name: string } | null;
   /** @deprecated Temporary backend rollout compatibility; use levelProgress. */
-  readonly progress: { readonly patients: ReferralProgress; readonly clinics: ReferralProgress; readonly laboratories: ReferralProgress; readonly pharmacies: ReferralProgress };
+  readonly progress: {
+    readonly patients: ReferralProgress;
+    readonly clinics: ReferralProgress;
+    readonly laboratories: ReferralProgress;
+    readonly pharmacies: ReferralProgress;
+  };
   readonly completed: boolean;
   readonly registeredDirectReferrals: number;
   readonly qualifiedDirectReferrals: number;
 }
-export interface ReferralHistoryItem { readonly targetType: ReferralTargetType; readonly status: ReferralStatus; readonly registeredAt: string; readonly qualifiedAt: string | null; readonly pointsEarned?: number }
-export interface ReferralHistoryResponse { readonly items: ReferralHistoryItem[]; readonly page: number; readonly limit: number; readonly total: number; readonly totalPages: number }
-export interface ReferralHistoryFilters { readonly page: number; readonly limit: number; readonly targetType?: ReferralTargetType; readonly status?: ReferralStatus; readonly referrerEmail?: string; readonly qualifiedFrom?: string; readonly qualifiedTo?: string }
+export interface ReferralHistoryItem {
+  readonly targetType: ReferralTargetType;
+  readonly status: ReferralStatus;
+  readonly registeredAt: string;
+  readonly qualifiedAt: string | null;
+  readonly pointsEarned?: number;
+}
+export interface ReferralHistoryResponse {
+  readonly items: ReferralHistoryItem[];
+  readonly page: number;
+  readonly limit: number;
+  readonly total: number;
+  readonly totalPages: number;
+}
+export interface ReferralHistoryFilters {
+  readonly page: number;
+  readonly limit: number;
+  readonly targetType?: ReferralTargetType;
+  readonly status?: ReferralStatus;
+  readonly referrerEmail?: string;
+  readonly qualifiedFrom?: string;
+  readonly qualifiedTo?: string;
+}
 
 export interface ReferralImpact {
   readonly referralCode: string;

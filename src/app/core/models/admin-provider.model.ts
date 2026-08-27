@@ -1,6 +1,11 @@
 export type ProviderStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 export type ProviderOnboardingStatus = 'DRAFT' | 'INVITED' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
-export type ProviderType = 'INDIVIDUAL' | 'CLINIC' | 'DIAGNOSTIC_CENTRE' | 'OTHER';
+export type ProviderType =
+  | 'INDIVIDUAL'
+  | 'CLINIC'
+  | 'DIAGNOSTIC_CENTRE'
+  | 'PHARMACY'
+  | 'OTHER';
 export type SafeUserStatus = 'ACTIVE' | 'INVITED' | 'SUSPENDED' | 'DEACTIVATED';
 
 export interface AdminLinkedUser {

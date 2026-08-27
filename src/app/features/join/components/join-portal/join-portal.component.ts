@@ -1,203 +1,242 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
+  DestroyRef,
   inject,
+  OnInit,
   signal,
-  ViewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
-import { LocationFieldsComponent } from '../location-fields.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  COMMITMENTS,
-  ENTRANCES,
-  GROUP_TYPES,
-  Mode,
-  MODES,
-  PROVIDER_TYPES,
-  RegistrationResult,
-  ROLES,
-  whatsappNumber,
-} from '../join-portal.types';
+  ActivatedRoute,
+  Router,
+} from '@angular/router';
 
-type Status = 'idle' | 'submitting' | 'success' | 'error';
-type ReferralStatus = 'idle' | 'checking' | 'valid' | 'invalid';
+type JoinMode =
+  | 'Builder'
+  | 'Professional'
+  | 'Individual'
+  | 'Clinic'
+  | 'Laboratory'
+  | 'Pharmacy'
+  | 'Family'
+  | 'Group';
+
+type ReferralStatus =
+  | 'idle'
+  | 'present';
+
+interface JoinEntrance {
+  mode: JoinMode;
+  title: string;
+  detail: string;
+}
 
 @Component({
   selector: 'app-join-portal',
   standalone: true,
-  imports: [CommonModule, LocationFieldsComponent],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './join-portal.component.html',
 })
-export class JoinPortalComponent implements AfterViewInit {
-  private http = inject(HttpClient);
+export class JoinPortalComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly modes = MODES;
-  readonly roles = ROLES;
-  readonly commitments = COMMITMENTS;
-  readonly providerTypes = PROVIDER_TYPES;
-  readonly groupTypes = GROUP_TYPES;
-  readonly entrances = ENTRANCES;
+  readonly mode = signal<JoinMode>('Builder');
 
-  mode = signal<Mode>('Builder');
-  status = signal<Status>('idle');
-  registration = signal<RegistrationResult | null>(null);
-  referralCodeInput = signal('');
-  referrerName = signal('');
-  referralStatus = signal<ReferralStatus>('idle');
+  readonly referralCode = signal('');
+  readonly referralStatus = signal<ReferralStatus>('idle');
 
-  @ViewChild('joinForm') formRef?: ElementRef<HTMLFormElement>;
+  readonly entrances: JoinEntrance[] = [
+    {
+      mode: 'Builder',
+      title: 'Become a Builder',
+      detail:
+        'Create your SmartClinic account and start connecting verified people and providers.',
+    },
+    {
+      mode: 'Professional',
+      title: 'Join as a Health Professional',
+      detail:
+        'Create a provider profile, complete verification and prepare to receive care requests.',
+    },
+    {
+      mode: 'Individual',
+      title: 'Join SmartClinic',
+      detail:
+        'Create your patient account and access SmartClinic services.',
+    },
+    {
+      mode: 'Clinic',
+      title: 'Register a Clinic',
+      detail:
+        'Create a clinic provider account and begin SmartClinic verification.',
+    },
+    {
+      mode: 'Laboratory',
+      title: 'Register a Laboratory',
+      detail:
+        'Connect a laboratory or diagnostic provider to the SmartClinic network.',
+    },
+    {
+      mode: 'Pharmacy',
+      title: 'Register a Pharmacy',
+      detail:
+        'Connect a pharmacy to the SmartClinic provider network.',
+    },
+    {
+      mode: 'Family',
+      title: 'Connect a Family',
+      detail:
+        'Start with an individual SmartClinic account. Family connections will use existing patient identities.',
+    },
+    {
+      mode: 'Group',
+      title: 'Connect a Community',
+      detail:
+        'Introduce a school, workplace, association or community without creating a separate account system.',
+    },
+  ];
 
-  get isEntity(): boolean {
-    const m = this.mode();
-    return m === 'Organisation' || m === 'Group' || m === 'Family';
-  }
+  ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const ref = (
+          params.get('ref') ??
+          params.get('invite') ??
+          ''
+        )
+          .trim()
+          .toUpperCase();
 
-  ngAfterViewInit(): void {
-    // Mirrors the original's useEffect: read ?type= and ?ref= from the URL
-    // on mount, deferred a tick the same way setTimeout(…, 0) did.
-    setTimeout(() => {
-      const params = new URLSearchParams(window.location.search);
-      const requested = params.get('type');
-      const referredBy = (params.get('ref') || '').trim().toUpperCase();
-      if (referredBy) {
-        this.referralCodeInput.set(referredBy);
-        void this.checkReferrer(referredBy);
-      }
-      if (this.modes.includes(requested as Mode)) {
-        this.mode.set(requested as Mode);
-      }
-    }, 0);
-  }
+        this.referralCode.set(ref);
+        this.referralStatus.set(ref ? 'present' : 'idle');
 
-  selectMode(m: Mode): void {
-    this.mode.set(m);
-    this.status.set('idle');
-  }
+        const requestedType = params.get('type');
 
-  async checkReferrer(value: string): Promise<void> {
-    const code = value.trim().toUpperCase();
-    if (!code) {
-      this.referrerName.set('');
-      this.referralStatus.set('idle');
-      return;
-    }
-    this.referralStatus.set('checking');
-    this.http
-      .get<{ name: string }>(`/api/referrer?code=${encodeURIComponent(code)}`)
-      .pipe(
-        catchError(() => {
-          this.referrerName.set('');
-          this.referralStatus.set('invalid');
-          return of(null);
-        }),
-      )
-      .subscribe((data) => {
-        if (data) {
-          this.referrerName.set(data.name);
-          this.referralStatus.set('valid');
+        switch (requestedType) {
+          case 'Professional':
+            this.mode.set('Professional');
+            break;
+
+          case 'CLINIC':
+            this.mode.set('Clinic');
+            break;
+
+          case 'LABORATORY':
+            this.mode.set('Laboratory');
+            break;
+
+          case 'PHARMACY':
+            this.mode.set('Pharmacy');
+            break;
         }
       });
   }
 
-  onReferralInput(value: string): void {
-    this.referralCodeInput.set(value.toUpperCase());
-    this.referralStatus.set('idle');
-    this.referrerName.set('');
+  selectMode(mode: JoinMode): void {
+    this.mode.set(mode);
   }
 
-  async submit(event: SubmitEvent): Promise<void> {
-    event.preventDefault();
-    this.status.set('submitting');
-    const form = event.currentTarget as HTMLFormElement;
-    try {
-      const values: Record<string, unknown> = Object.fromEntries(
-        new FormData(form).entries(),
-      );
-      values['accountType'] = this.mode();
-      values['referredByCode'] = this.referralCodeInput();
-
-      const data = await fetch('/api/join', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(values),
-      }).then((response) => {
-        if (!response.ok) throw new Error('Registration failed');
-        return response.json() as Promise<RegistrationResult>;
-      });
-
-      this.registration.set(data);
-      form.reset();
-      this.status.set('success');
-      document.querySelector('#join-portal')?.scrollIntoView({ behavior: 'smooth' });
-    } catch {
-      this.status.set('error');
-    }
-  }
-
-  resetToForm(): void {
-    this.registration.set(null);
-    this.status.set('idle');
-  }
-
-  copy(text: string): void {
-    navigator.clipboard.writeText(text);
-  }
-
-  get referralCode(): string {
-    return this.registration()?.referralCode ?? '';
-  }
-
-  get link(): string {
-    const suffix = this.mode() === 'Professional' ? '&type=Professional' : '';
-    return `https://join.smartclinicnetwork.com/?ref=${this.referralCode}${suffix}#join-portal`;
-  }
-
-  get confirmationText(): string {
-    const r = this.registration();
-    if (!r) return '';
-    return `Hello ${r.registeredName}, your Smart Clinic Exchange registration was successful. Please tap this secure link to confirm it: ${r.confirmationLink}`;
-  }
-
-  get confirmationEmail(): string {
-    const r = this.registration();
-    if (!r) return '';
-    const subject = encodeURIComponent('Confirm your Smart Clinic Exchange registration');
-    const body = encodeURIComponent(this.confirmationText);
-    return `mailto:${encodeURIComponent(r.email)}?subject=${subject}&body=${body}`;
-  }
-
-  get confirmationWhatsApp(): string {
-    const r = this.registration();
-    if (!r) return '';
-    return `https://wa.me/${whatsappNumber(r.phone)}?text=${encodeURIComponent(this.confirmationText)}`;
-  }
-
-  get shareWhatsAppLink(): string {
-    return `https://wa.me/?text=${encodeURIComponent(
-      `Join me in building the Smart Clinic Network: ${this.link}`,
-    )}`;
-  }
-
-  get successTitle(): string {
+  continue(): void {
     switch (this.mode()) {
       case 'Builder':
-        return 'Welcome to the founding community.';
-      case 'Professional':
-        return 'Your Clinical Builder profile is underway.';
       case 'Individual':
-        return 'This individual is now connected.';
+        this.goToPatientRegistration();
+        return;
+
+      case 'Professional':
+        this.goToProviderRegistration();
+        return;
+
+      case 'Clinic':
+        this.goToProviderRegistration('CLINIC');
+        return;
+
+      case 'Laboratory':
+        this.goToProviderRegistration('LABORATORY');
+        return;
+
+      case 'Pharmacy':
+        this.goToProviderRegistration('PHARMACY');
+        return;
+
       case 'Family':
-        return 'This family is now connected.';
+        this.goToPatientRegistration();
+        return;
+
       case 'Group':
-        return 'This group has joined the network.';
-      default:
-        return 'This care provider has joined the network.';
+        // Until SmartClinic has a proper organisation/community
+        // onboarding model, do not invent one here.
+        return;
     }
+  }
+
+  private goToPatientRegistration(): void {
+    const queryParams: Record<string, string> = {};
+
+    if (this.referralCode()) {
+      queryParams['ref'] = this.referralCode();
+    }
+
+    void this.router.navigate(
+      ['/register'],
+      { queryParams },
+    );
+  }
+
+  private goToProviderRegistration(
+    target?: 'CLINIC' | 'LABORATORY' | 'PHARMACY',
+  ): void {
+    const queryParams: Record<string, string> = {};
+
+    if (this.referralCode()) {
+      queryParams['ref'] = this.referralCode();
+    }
+
+    if (target) {
+      queryParams['type'] = target;
+    }
+
+    void this.router.navigate(
+      ['/provider/register'],
+      { queryParams },
+    );
+  }
+
+  get continueLabel(): string {
+    switch (this.mode()) {
+      case 'Builder':
+        return 'Create my SmartClinic account →';
+
+      case 'Individual':
+        return 'Create patient account →';
+
+      case 'Professional':
+        return 'Start provider registration →';
+
+      case 'Clinic':
+        return 'Register clinic →';
+
+      case 'Laboratory':
+        return 'Register laboratory →';
+
+      case 'Pharmacy':
+        return 'Register pharmacy →';
+
+      case 'Family':
+        return 'Start with a patient account →';
+
+      case 'Group':
+        return 'Community onboarding coming soon';
+    }
+  }
+
+  get disabled(): boolean {
+    return this.mode() === 'Group';
   }
 }
