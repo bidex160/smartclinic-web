@@ -259,9 +259,15 @@ Provider-owned `GET/POST/PATCH /provider/service-areas` operations configure det
 
 ## Find Care and FastTrack
 
-Public discovery uses `GET /public/find-care/services` and `GET /public/find-care/providers`; service availability, provider eligibility, locations, FastTrack support, and fees remain backend-owned. Authenticated USER requests use `/me/care-requests` and `/me/fasttrack-requests`. Angular sends public references and service codes, never internal provider IDs or prices.
+Public discovery uses `GET /public/find-care/services` and `GET /public/find-care/providers`; service availability, delivery modes, provider eligibility, locations, FastTrack support, and fees remain backend-owned. Provider discovery is filtered by the selected `deliveryMode`, and authenticated Care Request creation sends that single mode with public references and service codes—never internal provider IDs or prices.
 
 FastTrack Paystack initialization and verification use the authenticated `/funding/initialize`, `/funding`, and `/funding/verify` routes. Popup and callback data never mark a request paid locally. The patient Paystack callback base remains `/me/payment-return/`; the frontend dispatches the trusted route reference to the Health Check or FastTrack verifier.
+
+General Care scheduling is provider-owned and separate from Health Check scheduling. A provider schedules an accepted Care Request with `POST /provider/care-requests/:reference/schedule`, supplying an explicit date, start time, end time, IANA timezone, and an optional public `SCPL-...` location reference only for `IN_PERSON`. `VIRTUAL` and `HOME_VISIT` never send a provider location. Provider appointment reads and lifecycle commands use `/provider/care-appointments`; patient reads and appointment-aware cancellation use `/me/care-appointments`. Angular never checks appointment overlap or advances lifecycle state locally.
+
+Care Request reads expose their appointment summary directly, so My Care navigates using `careRequest.appointment.reference` and does not correlate paginated appointment collections. Actual virtual meeting URLs are consumed only from authorized appointment detail. Providers set, replace, or clear an external HTTPS link through `PUT /provider/care-appointments/:reference/meeting-link`; public discovery and collection rows never render it.
+
+Provider care operations use the provider-owned `/provider/care-requests` and `/provider/fasttrack-requests` projections and command routes. Lists and details contain only the backend-safe provider DTO; accept, decline, verify, and reject commands use public references and always refetch authoritative state. Providers cannot initialize or confirm patient payment from this workspace.
 
 Public and authenticated SELF booking creation send `visitAddress` for both fulfilment modes. `HOME_VISIT` uses it as the operational destination; `PROVIDER_LOCATION` uses it as the patient origin for deterministic structured matching, while the backend-selected ProviderLocation is the separate appointment destination. Provider-location offers and encounters never reconstruct the patient's street address when their safe DTO omits it. Matching queue and patient history render only backend-safe geographic summaries. There are no maps, geocoding, nearest-branch claims, radius, routing, GIS, or client-side geographic decisions.
 

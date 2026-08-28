@@ -16,6 +16,7 @@ export interface CreateProviderServiceRequest {
   readonly fulfilmentModeId: string;
 }
 export interface ProviderLocation {
+  readonly locationReference: string;
   readonly id: string;
   readonly providerId: string;
   readonly name: string;

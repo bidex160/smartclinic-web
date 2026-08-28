@@ -45,6 +45,7 @@ describe('Find Care API services', () => {
   it('submits only the Care Request contract with providerReference', () => {
     const body = {
       serviceCode: 'DENTAL',
+      deliveryMode: 'VIRTUAL' as const,
       preferredProviderReference: 'SCPR-ABCDEF0123456789',
       countryCode: 'NG',
       stateOrRegion: 'Oyo',

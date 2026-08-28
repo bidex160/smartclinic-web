@@ -7,7 +7,13 @@ import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { FindCarePageComponent } from './find-care-page.component';
 describe('FindCarePageComponent', () => {
   const services = [
-    { code: 'DENTAL', name: 'Dental care', description: 'Dental services', providerCount: 1 },
+    {
+      code: 'DENTAL',
+      name: 'Dental care',
+      description: 'Dental services',
+      providerCount: 1,
+      deliveryModes: ['IN_PERSON', 'VIRTUAL'],
+    },
   ];
   const provider = {
     providerReference: 'SCPR-ABCDEF0123456789',
@@ -27,6 +33,7 @@ describe('FindCarePageComponent', () => {
         supportsFastTrack: true,
         fastTrackFeeMinor: 5000,
         fastTrackCurrency: 'NGN',
+        deliveryModes: ['IN_PERSON', 'VIRTUAL'],
       },
     ],
   };
@@ -43,6 +50,7 @@ describe('FindCarePageComponent', () => {
           reference: 'SC-CARE-ABCDEF012345',
           status: 'AWAITING_PROVIDER_RESPONSE',
           service: { code: 'DENTAL', name: 'Dental care' },
+          deliveryMode: 'VIRTUAL',
           geography: { countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Ibadan' },
           preferredProvider: provider,
           assignedProvider: provider,
@@ -52,6 +60,7 @@ describe('FindCarePageComponent', () => {
           notes: null,
           createdAt: '2026-08-28T00:00:00Z',
           updatedAt: '2026-08-28T00:00:00Z',
+          appointment: null,
         }),
       ),
     };
@@ -79,18 +88,23 @@ describe('FindCarePageComponent', () => {
       stateOrRegion: 'Oyo',
       city: 'Ibadan',
       serviceCode: 'DENTAL',
+      deliveryMode: 'VIRTUAL',
       preferredProviderReference: '',
     });
     c.discoverProviders();
+    c.deliveryModeChanged();
     fixture.detectChanges();
     expect(find.getProviders).toHaveBeenCalledWith(
-      expect.objectContaining({ serviceCode: 'DENTAL', city: 'Ibadan' }),
+      expect.objectContaining({ serviceCode: 'DENTAL', city: 'Ibadan', deliveryMode: 'VIRTUAL' }),
     );
     expect(fixture.nativeElement.textContent).toContain('Dynamic Clinic');
     c.form.controls.preferredProviderReference.setValue(provider.providerReference);
     c.submit();
     expect(care.create).toHaveBeenCalledWith(
-      expect.objectContaining({ preferredProviderReference: provider.providerReference }),
+      expect.objectContaining({
+        preferredProviderReference: provider.providerReference,
+        deliveryMode: 'VIRTUAL',
+      }),
     );
     expect(fixture.nativeElement.textContent).not.toContain('FastTrack</option>');
   });
@@ -102,6 +116,7 @@ describe('FindCarePageComponent', () => {
       stateOrRegion: 'Oyo',
       city: 'Ibadan',
       serviceCode: 'DENTAL',
+      deliveryMode: 'VIRTUAL',
       preferredProviderReference: '',
     });
     c.submit();
@@ -118,6 +133,7 @@ describe('FindCarePageComponent', () => {
       stateOrRegion: 'Oyo',
       city: 'Ibadan',
       serviceCode: 'DENTAL',
+      deliveryMode: 'VIRTUAL',
     });
     c.submit();
     expect(care.create).not.toHaveBeenCalled();

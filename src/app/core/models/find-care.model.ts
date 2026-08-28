@@ -1,8 +1,11 @@
+export type CareDeliveryMode = 'IN_PERSON' | 'VIRTUAL' | 'HOME_VISIT';
+
 export interface CareServiceDefinition {
   readonly code: string;
   readonly name: string;
   readonly description: string | null;
   readonly providerCount: number;
+  readonly deliveryModes?: readonly CareDeliveryMode[];
 }
 export interface PublicProviderCareService {
   readonly code: string;
@@ -15,6 +18,7 @@ export interface PublicProviderCareService {
   readonly supportsFastTrack: boolean;
   readonly fastTrackFeeMinor: number | null;
   readonly fastTrackCurrency: string | null;
+  readonly deliveryModes: readonly CareDeliveryMode[];
 }
 export interface PublicFindCareProvider {
   readonly providerReference: string;
@@ -48,6 +52,7 @@ export interface FindCareProviderFilters {
   readonly countryCode?: string;
   readonly stateOrRegion?: string;
   readonly city?: string;
+  readonly deliveryMode?: CareDeliveryMode;
   readonly page?: number;
   readonly limit?: number;
 }
@@ -67,6 +72,7 @@ export type CareRequestStatus =
 export type CareRequestContactMethod = 'EMAIL' | 'PHONE' | 'WHATSAPP';
 export interface CreateCareRequest {
   readonly serviceCode: string;
+  readonly deliveryMode: CareDeliveryMode;
   readonly preferredProviderReference?: string;
   readonly countryCode: string;
   readonly stateOrRegion: string;
@@ -90,6 +96,7 @@ export interface CareRequest {
   readonly reference: string;
   readonly status: CareRequestStatus;
   readonly service: { readonly code: string; readonly name: string };
+  readonly deliveryMode: CareDeliveryMode;
   readonly geography: {
     readonly countryCode: string;
     readonly stateOrRegion: string;
@@ -103,6 +110,18 @@ export interface CareRequest {
   readonly notes: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly appointment: CareRequestAppointmentSummary | null;
+}
+export interface CareRequestAppointmentSummary {
+  readonly reference: string;
+  readonly status: CareAppointmentStatus;
+  readonly deliveryMode: CareDeliveryMode;
+  readonly hasMeetingLink: boolean;
+  readonly scheduledDate?: string;
+  readonly scheduledTimeFrom?: string;
+  readonly scheduledTimeTo?: string;
+  readonly timezone?: string;
+  readonly providerLocation?: CareAppointmentLocation | null;
 }
 export interface CareRequestPage {
   readonly items: readonly CareRequest[];
@@ -182,4 +201,64 @@ export interface FastTrackPaymentStatus {
   readonly checkoutUrl: string | null;
   readonly accessCode: string | null;
   readonly paidAt: string | null;
+}
+
+export type CareAppointmentStatus =
+  'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+export interface ScheduleCareAppointmentRequest {
+  readonly scheduledDate: string;
+  readonly scheduledTimeFrom: string;
+  readonly scheduledTimeTo: string;
+  readonly timezone: string;
+  readonly providerLocationReference?: string;
+  readonly notes?: string;
+}
+export interface CareAppointmentLocation {
+  readonly locationReference: string;
+  readonly name: string;
+  readonly addressLine1: string;
+  readonly addressLine2: string | null;
+  readonly city: string;
+  readonly stateOrRegion: string;
+  readonly postalCode: string | null;
+  readonly countryCode: string;
+}
+export interface CareAppointment {
+  readonly appointmentReference: string;
+  readonly careRequestReference: string;
+  readonly status: CareAppointmentStatus;
+  readonly deliveryMode: CareDeliveryMode;
+  readonly service: { readonly code: string; readonly name: string };
+  readonly provider: {
+    readonly providerReference: string;
+    readonly displayName: string;
+    readonly providerType: string;
+  };
+  readonly providerLocation: CareAppointmentLocation | null;
+  readonly scheduledDate: string;
+  readonly scheduledTimeFrom: string;
+  readonly scheduledTimeTo: string;
+  readonly timezone: string;
+  readonly notes: string | null;
+  readonly meetingUrl: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+export interface CareAppointmentPage {
+  readonly items: readonly CareAppointment[];
+  readonly page: number;
+  readonly limit: number;
+  readonly total: number;
+  readonly totalPages: number;
+}
+export interface ProviderLocationOption {
+  readonly locationReference: string;
+  readonly name: string;
+  readonly addressLine1: string;
+  readonly addressLine2: string | null;
+  readonly city: string;
+  readonly state: string;
+  readonly postalCode: string | null;
+  readonly countryCode: string;
+  readonly isActive: boolean;
 }

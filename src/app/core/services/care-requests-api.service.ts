@@ -20,4 +20,10 @@ export class CareRequestsApiService {
       `${this.base}/me/care-requests/${encodeURIComponent(reference)}`,
     );
   }
+  cancel(reference: string): Observable<CareRequest> {
+    return this.http.post<CareRequest>(
+      `${this.base}/me/care-requests/${encodeURIComponent(reference)}/cancel`,
+      null,
+    );
+  }
 }

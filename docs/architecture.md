@@ -97,7 +97,7 @@ Proposed public routes:
 | `/book/review`                                | Review the draft; submission occurs only on explicit confirmation           |
 | `/book/confirmation/:reference`               | Display or securely recover confirmation and initialize guest funding       |
 | `/bookings/:reference`                        | Retrieve a booking where the authorization/verification contract permits it |
-| `/login`                                | In-memory administrator and operations login                                |
+| `/login`                                      | In-memory administrator and operations login                                |
 | `/admin/package-prices`                       | Role-guarded package-price operations                                       |
 | `/admin/providers`                            | Guarded provider listing, filtering, and creation                           |
 | `/admin/providers/:id`                        | Guarded provider profile, status, and account-link operations               |
@@ -231,3 +231,9 @@ Every API-backed route should model `idle`, `loading`, `success`, and `error` ou
 Find Care is public, API-driven discovery followed by an authenticated SELF Patient Care Request. A pre-authentication intent is held only in application memory; it is not a guest Care Request and is not persisted as health data. My Care and FastTrack reads are JWT-owned `/me` resources.
 
 FastTrack is a separate workflow, not a care-service catalogue item. Provider support, verification state, fee, payment state, and confirmation are rendered from backend responses. There is no client-side provider eligibility, triage, fee calculation, or payment settlement.
+
+The existing operational Provider portal also hosts Care Requests and FastTrack verification. Angular presents obvious actions only for the returned response state, but the backend owns transition eligibility and stale-state conflicts. Decline and rejection reasons use the exact command DTOs; successful and conflicting commands trigger a fresh detail read.
+
+Care Appointments form a distinct General Care lifecycle. Provider acceptance and FastTrack confirmation do not create an appointment: the provider explicitly supplies the appointment interval and optional public provider-location reference. Backend commands remain authoritative for scheduling, overlap protection, start, completion, no-show, and cancellation. Patient appointment-aware cancellation uses the appointment endpoint and is never paired with a separate client-side Care Request cancellation.
+
+General Care delivery mode is a backend-owned exact-offering capability. Find Care retains geography for all modes and filters discovery before showing providers. `IN_PERSON` appointments may use a provider location; `VIRTUAL` and `HOME_VISIT` do not. Virtual Care V1 consists only of an authorized external HTTPS meeting URL on appointment detail—there is no embedded video, meeting-provider integration, or join-time rule. FastTrack remains an independent workflow.

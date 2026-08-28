@@ -24,14 +24,13 @@ export const routes: Routes = [
     path: 'join',
     title: 'Choose a Smart Health Check | SmartClinic',
     loadComponent: () =>
-      import('./features/join/join.component').then(
-        (component) => component.JoinComponent,
-      ),
+      import('./features/join/join.component').then((component) => component.JoinComponent),
   },
   {
     path: 'request-care',
     title: 'Find Care | SmartClinic',
-    loadComponent: () => import('./features/care/find-care-page.component').then(c => c.FindCarePageComponent),
+    loadComponent: () =>
+      import('./features/care/find-care-page.component').then((c) => c.FindCarePageComponent),
   },
   {
     path: 'health-check/packages',
@@ -86,13 +85,13 @@ export const routes: Routes = [
       ),
   },
   {
-  path: 'login',
-  title: 'Sign in to My SmartClinic | SmartClinic',
-  loadComponent: () =>
-    import('./features/auth/login-page.component').then(
-      (component) => component.LoginPageComponent,
-    ),
-},
+    path: 'login',
+    title: 'Sign in to My SmartClinic | SmartClinic',
+    loadComponent: () =>
+      import('./features/auth/login-page.component').then(
+        (component) => component.LoginPageComponent,
+      ),
+  },
   {
     path: 'me',
     component: PatientLayoutComponent,
@@ -124,32 +123,74 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'referrals', title: 'Referrals & Rewards | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/results/referrals-page.component').then((c) => c.ReferralsPageComponent),
+        path: 'referrals',
+        title: 'Referrals & Rewards | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/referrals-page.component').then(
+            (c) => c.ReferralsPageComponent,
+          ),
       },
       {
-        path: 'impact', title: 'My Impact | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/results/my-impact-page.component').then((c) => c.MyImpactPageComponent),
+        path: 'impact',
+        title: 'My Impact | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/my-impact-page.component').then(
+            (c) => c.MyImpactPageComponent,
+          ),
       },
       {
-        path: 'care', title: 'My Care | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/care/my-care-page.component').then(c => c.MyCarePageComponent),
+        path: 'care',
+        title: 'My Care | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/my-care-page.component').then((c) => c.MyCarePageComponent),
       },
       {
-        path: 'care/:reference', title: 'Care Request | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/care/care-detail-page.component').then(c => c.CareDetailPageComponent),
+        path: 'care/appointments/:reference',
+        title: 'My Care appointment | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/patient-care-appointment-detail-page.component').then(
+            (c) => c.PatientCareAppointmentDetailPageComponent,
+          ),
       },
       {
-        path: 'fasttrack', title: 'My FastTrack requests | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/care/fasttrack-list-page.component').then(c => c.FastTrackListPageComponent),
+        path: 'care/:reference',
+        title: 'Care Request | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/care-detail-page.component').then(
+            (c) => c.CareDetailPageComponent,
+          ),
       },
       {
-        path: 'fasttrack/new', title: 'Request FastTrack | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/care/external-fasttrack-page.component').then(c => c.ExternalFastTrackPageComponent),
+        path: 'fasttrack',
+        title: 'My FastTrack requests | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/fasttrack-list-page.component').then(
+            (c) => c.FastTrackListPageComponent,
+          ),
       },
       {
-        path: 'fasttrack/:reference', title: 'FastTrack request | SmartClinic', canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/care/fasttrack-detail-page.component').then(c => c.FastTrackDetailPageComponent),
+        path: 'fasttrack/new',
+        title: 'Request FastTrack | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/external-fasttrack-page.component').then(
+            (c) => c.ExternalFastTrackPageComponent,
+          ),
+      },
+      {
+        path: 'fasttrack/:reference',
+        title: 'FastTrack request | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/fasttrack-detail-page.component').then(
+            (c) => c.FastTrackDetailPageComponent,
+          ),
       },
       {
         path: 'book',
@@ -215,7 +256,7 @@ export const routes: Routes = [
         (component) => component.GuestHealthCheckResultPageComponent,
       ),
   },
-      {
+  {
     path: 'provider/register',
     title: 'Provider application | SmartClinic',
     loadComponent: () =>
@@ -269,6 +310,60 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/provider/provider-appointments-page.component').then(
             (component) => component.ProviderAppointmentsPageComponent,
+          ),
+      },
+      {
+        path: 'care-requests',
+        title: 'Provider Care Requests | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-care-requests-page.component').then(
+            (c) => c.ProviderCareRequestsPageComponent,
+          ),
+      },
+      {
+        path: 'care-requests/:reference',
+        title: 'Provider Care Request | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-care-request-detail-page.component').then(
+            (c) => c.ProviderCareRequestDetailPageComponent,
+          ),
+      },
+      {
+        path: 'care-appointments',
+        title: 'Provider Care Appointments | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-care-appointments-page.component').then(
+            (c) => c.ProviderCareAppointmentsPageComponent,
+          ),
+      },
+      {
+        path: 'care-appointments/:reference',
+        title: 'Provider Care Appointment | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-care-appointment-detail-page.component').then(
+            (c) => c.ProviderCareAppointmentDetailPageComponent,
+          ),
+      },
+      {
+        path: 'fasttrack',
+        title: 'Provider FastTrack | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-fasttrack-page.component').then(
+            (c) => c.ProviderFastTrackPageComponent,
+          ),
+      },
+      {
+        path: 'fasttrack/:reference',
+        title: 'Provider FastTrack request | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-fasttrack-detail-page.component').then(
+            (c) => c.ProviderFastTrackDetailPageComponent,
           ),
       },
       {
@@ -332,16 +427,31 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'referrals', title: 'Referrals | SmartClinic', canActivate: [adminPricingGuard],
-        loadComponent: () => import('./features/admin/admin-referrals-page.component').then((c) => c.AdminReferralsPageComponent),
+        path: 'referrals',
+        title: 'Referrals | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-referrals-page.component').then(
+            (c) => c.AdminReferralsPageComponent,
+          ),
       },
       {
-        path: 'reward-withdrawals', title: 'Reward withdrawals | SmartClinic', canActivate: [adminPricingGuard],
-        loadComponent: () => import('./features/admin/admin-reward-withdrawals-page.component').then((c) => c.AdminRewardWithdrawalsPageComponent),
+        path: 'reward-withdrawals',
+        title: 'Reward withdrawals | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-reward-withdrawals-page.component').then(
+            (c) => c.AdminRewardWithdrawalsPageComponent,
+          ),
       },
       {
-        path: 'reward-withdrawals/:reference', title: 'Reward withdrawal detail | SmartClinic', canActivate: [adminPricingGuard],
-        loadComponent: () => import('./features/admin/admin-reward-withdrawal-detail-page.component').then((c) => c.AdminRewardWithdrawalDetailPageComponent),
+        path: 'reward-withdrawals/:reference',
+        title: 'Reward withdrawal detail | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-reward-withdrawal-detail-page.component').then(
+            (c) => c.AdminRewardWithdrawalDetailPageComponent,
+          ),
       },
       {
         path: 'providers',

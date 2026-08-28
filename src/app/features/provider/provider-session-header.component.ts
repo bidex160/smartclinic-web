@@ -1,13 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
-import {
-  RouterLink,
-  RouterLinkActive,
-} from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
@@ -15,10 +7,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 
 @Component({
   selector: 'app-provider-session-header',
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-  ],
+  imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- =========================================================
@@ -58,9 +47,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block text-lg font-bold text-white">
-              SmartClinic
-            </span>
+            <span class="block text-lg font-bold text-white"> SmartClinic </span>
 
             <span
               class="
@@ -77,10 +64,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </div>
 
       <!-- Navigation -->
-      <nav
-        aria-label="Provider portal"
-        class="flex-1 overflow-y-auto px-4 py-6"
-      >
+      <nav aria-label="Provider portal" class="flex-1 overflow-y-auto px-4 py-6">
         <div class="grid gap-1">
           <!-- Dashboard -->
           <a
@@ -155,8 +139,27 @@ import { AuthStateService } from '../../core/services/auth-state.service';
                 focus:ring-brand-700
               "
             >
-              Appointments
+              Health Checks
             </a>
+
+            <a
+              routerLink="/provider/care-requests"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              >Care Requests</a
+            >
+            <a
+              routerLink="/provider/care-appointments"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              >Care Appointments</a
+            >
+            <a
+              routerLink="/provider/fasttrack"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              >FastTrack</a
+            >
           }
 
           <!-- SETUP -->
@@ -272,9 +275,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               {{ user.displayName }}
             </p>
 
-            <p class="mt-1 text-xs font-medium text-brand-300">
-              Provider
-            </p>
+            <p class="mt-1 text-xs font-medium text-brand-300">Provider</p>
           </div>
         }
 
@@ -347,9 +348,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block font-bold text-brand-900">
-              SmartClinic
-            </span>
+            <span class="block font-bold text-brand-900"> SmartClinic </span>
 
             <span
               class="
@@ -369,9 +368,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             <p class="max-w-32 truncate text-sm font-bold text-slate-900">
               {{ user.displayName }}
             </p>
-            <p class="text-xs text-slate-500">
-              Provider
-            </p>
+            <p class="text-xs text-slate-500">Provider</p>
           </div>
         }
       </div>
@@ -405,10 +402,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </summary>
 
       <div class="border-t border-slate-100 px-4 py-4">
-        <nav
-          aria-label="Mobile provider portal"
-          class="grid gap-1"
-        >
+        <nav aria-label="Mobile provider portal" class="grid gap-1">
           <a
             routerLink="/provider/dashboard"
             routerLinkActive="bg-brand-100 text-brand-900"
@@ -464,8 +458,26 @@ import { AuthStateService } from '../../core/services/auth-state.service';
                 hover:text-brand-900
               "
             >
-              Appointments
+              Health Checks
             </a>
+            <a
+              routerLink="/provider/care-requests"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+              >Care Requests</a
+            >
+            <a
+              routerLink="/provider/care-appointments"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+              >Care Appointments</a
+            >
+            <a
+              routerLink="/provider/fasttrack"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+              >FastTrack</a
+            >
           }
 
           <p

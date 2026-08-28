@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { CareRequest } from '../../core/models/find-care.model';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { UtilsService } from '../../core/services/utils.service';
+import { careDeliveryModeLabel } from './care-delivery-mode';
 @Component({
   selector: 'app-my-care-page',
   imports: [RouterLink],
@@ -48,6 +50,7 @@ import { UtilsService } from '../../core/services/utils.service';
             <tr>
               <th class="p-4">Service</th>
               <th class="p-4">Provider</th>
+              <th class="p-4">Delivery</th>
               <th class="p-4">Location</th>
               <th class="p-4">Status</th>
               <th class="p-4">Created</th>
@@ -65,6 +68,7 @@ import { UtilsService } from '../../core/services/utils.service';
                       'SmartClinic matching'
                   }}
                 </td>
+                <td class="p-4">{{ deliveryModeLabel(item.deliveryMode) }}</td>
                 <td class="p-4">{{ item.geography.city }}, {{ item.geography.stateOrRegion }}</td>
                 <td class="p-4">{{ label(item.status) }}</td>
                 <td class="p-4">{{ utils.formatDateTime(item.createdAt) }}</td>
@@ -74,6 +78,13 @@ import { UtilsService } from '../../core/services/utils.service';
                     class="font-bold text-brand-700 underline"
                     >View request</a
                   >
+                  @if (item.appointment) {
+                    <a
+                      [routerLink]="['/me/care/appointments', item.appointment.reference]"
+                      class="mt-2 block font-bold text-brand-700 underline"
+                      >View appointment</a
+                    >
+                  }
                 </td>
               </tr>
             }
@@ -95,17 +106,19 @@ export class MyCarePageComponent {
   load() {
     this.loading.set(true);
     this.error.set(false);
-    this.api.list().subscribe({
-      next: (p) => {
-        this.items.set(p.items);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set(true);
-        this.loading.set(false);
-      },
-    });
+    this.api
+      .list()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (requests) => {
+          this.items.set(requests.items);
+        },
+        error: () => {
+          this.error.set(true);
+        },
+      });
   }
+  deliveryModeLabel = careDeliveryModeLabel;
   label(s: string) {
     return (
       (
