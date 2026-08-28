@@ -8,6 +8,7 @@ import {
   ProviderLocationOption,
 } from '../../core/models/find-care.model';
 import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
+import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
 @Component({
@@ -105,6 +106,22 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
         >
           Schedule appointment
         </button>
+      }
+      @if (chatAvailable()) {
+        <section class="mt-6 rounded-2xl border bg-white p-6">
+          <h2 class="text-xl font-bold">Communication</h2>
+          <p class="mt-2 text-slate-600">Use the backend-safe patient identity in Care Chat.</p>
+          <a
+            [routerLink]="['/provider/care-requests', r.reference, 'chat']"
+            class="mt-4 inline-flex min-h-12 items-center rounded-xl border border-brand-300 px-5 py-3 font-bold text-brand-800"
+            >Chat with patient
+            @if (chatUnread() > 0) {
+              <span class="ml-2 rounded-full bg-brand-700 px-2 py-0.5 text-xs text-white">{{
+                chatUnread()
+              }}</span>
+            }
+          </a>
+        </section>
       }
       @if (scheduledAppointment(); as appointment) {
         <section class="mt-6 rounded-2xl border border-green-200 bg-green-50 p-6">
@@ -269,6 +286,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
 })
 export class ProviderCareRequestDetailPageComponent {
   private readonly api = inject(ProviderCareOperationsApiService);
+  private readonly chatApi = inject(CareChatApiService);
   private readonly fb = inject(FormBuilder);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
@@ -282,6 +300,8 @@ export class ProviderCareRequestDetailPageComponent {
   readonly scheduleError = signal<string | null>(null);
   readonly locations = signal<readonly ProviderLocationOption[]>([]);
   readonly scheduledAppointment = signal<CareAppointment | null>(null);
+  readonly chatAvailable = signal(false);
+  readonly chatUnread = signal(0);
   readonly timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   readonly minimumDate = this.localNow().date;
   readonly scheduleForm = this.fb.nonNullable.group({
@@ -380,7 +400,19 @@ export class ProviderCareRequestDetailPageComponent {
       .getCareRequest(this.reference)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (r) => this.request.set(r),
+        next: (r) => {
+          this.request.set(r);
+          this.chatApi.getChat('provider', this.reference).subscribe({
+            next: (chat) => {
+              this.chatAvailable.set(true);
+              this.chatUnread.set(chat.unreadCount);
+            },
+            error: () => {
+              this.chatAvailable.set(false);
+              this.chatUnread.set(0);
+            },
+          });
+        },
         error: () =>
           this.error.set(
             'This Care Request is unavailable or no longer assigned to your provider workspace.',

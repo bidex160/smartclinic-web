@@ -157,6 +157,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'care/:reference/chat',
+        title: 'Care chat | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        data: { chatScope: 'patient' },
+        loadComponent: () =>
+          import('./features/care/care-chat-page.component').then((c) => c.CareChatPageComponent),
+      },
+      {
         path: 'care/:reference',
         title: 'Care Request | SmartClinic',
         canActivate: [authenticatedUserGuard],
@@ -320,6 +328,14 @@ export const routes: Routes = [
           import('./features/provider/provider-care-requests-page.component').then(
             (c) => c.ProviderCareRequestsPageComponent,
           ),
+      },
+      {
+        path: 'care-requests/:reference/chat',
+        title: 'Provider care chat | SmartClinic',
+        canActivate: [providerGuard],
+        data: { chatScope: 'provider' },
+        loadComponent: () =>
+          import('./features/care/care-chat-page.component').then((c) => c.CareChatPageComponent),
       },
       {
         path: 'care-requests/:reference',

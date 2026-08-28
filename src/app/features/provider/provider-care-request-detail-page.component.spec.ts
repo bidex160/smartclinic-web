@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
+import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { ProviderCareRequestDetailPageComponent } from './provider-care-request-detail-page.component';
 describe('ProviderCareRequestDetailPageComponent', () => {
   const request = (status = 'AWAITING_PROVIDER_RESPONSE', deliveryMode = 'IN_PERSON') => ({
@@ -84,6 +85,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
           },
         },
         { provide: ProviderCareOperationsApiService, useValue: api },
+        { provide: CareChatApiService, useValue: { getChat: vi.fn(() => of({ unreadCount: 2 })) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(ProviderCareRequestDetailPageComponent);

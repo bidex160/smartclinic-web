@@ -131,6 +131,43 @@ export interface CareRequestPage {
   readonly totalPages: number;
 }
 
+export type CareChatScope = 'patient' | 'provider';
+export type CareChatSenderType = 'PATIENT' | 'PROVIDER';
+export interface CareChatParticipant {
+  readonly displayName: string;
+  readonly participantType?: CareChatSenderType;
+}
+export interface CareChatAppointmentSummary {
+  readonly reference: string;
+  readonly scheduledDate: string;
+  readonly scheduledTimeFrom: string;
+  readonly scheduledTimeTo: string;
+  readonly timezone: string;
+  readonly deliveryMode: CareDeliveryMode;
+}
+export interface CareChatDetail {
+  readonly reference: string;
+  readonly careRequestReference: string;
+  readonly canSendMessages: boolean;
+  readonly unreadCount: number;
+  readonly participant: CareChatParticipant;
+  readonly service: { readonly code: string; readonly name: string };
+  readonly appointment: CareChatAppointmentSummary | null;
+}
+export interface CareChatMessage {
+  readonly senderType: CareChatSenderType;
+  readonly body: string;
+  readonly createdAt: string;
+  readonly readAt: string | null;
+}
+export interface CareChatMessagesPage {
+  readonly items: readonly CareChatMessage[];
+  readonly page: number;
+  readonly limit: number;
+  readonly total: number;
+  readonly totalPages: number;
+}
+
 export type FastTrackStatus =
   | 'SUBMITTED'
   | 'VERIFYING'

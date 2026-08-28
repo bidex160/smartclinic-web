@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CareRequest } from '../../core/models/find-care.model';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
+import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { UtilsService } from '../../core/services/utils.service';
@@ -117,6 +118,22 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             Cancel Care Request
           </button>
         }
+        @if (chatAvailable()) {
+          <section class="mt-6 rounded-2xl border bg-white p-6">
+            <h2 class="text-xl font-bold">Communication</h2>
+            <p class="mt-2 text-slate-600">Message your provider about this Care Request.</p>
+            <a
+              [routerLink]="['/me/care', r.reference, 'chat']"
+              class="mt-4 inline-flex min-h-12 items-center rounded-xl border border-brand-300 px-5 py-3 font-bold text-brand-800"
+              >Open care chat
+              @if (chatUnread() > 0) {
+                <span class="ml-2 rounded-full bg-brand-700 px-2 py-0.5 text-xs text-white">{{
+                  chatUnread()
+                }}</span>
+              }
+            </a>
+          </section>
+        }
         @if (fastTrackEligible()) {
           <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
             <h2 class="text-xl font-bold">FastTrack available</h2>
@@ -176,6 +193,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
 })
 export class CareDetailPageComponent {
   private readonly api = inject(CareRequestsApiService);
+  private readonly chatApi = inject(CareChatApiService);
   private readonly find = inject(FindCareApiService);
   private readonly fast = inject(FastTrackApiService);
   private readonly router = inject(Router);
@@ -189,6 +207,8 @@ export class CareDetailPageComponent {
   readonly cancelling = signal(false);
   readonly cancelOpen = signal(false);
   readonly actionError = signal<string | null>(null);
+  readonly chatAvailable = signal(false);
+  readonly chatUnread = signal(0);
   constructor() {
     this.load();
   }
@@ -200,6 +220,16 @@ export class CareDetailPageComponent {
         this.request.set(r);
         this.loading.set(false);
         this.checkFastTrack(r);
+        this.chatApi.getChat('patient', this.reference).subscribe({
+          next: (chat) => {
+            this.chatAvailable.set(true);
+            this.chatUnread.set(chat.unreadCount);
+          },
+          error: () => {
+            this.chatAvailable.set(false);
+            this.chatUnread.set(0);
+          },
+        });
       },
       error: () => {
         this.error.set(true);
