@@ -225,3 +225,9 @@ Every API-backed route should model `idle`, `loading`, `success`, and `error` ou
 - Add end-to-end coverage for the happy path plus catalogue failure, validation failure, submission failure/retry, refresh/guard behavior, and confirmation.
 - Mock at the HTTP boundary using realistic typed fixtures; do not encode fake business logic into components.
 - Include automated accessibility checks while retaining manual keyboard and screen-reader review.
+
+## Find Care architecture
+
+Find Care is public, API-driven discovery followed by an authenticated SELF Patient Care Request. A pre-authentication intent is held only in application memory; it is not a guest Care Request and is not persisted as health data. My Care and FastTrack reads are JWT-owned `/me` resources.
+
+FastTrack is a separate workflow, not a care-service catalogue item. Provider support, verification state, fee, payment state, and confirmation are rendered from backend responses. There is no client-side provider eligibility, triage, fee calculation, or payment settlement.

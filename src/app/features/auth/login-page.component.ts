@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {
+  ActivatedRoute,
   Router,
   RouterLink,
 } from '@angular/router';
@@ -187,6 +188,7 @@ export class LoginPageComponent {
 
   private readonly router =
     inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   errorMessage: string | null = null;
 
@@ -263,6 +265,11 @@ export class LoginPageComponent {
           if (
             roles.includes('USER')
           ) {
+            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+            if (returnUrl?.startsWith('/') && !returnUrl.startsWith('//')) {
+              void this.router.navigateByUrl(returnUrl);
+              return;
+            }
             void this.router.navigate([
               '/me/dashboard',
             ]);

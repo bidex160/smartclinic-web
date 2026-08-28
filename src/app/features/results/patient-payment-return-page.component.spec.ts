@@ -3,15 +3,84 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { PatientPaymentReturnPageComponent } from './patient-payment-return-page.component';
+import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 
 describe('PatientPaymentReturnPageComponent', () => {
   it('verifies by trusted route reference and refreshes authoritative status/detail', async () => {
-    const api = { verifyMyHealthCheckPayment: vi.fn(() => of({})), getMyHealthCheckPayment: vi.fn(() => of({ bookingReference: 'SC-1', bookingStatus: 'PENDING_PROVIDER_MATCH', fundingStatus: 'SETTLED', paymentStatus: 'SUCCEEDED' })), getMyHealthCheck: vi.fn(() => of({ bookingReference: 'SC-1' })) };
-    await TestBed.configureTestingModule({ imports: [PatientPaymentReturnPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ reference: 'SC-1' }), queryParamMap: convertToParamMap({ trxref: 'untrusted' }) } } }, { provide: HealthCheckResultsApiService, useValue: api }] }).compileComponents();
-    const fixture = TestBed.createComponent(PatientPaymentReturnPageComponent); fixture.detectChanges();
+    const api = {
+      verifyMyHealthCheckPayment: vi.fn(() => of({})),
+      getMyHealthCheckPayment: vi.fn(() =>
+        of({
+          bookingReference: 'SC-1',
+          bookingStatus: 'PENDING_PROVIDER_MATCH',
+          fundingStatus: 'SETTLED',
+          paymentStatus: 'SUCCEEDED',
+        }),
+      ),
+      getMyHealthCheck: vi.fn(() => of({ bookingReference: 'SC-1' })),
+    };
+    await TestBed.configureTestingModule({
+      imports: [PatientPaymentReturnPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({ reference: 'SC-1' }),
+              queryParamMap: convertToParamMap({ trxref: 'untrusted' }),
+            },
+          },
+        },
+        { provide: HealthCheckResultsApiService, useValue: api },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PatientPaymentReturnPageComponent);
+    fixture.detectChanges();
     expect(api.verifyMyHealthCheckPayment).toHaveBeenCalledWith('SC-1');
     expect(api.verifyMyHealthCheckPayment).not.toHaveBeenCalledWith('untrusted');
     expect(api.getMyHealthCheckPayment).toHaveBeenCalledWith('SC-1');
     expect(fixture.nativeElement.textContent).toContain('Payment confirmed');
+  });
+  it('dispatches FastTrack callbacks by trusted route reference, not Paystack query hints', async () => {
+    const fast = {
+      verifyPayment: vi.fn(() =>
+        of({
+          fastTrackReference: 'SC-FT-ABCDEF0123456789',
+          fastTrackStatus: 'CONFIRMED',
+          feeMinor: 5000,
+          amount: '50.00',
+          currency: 'NGN',
+          paymentReady: false,
+          paymentAttemptStatus: 'SUCCEEDED',
+          paymentReference: 'provider-secret',
+          checkoutUrl: null,
+          accessCode: null,
+          paidAt: '2026-08-28T00:00:00Z',
+        }),
+      ),
+    };
+    await TestBed.configureTestingModule({
+      imports: [PatientPaymentReturnPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({ reference: 'SC-FT-ABCDEF0123456789' }),
+              queryParamMap: convertToParamMap({ reference: 'untrusted-paystack-value' }),
+            },
+          },
+        },
+        { provide: HealthCheckResultsApiService, useValue: {} },
+        { provide: FastTrackApiService, useValue: fast },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PatientPaymentReturnPageComponent);
+    fixture.detectChanges();
+    expect(fast.verifyPayment).toHaveBeenCalledWith('SC-FT-ABCDEF0123456789');
+    expect(fast.verifyPayment).not.toHaveBeenCalledWith('untrusted-paystack-value');
+    expect(fixture.nativeElement.textContent).toContain('FastTrack request is confirmed');
   });
 });

@@ -20,13 +20,18 @@ export const routes: Routes = [
         (component) => component.HomePageComponent,
       ),
   },
-    {
+  {
     path: 'join',
     title: 'Choose a Smart Health Check | SmartClinic',
     loadComponent: () =>
       import('./features/join/join.component').then(
         (component) => component.JoinComponent,
       ),
+  },
+  {
+    path: 'request-care',
+    title: 'Find Care | SmartClinic',
+    loadComponent: () => import('./features/care/find-care-page.component').then(c => c.FindCarePageComponent),
   },
   {
     path: 'health-check/packages',
@@ -125,6 +130,26 @@ export const routes: Routes = [
       {
         path: 'impact', title: 'My Impact | SmartClinic', canActivate: [authenticatedUserGuard],
         loadComponent: () => import('./features/results/my-impact-page.component').then((c) => c.MyImpactPageComponent),
+      },
+      {
+        path: 'care', title: 'My Care | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/my-care-page.component').then(c => c.MyCarePageComponent),
+      },
+      {
+        path: 'care/:reference', title: 'Care Request | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/care-detail-page.component').then(c => c.CareDetailPageComponent),
+      },
+      {
+        path: 'fasttrack', title: 'My FastTrack requests | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/fasttrack-list-page.component').then(c => c.FastTrackListPageComponent),
+      },
+      {
+        path: 'fasttrack/new', title: 'Request FastTrack | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/external-fasttrack-page.component').then(c => c.ExternalFastTrackPageComponent),
+      },
+      {
+        path: 'fasttrack/:reference', title: 'FastTrack request | SmartClinic', canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/fasttrack-detail-page.component').then(c => c.FastTrackDetailPageComponent),
       },
       {
         path: 'book',

@@ -257,6 +257,12 @@ Provider availability retains `startTime` and `endTime` and may send nullable `b
 
 Provider-owned `GET/POST/PATCH /provider/service-areas` operations configure deterministic `HOME_VISIT` coverage by country, state/region, and optional city/postal narrowing. Requests rely on authenticated provider context and never send `providerId`. The service selector is restricted to the provider's API-returned HOME_VISIT capabilities. `HOME_VISIT_WITHOUT_SERVICE_AREA` is displayed from backend readiness; Angular does not calculate geographic eligibility. Operations uses `GET /admin/providers/:id/service-areas` as a read-only review surface.
 
+## Find Care and FastTrack
+
+Public discovery uses `GET /public/find-care/services` and `GET /public/find-care/providers`; service availability, provider eligibility, locations, FastTrack support, and fees remain backend-owned. Authenticated USER requests use `/me/care-requests` and `/me/fasttrack-requests`. Angular sends public references and service codes, never internal provider IDs or prices.
+
+FastTrack Paystack initialization and verification use the authenticated `/funding/initialize`, `/funding`, and `/funding/verify` routes. Popup and callback data never mark a request paid locally. The patient Paystack callback base remains `/me/payment-return/`; the frontend dispatches the trusted route reference to the Health Check or FastTrack verifier.
+
 Public and authenticated SELF booking creation send `visitAddress` for both fulfilment modes. `HOME_VISIT` uses it as the operational destination; `PROVIDER_LOCATION` uses it as the patient origin for deterministic structured matching, while the backend-selected ProviderLocation is the separate appointment destination. Provider-location offers and encounters never reconstruct the patient's street address when their safe DTO omits it. Matching queue and patient history render only backend-safe geographic summaries. There are no maps, geocoding, nearest-branch claims, radius, routing, GIS, or client-side geographic decisions.
 
 The current provider Health Check encounter DTO does not return a visit-address field. The encounter page therefore does not reconstruct or carry an address from offer state; adding an operational address there requires a backend safe read-contract extension.
