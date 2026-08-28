@@ -214,8 +214,14 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               focus:ring-brand-700
             "
           >
-            Services & Locations
+            Health Check Services & Locations
           </a>
+          <a
+            routerLink="/provider/care-services"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Care Services</a
+          >
 
           <!--
             If availability has its own fragment, use it here.
@@ -518,8 +524,13 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               hover:text-brand-900
             "
           >
-            Services & Locations
+            Health Check Services & Locations
           </a>
+          <a
+            routerLink="/provider/care-services"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Care Services</a
+          >
 
           <a
             routerLink="/provider/profile"

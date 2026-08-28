@@ -1,12 +1,51 @@
 export type CareDeliveryMode = 'IN_PERSON' | 'VIRTUAL' | 'HOME_VISIT';
 
 export interface CareServiceDefinition {
+  readonly id?: string;
   readonly code: string;
   readonly name: string;
   readonly description: string | null;
   readonly providerCount: number;
   readonly deliveryModes?: readonly CareDeliveryMode[];
 }
+export interface ProviderCareServiceDefinition {
+  readonly id: string;
+  readonly code: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly isActive: boolean;
+}
+export interface ProviderCareServiceOffering {
+  readonly id: string;
+  readonly careServiceDefinitionId: string;
+  readonly definition: ProviderCareServiceDefinition;
+  readonly descriptionOverride: string | null;
+  readonly priceMinor: string | null;
+  readonly currency: string | null;
+  readonly supportsAppointmentRequests: boolean;
+  readonly deliveryModes: readonly CareDeliveryMode[];
+  readonly supportsFastTrack: boolean;
+  readonly fastTrackFeeMinor: string | null;
+  readonly fastTrackCurrency: string | null;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+export interface CreateProviderCareServiceOffering {
+  readonly careServiceDefinitionId: string;
+  readonly description?: string | null;
+  readonly priceMinor?: number | null;
+  readonly currency?: string | null;
+  readonly supportsAppointmentRequests?: boolean;
+  readonly deliveryModes?: readonly CareDeliveryMode[];
+  readonly supportsFastTrack?: boolean;
+  readonly fastTrackFeeMinor?: number | null;
+  readonly fastTrackCurrency?: string | null;
+}
+export type UpdateProviderCareServiceOffering = Omit<
+  CreateProviderCareServiceOffering,
+  'careServiceDefinitionId'
+>;
 export interface PublicProviderCareService {
   readonly code: string;
   readonly name: string;

@@ -123,6 +123,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'care-services',
+        title: 'General Care Services | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-care-services-page.component').then(
+            (component) => component.ProviderCareServicesPageComponent,
+          ),
+      },
+      {
         path: 'referrals',
         title: 'Referrals & Rewards | SmartClinic',
         canActivate: [authenticatedUserGuard],
