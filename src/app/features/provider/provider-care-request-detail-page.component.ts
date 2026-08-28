@@ -11,6 +11,7 @@ import { ProviderCareOperationsApiService } from '../../core/services/provider-c
 import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
+import { formatMinor } from './care-money';
 @Component({
   selector: 'app-provider-care-request-detail-page',
   imports: [RouterLink, ReactiveFormsModule],
@@ -46,6 +47,16 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
           <div>
             <dt class="text-sm text-slate-500">Delivery</dt>
             <dd>{{ deliveryModeLabel(r.deliveryMode) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-500">Service price</dt>
+            <dd class="font-semibold">
+              {{
+                r.service.price
+                  ? formatPrice(r.service.price.priceMinor, r.service.price.currency)
+                  : 'Not set yet'
+              }}
+            </dd>
           </div>
           <div>
             <dt class="text-sm text-slate-500">Status</dt>
@@ -482,4 +493,5 @@ export class ProviderCareRequestDetailPageComponent {
     );
   }
   readonly deliveryModeLabel = careDeliveryModeLabel;
+  readonly formatPrice = formatMinor;
 }

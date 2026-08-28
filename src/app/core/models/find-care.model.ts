@@ -6,7 +6,6 @@ export interface CareServiceDefinition {
   readonly name: string;
   readonly description: string | null;
   readonly providerCount: number;
-  readonly deliveryModes?: readonly CareDeliveryMode[];
 }
 export interface ProviderCareServiceDefinition {
   readonly id: string;
@@ -20,10 +19,8 @@ export interface ProviderCareServiceOffering {
   readonly careServiceDefinitionId: string;
   readonly definition: ProviderCareServiceDefinition;
   readonly descriptionOverride: string | null;
-  readonly priceMinor: string | null;
-  readonly currency: string | null;
   readonly supportsAppointmentRequests: boolean;
-  readonly deliveryModes: readonly CareDeliveryMode[];
+  readonly deliveryOptions: readonly ProviderCareServiceStoredDeliveryOption[];
   readonly supportsFastTrack: boolean;
   readonly fastTrackFeeMinor: string | null;
   readonly fastTrackCurrency: string | null;
@@ -31,13 +28,21 @@ export interface ProviderCareServiceOffering {
   readonly createdAt: string;
   readonly updatedAt: string;
 }
+export interface ProviderCareServiceDeliveryOption {
+  readonly deliveryMode: CareDeliveryMode;
+  readonly priceMinor: number;
+  readonly currency: string;
+}
+export interface ProviderCareServiceStoredDeliveryOption {
+  readonly deliveryMode: CareDeliveryMode;
+  readonly priceMinor: string;
+  readonly currency: string;
+}
 export interface CreateProviderCareServiceOffering {
   readonly careServiceDefinitionId: string;
   readonly description?: string | null;
-  readonly priceMinor?: number | null;
-  readonly currency?: string | null;
   readonly supportsAppointmentRequests?: boolean;
-  readonly deliveryModes?: readonly CareDeliveryMode[];
+  readonly deliveryOptions: readonly ProviderCareServiceDeliveryOption[];
   readonly supportsFastTrack?: boolean;
   readonly fastTrackFeeMinor?: number | null;
   readonly fastTrackCurrency?: string | null;
@@ -50,14 +55,11 @@ export interface PublicProviderCareService {
   readonly code: string;
   readonly name: string;
   readonly description: string | null;
-  readonly priceMinor: number | null;
-  readonly currency: string | null;
-  readonly priceOnRequest: boolean;
   readonly supportsAppointmentRequests: boolean;
+  readonly deliveryOptions: readonly ProviderCareServiceDeliveryOption[];
   readonly supportsFastTrack: boolean;
   readonly fastTrackFeeMinor: number | null;
   readonly fastTrackCurrency: string | null;
-  readonly deliveryModes: readonly CareDeliveryMode[];
 }
 export interface PublicFindCareProvider {
   readonly providerReference: string;
@@ -134,7 +136,11 @@ export interface CareRequestProviderSummary {
 export interface CareRequest {
   readonly reference: string;
   readonly status: CareRequestStatus;
-  readonly service: { readonly code: string; readonly name: string };
+  readonly service: {
+    readonly code: string;
+    readonly name: string;
+    readonly price: { readonly priceMinor: number; readonly currency: string } | null;
+  };
   readonly deliveryMode: CareDeliveryMode;
   readonly geography: {
     readonly countryCode: string;

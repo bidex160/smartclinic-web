@@ -24,11 +24,14 @@ describe('ProviderCareServicesApiService', () => {
     api.getOfferings().subscribe();
     http.expectOne('http://api.test/api/v1/provider/care-services').flush([]);
     api
-      .create({ careServiceDefinitionId: 'definition-id', deliveryModes: ['VIRTUAL'] })
+      .create({
+        careServiceDefinitionId: 'definition-id',
+        deliveryOptions: [{ deliveryMode: 'VIRTUAL', priceMinor: 1000000, currency: 'NGN' }],
+      })
       .subscribe();
     expect(http.expectOne('http://api.test/api/v1/provider/care-services').request.body).toEqual({
       careServiceDefinitionId: 'definition-id',
-      deliveryModes: ['VIRTUAL'],
+      deliveryOptions: [{ deliveryMode: 'VIRTUAL', priceMinor: 1000000, currency: 'NGN' }],
     });
     api.setActive('offering-id', false).subscribe();
     expect(

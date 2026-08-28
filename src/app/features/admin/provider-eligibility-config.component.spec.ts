@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ProviderEligibilityConfigComponent } from './provider-eligibility-config.component';
 describe('ProviderEligibilityConfigComponent', () => {
   it('renders catalogue-labelled capabilities and HOME_VISIT limitation', async () => {
@@ -20,11 +21,15 @@ describe('ProviderEligibilityConfigComponent', () => {
     first.component.serviceForm.setValue({
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-location',
+      currency: 'NGN',
+      price: '45000',
     });
     first.component.createService();
     expect(first.api.createService).toHaveBeenCalledWith('provider-id', {
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-location',
+      priceMinor: 4500000,
+      currency: 'NGN',
     });
     TestBed.resetTestingModule();
     const conflict = await setup({
@@ -36,10 +41,51 @@ describe('ProviderEligibilityConfigComponent', () => {
     conflict.component.serviceForm.setValue({
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-location',
+      currency: 'NGN',
+      price: '45000',
     });
     conflict.component.createService();
     expect(conflict.component.error()).toContain('conflicts');
     expect(conflict.component.error()).not.toContain('constraint');
+  });
+  it('updates an exact capability price with safe minor units and supports free pricing', async () => {
+    const { component, api, fixture } = await setup();
+    const providerLocation = component.services()[0];
+    const homeVisit = component.services()[1];
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('₦45,000');
+    expect(fixture.nativeElement.textContent).toContain('₦65,000');
+    component.editServicePrice(providerLocation);
+    expect(component.servicePriceForm.controls.price.value).toBe('45000.00');
+    component.servicePriceForm.setValue({ currency: 'NGN', price: '65000.50' });
+    component.saveServicePrice(providerLocation);
+    expect(api.updateServicePrice).toHaveBeenCalledWith('service-location', {
+      priceMinor: 6500050,
+      currency: 'NGN',
+    });
+    component.editServicePrice(homeVisit);
+    component.servicePriceForm.setValue({ currency: 'NGN', price: '0' });
+    component.saveServicePrice(homeVisit);
+    expect(api.updateServicePrice).toHaveBeenLastCalledWith('service-home', {
+      priceMinor: 0,
+      currency: 'NGN',
+    });
+  });
+  it('rejects blank and negative prices and preserves input after a server conflict', async () => {
+    const { component, api } = await setup();
+    const item = component.services()[0];
+    component.editServicePrice(item);
+    component.servicePriceForm.setValue({ currency: 'NGN', price: '' });
+    component.saveServicePrice(item);
+    expect(api.updateServicePrice).not.toHaveBeenCalled();
+    component.servicePriceForm.setValue({ currency: 'NGN', price: '-1' });
+    component.saveServicePrice(item);
+    expect(api.updateServicePrice).not.toHaveBeenCalled();
+    api.updateServicePrice.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 409 })));
+    component.servicePriceForm.setValue({ currency: 'NGN', price: '47000' });
+    component.saveServicePrice(item);
+    expect(component.servicePriceForm.controls.price.value).toBe('47000');
+    expect(component.editingServicePrice()).toBe(item.id);
   });
   it('creates and edits named locations without coordinate or raw UUID fields', async () => {
     const { component, api, fixture } = await setup();
@@ -157,6 +203,7 @@ describe('ProviderEligibilityConfigComponent', () => {
         options.createServiceError ? throwError(() => options.createServiceError) : of(services[0]),
       ),
       setServiceActive: vi.fn(() => of(services[0])),
+      updateServicePrice: vi.fn((_id: string, body: unknown) => of(body)),
       linkLocation: vi.fn(() => of(services[0])),
       unlinkLocation: vi.fn(() => of(undefined)),
       listLocations: vi.fn(() => of(options.empty ? [] : locationRows())),
@@ -176,6 +223,7 @@ describe('ProviderEligibilityConfigComponent', () => {
       imports: [ProviderEligibilityConfigComponent],
       providers: [
         { provide: ProviderEligibilityApiService, useValue: api },
+        { provide: ProviderSelfConfigurationApiService, useValue: api },
         {
           provide: HealthCheckPackagesApiService,
           useValue: {
@@ -188,7 +236,6 @@ describe('ProviderEligibilityConfigComponent', () => {
                   description: null,
                   benefits: [],
                   estimatedDurationMinutes: 15,
-                  prices: [],
                   isActive: true,
                 },
               ]),
@@ -226,6 +273,8 @@ function serviceRows() {
       providerId: 'provider-id',
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-location',
+      priceMinor: 4500000,
+      currency: 'NGN',
       isActive: true,
       providerLocationIds: ['location-id'],
       createdAt: '2026-01-01',
@@ -236,6 +285,8 @@ function serviceRows() {
       providerId: 'provider-id',
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-home',
+      priceMinor: 6500000,
+      currency: 'NGN',
       isActive: true,
       providerLocationIds: [],
       createdAt: '2026-01-01',

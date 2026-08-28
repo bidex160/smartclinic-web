@@ -86,12 +86,21 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
                 }
                 <dl class="mt-4 grid gap-3 text-sm">
                   <div>
-                    <dt class="font-bold">Delivery modes</dt>
-                    <dd>{{ modeList(item.deliveryModes) }}</dd>
-                  </div>
-                  <div>
-                    <dt class="font-bold">Pricing</dt>
-                    <dd>{{ formatPrice(item.priceMinor, item.currency) }}</dd>
+                    <dt class="font-bold">Delivery pricing</dt>
+                    <dd class="mt-2 grid gap-2">
+                      @for (mode of modes; track mode) {
+                        @if (deliveryOption(item, mode); as option) {
+                          <span
+                            ><span class="font-semibold">{{ modeLabel(mode) }}</span
+                            ><span class="ml-2">{{
+                              formatPrice(option.priceMinor, option.currency)
+                            }}</span></span
+                          >
+                        } @else {
+                          <span class="text-slate-500">{{ modeLabel(mode) }} · Not offered</span>
+                        }
+                      }
+                    </dd>
                   </div>
                   <div>
                     <dt class="font-bold">Appointment requests</dt>
@@ -189,16 +198,40 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
               </p>
               <div class="mt-3 grid gap-3">
                 @for (mode of modes; track mode) {
-                  <label class="flex gap-3 rounded-xl border p-4"
-                    ><input
-                      type="checkbox"
-                      [checked]="selectedModes().includes(mode)"
-                      (change)="toggleMode(mode)"
-                    /><span
-                      ><strong>{{ modeLabel(mode) }}</strong
-                      ><span class="block text-sm text-slate-600">{{ modeHelp(mode) }}</span></span
-                    ></label
-                  >
+                  <div class="rounded-xl border p-4">
+                    <label class="flex gap-3"
+                      ><input
+                        type="checkbox"
+                        [checked]="selectedModes().includes(mode)"
+                        (change)="toggleMode(mode)"
+                      /><span
+                        ><strong>{{ modeLabel(mode) }}</strong
+                        ><span class="block text-sm text-slate-600">{{
+                          modeHelp(mode)
+                        }}</span></span
+                      ></label
+                    >
+                    @if (selectedModes().includes(mode)) {
+                      <div class="mt-4 grid gap-3 sm:grid-cols-[8rem_1fr]">
+                        <label class="font-semibold"
+                          >Currency<input
+                            [formControl]="currencyControl(mode)"
+                            maxlength="3"
+                            placeholder="NGN"
+                            class="mt-2 min-h-12 w-full rounded-xl border px-3 uppercase" /></label
+                        ><label class="font-semibold"
+                          >Price<input
+                            [formControl]="priceControl(mode)"
+                            inputmode="decimal"
+                            placeholder="15000.00"
+                            class="mt-2 min-h-12 w-full rounded-xl border px-3"
+                          /><span class="mt-1 block text-xs font-normal text-slate-500"
+                            >Enter 0 to offer this mode free. Blank is invalid.</span
+                          ></label
+                        >
+                      </div>
+                    }
+                  </div>
                 }
               </div>
               @if (modeError()) {
@@ -221,35 +254,6 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
                 ></label
               >
             </section>
-            <fieldset>
-              <legend class="font-bold">Pricing</legend>
-              <label class="mt-3 flex gap-3"
-                ><input type="radio" formControlName="pricingMode" value="REQUEST" /><span
-                  >Price on request</span
-                ></label
-              ><label class="mt-2 flex gap-3"
-                ><input type="radio" formControlName="pricingMode" value="FIXED" /><span
-                  >Set a price</span
-                ></label
-              >
-              @if (form.controls.pricingMode.value === 'FIXED') {
-                <div class="mt-3 grid gap-3 sm:grid-cols-[8rem_1fr]">
-                  <label class="font-semibold"
-                    >Currency<input
-                      formControlName="currency"
-                      maxlength="3"
-                      placeholder="NGN"
-                      class="mt-2 min-h-12 w-full rounded-xl border px-3 uppercase" /></label
-                  ><label class="font-semibold"
-                    >Amount<input
-                      formControlName="price"
-                      inputmode="decimal"
-                      placeholder="15000.00"
-                      class="mt-2 min-h-12 w-full rounded-xl border px-3"
-                  /></label>
-                </div>
-              }
-            </fieldset>
             <fieldset>
               <legend class="font-bold">FastTrack</legend>
               <label class="mt-3 flex gap-3"
@@ -374,9 +378,12 @@ export class ProviderCareServicesPageComponent {
     careServiceDefinitionId: ['', Validators.required],
     description: ['', [Validators.maxLength(4000)]],
     supportsAppointmentRequests: [false],
-    pricingMode: ['REQUEST' as 'REQUEST' | 'FIXED'],
-    currency: ['', [Validators.maxLength(3)]],
-    price: [''],
+    inPersonCurrency: ['', [Validators.maxLength(3)]],
+    inPersonPrice: [''],
+    virtualCurrency: ['', [Validators.maxLength(3)]],
+    virtualPrice: [''],
+    homeVisitCurrency: ['', [Validators.maxLength(3)]],
+    homeVisitPrice: [''],
     supportsFastTrack: [false],
     fastTrackCurrency: ['', [Validators.maxLength(3)]],
     fastTrackFee: [''],
@@ -415,9 +422,12 @@ export class ProviderCareServicesPageComponent {
       careServiceDefinitionId: '',
       description: '',
       supportsAppointmentRequests: false,
-      pricingMode: 'REQUEST',
-      currency: '',
-      price: '',
+      inPersonCurrency: '',
+      inPersonPrice: '',
+      virtualCurrency: '',
+      virtualPrice: '',
+      homeVisitCurrency: '',
+      homeVisitPrice: '',
       supportsFastTrack: false,
       fastTrackCurrency: '',
       fastTrackFee: '',
@@ -426,16 +436,19 @@ export class ProviderCareServicesPageComponent {
   }
   openEdit(item: ProviderCareServiceOffering) {
     this.editing.set(item);
-    this.selectedModes.set(item.deliveryModes);
+    this.selectedModes.set(item.deliveryOptions.map((option) => option.deliveryMode));
     this.modeError.set(false);
     this.editorError.set(null);
     this.form.reset({
       careServiceDefinitionId: item.careServiceDefinitionId,
       description: item.descriptionOverride ?? '',
       supportsAppointmentRequests: item.supportsAppointmentRequests,
-      pricingMode: item.priceMinor == null ? 'REQUEST' : 'FIXED',
-      currency: item.currency ?? '',
-      price: minorToMajor(item.priceMinor, item.currency),
+      inPersonCurrency: this.optionCurrency(item, 'IN_PERSON'),
+      inPersonPrice: this.optionPrice(item, 'IN_PERSON'),
+      virtualCurrency: this.optionCurrency(item, 'VIRTUAL'),
+      virtualPrice: this.optionPrice(item, 'VIRTUAL'),
+      homeVisitCurrency: this.optionCurrency(item, 'HOME_VISIT'),
+      homeVisitPrice: this.optionPrice(item, 'HOME_VISIT'),
       supportsFastTrack: item.supportsFastTrack,
       fastTrackCurrency: item.fastTrackCurrency ?? '',
       fastTrackFee: minorToMajor(item.fastTrackFeeMinor, item.fastTrackCurrency),
@@ -456,17 +469,31 @@ export class ProviderCareServicesPageComponent {
       return;
     }
     const v = this.form.getRawValue();
-    const fixed = v.pricingMode === 'FIXED';
-    const priceMinor = fixed ? majorToMinor(v.price, v.currency.toUpperCase()) : null;
+    const deliveryOptions = [] as {
+      deliveryMode: CareDeliveryMode;
+      priceMinor: number;
+      currency: string;
+    }[];
+    for (const mode of this.selectedModes()) {
+      const currency = this.currencyControl(mode).value.trim().toUpperCase();
+      const raw = this.priceControl(mode).value;
+      const priceMinor = majorToMinor(raw, currency);
+      if (
+        !/^[A-Za-z]{3}$/.test(currency) ||
+        raw.trim() === '' ||
+        priceMinor === null ||
+        priceMinor < 0
+      ) {
+        this.editorError.set(
+          `${careDeliveryModeLabel(mode)} requires a valid currency and non-negative price.`,
+        );
+        return;
+      }
+      deliveryOptions.push({ deliveryMode: mode, priceMinor, currency });
+    }
     const fastTrackFeeMinor = v.supportsFastTrack
       ? majorToMinor(v.fastTrackFee, v.fastTrackCurrency.toUpperCase())
       : null;
-    if (fixed && (!/^[A-Za-z]{3}$/.test(v.currency) || priceMinor === null || priceMinor < 0)) {
-      this.editorError.set(
-        'Enter a valid currency and non-negative price with no excess decimal places.',
-      );
-      return;
-    }
     if (
       v.supportsFastTrack &&
       (!/^[A-Za-z]{3}$/.test(v.fastTrackCurrency) ||
@@ -478,10 +505,8 @@ export class ProviderCareServicesPageComponent {
     }
     const body: UpdateProviderCareServiceOffering = {
       description: v.description.trim() || null,
-      deliveryModes: this.selectedModes(),
+      deliveryOptions,
       supportsAppointmentRequests: v.supportsAppointmentRequests,
-      priceMinor,
-      currency: fixed ? v.currency.toUpperCase() : null,
       supportsFastTrack: v.supportsFastTrack,
       fastTrackFeeMinor: v.supportsFastTrack ? fastTrackFeeMinor : null,
       fastTrackCurrency: v.supportsFastTrack ? v.fastTrackCurrency.toUpperCase() : null,
@@ -547,4 +572,28 @@ export class ProviderCareServicesPageComponent {
     return modes.map(careDeliveryModeLabel).join(' · ');
   }
   formatPrice = formatMinor;
+  currencyControl(mode: CareDeliveryMode) {
+    return mode === 'IN_PERSON'
+      ? this.form.controls.inPersonCurrency
+      : mode === 'VIRTUAL'
+        ? this.form.controls.virtualCurrency
+        : this.form.controls.homeVisitCurrency;
+  }
+  priceControl(mode: CareDeliveryMode) {
+    return mode === 'IN_PERSON'
+      ? this.form.controls.inPersonPrice
+      : mode === 'VIRTUAL'
+        ? this.form.controls.virtualPrice
+        : this.form.controls.homeVisitPrice;
+  }
+  deliveryOption(item: ProviderCareServiceOffering, mode: CareDeliveryMode) {
+    return item.deliveryOptions.find((option) => option.deliveryMode === mode) ?? null;
+  }
+  private optionCurrency(item: ProviderCareServiceOffering, mode: CareDeliveryMode) {
+    return this.deliveryOption(item, mode)?.currency ?? '';
+  }
+  private optionPrice(item: ProviderCareServiceOffering, mode: CareDeliveryMode) {
+    const option = this.deliveryOption(item, mode);
+    return option ? minorToMajor(option.priceMinor, option.currency) : '';
+  }
 }

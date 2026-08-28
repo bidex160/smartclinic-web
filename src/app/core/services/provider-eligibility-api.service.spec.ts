@@ -11,12 +11,16 @@ describe('ProviderEligibilityApiService', () => {
       .createService('provider/id', {
         healthCheckPackageId: 'package-id',
         fulfilmentModeId: 'mode-id',
+        priceMinor: 4500000,
+        currency: 'NGN',
       })
       .subscribe();
     let r = http.expectOne('http://api.test/api/v1/admin/providers/provider%2Fid/services');
     expect(r.request.body).toEqual({
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-id',
+      priceMinor: 4500000,
+      currency: 'NGN',
     });
     expect(r.request.body).not.toHaveProperty('providerId');
     expect(r.request.context.get(SKIP_AUTH_RETRY)).toBe(true);

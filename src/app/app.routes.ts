@@ -443,15 +443,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'package-prices',
-        title: 'Package pricing | SmartClinic',
-        canActivate: [adminPricingGuard],
-        loadComponent: () =>
-          import('./features/admin/package-prices-admin-page.component').then(
-            (component) => component.PackagePricesAdminPageComponent,
-          ),
-      },
-      {
         path: 'referrals',
         title: 'Referrals | SmartClinic',
         canActivate: [adminPricingGuard],

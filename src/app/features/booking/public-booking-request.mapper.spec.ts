@@ -99,7 +99,6 @@ function createCompleteState(
     description: null,
     benefits: [],
     estimatedDurationMinutes: null,
-    prices: [],
     isActive: true,
   });
   state.selectFulfilmentMode({ id: 'mode-id', code: modeCode, name: 'Mode', isActive: true });

@@ -30,15 +30,6 @@ describe('PackageSelectionPageComponent', () => {
       description: 'API description',
       benefits: ['API benefit'],
       estimatedDurationMinutes: 45,
-      prices: [
-        {
-          fulfilmentModeId: 'mode-id',
-          fulfilmentModeCode: 'API_MODE',
-          fulfilmentModeName: 'API mode',
-          amount: '12500.00',
-          currency: 'API',
-        },
-      ],
       isActive: true,
     };
     TestBed.inject(HttpTestingController)
@@ -48,7 +39,7 @@ describe('PackageSelectionPageComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('API benefit');
     expect(fixture.nativeElement.textContent).toContain('45 minutes');
-    expect(fixture.nativeElement.textContent).toContain('API 12500.00');
+    expect(fixture.nativeElement.textContent).not.toContain('price');
 
     fixture.componentInstance.selectPackage(healthCheckPackage);
 

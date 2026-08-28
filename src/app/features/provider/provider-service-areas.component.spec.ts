@@ -108,7 +108,6 @@ async function setup(overrides: Record<string, unknown> = {}) {
                 description: null,
                 benefits: [],
                 estimatedDurationMinutes: 15,
-                prices: [],
                 isActive: true,
               },
             ]),

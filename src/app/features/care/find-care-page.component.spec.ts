@@ -12,7 +12,6 @@ describe('FindCarePageComponent', () => {
       name: 'Dental care',
       description: 'Dental services',
       providerCount: 1,
-      deliveryModes: ['IN_PERSON', 'VIRTUAL'],
     },
   ];
   const provider = {
@@ -26,14 +25,14 @@ describe('FindCarePageComponent', () => {
         code: 'DENTAL',
         name: 'Dental care',
         description: null,
-        priceMinor: null,
-        currency: null,
-        priceOnRequest: true,
+        deliveryOptions: [
+          { deliveryMode: 'IN_PERSON', priceMinor: 1500000, currency: 'NGN' },
+          { deliveryMode: 'VIRTUAL', priceMinor: 1000000, currency: 'NGN' },
+        ],
         supportsAppointmentRequests: true,
         supportsFastTrack: true,
         fastTrackFeeMinor: 5000,
         fastTrackCurrency: 'NGN',
-        deliveryModes: ['IN_PERSON', 'VIRTUAL'],
       },
     ],
   };
@@ -49,7 +48,7 @@ describe('FindCarePageComponent', () => {
         of({
           reference: 'SC-CARE-ABCDEF012345',
           status: 'AWAITING_PROVIDER_RESPONSE',
-          service: { code: 'DENTAL', name: 'Dental care' },
+          service: { code: 'DENTAL', name: 'Dental care', price: { priceMinor: 1000000, currency: 'NGN' } },
           deliveryMode: 'VIRTUAL',
           geography: { countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Ibadan' },
           preferredProvider: provider,
@@ -99,6 +98,8 @@ describe('FindCarePageComponent', () => {
     );
     expect(fixture.nativeElement.textContent).toContain('Dynamic Clinic');
     c.form.controls.preferredProviderReference.setValue(provider.providerReference);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('₦10,000');
     c.submit();
     expect(care.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -106,6 +107,7 @@ describe('FindCarePageComponent', () => {
         deliveryMode: 'VIRTUAL',
       }),
     );
+    expect((care.create as ReturnType<typeof vi.fn>).mock.calls[0][0]).not.toHaveProperty('priceMinor');
     expect(fixture.nativeElement.textContent).not.toContain('FastTrack</option>');
   });
   it('submits no provider field for no preference', async () => {
@@ -119,6 +121,9 @@ describe('FindCarePageComponent', () => {
       deliveryMode: 'VIRTUAL',
       preferredProviderReference: '',
     });
+    c.discoverProviders();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Price will be determined when a Provider is assigned');
     c.submit();
     expect(care.create).toHaveBeenCalledWith(
       expect.not.objectContaining({ preferredProviderReference: expect.anything() }),

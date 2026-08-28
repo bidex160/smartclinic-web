@@ -31,7 +31,9 @@ import {
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
+import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ICountry, Country, IState, ICity, City, State } from 'country-state-city';
+import { formatMinor, majorToMinor, minorToMajor } from '../provider/care-money';
 
 type Tab = 'services' | 'locations' | 'availability' | 'exceptions';
 interface PendingAction {
@@ -69,6 +71,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   readonly showReadiness = input(true);
   readonly changed = output<void>();
   private readonly api = inject(ProviderEligibilityApiService);
+  private readonly selfApi = inject(ProviderSelfConfigurationApiService, { optional: true });
   private readonly packagesApi = inject(HealthCheckPackagesApiService);
   private readonly modesApi = inject(FulfilmentModesApiService);
   private readonly fb = inject(FormBuilder).nonNullable;
@@ -87,6 +90,8 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   readonly pendingAction = signal<PendingAction | null>(null);
   readonly editingLocation = signal<string | null>(null);
   readonly editingException = signal<string | null>(null);
+  readonly editingServicePrice = signal<string | null>(null);
+  readonly priceError = signal<string | null>(null);
   readonly weekdays: readonly DayOfWeek[] = [
     'MONDAY',
     'TUESDAY',
@@ -150,6 +155,12 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   readonly serviceForm = this.fb.group({
     healthCheckPackageId: ['', Validators.required],
     fulfilmentModeId: ['', Validators.required],
+    currency: ['NGN', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
+    price: ['', Validators.required],
+  });
+  readonly servicePriceForm = this.fb.group({
+    currency: ['NGN', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
+    price: ['', Validators.required],
   });
   readonly locationForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
@@ -241,12 +252,65 @@ selectedLocationStateCode = '';
       this.serviceForm.markAllAsTouched();
       return;
     }
+    const value = this.serviceForm.getRawValue();
+    const currency = value.currency.trim().toUpperCase();
+    const priceMinor = majorToMinor(value.price, currency);
+    if (priceMinor === null) {
+      this.priceError.set('Enter a valid price with no more than the currency’s supported decimal places. Zero means free.');
+      return;
+    }
+    this.priceError.set(null);
     this.mutate(
-      this.api.createService(this.providerId(), this.serviceForm.getRawValue()),
+      this.api.createService(this.providerId(), {
+        healthCheckPackageId: value.healthCheckPackageId,
+        fulfilmentModeId: value.fulfilmentModeId,
+        priceMinor,
+        currency,
+      }),
       'Capability added.',
       'services',
-      () => this.serviceForm.reset(),
+      () => this.serviceForm.reset({ currency: 'NGN', price: '' }),
     );
+  }
+  canEditServicePrice(): boolean {
+    return this.selfApi !== null;
+  }
+  editServicePrice(item: ProviderService): void {
+    if (!this.selfApi || !this.editable()) return;
+    this.editingServicePrice.set(item.id);
+    this.priceError.set(null);
+    this.servicePriceForm.setValue({
+      currency: item.currency,
+      price: minorToMajor(item.priceMinor, item.currency),
+    });
+  }
+  cancelServicePrice(): void {
+    if (this.mutating()) return;
+    this.editingServicePrice.set(null);
+    this.priceError.set(null);
+  }
+  saveServicePrice(item: ProviderService): void {
+    if (!this.selfApi || this.servicePriceForm.invalid || this.mutating()) {
+      this.servicePriceForm.markAllAsTouched();
+      return;
+    }
+    const value = this.servicePriceForm.getRawValue();
+    const currency = value.currency.trim().toUpperCase();
+    const priceMinor = majorToMinor(value.price, currency);
+    if (priceMinor === null) {
+      this.priceError.set('Enter a valid price with no more than the currency’s supported decimal places. Zero means free.');
+      return;
+    }
+    this.priceError.set(null);
+    this.mutate(
+      this.selfApi.updateServicePrice(item.id, { priceMinor, currency }),
+      'Capability price updated.',
+      'services',
+      () => this.editingServicePrice.set(null),
+    );
+  }
+  formatServicePrice(item: ProviderService): string {
+    return formatMinor(item.priceMinor, item.currency);
   }
   createLocation() {
     if (!this.editable() || this.locationForm.invalid || this.mutating()) {

@@ -9,6 +9,7 @@ import {
   PublicFindCareProvider,
 } from '../../core/models/find-care.model';
 import { careDeliveryModeLabel } from './care-delivery-mode';
+import { formatMinor } from '../provider/care-money';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { CareRequestIntentService } from '../../core/services/care-request-intent.service';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
@@ -47,6 +48,16 @@ import { LocationDataService } from '../../core/services/location-data.service';
           <div>
             <dt class="text-sm text-slate-600">Care type</dt>
             <dd>{{ deliveryModeLabel(request.deliveryMode) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-600">Service price</dt>
+            <dd class="font-bold">
+              {{
+                request.service.price
+                  ? formatPrice(request.service.price.priceMinor, request.service.price.currency)
+                  : 'Price will be determined when a Provider is assigned.'
+              }}
+            </dd>
           </div>
           <div>
             <dt class="text-sm text-slate-600">Preferred provider</dt>
@@ -199,6 +210,26 @@ import { LocationDataService } from '../../core/services/location-data.service';
               Provider results are unavailable. Change a filter or try again.
             </p>
           }
+          @if (selectedProviderPrice(); as price) {
+            <div class="mt-4 rounded-xl bg-brand-50 p-4">
+              <p class="text-sm text-slate-600">
+                {{ deliveryModeLabel(form.controls.deliveryMode.value || 'IN_PERSON') }} service
+                price
+              </p>
+              <p class="mt-1 text-xl font-bold">
+                {{ formatPrice(price.priceMinor, price.currency) }}
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                The backend confirms and snapshots the authoritative request price.
+              </p>
+            </div>
+          } @else if (
+            !form.controls.preferredProviderReference.value && form.controls.deliveryMode.value
+          ) {
+            <p class="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
+              Price will be determined when a Provider is assigned.
+            </p>
+          }
         </fieldset>
         <fieldset class="rounded-3xl border bg-white p-6">
           <legend class="px-2 text-xl font-bold">5. Optional request details</legend>
@@ -308,14 +339,13 @@ export class FindCarePageComponent {
       this.form.controls.city.value
     );
   readonly deliveryModes = () => {
-    const service = this.services().find((s) => s.code === this.form.controls.serviceCode.value);
-    if (service?.deliveryModes?.length) return service.deliveryModes;
     return [
       ...new Set(
         this.discoveryProviders().flatMap(
           (provider) =>
-            provider.services.find((s) => s.code === this.form.controls.serviceCode.value)
-              ?.deliveryModes ?? [],
+            provider.services
+              .find((s) => s.code === this.form.controls.serviceCode.value)
+              ?.deliveryOptions.map((option) => option.deliveryMode) ?? [],
         ),
       ),
     ];
@@ -411,8 +441,24 @@ export class FindCarePageComponent {
       ?.supportsFastTrack
       ? ' · FastTrack available'
       : '';
-    return `${p.displayName} · ${p.providerType.replaceAll('_', ' ')} · ${p.location.city ?? this.form.controls.city.value}, ${p.location.stateOrRegion ?? this.form.controls.stateOrRegion.value}${fast}`;
+    const option = p.services
+      .find((s) => s.code === this.form.controls.serviceCode.value)
+      ?.deliveryOptions.find((o) => o.deliveryMode === this.form.controls.deliveryMode.value);
+    const price = option ? ` · ${formatMinor(option.priceMinor, option.currency)}` : '';
+    return `${p.displayName} · ${p.providerType.replaceAll('_', ' ')} · ${p.location.city ?? this.form.controls.city.value}, ${p.location.stateOrRegion ?? this.form.controls.stateOrRegion.value}${price}${fast}`;
   }
+  selectedProviderPrice() {
+    const provider = this.providers().find(
+      (p) => p.providerReference === this.form.controls.preferredProviderReference.value,
+    );
+    return (
+      provider?.services
+        .find((s) => s.code === this.form.controls.serviceCode.value)
+        ?.deliveryOptions.find((o) => o.deliveryMode === this.form.controls.deliveryMode.value) ??
+      null
+    );
+  }
+  formatPrice = formatMinor;
   request(): CreateCareRequest {
     const v = this.form.getRawValue();
     return {

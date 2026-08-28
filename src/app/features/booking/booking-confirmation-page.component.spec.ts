@@ -148,6 +148,23 @@ describe('BookingConfirmationPageComponent', () => {
     expect(fixture.componentInstance.fundingResult()).toEqual(funding);
   });
 
+  it('explains legacy bookings that lack the required commercial binding', async () => {
+    const { fixture } = await setup({
+      initial: confirmation,
+      funding: () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 409,
+              error: { message: 'Booking requires provider commercial binding before funding' },
+            }),
+        ),
+    });
+    fixture.componentInstance.initializeFunding();
+    expect(fixture.componentInstance.fundingError()).toContain('older booking');
+    expect(fixture.componentInstance.fundingError()).toContain('create a new booking');
+  });
+
   it('does not use browser storage for confirmation recovery or funding', async () => {
     const localStorageSpy = vi.spyOn(Storage.prototype, 'setItem');
     const { fixture } = await setup({ initial: confirmation, funding: () => of(funding) });

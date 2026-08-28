@@ -18,14 +18,16 @@ export function majorToMinor(value: string, currency: string): number | null {
   const amount = Number(raw || '0');
   return Number.isSafeInteger(amount) ? amount : null;
 }
-export function minorToMajor(value: string | null, currency: string | null): string {
+export function minorToMajor(value: string | number | null, currency: string | null): string {
   if (value == null || !currency) return '';
+  value = String(value);
   const digits = currencyFractionDigits(currency);
   const raw = value.padStart(digits + 1, '0');
   return digits ? `${raw.slice(0, -digits)}.${raw.slice(-digits)}` : raw;
 }
-export function formatMinor(value: string | null, currency: string | null): string {
-  if (value == null || !currency) return 'Price on request';
+export function formatMinor(value: string | number | null, currency: string | null): string {
+  if (value == null || !currency) return '—';
+  if (Number(value) === 0) return 'Free';
   const major = minorToMajor(value, currency);
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency }).format(Number(major));
 }

@@ -5,6 +5,8 @@ describe('General Care money conversion', () => {
     expect(majorToMinor('3000', 'NGN')).toBe(300000);
     expect(minorToMajor('1500000', 'NGN')).toBe('15000.00');
     expect(formatMinor('1500000', 'NGN')).toContain('15,000');
+    expect(majorToMinor('0', 'NGN')).toBe(0);
+    expect(formatMinor(0, 'NGN')).toBe('Free');
   });
   it('rejects malformed, negative and excessive precision', () => {
     expect(majorToMinor('-1', 'NGN')).toBeNull();

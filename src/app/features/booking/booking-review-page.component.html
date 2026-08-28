@@ -46,19 +46,12 @@
               >Edit fulfilment</a
             >
           </div>
-          @if (bookingFlow.selectedPrice(); as price) {
-            <div class="rounded-xl bg-brand-50 p-4 sm:col-span-2">
-              <dt class="text-sm font-semibold text-brand-800">
-                Booking price shown before confirmation
-              </dt>
-              <dd class="mt-1 text-xl font-bold text-brand-900">
-                {{ price.currency }} {{ price.amount }}
-              </dd>
-              <p class="mt-1 text-xs leading-5 text-slate-600">
-                SmartClinic will confirm the authoritative quote when the booking is created.
-              </p>
-            </div>
-          }
+          <div class="rounded-xl bg-brand-50 p-4 sm:col-span-2">
+            <dt class="text-sm font-semibold text-brand-800">Price</dt>
+            <dd class="mt-1 font-bold text-brand-900">
+              Determined from the eligible provider when the booking is created
+            </dd>
+          </div>
         </dl>
       </section>
 

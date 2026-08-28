@@ -279,8 +279,6 @@ export class BookingConfirmationPageComponent {
   checkPaymentStatus(bookingReference?: string): void {
     const booking = this.confirmation();
     if ((!booking || this.paymentStatusRefreshing()) && !bookingReference) return;
-    console.log(bookingReference)
-
     this.paymentStatusRefreshing.set(true);
     this.paymentStatusError.set(null);
     this.bookingsApi.refreshPaymentStatus(booking?.bookingReference || bookingReference!).subscribe({
@@ -364,10 +362,19 @@ export class BookingConfirmationPageComponent {
       }
       if (error.status === 404) return 'This booking is no longer available.';
       if (error.status === 409 || error.status === 422) {
+        const message = this.backendMessage(error);
+        if (message?.includes('commercial binding')) {
+          return 'This older booking does not have the Provider price binding required for payment. SmartClinic cannot safely prepare payment for it; please create a new booking.';
+        }
         return 'Payment preparation is not available for the booking in its current state. Review the booking status and try again if appropriate.';
       }
     }
     return 'We could not prepare payment right now. No charge was made. You can try again.';
+  }
+
+  private backendMessage(error: HttpErrorResponse): string | null {
+    const body = error.error as { message?: unknown } | null;
+    return typeof body?.message === 'string' ? body.message.toLowerCase() : null;
   }
 
   private paymentMessage(error: unknown): string {

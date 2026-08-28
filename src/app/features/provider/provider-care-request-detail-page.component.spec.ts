@@ -8,7 +8,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
   const request = (status = 'AWAITING_PROVIDER_RESPONSE', deliveryMode = 'IN_PERSON') => ({
     reference: 'SC-CARE-ABCDEF012345',
     status,
-    service: { code: 'DENTAL', name: 'Dental care' },
+    service: { code: 'DENTAL', name: 'Dental care', price: { priceMinor: 1000000, currency: 'NGN' } },
     deliveryMode,
     geography: { countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Ibadan' },
     preferredProvider: null,
@@ -95,6 +95,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
   it('loads by reference and accepts then refreshes authoritative detail', async () => {
     const { fixture, api } = await setup();
     expect(fixture.nativeElement.textContent).toContain('Accept request');
+    expect(fixture.nativeElement.textContent).toContain('₦10,000');
     fixture.componentInstance.accept();
     expect(api.acceptCareRequest).toHaveBeenCalledWith('SC-CARE-ABCDEF012345');
     expect(api.getCareRequest).toHaveBeenCalledTimes(2);

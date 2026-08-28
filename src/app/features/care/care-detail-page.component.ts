@@ -8,6 +8,7 @@ import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from './care-delivery-mode';
+import { formatMinor } from '../provider/care-money';
 
 @Component({
   selector: 'app-care-detail-page',
@@ -34,6 +35,16 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             <div>
               <dt class="text-sm text-slate-500">Delivery</dt>
               <dd>{{ deliveryModeLabel(r.deliveryMode) }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm text-slate-500">Service price</dt>
+              <dd class="font-semibold">
+                {{
+                  r.service.price
+                    ? formatPrice(r.service.price.priceMinor, r.service.price.currency)
+                    : 'Not set yet'
+                }}
+              </dd>
             </div>
             <div>
               <dt class="text-sm text-slate-500">Provider</dt>
@@ -328,4 +339,5 @@ export class CareDetailPageComponent {
         : s.charAt(0) + s.slice(1).toLowerCase();
   }
   deliveryModeLabel = careDeliveryModeLabel;
+  formatPrice = formatMinor;
 }

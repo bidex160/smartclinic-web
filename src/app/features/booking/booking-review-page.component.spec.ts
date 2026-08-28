@@ -36,8 +36,8 @@ describe('BookingReviewPageComponent', () => {
     expect(text).toContain('Home option');
     expect(text).toContain('Ada Okafor');
     expect(text).toContain('Confirm Smart Health Check');
-    expect(text).toContain('Booking price shown before confirmation');
-    expect(text).toContain('API 12500.00');
+    expect(text).toContain('Determined from the eligible provider when the booking is created');
+    expect(text).not.toContain('API 12500.00');
     expect(text).toContain('Appointment date');
     expect(text).toContain('Appointment time');
     expect(text).toContain('Timezone');
@@ -121,15 +121,6 @@ function seedState(state: BookingFlowStateService): void {
     description: null,
     benefits: [],
     estimatedDurationMinutes: null,
-    prices: [
-      {
-        fulfilmentModeId: 'mode-id',
-        fulfilmentModeCode: 'HOME_VISIT',
-        fulfilmentModeName: 'Home option',
-        amount: '12500.00',
-        currency: 'API',
-      },
-    ],
     isActive: true,
   });
   state.selectFulfilmentMode({

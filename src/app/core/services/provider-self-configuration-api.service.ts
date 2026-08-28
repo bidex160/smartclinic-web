@@ -11,6 +11,7 @@ import {
   ProviderLocation,
   ProviderLocationRequest,
   ProviderService,
+  UpdateProviderServicePriceRequest,
 } from '../models/provider-eligibility.model';
 
 /** Authenticated-provider adapter. The ignored route-context argument keeps the shared editor transport-compatible; it is never sent. */
@@ -26,6 +27,13 @@ export class ProviderSelfConfigurationApiService {
     return this.http.post<ProviderService>(`${this.base}/services`, body, {
       context: this.mutation,
     });
+  }
+  updateServicePrice(id: string, body: UpdateProviderServicePriceRequest) {
+    return this.http.patch<ProviderService>(
+      `${this.base}/services/${encodeURIComponent(id)}/price`,
+      body,
+      { context: this.mutation },
+    );
   }
   setServiceActive(id: string, active: boolean) {
     return this.http.patch<ProviderService>(

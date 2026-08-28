@@ -250,7 +250,6 @@ describe('MatchingQueuePageComponent', () => {
                   description: null,
                   benefits: [],
                   estimatedDurationMinutes: 15,
-                  prices: [],
                   isActive: true,
                 },
               ]),

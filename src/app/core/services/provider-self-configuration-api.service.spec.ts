@@ -15,15 +15,23 @@ describe('ProviderSelfConfigurationApiService', () => {
       .createService('ignored-provider-id', {
         healthCheckPackageId: 'package-id',
         fulfilmentModeId: 'mode-id',
+        priceMinor: 4500000,
+        currency: 'NGN',
       })
       .subscribe();
     r = http.expectOne('http://api.test/api/v1/provider/services');
     expect(r.request.body).toEqual({
       healthCheckPackageId: 'package-id',
       fulfilmentModeId: 'mode-id',
+      priceMinor: 4500000,
+      currency: 'NGN',
     });
     expect(JSON.stringify(r.request.body)).not.toContain('providerId');
     expect(r.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    r.flush({});
+    api.updateServicePrice('service-id', { priceMinor: 6500050, currency: 'NGN' }).subscribe();
+    r = http.expectOne('http://api.test/api/v1/provider/services/service-id/price');
+    expect(r.request.body).toEqual({ priceMinor: 6500050, currency: 'NGN' });
     r.flush({});
     api
       .createLocation('ignored-provider-id', {

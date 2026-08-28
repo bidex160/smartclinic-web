@@ -6,6 +6,8 @@ export interface ProviderService {
   readonly providerId: string;
   readonly healthCheckPackageId: string;
   readonly fulfilmentModeId: string;
+  readonly priceMinor: number;
+  readonly currency: string;
   readonly isActive: boolean;
   readonly providerLocationIds: readonly string[];
   readonly createdAt: string;
@@ -14,6 +16,12 @@ export interface ProviderService {
 export interface CreateProviderServiceRequest {
   readonly healthCheckPackageId: string;
   readonly fulfilmentModeId: string;
+  readonly priceMinor: number;
+  readonly currency: string;
+}
+export interface UpdateProviderServicePriceRequest {
+  readonly priceMinor: number;
+  readonly currency: string;
 }
 export interface ProviderLocation {
   readonly locationReference: string;

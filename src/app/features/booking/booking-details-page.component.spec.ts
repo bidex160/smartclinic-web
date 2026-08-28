@@ -21,7 +21,6 @@ describe('BookingDetailsPageComponent', () => {
       description: null,
       benefits: [],
       estimatedDurationMinutes: null,
-      prices: [],
       isActive: true,
     });
     state.selectFulfilmentMode({
