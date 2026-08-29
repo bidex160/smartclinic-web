@@ -8,6 +8,8 @@ import { FastTrackPaymentStatus } from '../../core/models/find-care.model';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { CareRequestFunding } from '../../core/models/find-care.model';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
+import { PatientProviderConnectionFundingResponse } from '../../core/models/patient-provider-connection.model';
+import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 
 @Component({
   selector: 'app-patient-payment-return-page',
@@ -41,6 +43,7 @@ import { CareRequestsApiService } from '../../core/services/care-requests-api.se
           <div class="mt-6 flex flex-wrap gap-3"><a [routerLink]="['/me/care', reference]" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">View Care Request</a><a routerLink="/me/care" class="rounded-xl border px-5 py-3 font-bold">Back to My Care</a></div>
         </section>
       }
+      @if (connectionFunding(); as payment) { <section class="mt-6 rounded-2xl border bg-white p-7">@if(payment.fundingSatisfied){<h1 class="text-2xl font-bold text-green-900">Payment confirmed</h1><p class="mt-2">Your registration or linking request has been sent to the Provider.</p>}@else{<h1 class="text-2xl font-bold">Payment pending</h1><p class="mt-2">We could not confirm the payment yet.</p><button type="button" (click)="verify()" class="mt-4 rounded-xl border px-5 py-3 font-bold">Try verification again</button>}<a [routerLink]="['/me/providers',reference]" class="mt-6 inline-flex rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">View Provider connection</a></section> }
     </main>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,6 +58,7 @@ export class PatientPaymentReturnPageComponent {
   readonly detail = signal<PatientHealthCheckDetail | null>(null);
   readonly fastTrackStatus = signal<FastTrackPaymentStatus | null>(null);
   readonly careFunding = signal<CareRequestFunding | null>(null);
+  readonly connectionFunding = signal<PatientProviderConnectionFundingResponse | null>(null);
   constructor() { this.verify(); }
   verify(): void {
     if (!this.reference || this.verifying()) return;
@@ -72,6 +76,7 @@ export class PatientPaymentReturnPageComponent {
       });
       return;
     }
+    if (this.reference.startsWith('SC-PPC-')) { const connections=this.injector.get(PatientProviderConnectionsApiService);connections.verifyFunding(this.reference).pipe(finalize(()=>this.verifying.set(false))).subscribe({next:f=>this.connectionFunding.set(f),error:()=>this.error.set(true)});return; }
     this.api.verifyMyHealthCheckPayment(this.reference).pipe(
       switchMap(() => forkJoin({ status: this.api.getMyHealthCheckPayment(this.reference), detail: this.api.getMyHealthCheck(this.reference) })),
       finalize(() => this.verifying.set(false)),

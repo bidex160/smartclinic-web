@@ -147,6 +147,9 @@ export const routes: Routes = [
         canActivate: [authenticatedUserGuard],
         loadComponent: () => import('./features/care/health-records-page.component').then(c => c.HealthRecordsPageComponent),
       },
+      { path: 'providers', title: 'My Providers | SmartClinic', canActivate: [authenticatedUserGuard], loadComponent: () => import('./features/connections/my-providers-page.component').then(c => c.MyProvidersPageComponent) },
+      { path: 'providers/connect', title: 'Connect to a Provider | SmartClinic', canActivate: [authenticatedUserGuard], loadComponent: () => import('./features/connections/connect-provider-page.component').then(c => c.ConnectProviderPageComponent) },
+      { path: 'providers/:reference', title: 'Provider Connection | SmartClinic', canActivate: [authenticatedUserGuard], loadComponent: () => import('./features/connections/provider-connection-detail-page.component').then(c => c.ProviderConnectionDetailPageComponent) },
       {
         path: 'health-records/sharing', title: 'Manage Health Record Sharing | SmartClinic', canActivate: [authenticatedUserGuard],
         loadComponent: () => import('./features/care/health-record-sharing-page.component').then(c => c.HealthRecordSharingPageComponent),
@@ -327,6 +330,9 @@ export const routes: Routes = [
         path: 'shared-health-records', title: 'Shared Health Records | SmartClinic', canActivate: [providerGuard],
         loadComponent: () => import('./features/provider/provider-shared-health-records-page.component').then(c => c.ProviderSharedHealthRecordsPageComponent),
       },
+      { path: 'patient-connections/configuration', title: 'Patient Connection Settings | SmartClinic', canActivate: [providerGuard], loadComponent: () => import('./features/provider/provider-patient-connections-configuration-page.component').then(c => c.ProviderPatientConnectionsConfigurationPageComponent) },
+      { path: 'patient-connections', title: 'Patient Connections | SmartClinic', canActivate: [providerGuard], loadComponent: () => import('./features/provider/provider-patient-connections-page.component').then(c => c.ProviderPatientConnectionsPageComponent) },
+      { path: 'patient-connections/:reference', title: 'Patient Connection | SmartClinic', canActivate: [providerGuard], loadComponent: () => import('./features/provider/provider-patient-connection-detail-page.component').then(c => c.ProviderPatientConnectionDetailPageComponent) },
       {
         path: 'shared-health-records/:reference', title: 'Shared Clinical Record | SmartClinic', canActivate: [providerGuard],
         loadComponent: () => import('./features/provider/provider-shared-health-record-detail-page.component').then(c => c.ProviderSharedHealthRecordDetailPageComponent),

@@ -161,6 +161,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               >FastTrack</a
             >
             <a routerLink="/provider/shared-health-records" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Shared Health Records</a>
+            <a routerLink="/provider/patient-connections" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Patient Connections</a>
           }
 
           <!-- SETUP -->
@@ -196,6 +197,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Profile
           </a>
+          <a routerLink="/provider/patient-connections/configuration" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Patient Connections</a>
 
           <a
             routerLink="/provider/profile"
@@ -223,6 +225,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
             >Care Services</a
           >
+          <a routerLink="/provider/patient-connections/configuration" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Patient Connections</a>
 
           <!--
             If availability has its own fragment, use it here.
@@ -486,6 +489,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               >FastTrack</a
             >
             <a routerLink="/provider/shared-health-records" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Shared Health Records</a>
+            <a routerLink="/provider/patient-connections" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Patient Connections</a>
           }
 
           <p

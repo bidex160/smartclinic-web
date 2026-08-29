@@ -5,6 +5,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 import { PatientPaymentReturnPageComponent } from './patient-payment-return-page.component';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
+import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 
 describe('PatientPaymentReturnPageComponent', () => {
   it('verifies by trusted route reference and refreshes authoritative status/detail', async () => {
@@ -93,5 +94,10 @@ describe('PatientPaymentReturnPageComponent', () => {
     expect(care.verifyLatestFunding).not.toHaveBeenCalledWith('untrusted');
     expect(fixture.nativeElement.textContent).toContain('Payment confirmed');
     expect(fixture.nativeElement.textContent).toContain('View Care Request');
+  });
+  it('dispatches Patient Connection callbacks by the trusted SC-PPC reference', async () => {
+    const connections={verifyFunding:vi.fn(()=>of({connectionReference:'SC-PPC-A1B2C3D4E5F6',status:'SUBMITTED',fundings:[],fundingSatisfied:true}))};
+    await TestBed.configureTestingModule({imports:[PatientPaymentReturnPageComponent],providers:[provideRouter([]),{provide:ActivatedRoute,useValue:{snapshot:{paramMap:convertToParamMap({reference:'SC-PPC-A1B2C3D4E5F6'}),queryParamMap:convertToParamMap({reference:'untrusted'})}}},{provide:HealthCheckResultsApiService,useValue:{}},{provide:PatientProviderConnectionsApiService,useValue:connections}]}).compileComponents();
+    const fixture=TestBed.createComponent(PatientPaymentReturnPageComponent);fixture.detectChanges();expect(connections.verifyFunding).toHaveBeenCalledWith('SC-PPC-A1B2C3D4E5F6');expect(connections.verifyFunding).not.toHaveBeenCalledWith('untrusted');expect(fixture.nativeElement.textContent).toContain('Payment confirmed');expect(fixture.nativeElement.textContent).toContain('View Provider connection');
   });
 });
