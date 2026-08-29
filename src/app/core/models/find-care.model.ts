@@ -234,10 +234,25 @@ export interface CareChatDetail {
   updatedAt: string;
 }
 export interface CareChatMessage {
+  readonly reference: string;
   readonly senderType: CareChatSenderType;
-  readonly body: string;
+  readonly body: string | null;
   readonly createdAt: string;
   readonly readAt: string | null;
+  readonly attachments: readonly CareMessageAttachment[];
+}
+export interface CareMessageAttachment {
+  readonly reference: string;
+  readonly originalName: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly resourceType: 'IMAGE' | 'DOCUMENT';
+  readonly createdAt: string;
+  readonly expiresAt?: string;
+}
+export interface CareMessageAttachmentAccess {
+  readonly url: string;
+  readonly expiresAt: string;
 }
 export interface CareChatMessagesPage {
   readonly items: readonly CareChatMessage[];

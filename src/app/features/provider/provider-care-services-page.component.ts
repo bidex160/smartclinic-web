@@ -56,80 +56,186 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
             Add Care Service
           </button>
         </div>
-        @if (!offerings().length) {
-          <p class="mt-6 rounded-xl bg-slate-50 p-5">No General Care offerings configured yet.</p>
-        } @else {
-          <div class="mt-6 grid gap-4 md:grid-cols-2">
-            @for (item of offerings(); track item.id) {
-              <article class="rounded-2xl border p-5">
-                <div class="flex items-start justify-between gap-3">
+       @if (!offerings().length) {
+  <p class="mt-6 rounded-xl bg-slate-50 p-5">
+    No General Care offerings configured yet.
+  </p>
+} @else {
+  <div class="mt-6 overflow-hidden rounded-xl border border-slate-200">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th
+              scope="col"
+              class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+            >
+              Service
+            </th>
+
+            <th
+              scope="col"
+              class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+            >
+              Delivery & Pricing
+            </th>
+
+            <th
+              scope="col"
+              class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+            >
+              Appointments
+            </th>
+
+            <th
+              scope="col"
+              class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+            >
+              FastTrack
+            </th>
+
+            <th
+              scope="col"
+              class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+            >
+              Status
+            </th>
+
+            <th
+              scope="col"
+              class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-500"
+            >
+              Actions
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-100 bg-white">
+          @for (item of offerings(); track item.id) {
+            <tr class="align-top transition hover:bg-slate-50">
+              <!-- Service -->
+              <td class="px-4 py-4">
+                <div class="min-w-48">
+                  <p class="font-bold text-slate-900">
+                    {{ item.definition.name }}
+                  </p>
+
+                  @if (item.descriptionOverride) {
+                    <p class="mt-1 max-w-sm text-sm text-slate-500">
+                      {{ item.descriptionOverride }}
+                    </p>
+                  }
+                </div>
+              </td>
+
+              <!-- Delivery / Pricing -->
+              <td class="px-4 py-4">
+                <div class="grid min-w-52 gap-2 text-sm">
+                  @for (mode of modes; track mode) {
+                    @if (deliveryOption(item, mode); as option) {
+                      <div>
+                        <span class="font-semibold text-slate-800">
+                          {{ modeLabel(mode) }}
+                        </span>
+
+                        <span class="ml-1 text-slate-600">
+                          · {{ formatPrice(option.priceMinor, option.currency) }}
+                        </span>
+                      </div>
+                    } @else {
+                      <div class="text-slate-400">
+                        {{ modeLabel(mode) }} · Not offered
+                      </div>
+                    }
+                  }
+                </div>
+              </td>
+
+              <!-- Appointment -->
+              <td class="whitespace-nowrap px-4 py-4 text-sm">
+                @if (item.supportsAppointmentRequests) {
+                  <span
+                    class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-800"
+                  >
+                    Enabled
+                  </span>
+                } @else {
+                  <span
+                    class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600"
+                  >
+                    Disabled
+                  </span>
+                }
+              </td>
+
+              <!-- FastTrack -->
+              <td class="whitespace-nowrap px-4 py-4 text-sm">
+                @if (item.supportsFastTrack) {
                   <div>
-                    <h3 class="text-lg font-bold">{{ item.definition.name }}</h3>
                     <span
-                      class="mt-2 inline-block rounded-full px-3 py-1 text-sm font-semibold"
-                      [class.bg-green-100]="item.isActive"
-                      [class.text-green-900]="item.isActive"
-                      [class.bg-slate-100]="!item.isActive"
-                      >{{ item.isActive ? 'Active' : 'Inactive' }}</span
+                      class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-800"
                     >
+                      Enabled
+                    </span>
+
+                    <p class="mt-1 text-xs text-slate-500">
+                      {{
+                        formatPrice(
+                          item.fastTrackFeeMinor,
+                          item.fastTrackCurrency
+                        )
+                      }}
+                    </p>
                   </div>
+                } @else {
+                  <span class="text-slate-500">
+                    Not offered
+                  </span>
+                }
+              </td>
+
+              <!-- Status -->
+              <td class="whitespace-nowrap px-4 py-4">
+                <span
+                  class="inline-flex rounded-full px-3 py-1 text-xs font-bold"
+                  [class.bg-green-100]="item.isActive"
+                  [class.text-green-800]="item.isActive"
+                  [class.bg-slate-100]="!item.isActive"
+                  [class.text-slate-600]="!item.isActive"
+                >
+                  {{ item.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="whitespace-nowrap px-4 py-4 text-right">
+                <div class="flex justify-end gap-3">
                   <button
                     type="button"
                     (click)="openEdit(item)"
-                    class="font-bold text-brand-700 underline"
+                    class="font-bold text-brand-700 hover:underline"
                   >
                     Edit
                   </button>
+
+                  <button
+                    type="button"
+                    (click)="confirmActive(item)"
+                    class="font-bold"
+                    [class.text-red-700]="item.isActive"
+                    [class.text-brand-700]="!item.isActive"
+                  >
+                    {{ item.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
                 </div>
-                @if (item.descriptionOverride) {
-                  <p class="mt-3 text-sm text-slate-600">{{ item.descriptionOverride }}</p>
-                }
-                <dl class="mt-4 grid gap-3 text-sm">
-                  <div>
-                    <dt class="font-bold">Delivery pricing</dt>
-                    <dd class="mt-2 grid gap-2">
-                      @for (mode of modes; track mode) {
-                        @if (deliveryOption(item, mode); as option) {
-                          <span
-                            ><span class="font-semibold">{{ modeLabel(mode) }}</span
-                            ><span class="ml-2">{{
-                              formatPrice(option.priceMinor, option.currency)
-                            }}</span></span
-                          >
-                        } @else {
-                          <span class="text-slate-500">{{ modeLabel(mode) }} · Not offered</span>
-                        }
-                      }
-                    </dd>
-                  </div>
-                  <div>
-                    <dt class="font-bold">Appointment requests</dt>
-                    <dd>{{ item.supportsAppointmentRequests ? 'Enabled' : 'Disabled' }}</dd>
-                  </div>
-                  <div>
-                    <dt class="font-bold">FastTrack</dt>
-                    <dd>
-                      {{
-                        item.supportsFastTrack
-                          ? formatPrice(item.fastTrackFeeMinor, item.fastTrackCurrency)
-                          : 'Not offered'
-                      }}
-                    </dd>
-                  </div>
-                </dl>
-                <button
-                  type="button"
-                  (click)="confirmActive(item)"
-                  class="mt-5 rounded-xl border px-4 py-2 font-bold"
-                  [class.border-red-300]="item.isActive"
-                  [class.text-red-700]="item.isActive"
-                >
-                  {{ item.isActive ? 'Deactivate offering' : 'Activate offering' }}
-                </button>
-              </article>
-            }
-          </div>
-        }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
       </section>
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <h2 class="text-xl font-bold">Available to add</h2>

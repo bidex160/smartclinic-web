@@ -367,8 +367,8 @@ export class ProviderCareRequestDetailPageComponent {
     this.api
       .scheduleCareRequest(this.reference, {
         scheduledDate: value.scheduledDate,
-        scheduledTimeFrom: value.scheduledTimeFrom,
-        scheduledTimeTo: value.scheduledTimeTo,
+        scheduledTimeFrom: this.toHourMinute(value.scheduledTimeFrom),
+        scheduledTimeTo: this.toHourMinute(value.scheduledTimeTo),
         timezone: value.timezone,
         ...(this.request()?.deliveryMode === 'IN_PERSON' && value.providerLocationReference
           ? { providerLocationReference: value.providerLocationReference }
@@ -393,6 +393,17 @@ export class ProviderCareRequestDetailPageComponent {
         },
       });
   }
+
+  private toHourMinute(value?: string | null): string {
+  if (!value) {
+    return '';
+  }
+  // Handles HH:mm and HH:mm:ss
+  const match = value.match(/^(\d{2}):(\d{2})/);
+
+  return match ? `${match[1]}:${match[2]}` : '';
+}
+
   private localNow() {
     const parts = new Intl.DateTimeFormat('en-CA', {
       timeZone: this.timezone,
