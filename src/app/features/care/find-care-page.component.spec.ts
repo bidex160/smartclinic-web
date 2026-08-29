@@ -57,6 +57,7 @@ describe('FindCarePageComponent', () => {
           preferredTime: null,
           contactMethod: 'EMAIL',
           notes: null,
+          funding: null,
           createdAt: '2026-08-28T00:00:00Z',
           updatedAt: '2026-08-28T00:00:00Z',
           appointment: null,
@@ -143,5 +144,17 @@ describe('FindCarePageComponent', () => {
     c.submit();
     expect(care.create).not.toHaveBeenCalled();
     expect(nav).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/request-care' } });
+  });
+  it('uses an ISO state control while preserving the state name in the request form', async () => {
+    const { fixture } = await setup();
+    const c = fixture.componentInstance;
+    c.countryChanged('NG');
+    c.stateChanged('OY');
+    c.form.controls.city.setValue('Kisi');
+    expect(c.requestStateCode.value).toBe('OY');
+    expect(c.form.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
+    c.countryChanged('GH');
+    expect(c.requestStateCode.value).toBe('');
+    expect(c.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
   });
 });

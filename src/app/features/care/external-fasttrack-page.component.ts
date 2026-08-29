@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PublicFindCareProvider } from '../../core/models/find-care.model';
@@ -32,7 +32,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
           <label
             >Country<select
               formControlName="countryCode"
-              (change)="countryChanged()"
+              (change)="countryChanged($any($event.target).value)"
               class="mt-2 min-h-12 w-full rounded-xl border px-3"
             >
               @for (c of countries; track c.isoCode) {
@@ -41,13 +41,13 @@ import { LocationDataService } from '../../core/services/location-data.service';
             </select></label
           ><label
             >State / Region<select
-              formControlName="stateOrRegion"
-              (change)="stateChanged()"
+              [formControl]="fastTrackStateCode"
+              (change)="stateChanged($any($event.target).value)"
               class="mt-2 min-h-12 w-full rounded-xl border px-3"
             >
               <option value="">Select state</option>
               @for (s of states(); track s.isoCode) {
-                <option [value]="s.name">{{ s.name }}</option>
+                <option [value]="s.isoCode">{{ s.name }}</option>
               }
             </select></label
           ><label
@@ -158,6 +158,7 @@ export class ExternalFastTrackPageComponent {
     this.location.getStates('NG'),
   );
   readonly cities = signal<ReturnType<LocationDataService['getCities']>>([]);
+  readonly fastTrackStateCode = new FormControl('', { nonNullable: true });
   readonly providers = signal<readonly PublicFindCareProvider[]>([]);
   readonly providerLoading = signal(false);
   readonly error = signal<string | null>(null);
@@ -187,17 +188,21 @@ export class ExternalFastTrackPageComponent {
         this.form.controls.stateOrRegion.value &&
         this.form.controls.city.value
       );
-  countryChanged() {
+  countryChanged(countryCode: string) {
+    this.form.controls.countryCode.setValue(countryCode, { emitEvent: false });
+    this.fastTrackStateCode.setValue('', { emitEvent: false });
     this.form.patchValue({ stateOrRegion: '', city: '', providerReference: '', serviceCode: '' });
     this.states.set(this.location.getStates(this.form.controls.countryCode.value));
     this.cities.set([]);
     this.providers.set([]);
   }
-  stateChanged() {
+  stateChanged(stateCode: string) {
     this.form.patchValue({ city: '', providerReference: '', serviceCode: '' });
-    const s = this.states().find((x) => x.name === this.form.controls.stateOrRegion.value);
+    this.fastTrackStateCode.setValue(stateCode, { emitEvent: false });
+    const s = this.states().find((x) => x.isoCode === stateCode);
+    this.form.controls.stateOrRegion.setValue(s?.name ?? '');
     this.cities.set(
-      s ? this.location.getCities(this.form.controls.countryCode.value, s.isoCode) : [],
+      s ? this.location.getCities(this.form.controls.countryCode.value, stateCode) : [],
     );
     this.providers.set([]);
   }

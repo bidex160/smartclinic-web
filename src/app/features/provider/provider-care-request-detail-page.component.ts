@@ -90,6 +90,15 @@ import { formatMinor } from './care-money';
           }
         </dl>
       </section>
+      @if (r.funding || r.status === 'PROVIDER_ACCEPTED') {
+        <section class="mt-6 rounded-2xl border bg-white p-6">
+          <h2 class="text-xl font-bold">Payment status</h2>
+          <p class="mt-2 font-semibold">{{ fundingLabel(r) }}</p>
+          @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
+            <p class="mt-2 text-slate-600">Awaiting patient payment. Care Chat remains available while payment is pending.</p>
+          }
+        </section>
+      }
       @if (r.status === 'AWAITING_PROVIDER_RESPONSE') {
         <section class="mt-6 flex flex-wrap gap-3">
           <button
@@ -109,14 +118,17 @@ import { formatMinor } from './care-money';
           </button>
         </section>
       }
-      @if (r.status === 'PROVIDER_ACCEPTED') {
+      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r)) {
         <button
           type="button"
-          (click)="scheduleOpen.set(true)"
+           (click)="openSchedule(r)"
           class="mt-6 min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
         >
           Schedule appointment
         </button>
+      }
+      @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
+        <p class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950">Schedule appointment is unavailable while patient payment is pending.</p>
       }
       @if (chatAvailable()) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
@@ -494,4 +506,39 @@ export class ProviderCareRequestDetailPageComponent {
   }
   readonly deliveryModeLabel = careDeliveryModeLabel;
   readonly formatPrice = formatMinor;
+  fundingSatisfied(request: CareRequest): boolean {
+    return request.funding?.status === 'PAID' || request.funding?.status === 'SATISFIED_FREE';
+  }
+  fundingLabel(request: CareRequest): string {
+    if (request.funding?.status === 'PAID') return 'Paid';
+    if (request.funding?.status === 'SATISFIED_FREE') return 'Free — no payment required';
+    return 'Awaiting payment';
+  }
+
+ openSchedule(request: CareRequest): void {
+  this.scheduleError.set(null);
+
+  const now = this.localNow();
+
+  const preferredDate = request.preferredDate ?? '';
+  const preferredTime = request.preferredTime ?? '';
+
+  const preferredIsFuture =
+    !!preferredDate &&
+    (
+      preferredDate > now.date ||
+      (preferredDate === now.date && preferredTime > now.time)
+    );
+
+  this.scheduleForm.reset({
+    scheduledDate: preferredIsFuture ? preferredDate : '',
+    scheduledTimeFrom: preferredIsFuture ? preferredTime : '',
+    scheduledTimeTo: '',
+    providerLocationReference: '',
+    timezone: this.timezone,
+    notes: '',
+  });
+
+  this.scheduleOpen.set(true);
+}
 }

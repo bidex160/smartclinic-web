@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { PatientPaymentReturnPageComponent } from './patient-payment-return-page.component';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
+import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 
 describe('PatientPaymentReturnPageComponent', () => {
   it('verifies by trusted route reference and refreshes authoritative status/detail', async () => {
@@ -82,5 +83,15 @@ describe('PatientPaymentReturnPageComponent', () => {
     expect(fast.verifyPayment).toHaveBeenCalledWith('SC-FT-ABCDEF0123456789');
     expect(fast.verifyPayment).not.toHaveBeenCalledWith('untrusted-paystack-value');
     expect(fixture.nativeElement.textContent).toContain('FastTrack request is confirmed');
+  });
+  it('dispatches General Care callbacks by the trusted CareRequest reference', async () => {
+    const care = { verifyLatestFunding: vi.fn(() => of({ careRequestReference: 'SC-CARE-ABCDEF012345', fundingStatus: 'PAID', paid: true })) };
+    await TestBed.configureTestingModule({ imports: [PatientPaymentReturnPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ reference: 'SC-CARE-ABCDEF012345' }), queryParamMap: convertToParamMap({ reference: 'untrusted' }) } } }, { provide: HealthCheckResultsApiService, useValue: {} }, { provide: CareRequestsApiService, useValue: care }] }).compileComponents();
+    const fixture = TestBed.createComponent(PatientPaymentReturnPageComponent);
+    fixture.detectChanges();
+    expect(care.verifyLatestFunding).toHaveBeenCalledWith('SC-CARE-ABCDEF012345');
+    expect(care.verifyLatestFunding).not.toHaveBeenCalledWith('untrusted');
+    expect(fixture.nativeElement.textContent).toContain('Payment confirmed');
+    expect(fixture.nativeElement.textContent).toContain('View Care Request');
   });
 });

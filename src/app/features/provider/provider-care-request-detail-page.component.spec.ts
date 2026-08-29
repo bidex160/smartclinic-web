@@ -5,7 +5,7 @@ import { ProviderCareOperationsApiService } from '../../core/services/provider-c
 import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { ProviderCareRequestDetailPageComponent } from './provider-care-request-detail-page.component';
 describe('ProviderCareRequestDetailPageComponent', () => {
-  const request = (status = 'AWAITING_PROVIDER_RESPONSE', deliveryMode = 'IN_PERSON') => ({
+  const request = (status = 'AWAITING_PROVIDER_RESPONSE', deliveryMode = 'IN_PERSON', fundingStatus: 'PENDING' | 'PAID' | 'SATISFIED_FREE' | null = status === 'PROVIDER_ACCEPTED' ? 'PAID' : null) => ({
     reference: 'SC-CARE-ABCDEF012345',
     status,
     service: { code: 'DENTAL', name: 'Dental care', price: { priceMinor: 1000000, currency: 'NGN' } },
@@ -17,6 +17,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
     preferredTime: '10:30',
     contactMethod: 'EMAIL',
     notes: 'Wheelchair access',
+    funding: fundingStatus ? { status: fundingStatus, satisfied: fundingStatus !== 'PENDING' } : null,
     createdAt: '2026-08-28T00:00:00Z',
     updatedAt: '2026-08-28T00:00:00Z',
     appointment: null,
@@ -26,6 +27,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
     acceptFails = false,
     scheduleFails = false,
     deliveryMode = 'IN_PERSON',
+    fundingStatus: 'PENDING' | 'PAID' | 'SATISFIED_FREE' | null = status === 'PROVIDER_ACCEPTED' ? 'PAID' : null,
   ) {
     const api = {
       getLocations: vi.fn(() =>
@@ -43,7 +45,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
           },
         ]),
       ),
-      getCareRequest: vi.fn((_r: string) => of(request(status, deliveryMode))),
+      getCareRequest: vi.fn((_r: string) => of(request(status, deliveryMode, fundingStatus))),
       acceptCareRequest: vi.fn((_r: string) =>
         acceptFails ? throwError(() => ({ status: 409 })) : of(request('PROVIDER_ACCEPTED')),
       ),
@@ -120,6 +122,17 @@ describe('ProviderCareRequestDetailPageComponent', () => {
     );
     expect(api.scheduleCareRequest.mock.calls[0]?.[1]).not.toHaveProperty('providerId');
     expect(api.getCareRequest).toHaveBeenCalledTimes(2);
+  });
+  it('gates scheduling on authoritative funding while keeping chat available', async () => {
+    const pending = await setup('PROVIDER_ACCEPTED', false, false, 'VIRTUAL', 'PENDING');
+    expect(pending.fixture.nativeElement.textContent).toContain('Awaiting patient payment');
+    const buttons = [...pending.fixture.nativeElement.querySelectorAll('button')].map((button: Element) => button.textContent ?? '');
+    expect(buttons.some((label) => label.includes('Schedule appointment'))).toBe(false);
+    expect(pending.fixture.nativeElement.textContent).toContain('Chat with patient');
+    TestBed.resetTestingModule();
+    const free = await setup('PROVIDER_ACCEPTED', false, false, 'VIRTUAL', 'SATISFIED_FREE');
+    expect(free.fixture.nativeElement.textContent).toContain('Free — no payment required');
+    expect(free.fixture.nativeElement.textContent).toContain('Schedule appointment');
   });
   it('validates interval and preserves scheduling values after overlap conflict', async () => {
     const { fixture, api } = await setup('PROVIDER_ACCEPTED', false, true);

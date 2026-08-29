@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api-config.token';
-import { CareRequest, CareRequestPage, CreateCareRequest } from '../models/find-care.model';
+import { CareRequest, CareRequestFunding, CareRequestPage, CreateCareRequest } from '../models/find-care.model';
 @Injectable({ providedIn: 'root' })
 export class CareRequestsApiService {
   private readonly http = inject(HttpClient);
@@ -23,6 +23,23 @@ export class CareRequestsApiService {
   cancel(reference: string): Observable<CareRequest> {
     return this.http.post<CareRequest>(
       `${this.base}/me/care-requests/${encodeURIComponent(reference)}/cancel`,
+      null,
+    );
+  }
+  getFunding(reference: string): Observable<CareRequestFunding> {
+    return this.http.get<CareRequestFunding>(
+      `${this.base}/me/care-requests/${encodeURIComponent(reference)}/funding`,
+    );
+  }
+  initializeFunding(reference: string): Observable<CareRequestFunding> {
+    return this.http.post<CareRequestFunding>(
+      `${this.base}/me/care-requests/${encodeURIComponent(reference)}/funding/initialize`,
+      null,
+    );
+  }
+  verifyLatestFunding(reference: string): Observable<CareRequestFunding> {
+    return this.http.post<CareRequestFunding>(
+      `${this.base}/me/care-requests/${encodeURIComponent(reference)}/funding/verify-latest`,
       null,
     );
   }

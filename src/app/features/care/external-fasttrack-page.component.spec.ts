@@ -15,4 +15,15 @@ describe('ExternalFastTrackPageComponent', () => {
     const fixture=TestBed.createComponent(ExternalFastTrackPageComponent);const c=fixture.componentInstance;c.form.patchValue({countryCode:'NG',stateOrRegion:'Oyo',city:'Ibadan'});c.loadProviders();c.form.patchValue({providerReference:provider.providerReference,serviceCode:'DENTAL',externalAppointmentReference:'APT-1',appointmentDate:'2026-09-01'});fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Dental care');expect(fixture.nativeElement.textContent).not.toContain('General consultation');c.submit();expect(fast.createExternal).toHaveBeenCalledWith(expect.objectContaining({providerReference:provider.providerReference,serviceCode:'DENTAL'}));expect(fast.createExternal).not.toHaveBeenCalledWith(expect.objectContaining({feeMinor:expect.anything()}));
   });
+  it('translates the selected state code to the external request geography name', async () => {
+    const find={getProviders:vi.fn(()=>of({items:[],page:1,limit:50,total:0,totalPages:0}))};
+    await TestBed.configureTestingModule({imports:[ExternalFastTrackPageComponent],providers:[provideRouter([]),{provide:FindCareApiService,useValue:find},{provide:FastTrackApiService,useValue:{createExternal:vi.fn()}}]}).compileComponents();
+    const c=TestBed.createComponent(ExternalFastTrackPageComponent).componentInstance;
+    c.countryChanged('NG'); c.stateChanged('OY'); c.form.controls.city.setValue('Kisi');
+    expect(c.fastTrackStateCode.value).toBe('OY');
+    expect(c.form.getRawValue()).toMatchObject({countryCode:'NG',stateOrRegion:'Oyo',city:'Kisi'});
+    c.countryChanged('GH');
+    expect(c.fastTrackStateCode.value).toBe('');
+    expect(c.form.getRawValue()).toMatchObject({stateOrRegion:'',city:''});
+  });
 });

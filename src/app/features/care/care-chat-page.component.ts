@@ -45,7 +45,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
               {{ scope === 'patient' ? 'Chat with provider' : 'Chat with patient' }}
             </h1>
             <p class="mt-2 font-semibold">{{ detail.participant.displayName }}</p>
-            <p class="text-sm text-slate-600">{{ detail.service.name }}</p>
+            <!-- <p class="text-sm text-slate-600">{{ detail.service.name }}</p> -->
           </div>
           @if (detail.unreadCount > 0) {
             <span class="rounded-full bg-brand-700 px-3 py-1 text-sm font-bold text-white"

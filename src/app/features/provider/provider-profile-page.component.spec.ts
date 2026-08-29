@@ -58,6 +58,15 @@ describe('ProviderProfilePageComponent', () => {
     component.submit();
     expect(api.submit).not.toHaveBeenCalled();
   });
+  it('translates persisted state name to UI code without clearing the existing city', async () => {
+    const { component } = await setup({ ...profile('REJECTED'), stateOrRegion: 'Oyo', city: 'Kisi' });
+    expect(component.profileStateCode.value).toBe('OY');
+    expect(component.form.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
+    expect(component.profileCities.some(city => city.name === 'Kisi')).toBe(true);
+    component.onProfileCountryChange('GH');
+    expect(component.profileStateCode.value).toBe('');
+    expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
+  });
   async function setup(value = profile('SUBMITTED')) {
     const api = {
       getProfile: vi.fn(() => of(value)),

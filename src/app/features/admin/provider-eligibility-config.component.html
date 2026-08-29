@@ -319,7 +319,7 @@
 
   <select
     id="location-state"
-    [value]="selectedLocationStateCode"
+    [formControl]="locationStateCode"
     (change)="onLocationStateChange($any($event.target).value)"
     [disabled]="!locationForm.controls.countryCode.value"
     class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
@@ -343,7 +343,7 @@
   <select
     id="location-city"
     formControlName="city"
-    [disabled]="!selectedLocationStateCode"
+    [disabled]="!locationStateCode.value"
     class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
   >
     <option value="">Select city</option>

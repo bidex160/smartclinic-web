@@ -54,6 +54,19 @@ describe('ProviderRegisterPageComponent', () => {
     const { component, api } = await setup(() => of(profile()), { ref: 'SC-ABC123', type }); component.form.setValue(valid()); component.register();
     expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ referralCode: 'SC-ABC123', intendedReferralType: type, providerType: 'INDIVIDUAL' }));
   });
+  it('keeps ISO state selection out of the provider registration payload', async () => {
+    const { component, api } = await setup();
+    component.onRegisterCountryChange('NG');
+    component.onRegisterStateChange('OY');
+    component.form.patchValue({ ...valid(), countryCode: 'NG', city: 'Kisi' });
+    component.form.controls.stateOrRegion.setValue('Oyo');
+    expect(component.registrationStateCode.value).toBe('OY');
+    component.register();
+    expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' }));
+    component.onRegisterCountryChange('GH');
+    expect(component.registrationStateCode.value).toBe('');
+    expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
+  });
   async function setup(register = () => of(profile()), query: Record<string,string> = {}) {
     const api = { register: vi.fn(register) };
     await TestBed.configureTestingModule({

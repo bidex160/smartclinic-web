@@ -6,6 +6,8 @@ import { PublicBookingPaymentStatus } from '../../core/models/public-booking.mod
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { FastTrackPaymentStatus } from '../../core/models/find-care.model';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
+import { CareRequestFunding } from '../../core/models/find-care.model';
+import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 
 @Component({
   selector: 'app-patient-payment-return-page',
@@ -31,6 +33,14 @@ import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
           <div class="mt-6 flex flex-wrap gap-3"><a [routerLink]="['/me/fasttrack', reference]" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">View FastTrack request</a><a routerLink="/me/fasttrack" class="rounded-xl border px-5 py-3 font-bold">Back to FastTrack requests</a></div>
         </section>
       }
+      @if (careFunding(); as payment) {
+        <section class="mt-6 rounded-2xl border bg-white p-7">
+          @if (payment.fundingStatus === 'PAID') { <h1 class="text-2xl font-bold text-green-900">Payment confirmed</h1><p class="mt-2">Your provider can now schedule your care.</p> }
+          @else if (payment.fundingStatus === 'SATISFIED_FREE') { <h1 class="text-2xl font-bold text-green-900">No payment required</h1><p class="mt-2">This care service is free.</p> }
+          @else { <h1 class="text-2xl font-bold">Payment pending</h1><p class="mt-2">We could not confirm the payment yet.</p><button type="button" (click)="verify()" class="mt-4 rounded-xl border border-brand-700 px-5 py-3 font-bold text-brand-700">Try verification again</button> }
+          <div class="mt-6 flex flex-wrap gap-3"><a [routerLink]="['/me/care', reference]" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">View Care Request</a><a routerLink="/me/care" class="rounded-xl border px-5 py-3 font-bold">Back to My Care</a></div>
+        </section>
+      }
     </main>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,6 +54,7 @@ export class PatientPaymentReturnPageComponent {
   readonly status = signal<PublicBookingPaymentStatus | null>(null);
   readonly detail = signal<PatientHealthCheckDetail | null>(null);
   readonly fastTrackStatus = signal<FastTrackPaymentStatus | null>(null);
+  readonly careFunding = signal<CareRequestFunding | null>(null);
   constructor() { this.verify(); }
   verify(): void {
     if (!this.reference || this.verifying()) return;
@@ -51,6 +62,14 @@ export class PatientPaymentReturnPageComponent {
     if (this.reference.startsWith('SC-FT-')) {
       const fastTrack = this.injector.get(FastTrackApiService);
       fastTrack.verifyPayment(this.reference).pipe(finalize(() => this.verifying.set(false))).subscribe({next: payment => this.fastTrackStatus.set(payment), error: () => this.error.set(true)});
+      return;
+    }
+    if (this.reference.startsWith('SC-CARE-')) {
+      const care = this.injector.get(CareRequestsApiService);
+      care.verifyLatestFunding(this.reference).pipe(finalize(() => this.verifying.set(false))).subscribe({
+        next: funding => this.careFunding.set(funding),
+        error: () => this.error.set(true),
+      });
       return;
     }
     this.api.verifyMyHealthCheckPayment(this.reference).pipe(

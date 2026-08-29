@@ -172,7 +172,7 @@
 
   <select
     id="provider-region"
-    [value]="selectedStateCode"
+    [formControl]="createStateCode"
     (change)="onStateChange($any($event.target).value)"
     [disabled]="!createForm.controls.countryCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:bg-slate-100"
@@ -196,7 +196,7 @@
   <select
     id="provider-city"
     formControlName="city"
-    [disabled]="!selectedStateCode"
+    [disabled]="!createStateCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:bg-slate-100"
   >
     <option value="">Select city</option>

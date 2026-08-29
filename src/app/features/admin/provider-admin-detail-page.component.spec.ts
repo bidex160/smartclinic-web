@@ -47,6 +47,13 @@ describe('ProviderAdminDetailPageComponent', () => {
       city: 'Ikeja',
     });
   });
+  it('preselects persisted geography using a UI-only state code', async () => {
+    const { component } = await setup({ provider: detail({ stateOrRegion: 'Oyo', city: 'Kisi' }) });
+    expect(component.editStateCode.value).toBe('OY');
+    expect(component.profileForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
+    component.onStateChange('LA');
+    expect(component.profileForm.getRawValue()).toMatchObject({ stateOrRegion: 'Lagos', city: '' });
+  });
 
   it('requires confirmation to activate, suspend, and unlink', async () => {
     const { component, api } = await setup({ provider: detail({ status: 'PENDING' }) });

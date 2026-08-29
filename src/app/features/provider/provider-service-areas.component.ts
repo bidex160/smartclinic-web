@@ -8,7 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { FulfilmentMode } from '../../core/models/fulfilment-mode.model';
 import { HealthCheckPackage } from '../../core/models/health-check-package.model';
@@ -62,7 +62,7 @@ readonly countries: ICountry[] =
 areaStates: IState[] = [];
 areaCities: ICity[] = [];
 
-selectedAreaStateCode = '';
+readonly areaStateCode = new FormControl('', { nonNullable: true });
 
   ngOnInit(): void {
     this.load();
@@ -119,6 +119,7 @@ selectedAreaStateCode = '';
       city: area.city ?? '',
       postalCode: area.postalCode ?? '',
     });
+    this.initializeAreaGeography(area.countryCode, area.stateOrRegion, area.city ?? '');
   }
 
   cancel(): void {
@@ -130,6 +131,9 @@ selectedAreaStateCode = '';
       city: '',
       postalCode: '',
     });
+    this.areaStates = this.locationData.getStates('NG');
+    this.areaCities = [];
+    this.areaStateCode.setValue('', { emitEvent: false });
   }
 
   save(): void {
@@ -163,7 +167,7 @@ selectedAreaStateCode = '';
     this.locationData.getStates(countryCode);
 
   this.areaCities = [];
-  this.selectedAreaStateCode = '';
+  this.areaStateCode.setValue('', { emitEvent: false });
 
   this.form.patchValue({
     stateOrRegion: '',
@@ -179,7 +183,7 @@ onAreaStateChange(stateCode: string): void {
     (state) => state.isoCode === stateCode,
   );
 
-  this.selectedAreaStateCode = stateCode;
+  this.areaStateCode.setValue(stateCode, { emitEvent: false });
 
   this.areaCities =
     this.locationData.getCities(
@@ -191,6 +195,20 @@ onAreaStateChange(stateCode: string): void {
     stateOrRegion: selectedState?.name ?? '',
     city: '',
   });
+}
+
+private initializeAreaGeography(countryCode: string, stateName: string, city: string): void {
+  this.areaStates = countryCode ? this.locationData.getStates(countryCode) : [];
+  this.areaCities = [];
+  this.areaStateCode.setValue('', { emitEvent: false });
+  const selectedState = this.areaStates.find(
+    state => state.name.trim().toLowerCase() === stateName.trim().toLowerCase(),
+  );
+  if (selectedState) {
+    this.areaStateCode.setValue(selectedState.isoCode, { emitEvent: false });
+    this.areaCities = this.locationData.getCities(countryCode, selectedState.isoCode);
+  }
+  this.form.patchValue({ stateOrRegion: stateName, city }, { emitEvent: false });
 }
 
   private run(

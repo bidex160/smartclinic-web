@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -20,7 +20,8 @@ import {
   ProviderType,
 } from '../../core/models/admin-provider.model';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
-import { ICountry, Country, IState, ICity, City, State } from 'country-state-city';
+import { ICountry, IState, ICity } from 'country-state-city';
+import { LocationDataService } from '../../core/services/location-data.service';
 
 @Component({
   selector: 'app-providers-admin-page',
@@ -33,6 +34,7 @@ export class ProvidersAdminPageComponent {
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
+  private readonly locationData = inject(LocationDataService);
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('errorSummary');
 
   readonly response = signal<AdminProviderListResponse | null>(null);
@@ -62,12 +64,12 @@ export class ProvidersAdminPageComponent {
   });
 
   readonly countries: ICountry[] =
-  Country.getAllCountries();
+  this.locationData.getCountries();
 
 states: IState[] = [];
 cities: ICity[] = [];
 
-selectedStateCode = '';
+readonly createStateCode = new FormControl('', { nonNullable: true });
   constructor() {
     this.load(1);
     this.onCountryChange('NG')
@@ -127,6 +129,7 @@ selectedStateCode = '';
             `${provider.displayName} was created. ${delivery[invitation.deliveryStatus]}`,
           );
           this.createForm.reset({ providerType: 'INDIVIDUAL', countryCode: 'NG' });
+          this.onCountryChange('NG');
           this.load(1);
         },
         error: (error: HttpErrorResponse) =>
@@ -147,10 +150,10 @@ selectedStateCode = '';
 
   onCountryChange(countryCode: string): void {
   this.states =
-    State.getStatesOfCountry(countryCode);
+    this.locationData.getStates(countryCode);
 
   this.cities = [];
-  this.selectedStateCode = '';
+  this.createStateCode.setValue('', { emitEvent: false });
 
   this.createForm.patchValue({
     stateOrRegion: '',
@@ -166,13 +169,10 @@ onStateChange(stateCode: string): void {
     (item) => item.isoCode === stateCode,
   );
 
-  this.selectedStateCode = stateCode;
+  this.createStateCode.setValue(stateCode, { emitEvent: false });
 
   this.cities =
-    City.getCitiesOfState(
-      countryCode,
-      stateCode,
-    );
+    this.locationData.getCities(countryCode, stateCode);
 
   this.createForm.patchValue({
     // Backend receives the state NAME, not ISO code.

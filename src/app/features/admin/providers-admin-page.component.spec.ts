@@ -66,6 +66,17 @@ describe('ProvidersAdminPageComponent', () => {
     });
     expect(component.createdProviderId()).toBe('provider-id');
   });
+  it('translates the state ISO selection to the API state name and clears dependants', async () => {
+    const { component } = await setup();
+    component.onCountryChange('NG');
+    component.onStateChange('OY');
+    component.createForm.controls.city.setValue('Kisi');
+    expect(component.createStateCode.value).toBe('OY');
+    expect(component.createForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
+    component.onCountryChange('GH');
+    expect(component.createStateCode.value).toBe('');
+    expect(component.createForm.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
+  });
 
   it.each([
     ['MANUAL_REQUIRED', 'Automatic email delivery is unavailable.'],

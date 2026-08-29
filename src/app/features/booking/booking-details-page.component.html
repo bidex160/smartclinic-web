@@ -388,7 +388,7 @@
 
   <select
     id="visit-state"
-    [value]="selectedVisitStateCode"
+    [formControl]="visitStateCode"
     (change)="onVisitStateChange($any($event.target).value)"
     [disabled]="!visitingForm.controls['countryCode']['value']"
     autocomplete="address-level1"
@@ -413,7 +413,7 @@
   <select
     id="visit-city"
     formControlName="city"
-    [disabled]="!selectedVisitStateCode"
+    [disabled]="!visitStateCode.value"
     autocomplete="address-level2"
     class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 disabled:cursor-not-allowed disabled:bg-slate-100"
   >

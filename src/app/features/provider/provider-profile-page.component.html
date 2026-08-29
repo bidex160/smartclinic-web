@@ -179,12 +179,12 @@
 
   <select
     id="profile-region"
-    [value]="selectedProfileStateCode"
+   [formControl]="profileStateCode"
     (change)="onProfileStateChange($any($event.target).value)"
     [disabled]="!form.controls.countryCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
   >
-    <option value="">Select state or region</option>
+    <option value="">Select state or region </option>
 
     @for (state of profileStates; track state.isoCode) {
       <option [value]="state.isoCode">
@@ -203,7 +203,7 @@
   <select
     id="profile-city"
     formControlName="city"
-    [disabled]="!selectedProfileStateCode"
+    [disabled]="!profileStateCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
   >
     <option value="">Select city</option>
@@ -215,29 +215,30 @@
     }
   </select>
 </div>
-      @if (profileEditable(current)) {
-        <div class="flex flex-wrap gap-3 md:col-span-2">
-          <button
-            type="submit"
-            [disabled]="mutating()"
-            class="min-h-11 rounded-lg border border-brand-700 px-5 font-bold text-brand-800"
-          >
-            Save profile
-          </button>
-          @if (
-            current.onboardingStatus !== 'SUBMITTED' && current.readiness.blockers.length === 0
-          ) {
-            <button
-              type="button"
-              (click)="requestSubmit()"
-              [disabled]="mutating()"
-              class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
-            >
-              Submit for review
-            </button>
-          }
-        </div>
-      }
+@if (profileEditable(current)) {
+  <div class="flex flex-wrap gap-3 md:col-span-2">
+
+    <button
+      type="submit"
+      [disabled]="mutating()"
+      class="min-h-11 rounded-lg border border-brand-700 px-5 font-bold text-brand-800"
+    >
+      Save profile
+    </button>
+
+    @if (canSubmitForReview(current)) {
+      <button
+        type="button"
+        (click)="requestSubmit()"
+        [disabled]="mutating()"
+        class="min-h-11 rounded-lg bg-brand-700 px-5 font-bold text-white"
+      >
+        Submit for review
+      </button>
+    }
+
+  </div>
+}
     </form>
     @if (confirmingSubmit()) {
       <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-5">

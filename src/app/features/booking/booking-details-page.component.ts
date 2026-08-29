@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
@@ -99,7 +100,7 @@ readonly countries: ICountry[] =
 visitStates: IState[] = [];
 visitCities: ICity[] = [];
 
-selectedVisitStateCode = '';
+readonly visitStateCode = new FormControl('', { nonNullable: true });
 
   constructor() {
     if (this.requiresVisitAddress) {
@@ -115,8 +116,16 @@ selectedVisitStateCode = '';
       }
     }
     const draft = this.bookingFlow.details();
-    if (draft) this.form.setValue(draft);
-    this.onVisitCountryChange('NG')
+    if (draft) {
+      this.form.setValue(draft);
+      this.initializeVisitGeography(
+        draft.visitAddress.countryCode,
+        draft.visitAddress.stateOrRegion,
+        draft.visitAddress.city,
+      );
+    } else {
+      this.visitStates = this.locationData.getStates('NG');
+    }
   }
 
   copyBookerToParticipant(): void {
@@ -162,7 +171,7 @@ selectedVisitStateCode = '';
     this.locationData.getStates(countryCode);
 
   this.visitCities = [];
-  this.selectedVisitStateCode = '';
+  this.visitStateCode.setValue('', { emitEvent: false });
 
   this.visitingForm.patchValue({
     stateOrRegion: '',
@@ -178,7 +187,7 @@ onVisitStateChange(stateCode: string): void {
     (state) => state.isoCode === stateCode,
   );
 
-  this.selectedVisitStateCode = stateCode;
+  this.visitStateCode.setValue(stateCode, { emitEvent: false });
 
   this.visitCities =
     this.locationData.getCities(
@@ -190,5 +199,19 @@ onVisitStateChange(stateCode: string): void {
     stateOrRegion: selectedState?.name ?? '',
     city: '',
   });
+}
+
+private initializeVisitGeography(countryCode: string, stateName: string, city: string): void {
+  this.visitStates = countryCode ? this.locationData.getStates(countryCode) : [];
+  this.visitCities = [];
+  this.visitStateCode.setValue('', { emitEvent: false });
+  const selectedState = this.visitStates.find(
+    state => state.name.trim().toLowerCase() === stateName.trim().toLowerCase(),
+  );
+  if (selectedState) {
+    this.visitStateCode.setValue(selectedState.isoCode, { emitEvent: false });
+    this.visitCities = this.locationData.getCities(countryCode, selectedState.isoCode);
+  }
+  this.visitingForm.patchValue({ countryCode, stateOrRegion: stateName, city }, { emitEvent: false });
 }
 }

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { CareRequest } from '../../core/models/find-care.model';
+import { CareRequest, CareRequestFunding } from '../../core/models/find-care.model';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
@@ -9,6 +9,7 @@ import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from './care-delivery-mode';
 import { formatMinor } from '../provider/care-money';
+import PaystackPop from '@paystack/inline-js';
 
 @Component({
   selector: 'app-care-detail-page',
@@ -86,6 +87,29 @@ import { formatMinor } from '../provider/care-money';
           </dl>
           <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(r.status) }}</p>
         </section>
+        @if (r.status === 'PROVIDER_ACCEPTED' || r.funding) {
+          <section class="mt-6 rounded-2xl border bg-white p-6" aria-labelledby="care-payment-title">
+            <h2 id="care-payment-title" class="text-xl font-bold">Payment</h2>
+            @if (fundingLoading()) {
+              <p role="status" class="mt-3 text-slate-600">Loading payment status…</p>
+            } @else if (funding(); as payment) {
+              <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div><dt class="text-sm text-slate-500">Service price</dt><dd class="font-bold">{{ payment.amountMinor !== null && payment.currency ? formatPrice(payment.amountMinor, payment.currency) : 'Not available' }}</dd></div>
+                <div><dt class="text-sm text-slate-500">Payment status</dt><dd class="font-bold">{{ fundingLabel(payment) }}</dd></div>
+              </dl>
+              @if (payment.fundingStatus === 'SATISFIED_FREE') {
+                <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">No payment required. Your provider can schedule your care.</p>
+              } @else if (payment.fundingStatus === 'PAID') {
+                <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">Payment confirmed. Your provider can schedule your care.</p>
+              } @else if (r.status === 'PROVIDER_ACCEPTED' && payment.initializationAllowed) {
+                <button type="button" (click)="payNow()" [disabled]="paymentPending()" class="mt-4 min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60">{{ paymentPending() ? 'Preparing secure payment…' : 'Pay now' }}</button>
+              }
+            } @else if (r.status === 'PROVIDER_ACCEPTED') {
+              <button type="button" (click)="loadFunding()" class="mt-4 rounded-xl border px-5 py-3 font-bold">Refresh payment status</button>
+            }
+            @if (paymentError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ paymentError() }}</p> }
+          </section>
+        }
         @if (r.appointment; as a) {
           <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
             <h2 class="text-xl font-bold">Your appointment</h2>
@@ -220,6 +244,11 @@ export class CareDetailPageComponent {
   readonly actionError = signal<string | null>(null);
   readonly chatAvailable = signal(false);
   readonly chatUnread = signal(0);
+  readonly funding = signal<CareRequestFunding | null>(null);
+  readonly fundingLoading = signal(false);
+  readonly paymentPending = signal(false);
+  readonly paymentError = signal<string | null>(null);
+  popup = new PaystackPop();
   constructor() {
     this.load();
   }
@@ -229,6 +258,8 @@ export class CareDetailPageComponent {
     this.api.get(this.reference).subscribe({
       next: (r) => {
         this.request.set(r);
+        if (r.status === 'PROVIDER_ACCEPTED') this.loadFunding();
+        else this.funding.set(r.funding ? this.summaryFunding(r) : null);
         this.loading.set(false);
         this.checkFastTrack(r);
         this.chatApi.getChat('patient', this.reference).subscribe({
@@ -247,6 +278,79 @@ export class CareDetailPageComponent {
         this.loading.set(false);
       },
     });
+  }
+  loadFunding(preserveError = false): void {
+    if (this.fundingLoading()) return;
+    this.fundingLoading.set(true);
+    if (!preserveError) this.paymentError.set(null);
+    this.api.getFunding(this.reference).pipe(finalize(() => this.fundingLoading.set(false))).subscribe({
+      next: (funding) => this.funding.set(funding),
+      error: () => this.paymentError.set('We could not load the authoritative payment status. Try again.'),
+    });
+  }
+  payNow(): void {
+    const funding = this.funding();
+    if (this.paymentPending() || !funding?.initializationAllowed || funding.paid || funding.amountMinor === 0) return;
+    this.paymentPending.set(true);
+    this.paymentError.set(null);
+    this.api.initializeFunding(this.reference).pipe(finalize(() => this.paymentPending.set(false))).subscribe({
+      next: (initialized) => {
+        this.funding.set(initialized);
+        if (initialized.fundingStatus === 'PAID' || initialized.fundingStatus === 'SATISFIED_FREE') {
+          this.refreshAfterPayment();
+          return;
+        }
+        if (!initialized.accessCode) {
+          this.paymentError.set('Secure payment could not be started. Refresh the payment status and try again.');
+          return;
+        }
+        this.popup.resumeTransaction(initialized.accessCode, {
+          onSuccess: () => this.verifyPayment(),
+          onError: () => {
+            this.paymentError.set('Payment was not completed. You can safely try again.');
+            this.loadFunding(true);
+          },
+        });
+      },
+      error: (error) => {
+        this.paymentError.set(this.paymentFailureMessage(error));
+        this.loadFunding(true);
+      },
+    });
+  }
+  verifyPayment(): void {
+    if (this.paymentPending()) return;
+    this.paymentPending.set(true);
+    this.paymentError.set(null);
+    this.api.verifyLatestFunding(this.reference).pipe(finalize(() => this.paymentPending.set(false))).subscribe({
+      next: (funding) => {
+        this.funding.set(funding);
+        this.refreshAfterPayment();
+        if (funding.fundingStatus !== 'PAID') this.paymentError.set('Payment has not been confirmed yet. You can retry safely.');
+      },
+      error: () => {
+        this.paymentError.set('We could not confirm the payment yet. Refresh the payment status or try again.');
+        this.loadFunding(true);
+      },
+    });
+  }
+  fundingLabel(funding: CareRequestFunding): string {
+    if (funding.fundingStatus === 'PAID') return 'Paid';
+    if (funding.fundingStatus === 'SATISFIED_FREE') return 'Free';
+    return 'Awaiting payment';
+  }
+  private refreshAfterPayment(): void {
+    this.api.getFunding(this.reference).subscribe({ next: (value) => this.funding.set(value) });
+    this.api.get(this.reference).subscribe({ next: (value) => this.request.set(value) });
+  }
+  private summaryFunding(request: CareRequest): CareRequestFunding {
+    return { careRequestReference: request.reference, fundingRequired: request.funding?.status !== 'SATISFIED_FREE', amountMinor: request.service.price?.priceMinor ?? null, currency: request.service.price?.currency ?? null, fundingStatus: request.funding?.status ?? null, paid: request.funding?.satisfied ?? false, initializationAllowed: false, paymentAttemptStatus: null, paymentReference: null, checkoutUrl: null, accessCode: null, paidAt: null };
+  }
+  private paymentFailureMessage(error: { status?: number; error?: { message?: unknown } }): string {
+    const message = typeof error?.error?.message === 'string' ? error.error.message : '';
+    if (error?.status === 409 && message) return message;
+    if (error?.status === 400) return 'A valid account email is required before payment can start.';
+    return 'We could not start payment. Refresh the Care Request and try again.';
   }
   private checkFastTrack(r: CareRequest) {
     if (r.status !== 'PROVIDER_ACCEPTED' || !r.assignedProvider) return;

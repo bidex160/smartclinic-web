@@ -14,6 +14,7 @@ import {
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
@@ -32,7 +33,8 @@ import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
-import { ICountry, Country, IState, ICity, City, State } from 'country-state-city';
+import { ICountry, IState, ICity } from 'country-state-city';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { formatMinor, majorToMinor, minorToMajor } from '../provider/care-money';
 
 type Tab = 'services' | 'locations' | 'availability' | 'exceptions';
@@ -75,6 +77,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   private readonly packagesApi = inject(HealthCheckPackagesApiService);
   private readonly modesApi = inject(FulfilmentModesApiService);
   private readonly fb = inject(FormBuilder).nonNullable;
+  private readonly locationData = inject(LocationDataService);
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('configError');
   readonly activeTab = signal<Tab>('services');
   readonly loading = signal(true);
@@ -198,12 +201,12 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     { validators: pairedTimes },
   );
   readonly countries: ICountry[] =
-  Country.getAllCountries();
+  this.locationData.getCountries();
 
 locationStates: IState[] = [];
 locationCities: ICity[] = [];
 
-selectedLocationStateCode = '';
+readonly locationStateCode = new FormControl('', { nonNullable: true });
   ngOnInit() {
     this.loadAll();
     this.onLocationCountryChange('NG')
@@ -337,6 +340,9 @@ selectedLocationStateCode = '';
       () => {
         this.editingLocation.set(null);
         this.locationForm.reset({ countryCode: 'NG' });
+        this.locationStates = this.locationData.getStates('NG');
+        this.locationCities = [];
+        this.locationStateCode.setValue('', { emitEvent: false });
       },
     );
   }
@@ -351,6 +357,7 @@ selectedLocationStateCode = '';
       postalCode: value.postalCode ?? '',
       countryCode: value.countryCode,
     });
+    this.initializeLocationGeography(value.countryCode, value.state, value.city);
     this.activeTab.set('locations');
   }
   createAvailability() {
@@ -498,10 +505,10 @@ selectedLocationStateCode = '';
   }
   onLocationCountryChange(countryCode: string): void {
   this.locationStates =
-    State.getStatesOfCountry(countryCode);
+    this.locationData.getStates(countryCode);
 
   this.locationCities = [];
-  this.selectedLocationStateCode = '';
+  this.locationStateCode.setValue('', { emitEvent: false });
 
   this.locationForm.patchValue({
     state: '',
@@ -517,13 +524,10 @@ onLocationStateChange(stateCode: string): void {
     (item) => item.isoCode === stateCode,
   );
 
-  this.selectedLocationStateCode = stateCode;
+  this.locationStateCode.setValue(stateCode, { emitEvent: false });
 
   this.locationCities =
-    City.getCitiesOfState(
-      countryCode,
-      stateCode,
-    );
+    this.locationData.getCities(countryCode, stateCode);
 
   this.locationForm.patchValue({
     // Save the NAME because this is what your backend
@@ -531,6 +535,19 @@ onLocationStateChange(stateCode: string): void {
     state: state?.name ?? '',
     city: '',
   });
+}
+private initializeLocationGeography(countryCode: string, stateName: string, city: string): void {
+  this.locationStates = countryCode ? this.locationData.getStates(countryCode) : [];
+  this.locationCities = [];
+  this.locationStateCode.setValue('', { emitEvent: false });
+  const selectedState = this.locationStates.find(
+    state => state.name.trim().toLowerCase() === stateName.trim().toLowerCase(),
+  );
+  if (selectedState) {
+    this.locationStateCode.setValue(selectedState.isoCode, { emitEvent: false });
+    this.locationCities = this.locationData.getCities(countryCode, selectedState.isoCode);
+  }
+  this.locationForm.patchValue({ countryCode, state: stateName, city }, { emitEvent: false });
 }
   private mutate(
     operation: Observable<unknown>,

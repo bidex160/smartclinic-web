@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
@@ -88,7 +88,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
             <label class="font-semibold"
               >Country<select
                 formControlName="countryCode"
-                (change)="countryChanged()"
+                (change)="countryChanged($any($event.target).value)"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3"
               >
                 <option value="">Select country</option>
@@ -98,13 +98,13 @@ import { LocationDataService } from '../../core/services/location-data.service';
               </select></label
             ><label class="font-semibold"
               >State / Region<select
-                formControlName="stateOrRegion"
-                (change)="stateChanged()"
+                [formControl]="requestStateCode"
+                (change)="stateChanged($any($event.target).value)"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3"
               >
                 <option value="">Select state or region</option>
                 @for (s of states(); track s.isoCode) {
-                  <option [value]="s.name">{{ s.name }}</option>
+                  <option [value]="s.isoCode">{{ s.name }}</option>
                 }
               </select></label
             ><label class="font-semibold"
@@ -301,6 +301,7 @@ export class FindCarePageComponent {
   readonly countries = this.locations.getCountries();
   readonly states = signal<ReturnType<LocationDataService['getStates']>>([]);
   readonly cities = signal<ReturnType<LocationDataService['getCities']>>([]);
+  readonly requestStateCode = new FormControl('', { nonNullable: true });
   readonly services = signal<
     readonly import('../../core/models/find-care.model').CareServiceDefinition[]
   >([]);
@@ -357,8 +358,11 @@ export class FindCarePageComponent {
     if (saved) {
       this.form.patchValue(saved);
       this.states.set(this.locations.getStates(saved.countryCode));
-      const state = this.states().find((s) => s.name === saved.stateOrRegion);
-      if (state) this.cities.set(this.locations.getCities(saved.countryCode, state.isoCode));
+      const state = this.states().find((s) => s.name.trim().toLowerCase() === saved.stateOrRegion.trim().toLowerCase());
+      if (state) {
+        this.requestStateCode.setValue(state.isoCode, { emitEvent: false });
+        this.cities.set(this.locations.getCities(saved.countryCode, state.isoCode));
+      }
       this.discoverProviders();
     }
   }
@@ -370,17 +374,21 @@ export class FindCarePageComponent {
       .pipe(finalize(() => this.servicesLoading.set(false)))
       .subscribe({ next: (v) => this.services.set(v), error: () => this.servicesError.set(true) });
   }
-  countryChanged() {
+  countryChanged(countryCode: string) {
+    this.form.controls.countryCode.setValue(countryCode, { emitEvent: false });
+    this.requestStateCode.setValue('', { emitEvent: false });
     this.form.patchValue({ stateOrRegion: '', city: '', preferredProviderReference: '' });
     this.states.set(this.locations.getStates(this.form.controls.countryCode.value));
     this.cities.set([]);
     this.providers.set([]);
   }
-  stateChanged() {
+  stateChanged(stateCode: string) {
     this.form.patchValue({ city: '', preferredProviderReference: '' });
-    const state = this.states().find((s) => s.name === this.form.controls.stateOrRegion.value);
+    this.requestStateCode.setValue(stateCode, { emitEvent: false });
+    const state = this.states().find((s) => s.isoCode === stateCode);
+    this.form.controls.stateOrRegion.setValue(state?.name ?? '');
     this.cities.set(
-      state ? this.locations.getCities(this.form.controls.countryCode.value, state.isoCode) : [],
+      state ? this.locations.getCities(this.form.controls.countryCode.value, stateCode) : [],
     );
     this.providers.set([]);
   }

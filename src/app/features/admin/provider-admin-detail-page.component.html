@@ -373,7 +373,7 @@
 
   <select
     id="edit-region"
-    [value]="selectedStateCode"
+        [formControl]="editStateCode"
     (change)="onStateChange($any($event.target).value)"
     [disabled]="!profileForm.controls.countryCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
@@ -396,7 +396,7 @@
   <select
     id="edit-city"
     formControlName="city"
-    [disabled]="!selectedStateCode"
+    [disabled]="!editStateCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
   >
     <option value="">Select city</option>

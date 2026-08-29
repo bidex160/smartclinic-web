@@ -126,4 +126,16 @@ describe('BookingDetailsPageComponent', () => {
       phone: '+2348012345678',
     });
   });
+  it('restores a saved state code and city without destructive initialization', () => {
+    const draft = component.form.getRawValue();
+    draft.visitAddress = { ...draft.visitAddress, countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' };
+    state.saveDetails(draft);
+    const restored = TestBed.createComponent(BookingDetailsPageComponent).componentInstance;
+    expect(restored.visitStateCode.value).toBe('OY');
+    expect(restored.form.controls.visitAddress.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
+    expect(restored.visitCities.some(city => city.name === 'Kisi')).toBe(true);
+    restored.onVisitCountryChange('GH');
+    expect(restored.visitStateCode.value).toBe('');
+    expect(restored.form.controls.visitAddress.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
+  });
 });

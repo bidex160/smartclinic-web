@@ -112,6 +112,14 @@ describe('ProviderEligibilityConfigComponent', () => {
     expect(fixture.nativeElement.querySelector('input[name="locationId"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('input[type="number"]')).toBeNull();
   });
+  it('restores an edited provider location state code without clearing persisted geography', async () => {
+    const { component } = await setup();
+    component.editLocation({ ...locationRows()[0], locationReference: 'SCPL-TEST', postalCode: null, state: 'Oyo', city: 'Kisi' });
+    expect(component.locationStateCode.value).toBe('OY');
+    expect(component.locationForm.getRawValue()).toMatchObject({ countryCode: 'NG', state: 'Oyo', city: 'Kisi' });
+    component.onLocationStateChange('LA');
+    expect(component.locationForm.getRawValue()).toMatchObject({ state: 'Lagos', city: '' });
+  });
   it('links only active provider locations for PROVIDER_LOCATION and unlinks after confirmation', async () => {
     const { component, api } = await setup();
     component.link('service-location', 'location-id');

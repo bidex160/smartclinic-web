@@ -1,3 +1,5 @@
+import { PublicBookingFundingAttemptStatus } from './public-booking.model';
+
 export type CareDeliveryMode = 'IN_PERSON' | 'VIRTUAL' | 'HOME_VISIT';
 
 export interface CareServiceDefinition {
@@ -153,9 +155,29 @@ export interface CareRequest {
   readonly preferredTime: string | null;
   readonly contactMethod: CareRequestContactMethod;
   readonly notes: string | null;
+  readonly funding: CareRequestFundingSummary | null;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly appointment: CareRequestAppointmentSummary | null;
+}
+export type CareRequestFundingStatus = 'PENDING' | 'PAID' | 'SATISFIED_FREE';
+export interface CareRequestFundingSummary {
+  readonly status: CareRequestFundingStatus;
+  readonly satisfied: boolean;
+}
+export interface CareRequestFunding {
+  readonly careRequestReference: string;
+  readonly fundingRequired: boolean;
+  readonly amountMinor: number | null;
+  readonly currency: string | null;
+  readonly fundingStatus: CareRequestFundingStatus | null;
+  readonly paid: boolean;
+  readonly initializationAllowed: boolean;
+  readonly paymentAttemptStatus: PublicBookingFundingAttemptStatus | null;
+  readonly paymentReference: string | null;
+  readonly checkoutUrl: string | null;
+  readonly accessCode: string | null;
+  readonly paidAt: string | null;
 }
 export interface CareRequestAppointmentSummary {
   readonly reference: string;
@@ -190,14 +212,24 @@ export interface CareChatAppointmentSummary {
   readonly timezone: string;
   readonly deliveryMode: CareDeliveryMode;
 }
+// export interface CareChatDetail {
+//   readonly reference: string;
+//   readonly careRequestReference: string;
+//   readonly canSendMessages: boolean;
+//   readonly unreadCount: number;
+//   readonly participant: CareChatParticipant;
+//   readonly service: { readonly code: string; readonly name: string };
+//   readonly appointment: CareChatAppointmentSummary | null;
+// }
 export interface CareChatDetail {
-  readonly reference: string;
-  readonly careRequestReference: string;
-  readonly canSendMessages: boolean;
-  readonly unreadCount: number;
-  readonly participant: CareChatParticipant;
-  readonly service: { readonly code: string; readonly name: string };
-  readonly appointment: CareChatAppointmentSummary | null;
+  conversationReference: string;
+  careRequestReference: string;
+  canSendMessages: boolean;
+  unreadCount: number;
+  participant: CareChatParticipant;
+  appointment: CareChatAppointmentSummary | null;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface CareChatMessage {
   readonly senderType: CareChatSenderType;

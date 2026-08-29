@@ -9,6 +9,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
+  FormControl,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -322,7 +323,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
 
                   <select
                     id="self-region"
-                    [value]="selectedSelfStateCode"
+                    [formControl]="bookingStateCode"
                     (change)="onSelfStateChange($any($event.target).value)"
                     [disabled]="!visitAddressForm.controls.countryCode.value"
                     autocomplete="address-level1"
@@ -718,7 +719,7 @@ export class PatientBookingPageComponent {
   selfStates: IState[] = [];
   selfCities: ICity[] = [];
 
-  selectedSelfStateCode = '';
+  readonly bookingStateCode = new FormControl('', { nonNullable: true });
 
   constructor() {
     /*
@@ -801,7 +802,7 @@ export class PatientBookingPageComponent {
 
     this.selfCities = [];
 
-    this.selectedSelfStateCode = '';
+    this.bookingStateCode.setValue('', { emitEvent: false });
 
     this.visitAddressForm.patchValue(
       {
@@ -827,8 +828,7 @@ export class PatientBookingPageComponent {
           state.isoCode === stateCode,
       );
 
-    this.selectedSelfStateCode =
-      stateCode;
+    this.bookingStateCode.setValue(stateCode, { emitEvent: false });
 
     this.selfCities =
       countryCode && stateCode

@@ -53,6 +53,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
               <th class="p-4">Delivery</th>
               <th class="p-4">Location</th>
               <th class="p-4">Status</th>
+              <th class="p-4">Payment</th>
               <th class="p-4">Created</th>
               <th class="p-4">Action</th>
             </tr>
@@ -71,6 +72,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
                 <td class="p-4">{{ deliveryModeLabel(item.deliveryMode) }}</td>
                 <td class="p-4">{{ item.geography.city }}, {{ item.geography.stateOrRegion }}</td>
                 <td class="p-4">{{ label(item.status) }}</td>
+                <td class="p-4">{{ fundingLabel(item) }}</td>
                 <td class="p-4">{{ utils.formatDateTime(item.createdAt) }}</td>
                 <td class="p-4">
                   <a
@@ -119,6 +121,12 @@ export class MyCarePageComponent {
       });
   }
   deliveryModeLabel = careDeliveryModeLabel;
+  fundingLabel(request: CareRequest) {
+    if (!request.funding) return '—';
+    if (request.funding.status === 'PAID') return 'Paid';
+    if (request.funding.status === 'SATISFIED_FREE') return 'Free';
+    return 'Awaiting payment';
+  }
   label(s: string) {
     return (
       (

@@ -157,6 +157,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </a>
           <a routerLink="/admin/referrals" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Referrals</a>
           <a routerLink="/admin/reward-withdrawals" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Reward Withdrawals</a>
+          <a routerLink="/admin/care-services" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Care Services</a>
+
+          <p class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300">Commercial</p>
+          <a routerLink="/admin/commission-settings" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Commission Settings</a>
 
           <!-- PROVIDERS -->
           <p
@@ -398,6 +402,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </a>
           <a routerLink="/admin/referrals" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Referrals</a>
           <a routerLink="/admin/reward-withdrawals" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Reward Withdrawals</a>
+          <a routerLink="/admin/care-services" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Care Services</a>
+
+          <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Commercial</p>
+          <a routerLink="/admin/commission-settings" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Commission Settings</a>
 
           <p
             class="

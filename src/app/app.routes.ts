@@ -122,15 +122,7 @@ export const routes: Routes = [
             (c) => c.PatientProfilePageComponent,
           ),
       },
-      {
-        path: 'care-services',
-        title: 'General Care Services | SmartClinic',
-        canActivate: [providerGuard],
-        loadComponent: () =>
-          import('./features/provider/provider-care-services-page.component').then(
-            (component) => component.ProviderCareServicesPageComponent,
-          ),
-      },
+
       {
         path: 'referrals',
         title: 'Referrals & Rewards | SmartClinic',
@@ -295,6 +287,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'care-services',
+        title: 'General Care Services | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-care-services-page.component').then(
+            (component) => component.ProviderCareServicesPageComponent,
+          ),
+      },
+      {
         path: 'setup/:token',
         title: 'Provider account setup | SmartClinic',
         loadComponent: () =>
@@ -452,12 +453,30 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'care-services',
+        title: 'Care Services | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-care-services-page.component').then(
+            (component) => component.AdminCareServicesPageComponent,
+          ),
+      },
+      {
         path: 'reward-withdrawals',
         title: 'Reward withdrawals | SmartClinic',
         canActivate: [adminPricingGuard],
         loadComponent: () =>
           import('./features/admin/admin-reward-withdrawals-page.component').then(
             (c) => c.AdminRewardWithdrawalsPageComponent,
+          ),
+      },
+      {
+        path: 'commission-settings',
+        title: 'Commission Settings | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-commission-settings-page.component').then(
+            (component) => component.AdminCommissionSettingsPageComponent,
           ),
       },
       {

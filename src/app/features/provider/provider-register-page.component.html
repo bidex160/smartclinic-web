@@ -382,7 +382,7 @@
 
         <select
           id="register-region"
-          [value]="selectedRegisterStateCode"
+          [formControl]="registrationStateCode"
           (change)="
             onRegisterStateChange(
               $any($event.target).value
@@ -424,7 +424,7 @@
           id="register-city"
           formControlName="city"
           [disabled]="
-            !selectedRegisterStateCode
+            !registrationStateCode.value
           "
           autocomplete="address-level2"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 focus:border-brand-600 focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"

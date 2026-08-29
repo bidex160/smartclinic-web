@@ -7,7 +7,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ProviderType } from '../../core/models/admin-provider.model';
@@ -58,7 +58,7 @@ export class ProviderProfilePageComponent {
     phone: ['', [Validators.required, Validators.minLength(7), Validators.maxLength(32)]],
     professionalReference: ['', Validators.maxLength(200)],
     providerType: this.fb.control<ProviderType>('INDIVIDUAL'),
-    countryCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
+    countryCode: ['', [Validators.required]],
     stateOrRegion: ['', [Validators.required]],
     city: ['', [Validators.required]],
   });
@@ -70,8 +70,9 @@ readonly countries: ICountry[] =
 
 profileStates: IState[] = [];
 profileCities: ICity[] = [];
-
-selectedProfileStateCode = '';
+readonly profileStateCode = new FormControl<string>('', {
+  nonNullable: true,
+});
   constructor() {
     this.load();
   }
@@ -84,17 +85,50 @@ selectedProfileStateCode = '';
       .subscribe({
         next: (p) => {
           this.profile.set(p);
-          this.form.setValue({
-            displayName: p.displayName,
-            phone: p.phone ?? '',
-            professionalReference: p.professionalReference ?? '',
-            providerType: p.providerType,
-            countryCode: p.countryCode ?? '',
-            stateOrRegion: p.stateOrRegion ?? '',
-            city: p.city ?? '',
-          });
-          if (this.profileEditable(p)) this.form.enable();
-          else this.form.disable();
+this.form.setValue({
+  displayName: p.displayName,
+  phone: p.phone ?? '',
+  professionalReference: p.professionalReference ?? '',
+  providerType: p.providerType,
+  countryCode: p.countryCode ?? '',
+  stateOrRegion: p.stateOrRegion ?? '',
+  city: p.city ?? '',
+});
+
+this.profileStates = [];
+this.profileCities = [];
+this.profileStateCode.setValue('', { emitEvent: false });
+
+if (p.countryCode) {
+  this.profileStates = this.locationData.getStates(p.countryCode);
+}
+
+if (p.countryCode && p.stateOrRegion) {
+  const stateName = p.stateOrRegion.trim().toLowerCase();
+
+  const selectedState = this.profileStates.find(
+    (state) => state.name.trim().toLowerCase() === stateName,
+  );
+
+  if (selectedState) {
+    this.profileStateCode.setValue(
+      selectedState.isoCode,
+      { emitEvent: false },
+    );
+
+    this.profileCities = this.locationData.getCities(
+      p.countryCode,
+      selectedState.isoCode,
+    );
+  }
+}
+          if (this.profileEditable(p)) {
+            this.form.enable();
+            this.profileStateCode.enable({ emitEvent: false });
+          } else {
+            this.form.disable();
+            this.profileStateCode.disable({ emitEvent: false });
+          }
         },
         error: (e) => this.handle(e),
       });
@@ -168,14 +202,21 @@ selectedProfileStateCode = '';
       profile.status !== 'INACTIVE'
     );
   }
-  profileEditable(profile: ProviderOnboardingProfile): boolean {
-    return (
-      profile.onboardingStatus !== 'APPROVED' &&
-      profile.onboardingStatus !== 'SUBMITTED' &&
-      profile.status !== 'SUSPENDED' &&
-      profile.status !== 'INACTIVE'
-    );
-  }
+profileEditable(profile: ProviderOnboardingProfile): boolean {
+  return (
+    profile.onboardingStatus !== 'APPROVED' &&
+    profile.onboardingStatus !== 'SUBMITTED' &&
+    profile.status !== 'SUSPENDED' &&
+    profile.status !== 'INACTIVE'
+  );
+}
+
+canSubmitForReview(profile: ProviderOnboardingProfile): boolean {
+  return (
+    this.profileEditable(profile) &&
+    profile.readiness.blockers.length === 0
+  );
+}
   blockerLabel(blocker: ProviderOnboardingBlocker): string {
     const labels: Record<ProviderOnboardingBlocker, string> = {
       PROFILE_INCOMPLETE: 'Complete your provider profile',
@@ -193,7 +234,7 @@ selectedProfileStateCode = '';
     this.locationData.getStates(countryCode);
 
   this.profileCities = [];
-  this.selectedProfileStateCode = '';
+  this.profileStateCode.setValue('', { emitEvent: false });
 
   this.form.patchValue({
     stateOrRegion: '',
@@ -209,7 +250,7 @@ onProfileStateChange(stateCode: string): void {
     (state) => state.isoCode === stateCode,
   );
 
-  this.selectedProfileStateCode = stateCode;
+  this.profileStateCode.setValue(stateCode, { emitEvent: false });
 
   this.profileCities =
     this.locationData.getCities(

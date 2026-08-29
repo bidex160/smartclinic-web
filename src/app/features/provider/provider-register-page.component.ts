@@ -7,7 +7,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ICity, ICountry, IState } from 'country-state-city';
@@ -49,7 +49,7 @@ export class ProviderRegisterPageComponent {
   registerStates: IState[] = [];
   registerCities: ICity[] = [];
 
-  selectedRegisterStateCode = '';
+  readonly registrationStateCode = new FormControl('', { nonNullable: true });
 
   readonly form = this.fb.group({
     displayName: [
@@ -224,8 +224,7 @@ export class ProviderRegisterPageComponent {
           state.isoCode === stateCode,
       );
 
-    this.selectedRegisterStateCode =
-      stateCode;
+    this.registrationStateCode.setValue(stateCode, { emitEvent: false });
 
     this.registerCities =
       this.locationData.getCities(
@@ -240,8 +239,7 @@ export class ProviderRegisterPageComponent {
        */
       stateOrRegion:
         selectedState?.name ?? '',
-
-      city: '',
+        city: '',
     });
   }
 
@@ -287,8 +285,7 @@ private initialProviderType(): ProviderType {
       );
 
     this.registerCities = [];
-    this.selectedRegisterStateCode =
-      '';
+    this.registrationStateCode.setValue('', { emitEvent: false });
   }
 
   private resetForm(): void {

@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -23,7 +23,7 @@ import { AdminProviderInvitation } from '../../core/models/provider-invitation.m
 import { ProviderInvitationsApiService } from '../../core/services/provider-invitations-api.service';
 import { ProviderEligibilityConfigComponent } from './provider-eligibility-config.component';
 import { ProviderServiceAreasComponent } from '../provider/provider-service-areas.component';
-import { City, ICity, ICountry, IState, State } from 'country-state-city';
+import { ICity, ICountry, IState } from 'country-state-city';
 import { LocationDataService } from '../../core/services/location-data.service';
 
 type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'unlink' | null;
@@ -91,8 +91,9 @@ export class ProviderAdminDetailPageComponent {
     countries: ICountry[] = this.locationDataService.getCountries();
   states: IState[] = [];
   cities: ICity[] = [];
-
-  selectedStateCode = '';
+readonly editStateCode = new FormControl<string>('', {
+  nonNullable: true,
+});
 
   constructor() {
     this.load();
@@ -220,6 +221,7 @@ export class ProviderAdminDetailPageComponent {
             stateOrRegion: provider.stateOrRegion ?? '',
             city: provider.city ?? '',
           });
+          this.initializeProfileGeography(provider);
         },
         error: (error: HttpErrorResponse) =>
           this.handleError(error, 'Provider details could not be loaded.'),
@@ -364,15 +366,18 @@ export class ProviderAdminDetailPageComponent {
         this.provider.set(provider);
         this.confirmation.set(null);
         this.statusMessage.set(message);
-        this.profileForm.setValue({
-          displayName: provider.displayName,
-          phone: provider.phone ?? '',
-          professionalReference: provider.professionalReference ?? '',
-          providerType: provider.providerType,
-          countryCode: provider.countryCode ?? '',
-          stateOrRegion: provider.stateOrRegion ?? '',
-          city: provider.city ?? '',
-        });
+    this.profileForm.setValue({
+  displayName: provider.displayName,
+  phone: provider.phone ?? '',
+  professionalReference: provider.professionalReference ?? '',
+  providerType: provider.providerType,
+  countryCode: provider.countryCode ?? '',
+  stateOrRegion: provider.stateOrRegion ?? '',
+  city: provider.city ?? '',
+});
+
+this.initializeProfileGeography(provider);
+
       },
       error: (error: HttpErrorResponse) =>
         this.handleError(error, 'Provider operation could not be completed.'),
@@ -402,9 +407,9 @@ export class ProviderAdminDetailPageComponent {
   }
 
    onCountryChange(countryCode: string): void {
-    this.states = State.getStatesOfCountry(countryCode);
+    this.states = this.locationDataService.getStates(countryCode);
     this.cities = [];
-    this.selectedStateCode = '';
+    this.editStateCode.setValue('', { emitEvent: false });
 
     this.profileForm.patchValue({
       stateOrRegion: '',
@@ -419,12 +424,8 @@ export class ProviderAdminDetailPageComponent {
       (item) => item.isoCode === stateCode,
     );
 
-    this.selectedStateCode = stateCode;
-
-    this.cities = City.getCitiesOfState(
-      countryCode,
-      stateCode,
-    );
+    this.editStateCode.setValue(stateCode, { emitEvent: false });
+    this.cities = this.locationDataService.getCities(countryCode, stateCode);
 
     this.profileForm.patchValue({
       stateOrRegion: state?.name ?? '',
@@ -434,5 +435,25 @@ export class ProviderAdminDetailPageComponent {
 
   onCityChange(cityName: string): void {
     this.profileForm.controls.city.setValue(cityName);
+  }
+
+  private initializeProfileGeography(provider: AdminProviderDetail): void {
+    this.states = provider.countryCode
+      ? this.locationDataService.getStates(provider.countryCode)
+      : [];
+    this.cities = [];
+    this.editStateCode.setValue('', { emitEvent: false });
+    const stateName = provider.stateOrRegion?.trim().toLowerCase();
+    const selectedState = stateName
+      ? this.states.find(state => state.name.trim().toLowerCase() === stateName)
+      : undefined;
+    if (provider.countryCode && selectedState) {
+      this.editStateCode.setValue(selectedState.isoCode, { emitEvent: false });
+      this.cities = this.locationDataService.getCities(provider.countryCode, selectedState.isoCode);
+    }
+    this.profileForm.patchValue(
+      { countryCode: provider.countryCode ?? '', stateOrRegion: provider.stateOrRegion ?? '', city: provider.city ?? '' },
+      { emitEvent: false },
+    );
   }
 }

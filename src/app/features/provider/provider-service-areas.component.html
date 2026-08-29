@@ -119,7 +119,7 @@
 
   <select
     id="area-state"
-    [value]="selectedAreaStateCode"
+    [formControl]="areaStateCode"
     (change)="onAreaStateChange($any($event.target).value)"
     [disabled]="!form.controls.countryCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
@@ -146,7 +146,7 @@
   <select
     id="area-city"
     formControlName="city"
-    [disabled]="!selectedAreaStateCode"
+    [disabled]="!areaStateCode.value"
     class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
   >
     <option value="">

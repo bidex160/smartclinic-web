@@ -1,0 +1,23 @@
+import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { AdminCommissionApiService } from '../../core/services/admin-commission-api.service';
+import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
+import { AdminCommissionSettingsPageComponent } from './admin-commission-settings-page.component';
+
+describe('AdminCommissionSettingsPageComponent', () => {
+  async function setup(platformValue = platform(1000), providerValue = provider(null, 1000, 'PLATFORM_DEFAULT' as const)) {
+    const api = { getPlatform: vi.fn(() => of(platformValue)), setPlatform: vi.fn(() => of(platformValue)), getProvider: vi.fn(() => of(providerValue)), setProvider: vi.fn((_id: string, body: { commissionBasisPoints: number }) => of(provider(body.commissionBasisPoints, body.commissionBasisPoints, 'PROVIDER_OVERRIDE'))), clearProvider: vi.fn(() => of(provider(null, 1000, 'PLATFORM_DEFAULT'))) };
+    const providers = { list: vi.fn(() => of({ items: [providerRow()], page: 1, limit: 25, total: 1, totalPages: 1 })) };
+    await TestBed.configureTestingModule({ imports: [AdminCommissionSettingsPageComponent], providers: [{ provide: AdminCommissionApiService, useValue: api }, { provide: AdminProvidersApiService, useValue: providers }] }).compileComponents();
+    const fixture = TestBed.createComponent(AdminCommissionSettingsPageComponent); fixture.detectChanges(); return { fixture, component: fixture.componentInstance, api, providers };
+  }
+  it('loads 1000 bps as 10 percent', async () => { const { component, fixture } = await setup(); expect(component.platformForm.controls.percentage.value).toBe('10'); expect(fixture.nativeElement.textContent).toContain('10%'); });
+  it.each([['10',1000],['7.5',750],['0',0]] as const)('saves %s as %i basis points', async (percentage, bps) => { const { component, api } = await setup(platform(bps)); component.platformForm.controls.percentage.setValue(percentage); component.savePlatform(); expect(api.setPlatform).toHaveBeenCalledWith({ commissionBasisPoints: bps }); });
+  it('renders unconfigured distinctly from explicit zero', async () => { const first = await setup(platform(null)); expect(first.fixture.nativeElement.textContent).toContain('Not configured'); TestBed.resetTestingModule(); const second = await setup(platform(0)); expect(second.fixture.nativeElement.textContent).toContain('0%'); });
+  it('searches with the existing provider ID then loads, sets, and removes an override', async () => { const { component, api, providers } = await setup(); component.searchForm.controls.query.setValue('Clinic'); component.searchProviders(); expect(providers.list).toHaveBeenCalledWith({ search: 'Clinic', page: 1, limit: 25 }); component.selectProvider(providerRow()); expect(api.getProvider).toHaveBeenCalledWith('provider-id'); component.providerForm.controls.percentage.setValue('7.5'); component.saveProviderOverride(); expect(api.setProvider).toHaveBeenCalledWith('provider-id', { commissionBasisPoints: 750 }); component.removeProviderOverride(); expect(api.clearProvider).toHaveBeenCalledWith('provider-id'); });
+  it('uses backend effective rate and source, including explicit zero override', async () => { const { fixture } = await setup(platform(1000), provider(0, 0, 'PROVIDER_OVERRIDE')); fixture.componentInstance.selectProvider(providerRow()); fixture.detectChanges(); expect(fixture.nativeElement.textContent).toContain('0% — provider override'); });
+  it.each(['-1','100.01'])('rejects out-of-range platform percentage %s', async value => { const { component, api } = await setup(); component.platformForm.controls.percentage.setValue(value); component.savePlatform(); expect(api.setPlatform).not.toHaveBeenCalled(); expect(component.platformInputError()).toBe(true); });
+});
+function platform(bps: number | null) { return { configured: bps !== null, commissionBasisPoints: bps, commissionPercentage: bps === null ? null : String(bps / 100), updatedAt: null }; }
+function provider(override: number | null, effective: number | null, source: 'PLATFORM_DEFAULT'|'PROVIDER_OVERRIDE'|null) { return { providerReference: 'SCPR-TEST', platformDefaultBasisPoints: 1000, providerOverrideBasisPoints: override, configured: effective !== null, effectiveBasisPoints: effective, source }; }
+function providerRow() { return { id:'provider-id',displayName:'Clinic',email:'clinic@example.test',phone:null,professionalReference:null,status:'ACTIVE',providerType:'CLINIC',countryCode:'NG',stateOrRegion:'Lagos',city:'Ikeja',onboardingStatus:'APPROVED',submittedAt:null,reviewedAt:null,reviewNote:null,linkedUser:null,createdAt:'',updatedAt:'' } as const; }
