@@ -26,4 +26,16 @@ describe('ClinicalRecordsApiService', () => {
     api.getProviderAttachmentAccess('SC-CLR-1', 'SC-CLA-1').subscribe(); http.expectOne('/api/v1/provider/clinical-records/SC-CLR-1/attachments/SC-CLA-1/access').flush({ url: 'https://example.test', expiresAt: '2026-08-29T11:00:00Z' });
     api.getPatientAttachmentAccess('SC-CLR-1', 'SC-CLA-1').subscribe(); http.expectOne('/api/v1/me/clinical-records/SC-CLR-1/attachments/SC-CLA-1/access').flush({ url: 'https://example.test', expiresAt: '2026-08-29T11:00:00Z' });
   });
+  it('maps patient access grants, audit and provider shared records using public references', () => {
+    api.searchAccessProviders('  prime  ', 2, 10).subscribe(); const directory = http.expectOne(r => r.url === '/api/v1/me/clinical-record-access-providers'); expect(directory.request.params.get('q')).toBe('prime'); expect(directory.request.params.get('page')).toBe('2'); expect(directory.request.params.get('limit')).toBe('10'); directory.flush({ items: [] });
+    const body = { providerReference: 'SCPR-ABC', scope: 'SINGLE_RECORD' as const, clinicalRecordReference: 'SC-CLR-1' };
+    api.createAccessGrant(body).subscribe(); const create = http.expectOne('/api/v1/me/clinical-record-access-grants'); expect(create.request.method).toBe('POST'); expect(create.request.body).toEqual(body); create.flush({});
+    api.listAccessGrants(2, 10).subscribe(); const grants = http.expectOne(r => r.url === '/api/v1/me/clinical-record-access-grants'); expect(grants.request.params.get('page')).toBe('2'); grants.flush({ items: [] });
+    api.getAccessGrant('SC-CRG-1').subscribe(); http.expectOne('/api/v1/me/clinical-record-access-grants/SC-CRG-1').flush({});
+    api.revokeAccessGrant('SC-CRG-1').subscribe(); const revoke = http.expectOne('/api/v1/me/clinical-record-access-grants/SC-CRG-1/revoke'); expect(revoke.request.method).toBe('POST'); revoke.flush({});
+    api.listAccessAudit().subscribe(); http.expectOne(r => r.url === '/api/v1/me/clinical-record-access-audit').flush({ items: [] });
+    api.listShared().subscribe(); http.expectOne(r => r.url === '/api/v1/provider/shared-clinical-records').flush({ items: [] });
+    api.getShared('SC-CLR-1').subscribe(); http.expectOne('/api/v1/provider/shared-clinical-records/SC-CLR-1').flush({});
+    api.getSharedAttachmentAccess('SC-CLR-1', 'SC-CLA-1').subscribe(); http.expectOne('/api/v1/provider/shared-clinical-records/SC-CLR-1/attachments/SC-CLA-1/access').flush({ url: 'https://example.test', expiresAt: '2026-08-29T11:00:00Z' });
+  });
 });

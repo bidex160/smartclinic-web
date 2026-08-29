@@ -18,9 +18,7 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
         Health Records
       </h1>
 
-      <p class="mt-2 text-slate-600">
-        Review finalized clinical records shared through your General Care appointments.
-      </p>
+      <div class="mt-2 flex flex-wrap items-center justify-between gap-4"><p class="text-slate-600">Review finalized clinical records shared through your General Care appointments.</p><a routerLink="/me/health-records/sharing" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Manage sharing</a></div>
 
       @if (loading()) {
         <p
