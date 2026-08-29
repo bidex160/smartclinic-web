@@ -23,4 +23,4 @@ describe('AdminCareServicesApiService', () => {
   });
 });
 
-function definition() { return { id: 'definition-id', code: 'GENERAL_CONSULTATION', name: 'General Consultation', description: 'General consultation', isActive: true, createdAt: '2026-08-28T00:00:00Z', updatedAt: '2026-08-28T00:00:00Z' }; }
+function definition() { return { id: 'definition-id', code: 'GENERAL_CONSULTATION', name: 'General Consultation', description: 'General consultation', clinicalRecordType: null, isActive: true, createdAt: '2026-08-28T00:00:00Z', updatedAt: '2026-08-28T00:00:00Z' }; }

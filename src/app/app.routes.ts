@@ -142,6 +142,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'health-records',
+        title: 'Health Records | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/health-records-page.component').then(c => c.HealthRecordsPageComponent),
+      },
+      {
+        path: 'health-records/:reference',
+        title: 'Clinical Record | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/health-record-detail-page.component').then(c => c.HealthRecordDetailPageComponent),
+      },
+      {
         path: 'care',
         title: 'My Care | SmartClinic',
         canActivate: [authenticatedUserGuard],

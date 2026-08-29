@@ -7,7 +7,7 @@ import { ProviderCareServicesPageComponent } from './provider-care-services-page
 describe('ProviderCareServicesPageComponent', () => {
   const definition = {
     id: 'definition-id', code: 'GENERAL', name: 'API General Care',
-    description: 'From API', isActive: true,
+    description: 'From API', isActive: true, clinicalRecordType: 'CONSULTATION' as const,
   };
 
   async function setup(existing: readonly unknown[] = []) {

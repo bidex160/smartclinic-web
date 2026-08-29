@@ -82,6 +82,7 @@ export class PatientLayoutComponent {
     { label: 'My Health Checks', route: '/me/health-checks', exact: true },
     { label: 'Book Health Check', route: '/me/book', exact: true },
     { label: 'My Care', route: '/me/care', exact: false },
+    { label: 'Health Records', route: '/me/health-records', exact: false },
     { label: 'FastTrack', route: '/me/fasttrack', exact: false },
     { label: 'My Impact', route: '/me/impact', exact: true },
     { label: 'Referrals & Rewards', route: '/me/referrals', exact: true },

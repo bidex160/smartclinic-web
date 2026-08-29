@@ -1,4 +1,5 @@
 import { PublicBookingFundingAttemptStatus } from './public-booking.model';
+import { ClinicalRecordType } from './clinical-record.model';
 
 export type CareDeliveryMode = 'IN_PERSON' | 'VIRTUAL' | 'HOME_VISIT';
 
@@ -15,6 +16,7 @@ export interface ProviderCareServiceDefinition {
   readonly name: string;
   readonly description: string | null;
   readonly isActive: boolean;
+  readonly clinicalRecordType: ClinicalRecordType | null;
 }
 export interface ProviderCareServiceOffering {
   readonly id: string;

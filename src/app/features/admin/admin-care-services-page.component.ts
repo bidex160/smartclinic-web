@@ -7,6 +7,7 @@ import {
   CreateAdminCareServiceDefinition,
 } from '../../core/models/admin-care-service-definition.model';
 import { AdminCareServicesApiService } from '../../core/services/admin-care-services-api.service';
+import { ClinicalRecordType } from '../../core/models/clinical-record.model';
 
 const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,79}$/;
 
@@ -39,11 +40,12 @@ const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,79}$/;
       } @else {
         <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
           <table class="w-full min-w-[720px] text-left">
-            <thead class="bg-slate-50"><tr><th class="p-4">Service</th><th class="p-4">Code</th><th class="p-4">Description</th><th class="p-4">Status</th><th class="p-4">Actions</th></tr></thead>
+            <thead class="bg-slate-50"><tr><th class="p-4">Service</th><th class="p-4">Code</th><th class="p-4">Clinical record</th><th class="p-4">Description</th><th class="p-4">Status</th><th class="p-4">Actions</th></tr></thead>
             <tbody>@for (definition of definitions(); track definition.id) {
               <tr class="border-t align-top">
                 <td class="p-4 font-bold">{{ definition.name }}</td>
                 <td class="p-4 font-mono text-sm">{{ definition.code }}</td>
+                <td class="p-4">{{ clinicalRecordTypeLabel(definition.clinicalRecordType) }}</td>
                 <td class="max-w-md p-4 text-slate-600">{{ definition.description || '—' }}</td>
                 <td class="p-4"><span class="rounded-full px-3 py-1 text-sm font-bold" [class.bg-green-100]="definition.isActive" [class.text-green-900]="definition.isActive" [class.bg-slate-200]="!definition.isActive">{{ definition.isActive ? 'Active' : 'Inactive' }}</span></td>
                 <td class="p-4"><div class="flex flex-wrap gap-3"><button type="button" (click)="openEdit(definition)" class="font-bold text-brand-700 underline">Edit</button><button type="button" (click)="setActive(definition, !definition.isActive)" [disabled]="mutatingId() === definition.id" class="font-bold text-brand-700 underline disabled:opacity-50">{{ definition.isActive ? 'Deactivate' : 'Activate' }}</button></div></td>
@@ -62,6 +64,7 @@ const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]{1,79}$/;
               <label class="font-semibold">Code<input formControlName="code" maxlength="80" placeholder="GENERAL_CONSULTATION" class="mt-2 block w-full rounded-xl border p-3 font-mono uppercase" aria-describedby="code-help code-error" /><span id="code-help" class="mt-1 block text-sm font-normal text-slate-500">Uppercase letters, numbers, and underscores. This identifier is required by the backend.</span>@if (form.controls.code.touched && form.controls.code.invalid) { <span id="code-error" class="mt-1 block text-sm font-normal text-red-700">Enter 2–80 characters beginning with a letter.</span> }</label>
               <label class="font-semibold">Name<input formControlName="name" maxlength="160" placeholder="General Consultation" class="mt-2 block w-full rounded-xl border p-3" />@if (form.controls.name.touched && form.controls.name.invalid) { <span class="mt-1 block text-sm font-normal text-red-700">Name is required and must be no more than 160 characters.</span> }</label>
               <label class="font-semibold">Description <span class="font-normal text-slate-500">(optional)</span><textarea formControlName="description" maxlength="4000" rows="5" placeholder="General consultation with a healthcare provider" class="mt-2 block w-full rounded-xl border p-3"></textarea></label>
+              <label class="font-semibold">Clinical record type<select formControlName="clinicalRecordType" class="mt-2 block min-h-12 w-full rounded-xl border p-3"><option value="">No required clinical record</option>@for (option of clinicalRecordTypes; track option.value) { <option [value]="option.value">{{ option.label }}</option> }</select><span class="mt-1 block text-sm font-normal text-slate-500">Appointments for this service can only be completed after the configured record is finalized.</span></label>
               @if (mutationError()) { <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-900">{{ mutationError() }}</p> }
               <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" (click)="closeModal()" [disabled]="saving()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="saving()" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-60">{{ saving() ? 'Saving…' : editing() ? 'Save changes' : 'Create Care Service' }}</button></div>
             </form>
@@ -88,7 +91,14 @@ export class AdminCareServicesPageComponent {
     code: ['', [Validators.required, Validators.pattern(CODE_PATTERN)]],
     name: ['', [Validators.required, Validators.pattern(/.*\S.*/), Validators.maxLength(160)]],
     description: ['', Validators.maxLength(4000)],
+    clinicalRecordType: [''],
   });
+  readonly clinicalRecordTypes: readonly { value: ClinicalRecordType; label: string }[] = [
+    { value: 'CONSULTATION', label: 'Consultation' }, { value: 'LAB_RESULT', label: 'Lab result' },
+    { value: 'IMAGING_RESULT', label: 'Imaging result' }, { value: 'PROCEDURE', label: 'Procedure' },
+    { value: 'PHARMACY', label: 'Pharmacy' }, { value: 'FOLLOW_UP', label: 'Follow-up' },
+    { value: 'OTHER', label: 'Other' },
+  ];
 
   constructor() { this.load(); }
 
@@ -101,13 +111,13 @@ export class AdminCareServicesPageComponent {
   }
 
   openCreate(): void {
-    this.editing.set(null); this.form.reset({ code: '', name: '', description: '' });
+    this.editing.set(null); this.form.reset({ code: '', name: '', description: '', clinicalRecordType: '' });
     this.mutationError.set(null); this.feedback.set(null); this.actionError.set(null); this.modalOpen.set(true);
   }
 
   openEdit(definition: AdminCareServiceDefinition): void {
     this.editing.set(definition);
-    this.form.reset({ code: definition.code, name: definition.name, description: definition.description ?? '' });
+    this.form.reset({ code: definition.code, name: definition.name, description: definition.description ?? '', clinicalRecordType: definition.clinicalRecordType ?? '' });
     this.mutationError.set(null); this.feedback.set(null); this.actionError.set(null); this.modalOpen.set(true);
   }
 
@@ -119,6 +129,7 @@ export class AdminCareServicesPageComponent {
     const request: CreateAdminCareServiceDefinition = {
       code: value.code.trim().toUpperCase(), name: value.name.trim(),
       description: value.description.trim() || null,
+      clinicalRecordType: (value.clinicalRecordType || null) as ClinicalRecordType | null,
     };
     this.saving.set(true); this.mutationError.set(null);
     const operation = this.editing() ? this.api.update(this.editing()!.id, request) : this.api.create(request);
@@ -141,5 +152,10 @@ export class AdminCareServicesPageComponent {
     const message = error.error?.message;
     if ((error.status === 400 || error.status === 409) && typeof message === 'string') return message;
     return 'We could not save this Care Service. Review the details and try again.';
+  }
+
+  clinicalRecordTypeLabel(value: ClinicalRecordType | null): string {
+    if (!value) return 'No requirement';
+    return this.clinicalRecordTypes.find(option => option.value === value)?.label ?? value;
   }
 }
