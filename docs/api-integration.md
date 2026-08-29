@@ -287,3 +287,5 @@ The current provider Health Check encounter DTO does not return a visit-address 
 ## General Care clinical records
 
 Provider-owned General Care appointments use `/provider/care-appointments/:reference/clinical-record` for draft creation, read, update, and explicit finalization. Patient Health Records use `/me/clinical-records` and expose only finalized records owned by the authenticated patient. Care Service definitions configure the nullable `clinicalRecordType`; appointment completion remains backend-authoritative and may require a matching finalized record.
+
+Clinical Record attachments use authenticated provider upload/delete/access routes and a patient access-only route. Record reads contain metadata only; file access URLs are requested on demand, are short-lived, and are never constructed or persisted by the frontend.

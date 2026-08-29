@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { API_CONFIG } from '../config/api-config.token';
 import {
   ClinicalRecord,
+  ClinicalRecordAttachment,
+  ClinicalRecordAttachmentAccess,
   ClinicalRecordPage,
   CreateClinicalRecordRequest,
   UpdateClinicalRecordRequest,
@@ -29,6 +31,30 @@ export class ClinicalRecordsApiService {
     return this.http.post<ClinicalRecord>(`${this.providerEndpoint(appointmentReference)}/finalize`, null);
   }
 
+  uploadAttachment(recordReference: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ClinicalRecordAttachment>(this.providerAttachments(recordReference), formData);
+  }
+
+  deleteAttachment(recordReference: string, attachmentReference: string) {
+    return this.http.delete<{ readonly deleted: true }>(
+      `${this.providerAttachments(recordReference)}/${encodeURIComponent(attachmentReference)}`,
+    );
+  }
+
+  getProviderAttachmentAccess(recordReference: string, attachmentReference: string) {
+    return this.http.get<ClinicalRecordAttachmentAccess>(
+      `${this.providerAttachments(recordReference)}/${encodeURIComponent(attachmentReference)}/access`,
+    );
+  }
+
+  getPatientAttachmentAccess(recordReference: string, attachmentReference: string) {
+    return this.http.get<ClinicalRecordAttachmentAccess>(
+      `${this.base}/me/clinical-records/${encodeURIComponent(recordReference)}/attachments/${encodeURIComponent(attachmentReference)}/access`,
+    );
+  }
+
   listMine(page = 1, limit = 20) {
     return this.http.get<ClinicalRecordPage>(`${this.base}/me/clinical-records`, {
       params: new HttpParams().set('page', page).set('limit', limit),
@@ -43,5 +69,9 @@ export class ClinicalRecordsApiService {
 
   private providerEndpoint(reference: string) {
     return `${this.base}/provider/care-appointments/${encodeURIComponent(reference)}/clinical-record`;
+  }
+
+  private providerAttachments(recordReference: string) {
+    return `${this.base}/provider/clinical-records/${encodeURIComponent(recordReference)}/attachments`;
   }
 }

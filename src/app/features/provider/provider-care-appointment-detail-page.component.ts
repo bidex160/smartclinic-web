@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { CareAppointment } from '../../core/models/find-care.model';
-import { ClinicalRecord, ClinicalRecordType, UpdateClinicalRecordRequest } from '../../core/models/clinical-record.model';
+import { ClinicalRecord, ClinicalRecordAttachment, ClinicalRecordType, UpdateClinicalRecordRequest } from '../../core/models/clinical-record.model';
 import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
 import { ClinicalRecordsApiService } from '../../core/services/clinical-records-api.service';
@@ -143,6 +143,18 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
             @if (record.status === 'DRAFT') { <div class="mt-5 flex flex-wrap gap-3"><button type="button" (click)="openRecordForm()" class="rounded-xl border px-5 py-3 font-bold">Record consultation</button><button type="button" (click)="finalizeOpen.set(true)" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Finalize record</button></div> }
             </div>
           }
+          @if (clinicalRecord(); as record) {
+            <div class="mt-6 border-t pt-6"><h3 class="text-lg font-bold">Supporting files</h3>
+              @if (!record.attachments.length) { <p class="mt-2 text-slate-600">No supporting files attached.</p> }
+              @else { <div class="mt-4 grid gap-3 sm:grid-cols-2">@for (attachment of record.attachments; track attachment.reference) {
+                <article class="min-w-0 rounded-xl border p-4"><div class="flex items-start gap-3"><span aria-hidden="true" class="grid size-10 shrink-0 place-items-center rounded-lg bg-slate-100 font-bold">{{ attachment.resourceType === 'IMAGE' ? 'IMG' : 'PDF' }}</span><div class="min-w-0"><p class="break-words font-bold">{{ attachment.originalName }}</p><p class="mt-1 text-sm text-slate-500">{{ formatFileSize(attachment.sizeBytes) }} · {{ formatAttachmentDate(attachment.createdAt) }}</p></div></div>
+                <div class="mt-4 flex flex-wrap gap-3"><button type="button" (click)="viewProviderAttachment(attachment)" [disabled]="attachmentAccessPending() === attachment.reference" class="font-bold text-brand-700 underline">{{ attachmentAccessPending() === attachment.reference ? 'Opening…' : attachment.resourceType === 'IMAGE' ? 'Preview' : 'Open' }}</button>@if (record.status === 'DRAFT') { <button type="button" (click)="attachmentToDelete.set(attachment)" class="font-bold text-red-700 underline">Delete</button> }</div>
+                </article>
+              }</div> }
+              @if (record.status === 'DRAFT') { <div class="mt-5 rounded-xl bg-slate-50 p-4"><label for="clinical-attachment" class="font-bold">Attach supporting clinical documents or images</label><p id="clinical-attachment-help" class="mt-1 text-sm text-slate-600">PDF, JPG, PNG or WEBP. Maximum 15 MB per file. Up to 5 files.</p><input id="clinical-attachment" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" (change)="selectAttachment($event)" aria-describedby="clinical-attachment-help" class="mt-3 block w-full text-sm" />@if (selectedFile(); as file) { <div class="mt-3 flex flex-wrap items-center gap-3"><span class="break-all text-sm">{{ file.name }}</span><button type="button" (click)="uploadSelectedAttachment()" [disabled]="attachmentUploading()" class="rounded-lg bg-brand-700 px-4 py-2 font-bold text-white disabled:opacity-50">{{ attachmentUploading() ? 'Uploading…' : 'Upload file' }}</button></div> }</div> }
+              @if (attachmentError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ attachmentError() }}</p> }
+            </div>
+          }
         </section>
       }
       <div class="mt-6 flex flex-wrap gap-3">
@@ -191,6 +203,8 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" (click)="recordFormOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="recordPending() || recordForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ recordPending() ? 'Saving…' : 'Save draft' }}</button></div></form></section></div>
     }
     @if (finalizeOpen()) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="alertdialog" aria-modal="true" aria-labelledby="finalize-record-title" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 id="finalize-record-title" class="text-xl font-bold">Finalize clinical record?</h2><p class="mt-2 text-slate-600">Once finalized, this clinical record can no longer be edited.</p>@if (recordMutationError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ recordMutationError() }}</p> }<div class="mt-5 flex justify-end gap-3"><button type="button" (click)="finalizeOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Keep draft</button><button type="button" (click)="finalizeClinicalRecord()" [disabled]="recordPending()" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">{{ recordPending() ? 'Finalizing…' : 'Finalize record' }}</button></div></section></div> }
+    @if (attachmentToDelete(); as attachment) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="alertdialog" aria-modal="true" aria-labelledby="delete-attachment-title" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 id="delete-attachment-title" class="text-xl font-bold">Delete supporting file?</h2><p class="mt-2 break-words text-slate-600">Remove {{ attachment.originalName }} from this draft clinical record?</p><div class="mt-5 flex justify-end gap-3"><button type="button" (click)="attachmentToDelete.set(null)" [disabled]="attachmentDeleting()" class="rounded-xl border px-5 py-3 font-bold">Keep file</button><button type="button" (click)="deleteAttachment(attachment)" [disabled]="attachmentDeleting()" class="rounded-xl bg-red-700 px-5 py-3 font-bold text-white">{{ attachmentDeleting() ? 'Deleting…' : 'Delete file' }}</button></div></section></div> }
+    @if (previewUrl(); as url) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"><section role="dialog" aria-modal="true" aria-labelledby="attachment-preview-title" class="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"><div class="flex items-start justify-between gap-3"><h2 id="attachment-preview-title" class="break-words text-xl font-bold">{{ previewName() }}</h2><button type="button" (click)="closePreview()" class="rounded-lg border px-4 py-2 font-bold">Close</button></div><img [src]="url" [alt]="previewName()" class="mt-4 max-h-[75vh] w-full object-contain" /></section></div> }
     @if (meetingOpen()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
@@ -306,6 +320,14 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly finalizeOpen = signal(false);
   readonly recordPending = signal(false);
   readonly recordMutationError = signal<string | null>(null);
+  readonly selectedFile = signal<File | null>(null);
+  readonly attachmentUploading = signal(false);
+  readonly attachmentDeleting = signal(false);
+  readonly attachmentError = signal<string | null>(null);
+  readonly attachmentToDelete = signal<ClinicalRecordAttachment | null>(null);
+  readonly attachmentAccessPending = signal<string | null>(null);
+  readonly previewUrl = signal<string | null>(null);
+  readonly previewName = signal('');
   readonly deliveryModeLabel = careDeliveryModeLabel;
   readonly meetingForm = this.fb.nonNullable.group({ meetingUrl: ['', Validators.required] });
   readonly reasonForm = this.fb.nonNullable.group({
@@ -369,6 +391,41 @@ export class ProviderCareAppointmentDetailPageComponent {
     if (this.recordPending()) return; this.recordPending.set(true); this.recordMutationError.set(null);
     this.clinicalRecordsApi.finalizeForProviderAppointment(this.reference).pipe(finalize(() => this.recordPending.set(false))).subscribe({ next: () => { this.finalizeOpen.set(false); this.feedback.set('Clinical record finalized.'); this.loadClinicalRecord(); }, error: error => this.recordMutationError.set(this.safeRecordError(error)) });
   }
+  selectAttachment(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.selectedFile.set(null); this.attachmentError.set(null);
+    if (!file) return;
+    if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { this.attachmentError.set('Choose a PDF, JPG, PNG or WEBP file.'); return; }
+    if (file.size > 15 * 1024 * 1024) { this.attachmentError.set('The selected file must not exceed 15 MB.'); return; }
+    if ((this.clinicalRecord()?.attachments.length ?? 0) >= 5) { this.attachmentError.set('This clinical record already has the maximum of 5 attachments.'); return; }
+    this.selectedFile.set(file);
+  }
+  uploadSelectedAttachment(): void {
+    const record = this.clinicalRecord(); const file = this.selectedFile();
+    if (!record || !file || this.attachmentUploading()) return;
+    this.attachmentUploading.set(true); this.attachmentError.set(null);
+    this.clinicalRecordsApi.uploadAttachment(record.reference, file).pipe(finalize(() => this.attachmentUploading.set(false))).subscribe({ next: () => { this.selectedFile.set(null); this.feedback.set('Supporting file uploaded.'); this.loadClinicalRecord(); }, error: () => this.attachmentError.set('We could not upload this file. Review it and try again.') });
+  }
+  deleteAttachment(attachment: ClinicalRecordAttachment): void {
+    const record = this.clinicalRecord(); if (!record || this.attachmentDeleting()) return;
+    this.attachmentDeleting.set(true); this.attachmentError.set(null);
+    this.clinicalRecordsApi.deleteAttachment(record.reference, attachment.reference).pipe(finalize(() => this.attachmentDeleting.set(false))).subscribe({ next: () => { this.attachmentToDelete.set(null); this.feedback.set('Supporting file deleted.'); this.loadClinicalRecord(); }, error: () => { this.attachmentToDelete.set(null); this.attachmentError.set('We could not delete this file. Refresh and try again.'); } });
+  }
+  viewProviderAttachment(attachment: ClinicalRecordAttachment): void {
+    const record = this.clinicalRecord(); if (!record || this.attachmentAccessPending()) return;
+    this.attachmentAccessPending.set(attachment.reference); this.attachmentError.set(null);
+    this.clinicalRecordsApi.getProviderAttachmentAccess(record.reference, attachment.reference).pipe(finalize(() => this.attachmentAccessPending.set(null))).subscribe({ next: access => this.openAuthorizedAttachment(attachment, access.url), error: () => this.attachmentError.set('Unable to open this file. Please try again.') });
+  }
+  private openAuthorizedAttachment(attachment: ClinicalRecordAttachment, value: string): void {
+    let url: URL; try { url = new URL(value); } catch { this.attachmentError.set('Unable to open this file. Please try again.'); return; }
+    if (url.protocol !== 'https:') { this.attachmentError.set('Unable to open this file. Please try again.'); return; }
+    if (attachment.resourceType === 'IMAGE') { this.previewUrl.set(url.toString()); this.previewName.set(attachment.originalName); return; }
+    window.open(url.toString(), '_blank', 'noopener,noreferrer');
+  }
+  closePreview(): void { this.previewUrl.set(null); this.previewName.set(''); }
+  formatFileSize(bytes: number): string { if (bytes < 1024) return `${bytes} bytes`; if (bytes < 1024 * 1024) return `${this.compact(bytes / 1024)} KB`; return `${this.compact(bytes / (1024 * 1024))} MB`; }
+  formatAttachmentDate(value: string): string { return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(value)); }
+  private compact(value: number): string { return Number.isInteger(value) ? String(value) : value.toFixed(1); }
   completionBlockMessage(): string | null {
     const required = this.clinicalRecordType(); if (!required) return null; const record = this.clinicalRecord();
     if (!record) return 'Complete the required clinical record before completing this appointment.';

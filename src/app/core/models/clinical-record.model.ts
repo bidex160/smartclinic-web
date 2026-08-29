@@ -9,6 +9,20 @@ export type ClinicalRecordType =
 
 export type ClinicalRecordStatus = 'DRAFT' | 'FINALIZED';
 
+export interface ClinicalRecordAttachment {
+  readonly reference: string;
+  readonly originalName: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly resourceType: 'IMAGE' | 'DOCUMENT';
+  readonly createdAt: string;
+}
+
+export interface ClinicalRecordAttachmentAccess {
+  readonly url: string;
+  readonly expiresAt: string;
+}
+
 export interface ClinicalConsultationDetail {
   readonly presentingComplaint: string | null;
   readonly historyOfPresentingComplaint: string | null;
@@ -36,6 +50,7 @@ export interface ClinicalRecord {
   readonly careAppointmentReference: string | null;
   readonly service: { readonly code: string; readonly name: string } | null;
   readonly consultation: ClinicalConsultationDetail | null;
+  readonly attachments: readonly ClinicalRecordAttachment[];
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -66,4 +81,3 @@ export interface CreateClinicalRecordRequest {
 }
 
 export type UpdateClinicalRecordRequest = Partial<CreateClinicalRecordRequest>;
-
