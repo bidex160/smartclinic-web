@@ -510,6 +510,8 @@ export const routes: Routes = [
             (c) => c.ProviderCareRequestsPageComponent,
           ),
       },
+      { path: 'earnings', title: 'Provider Earnings | SmartClinic', canActivate: [providerGuard], data: { earningsScope: 'provider' }, loadComponent: () => import('./features/provider/earnings-page.component').then(c => c.EarningsPageComponent) },
+      { path: 'earnings/:reference', title: 'Provider Earning | SmartClinic', canActivate: [providerGuard], data: { earningsScope: 'provider' }, loadComponent: () => import('./features/provider/earning-detail-page.component').then(c => c.EarningDetailPageComponent) },
       {
         path: 'care-requests/:reference/chat',
         title: 'Provider care chat | SmartClinic',
@@ -650,6 +652,8 @@ export const routes: Routes = [
             (component) => component.AdminCommissionSettingsPageComponent,
           ),
       },
+      { path: 'provider-earnings', title: 'Revenue | SmartClinic', canActivate: [adminPricingGuard], data: { earningsScope: 'admin' }, loadComponent: () => import('./features/provider/earnings-page.component').then(c => c.EarningsPageComponent) },
+      { path: 'provider-earnings/:reference', title: 'Revenue Detail | SmartClinic', canActivate: [adminPricingGuard], data: { earningsScope: 'admin' }, loadComponent: () => import('./features/provider/earning-detail-page.component').then(c => c.EarningDetailPageComponent) },
       {
         path: 'reward-withdrawals/:reference',
         title: 'Reward withdrawal detail | SmartClinic',
