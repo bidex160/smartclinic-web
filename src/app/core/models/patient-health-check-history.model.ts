@@ -49,6 +49,7 @@ export interface PatientPortalProfile {
     readonly givenName: string;
     readonly familyName: string;
     readonly phone: string | null;
+    readonly dateOfBirth: string | null;
   };
 }
 
