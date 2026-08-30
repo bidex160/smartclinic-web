@@ -51,6 +51,10 @@ export interface ClinicalOrder {
   readonly prescription: PrescriptionDetail | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly fulfillment?: {
+    readonly reference: string;
+    readonly status: ClinicalOrderFulfillmentStatus;
+  } | null;
 }
 export interface ClinicalOrderPage {
   readonly items: readonly ClinicalOrder[];
@@ -112,6 +116,8 @@ export interface ProviderOrderFulfillment {
   readonly cancelledAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly funding: FulfillmentFundingSummary | null;
+  readonly dispensing: FulfillmentDispensingSummary | null;
 }
 export interface ProviderOrderFulfillmentPage {
   readonly items: readonly ProviderOrderFulfillment[];
@@ -181,19 +187,21 @@ export interface PatientOrderFulfillment {
     readonly serviceUnitName: string;
   };
   readonly quote: PharmacyQuote | null;
-  readonly funding: {
-    readonly status: PharmacyFundingStatus;
-    readonly amountMinor: number;
-    readonly currency: string;
-    readonly satisfied: boolean;
-  } | null;
-  readonly dispensing: {
-    readonly status: PharmacyDispensingStatus;
-    readonly fulfillmentMethod: 'PICKUP';
-    readonly startedAt: string | null;
-    readonly readyAt: string | null;
-    readonly completedAt: string | null;
-  } | null;
+  readonly funding: FulfillmentFundingSummary | null;
+  readonly dispensing: FulfillmentDispensingSummary | null;
+}
+export interface FulfillmentFundingSummary {
+  readonly status: PharmacyFundingStatus;
+  readonly amountMinor: number;
+  readonly currency: string;
+  readonly satisfied: boolean;
+}
+export interface FulfillmentDispensingSummary {
+  readonly status: PharmacyDispensingStatus;
+  readonly fulfillmentMethod: 'PICKUP';
+  readonly startedAt: string | null;
+  readonly readyAt: string | null;
+  readonly completedAt: string | null;
 }
 export interface PharmacyFundingResponse {
   readonly quoteReference: string;

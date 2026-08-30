@@ -227,7 +227,15 @@ export class PrescriptionDetailPageComponent {
       .subscribe({
         next: (o) => {
           this.order.set(o);
-          this.search();
+          if (o.fulfillment?.reference) {
+            this.api.getPatientFulfillment(o.fulfillment.reference).subscribe({
+              next: (f) => this.fulfillment.set(f),
+              error: () => this.error.set('Pharmacy fulfillment state could not be loaded.'),
+            });
+          } else {
+            this.fulfillment.set(null);
+            this.search();
+          }
         },
         error: () => this.error.set('This prescription is unavailable.'),
       });

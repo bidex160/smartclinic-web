@@ -3,11 +3,18 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import {
-  PatientOrderFulfillment,
+  FulfillmentDispensingSummary,
+  FulfillmentFundingSummary,
   PharmacyQuote,
   ProviderOrderFulfillment,
   UpsertPharmacyQuoteRequest,
 } from '../../core/models/pharmacy-fulfillment.model';
+
+type OperationalState = {
+  readonly status: ProviderOrderFulfillment['status'];
+  readonly funding: FulfillmentFundingSummary | null;
+  readonly dispensing: FulfillmentDispensingSummary | null;
+};
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
 @Component({
   selector: 'app-provider-pharmacy-order-detail-page',
@@ -235,7 +242,7 @@ export class ProviderPharmacyOrderDetailPageComponent {
   readonly fulfillment = signal<ProviderOrderFulfillment | null>(null);
   readonly quote = signal<PharmacyQuote | null>(null);
   readonly editingQuoteReference = signal<string | null>(null);
-  readonly patientState = signal<PatientOrderFulfillment | null>(null);
+  readonly patientState = signal<OperationalState | null>(null);
   readonly loading = signal(true);
   readonly pending = signal(false);
   readonly error = signal<string | null>(null);
@@ -258,10 +265,11 @@ export class ProviderPharmacyOrderDetailPageComponent {
         next: (x) => {
           this.fulfillment.set(x.f);
           this.quote.set(x.q[0] ?? null);
-          if (x.f.status === 'ACCEPTED')
-            this.api
-              .getPatientFulfillment(x.f.reference)
-              .subscribe((s) => this.patientState.set(s));
+          this.patientState.set({
+            status: x.f.status,
+            funding: x.f.funding,
+            dispensing: x.f.dispensing,
+          });
           this.buildRows(x.f);
         },
         error: () => this.error.set('This pharmacy order is unavailable.'),
