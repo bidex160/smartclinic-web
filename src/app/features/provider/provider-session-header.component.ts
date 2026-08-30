@@ -396,8 +396,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             Health Check Services & Locations
           </a>
 
-          <a
-            routerLink="/provider/care-services"
+            <a
+              routerLink="/provider/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
             class="
               flex min-h-11 items-center
@@ -650,6 +650,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             >
               My Offers
             </a>
+            <a routerLink="/provider/payout-accounts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Payout Accounts</a>
 
             <a
               routerLink="/provider/appointments"
@@ -844,8 +845,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             Health Check Services & Locations
           </a>
 
-          <a
-            routerLink="/provider/care-services"
+            <a
+              routerLink="/provider/care-services"
             routerLinkActive="bg-brand-100 text-brand-900"
             class="
               min-h-11 rounded-lg
@@ -857,7 +858,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             "
           >
             Care Services
-          </a>
+            </a>
+            <a routerLink="/provider/payout-accounts" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Payout Accounts</a>
 
           <a
             routerLink="/provider/profile"
