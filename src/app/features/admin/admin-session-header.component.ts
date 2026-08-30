@@ -161,6 +161,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 
           <p class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300">Commercial</p>
           <a routerLink="/admin/provider-earnings" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Revenue</a>
+          <a routerLink="/admin/provider-payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Payouts</a>
           <a routerLink="/admin/commission-settings" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Commission Settings</a>
 
           <!-- PROVIDERS -->
@@ -407,6 +408,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 
           <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Commercial</p>
           <a routerLink="/admin/provider-earnings" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Revenue</a>
+          <a routerLink="/admin/provider-payouts" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Payouts</a>
           <a routerLink="/admin/commission-settings" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Commission Settings</a>
 
           <p

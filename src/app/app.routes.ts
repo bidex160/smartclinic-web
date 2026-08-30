@@ -512,6 +512,8 @@ export const routes: Routes = [
       },
       { path: 'earnings', title: 'Provider Earnings | SmartClinic', canActivate: [providerGuard], data: { earningsScope: 'provider' }, loadComponent: () => import('./features/provider/earnings-page.component').then(c => c.EarningsPageComponent) },
       { path: 'earnings/:reference', title: 'Provider Earning | SmartClinic', canActivate: [providerGuard], data: { earningsScope: 'provider' }, loadComponent: () => import('./features/provider/earning-detail-page.component').then(c => c.EarningDetailPageComponent) },
+      { path: 'payouts', title: 'Provider Payouts | SmartClinic', canActivate: [providerGuard], data: { payoutScope: 'provider' }, loadComponent: () => import('./features/provider/payouts-page.component').then(c => c.PayoutsPageComponent) },
+      { path: 'payouts/:reference', title: 'Provider Payout | SmartClinic', canActivate: [providerGuard], data: { payoutScope: 'provider' }, loadComponent: () => import('./features/provider/payout-detail-page.component').then(c => c.PayoutDetailPageComponent) },
       {
         path: 'care-requests/:reference/chat',
         title: 'Provider care chat | SmartClinic',
@@ -654,6 +656,9 @@ export const routes: Routes = [
       },
       { path: 'provider-earnings', title: 'Revenue | SmartClinic', canActivate: [adminPricingGuard], data: { earningsScope: 'admin' }, loadComponent: () => import('./features/provider/earnings-page.component').then(c => c.EarningsPageComponent) },
       { path: 'provider-earnings/:reference', title: 'Revenue Detail | SmartClinic', canActivate: [adminPricingGuard], data: { earningsScope: 'admin' }, loadComponent: () => import('./features/provider/earning-detail-page.component').then(c => c.EarningDetailPageComponent) },
+      { path: 'provider-payouts', title: 'Provider Payouts | SmartClinic', canActivate: [adminPricingGuard], data: { payoutScope: 'admin' }, loadComponent: () => import('./features/provider/payouts-page.component').then(c => c.PayoutsPageComponent) },
+      { path: 'provider-payouts/new', title: 'Create Provider Payout | SmartClinic', canActivate: [adminPricingGuard], loadComponent: () => import('./features/admin/admin-payout-create-page.component').then(c => c.AdminPayoutCreatePageComponent) },
+      { path: 'provider-payouts/:reference', title: 'Provider Payout Detail | SmartClinic', canActivate: [adminPricingGuard], data: { payoutScope: 'admin' }, loadComponent: () => import('./features/provider/payout-detail-page.component').then(c => c.PayoutDetailPageComponent) },
       {
         path: 'reward-withdrawals/:reference',
         title: 'Reward withdrawal detail | SmartClinic',
