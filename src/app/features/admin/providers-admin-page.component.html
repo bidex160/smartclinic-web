@@ -90,6 +90,7 @@
         ><input
           id="provider-name"
           formControlName="displayName"
+          placeholder="e.g. University College Hospital"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
         @if (createForm.controls.displayName.touched && createForm.controls.displayName.invalid) {
@@ -103,6 +104,7 @@
           type="email"
           autocomplete="email"
           formControlName="email"
+          placeholder="e.g. referrals@uch.ng"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
         @if (createForm.controls.email.touched && createForm.controls.email.invalid) {
@@ -117,6 +119,7 @@
           type="tel"
           autocomplete="tel"
           formControlName="phone"
+          placeholder="e.g. +234 801 234 5678"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
       </div>
@@ -126,6 +129,7 @@
         ><input
           id="professional-reference"
           formControlName="professionalReference"
+          placeholder="e.g. MDCN/12345"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:ring-4 focus:ring-brand-200"
         />
       </div>

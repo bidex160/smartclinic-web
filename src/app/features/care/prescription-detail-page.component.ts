@@ -157,7 +157,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
           <form [formGroup]="searchForm" (ngSubmit)="search()" class="mt-4 flex gap-3">
             <input
               formControlName="q"
-              placeholder="Search pharmacy or unit"
+              placeholder="Search by pharmacy or service unit"
               class="min-h-12 flex-1 rounded-xl border px-3"
             /><button class="rounded-xl border px-5 font-bold">Search</button>
           </form>

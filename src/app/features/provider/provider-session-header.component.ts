@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
+import {
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
@@ -7,7 +15,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 
 @Component({
   selector: 'app-provider-session-header',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- =========================================================
@@ -15,7 +26,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
     ========================================================== -->
     <aside
       class="
-        fixed inset-y-0 left-0 z-40 hidden w-64 flex-col
+        fixed inset-y-0 left-0 z-40
+        hidden w-64 flex-col
         border-r border-brand-800
         bg-brand-950
         text-white
@@ -47,7 +59,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block text-lg font-bold text-white"> SmartClinic </span>
+            <span class="block text-lg font-bold text-white">
+              SmartClinic
+            </span>
 
             <span
               class="
@@ -64,7 +78,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </div>
 
       <!-- Navigation -->
-      <nav aria-label="Provider portal" class="flex-1 overflow-y-auto px-4 py-6">
+      <nav
+        aria-label="Provider portal"
+        class="flex-1 overflow-y-auto px-4 py-6"
+      >
         <div class="grid gap-1">
           <!-- Dashboard -->
           <a
@@ -88,7 +105,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             Dashboard
           </a>
 
-          <!-- WORK -->
+          <!-- =====================================================
+               WORK
+          ====================================================== -->
           @if (operational()) {
             <p
               class="
@@ -105,6 +124,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             <a
               routerLink="/provider/offers"
               routerLinkActive="!bg-brand-700 !text-white"
+              [routerLinkActiveOptions]="{ exact: true }"
               class="
                 flex min-h-11 items-center
                 rounded-xl
@@ -145,42 +165,131 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Care Requests</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-4
+                focus:ring-brand-700
+              "
             >
+              Care Requests
+            </a>
+
             <a
               routerLink="/provider/care-appointments"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Care Appointments</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-4
+                focus:ring-brand-700
+              "
             >
+              Care Appointments
+            </a>
+
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >FastTrack</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-4
+                focus:ring-brand-700
+              "
             >
+              FastTrack
+            </a>
+
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Shared Health Records</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-4
+                focus:ring-brand-700
+              "
             >
+              Shared Health Records
+            </a>
+
+            <!-- Exact match is important here.
+                 Otherwise /provider/patient-connections/configuration
+                 also activates this menu item. -->
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Patient Connections</a
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-4
+                focus:ring-brand-700
+              "
             >
+              Patient Connection Requests
+            </a>
+
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Pharmacy Orders</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-4
+                focus:ring-brand-700
+              "
             >
+              Pharmacy Orders
+            </a>
           }
 
-          <!-- SETUP -->
+          <!-- =====================================================
+               SETUP
+          ====================================================== -->
           <p
             class="
               mb-2 mt-7
@@ -213,18 +322,48 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Profile
           </a>
+
           <a
             routerLink="/provider/service-units"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-            >Service Units</a
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-4
+              focus:ring-brand-700
+            "
           >
+            Service Units
+          </a>
+
           <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-            >Patient Connections</a
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-4
+              focus:ring-brand-700
+            "
           >
+            Patient Connection Setup
+          </a>
 
           <a
             routerLink="/provider/profile"
@@ -246,30 +385,27 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Health Check Services & Locations
           </a>
+
           <a
             routerLink="/provider/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-            >Care Services</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-4
+              focus:ring-brand-700
+            "
           >
-          <a
-            routerLink="/provider/service-units"
-            routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Service Units</a
-          >
-          <a
-            routerLink="/provider/patient-connections/configuration"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Patient Connections</a
-          >
+            Care Services
+          </a>
 
-          <!--
-            If availability has its own fragment, use it here.
-
-            If it DOES NOT currently have an #availability section,
-            point this to fragment="configuration" until you add one.
-          -->
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -322,7 +458,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               {{ user.displayName }}
             </p>
 
-            <p class="mt-1 text-xs font-medium text-brand-300">Provider</p>
+            <p class="mt-1 text-xs font-medium text-brand-300">
+              Provider
+            </p>
           </div>
         }
 
@@ -331,7 +469,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           (click)="logout()"
           [disabled]="authState.loading()"
           class="
-            flex min-h-11 w-full items-center justify-center
+            flex min-h-11 w-full
+            items-center justify-center
             rounded-xl
             border border-brand-600
             px-4 py-2.5
@@ -395,7 +534,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block font-bold text-brand-900"> SmartClinic </span>
+            <span class="block font-bold text-brand-900">
+              SmartClinic
+            </span>
 
             <span
               class="
@@ -415,7 +556,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             <p class="max-w-32 truncate text-sm font-bold text-slate-900">
               {{ user.displayName }}
             </p>
-            <p class="text-xs text-slate-500">Provider</p>
+
+            <p class="text-xs text-slate-500">
+              Provider
+            </p>
           </div>
         }
       </div>
@@ -449,7 +593,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </summary>
 
       <div class="border-t border-slate-100 px-4 py-4">
-        <nav aria-label="Mobile provider portal" class="grid gap-1">
+        <nav
+          aria-label="Mobile provider portal"
+          class="grid gap-1"
+        >
           <a
             routerLink="/provider/dashboard"
             routerLinkActive="bg-brand-100 text-brand-900"
@@ -481,6 +628,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             <a
               routerLink="/provider/offers"
               routerLinkActive="bg-brand-100 text-brand-900"
+              [routerLinkActiveOptions]="{ exact: true }"
               class="
                 min-h-11 rounded-lg
                 px-3 py-3
@@ -507,44 +655,100 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             >
               Health Checks
             </a>
+
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="bg-brand-100 text-brand-900"
-              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-              >Care Requests</a
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Care Requests
+            </a>
+
             <a
               routerLink="/provider/care-appointments"
               routerLinkActive="bg-brand-100 text-brand-900"
-              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-              >Care Appointments</a
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Care Appointments
+            </a>
+
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="bg-brand-100 text-brand-900"
-              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-              >FastTrack</a
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              FastTrack
+            </a>
+
             <a
               routerLink="/provider/shared-health-records"
-              routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Shared Health Records</a
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Shared Health Records
+            </a>
+
             <a
               routerLink="/provider/patient-connections"
-              routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
-              >Patient Connections</a
+              routerLinkActive="bg-brand-100 text-brand-900"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Patient Requests
+            </a>
+
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="bg-brand-100 text-brand-900"
-              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-              >Pharmacy Orders</a
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Pharmacy Orders
+            </a>
           }
 
+          <!-- Setup -->
           <p
             class="
               mt-5 px-3
@@ -559,6 +763,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/provider/profile"
             fragment="profile"
+            routerLinkActive="bg-brand-100 text-brand-900"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -572,8 +777,41 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </a>
 
           <a
+            routerLink="/provider/service-units"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
+          >
+            Service Units
+          </a>
+
+          <a
+            routerLink="/provider/patient-connections/configuration"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
+          >
+            Patient Connection Setup
+          </a>
+
+          <a
             routerLink="/provider/profile"
             fragment="configuration"
+            routerLinkActive="bg-brand-100 text-brand-900"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -585,15 +823,26 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Health Check Services & Locations
           </a>
+
           <a
             routerLink="/provider/care-services"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Care Services</a
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Care Services
+          </a>
 
           <a
             routerLink="/provider/profile"
             fragment="availability"
+            routerLinkActive="bg-brand-100 text-brand-900"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -609,6 +858,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/provider/profile"
             fragment="service-areas"
+            routerLinkActive="bg-brand-100 text-brand-900"
             class="
               min-h-11 rounded-lg
               px-3 py-3

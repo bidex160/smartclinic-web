@@ -282,7 +282,7 @@ import { formatMinor } from './care-money';
               formControlName="reason"
               rows="4"
               maxlength="1000"
-              placeholder="Enter a reason for declining"
+              placeholder="Explain why this Care Request is being declined"
               class="mt-2 w-full rounded-xl border p-3"
             ></textarea>
             <div class="mt-5 flex justify-end gap-3">

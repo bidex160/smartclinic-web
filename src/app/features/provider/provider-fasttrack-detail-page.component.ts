@@ -163,7 +163,7 @@ import { UtilsService } from '../../core/services/utils.service';
               formControlName="reason"
               rows="4"
               maxlength="2000"
-              placeholder="Enter a reason for rejection"
+              placeholder="Explain why this FastTrack request is being rejected"
               class="mt-2 w-full rounded-xl border p-3"
             ></textarea>
             <div class="mt-5 flex justify-end gap-3">

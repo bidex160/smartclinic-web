@@ -127,6 +127,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
             <textarea
               formControlName="clinicalNote"
               maxlength="4000"
+              placeholder="Add relevant clinical context"
               class="mt-2 block w-full rounded-xl border p-3"
             ></textarea>
           </label>
@@ -141,6 +142,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
             <textarea
               formControlName="notes"
               maxlength="4000"
+              placeholder="Add notes for the patient or pharmacy"
               class="mt-2 block w-full rounded-xl border p-3"
             ></textarea>
           </label>
@@ -184,6 +186,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                         <textarea
                           [formControlName]="f.name"
                           [attr.maxlength]="f.max"
+                          [attr.placeholder]="f.placeholder"
                           rows="3"
                           class="mt-1 block w-full rounded-lg border px-3 py-2"
                         ></textarea>
@@ -192,6 +195,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                           type="text"
                           [formControlName]="f.name"
                           [attr.maxlength]="f.max"
+                          [attr.placeholder]="f.placeholder"
                           class="mt-1 min-h-11 w-full rounded-lg border px-3"
                         />
                       }
@@ -439,48 +443,56 @@ export class ProviderPrescriptionSectionComponent {
       label: 'Medication name',
       required: true,
       max: 200,
+      placeholder: 'e.g. Amoxicillin',
     },
     {
       name: 'strength',
       label: 'Strength',
       required: false,
       max: 120,
+      placeholder: 'e.g. 500 mg',
     },
     {
       name: 'dosage',
       label: 'Dosage',
       required: true,
       max: 200,
+      placeholder: 'e.g. 1 capsule',
     },
     {
       name: 'frequency',
       label: 'Frequency',
       required: true,
       max: 200,
+      placeholder: 'e.g. 3 times daily',
     },
     {
       name: 'duration',
       label: 'Duration',
       required: false,
       max: 120,
+      placeholder: 'e.g. 7 days',
     },
     {
       name: 'quantity',
       label: 'Quantity',
       required: false,
       max: 120,
+      placeholder: 'e.g. 21 capsules',
     },
     {
       name: 'route',
       label: 'Route',
       required: false,
       max: 120,
+      placeholder: 'e.g. Oral',
     },
     {
       name: 'instructions',
       label: 'Instructions',
       required: false,
       max: 2000,
+      placeholder: 'e.g. Take after meals',
     },
   ] as const;
 

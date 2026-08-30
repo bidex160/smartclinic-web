@@ -243,7 +243,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
               id="meeting-url"
               type="url"
               formControlName="meetingUrl"
-              placeholder="https://meet.google.com/..."
+              placeholder="e.g. https://meet.google.com/..."
               class="mt-2 min-h-12 w-full rounded-xl border px-3"
             />
             @if (meetingError()) {
@@ -287,7 +287,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
                 formControlName="reason"
                 rows="4"
                 maxlength="2000"
-                placeholder="Enter a reason"
+                placeholder="Explain why this appointment status is changing"
                 class="mt-2 w-full rounded-xl border p-3"
               ></textarea>
             }

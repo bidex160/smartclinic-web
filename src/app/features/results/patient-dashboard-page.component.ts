@@ -339,6 +339,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
                   id="profile-given-name"
                   formControlName="givenName"
                   maxlength="100"
+                  placeholder="e.g. Ada"
                   class="mt-1 block min-h-12 w-full rounded-xl border px-3"
                 />
                 @if (
@@ -352,6 +353,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
                   id="profile-family-name"
                   formControlName="familyName"
                   maxlength="100"
+                  placeholder="e.g. Okafor"
                   class="mt-1 block min-h-12 w-full rounded-xl border px-3"
                 />
                 @if (
@@ -377,6 +379,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
                   type="tel"
                   formControlName="phone"
                   maxlength="30"
+                  placeholder="e.g. +234 801 234 5678"
                   class="mt-1 block min-h-12 w-full rounded-xl border px-3"
                 />
                 @if (profileForm.controls.phone.touched && profileForm.controls.phone.invalid) {

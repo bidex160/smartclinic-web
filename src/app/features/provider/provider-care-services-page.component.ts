@@ -332,13 +332,13 @@ import { ProviderClinicalDocumentationComponent } from './provider-clinical-docu
                           >Currency<input
                             [formControl]="currencyControl(mode)"
                             maxlength="3"
-                            placeholder="NGN"
+                            placeholder="e.g. NGN"
                             class="mt-2 min-h-12 w-full rounded-xl border px-3 uppercase" /></label
                         ><label class="font-semibold"
                           >Price<input
                             [formControl]="priceControl(mode)"
                             inputmode="decimal"
-                            placeholder="15000.00"
+                            placeholder="e.g. 15000.00"
                             class="mt-2 min-h-12 w-full rounded-xl border px-3"
                           /><span class="mt-1 block text-xs font-normal text-slate-500"
                             >Enter 0 to offer this mode free. Blank is invalid.</span
@@ -386,13 +386,13 @@ import { ProviderClinicalDocumentationComponent } from './provider-clinical-docu
                     >Currency<input
                       formControlName="fastTrackCurrency"
                       maxlength="3"
-                      placeholder="NGN"
+                      placeholder="e.g. NGN"
                       class="mt-2 min-h-12 w-full rounded-xl border px-3 uppercase" /></label
                   ><label class="font-semibold"
                     >FastTrack fee<input
                       formControlName="fastTrackFee"
                       inputmode="decimal"
-                      placeholder="3000.00"
+                      placeholder="e.g. 3000.00"
                       class="mt-2 min-h-12 w-full rounded-xl border px-3"
                   /></label>
                 </div>

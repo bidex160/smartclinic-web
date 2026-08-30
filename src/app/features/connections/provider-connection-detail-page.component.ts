@@ -109,6 +109,7 @@ import { formatMinor } from '../provider/care-money';
             >Correct Provider Patient Number<input
               [formControl]="correctedReference"
               maxlength="160"
+              placeholder="e.g. UCH/2026/001234"
               class="rounded-xl border p-3" /></label
           ><button
             type="button"

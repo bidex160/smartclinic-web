@@ -33,6 +33,7 @@ import { majorToMinor, minorToMajor } from './care-money';
                   >Fee<input
                     [formControlName]="item.fee"
                     inputmode="decimal"
+                    placeholder="e.g. 5000"
                     class="rounded-xl border p-3"
                   /><span class="text-sm font-normal"
                     >Enter 0 for Free. Blank is invalid.</span
@@ -41,6 +42,7 @@ import { majorToMinor, minorToMajor } from './care-money';
                   >Currency<input
                     [formControlName]="item.currency"
                     maxlength="3"
+                    placeholder="e.g. NGN"
                     class="rounded-xl border p-3 uppercase"
                 /></label>
               </div>

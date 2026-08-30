@@ -136,7 +136,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
                 formControlName="reason"
                 rows="4"
                 maxlength="2000"
-                placeholder="Enter a cancellation reason"
+                placeholder="Explain why you need to cancel this appointment"
                 class="mt-2 w-full rounded-xl border p-3"
               ></textarea>
             </label>

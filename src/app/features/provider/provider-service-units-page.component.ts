@@ -71,11 +71,13 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
               >Name<input
                 formControlName="name"
                 maxlength="160"
+                placeholder="e.g. Main Pharmacy"
                 class="mt-1 block min-h-11 w-full rounded-lg border px-3" /></label
             ><label class="font-bold"
               >Code<input
                 formControlName="code"
                 maxlength="80"
+                placeholder="e.g. MAIN_PHARMACY"
                 class="mt-1 block min-h-11 w-full rounded-lg border px-3"
               /><span class="text-sm font-normal text-slate-500"
                 >Uppercase letters, numbers and underscores.</span
@@ -94,6 +96,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
               ><textarea
                 formControlName="description"
                 maxlength="4000"
+                placeholder="Describe the services handled by this unit"
                 class="mt-1 block w-full rounded-lg border p-3"
               ></textarea>
             </label>
