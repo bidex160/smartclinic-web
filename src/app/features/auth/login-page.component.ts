@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  signal,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -89,32 +90,76 @@ import { AuthApiService } from '../../core/services/auth-api.service';
           }
         </div>
 
-        <div>
-          <label
-            for="password"
-            class="font-bold"
-          >
-            Password
-          </label>
+       <div>
+  <label
+    for="password"
+    class="font-bold"
+  >
+    Password
+  </label>
 
-          <input
-            id="password"
-            type="password"
-            formControlName="password"
-            autocomplete="current-password"
-            placeholder="Enter your password"
-            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
-          />
+  <div class="relative mt-2">
+    <input
+      id="password"
+      [type]="showPassword() ? 'text' : 'password'"
+      formControlName="password"
+      autocomplete="current-password"
+      placeholder="Enter your password"
+      class="min-h-12 w-full rounded-xl border border-slate-300 px-4 pr-12 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+    />
 
-          @if (
-            form.controls.password.touched &&
-            form.controls.password.invalid
-          ) {
-            <p class="mt-2 text-sm text-red-700">
-              Password is required.
-            </p>
-          }
-        </div>
+    <button
+      type="button"
+      (click)="showPassword.update(value => !value)"
+      class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition hover:text-brand-700 focus:outline-none focus:text-brand-700"
+      [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+      [attr.title]="showPassword() ? 'Hide password' : 'Show password'"
+    >
+      @if (showPassword()) {
+        <!-- Eye slash -->
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m2 2 20 20" />
+          <path d="M6.71 6.71C4.92 7.9 3.5 9.67 2.73 12c1.67 5 5 7.5 9.27 7.5 1.29 0 2.49-.23 3.57-.68" />
+          <path d="M10.73 5.08A9.8 9.8 0 0 1 12 5c4.27 0 7.6 2.5 9.27 7a11.1 11.1 0 0 1-2.1 3.6" />
+          <path d="M14.12 14.12A3 3 0 0 1 9.88 9.88" />
+        </svg>
+      } @else {
+        <!-- Eye -->
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M2.73 12s3-7 9.27-7 9.27 7 9.27 7-3 7-9.27 7-9.27-7-9.27-7Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      }
+    </button>
+  </div>
+
+  @if (
+    form.controls.password.touched &&
+    form.controls.password.invalid
+  ) {
+    <p class="mt-2 text-sm text-red-700">
+      Password is required.
+    </p>
+  }
+</div>
 
         <button
           type="submit"
@@ -191,6 +236,8 @@ export class LoginPageComponent {
   private readonly route = inject(ActivatedRoute);
 
   errorMessage: string | null = null;
+
+  readonly showPassword = signal(false);
 
   readonly form =
     this.fb.nonNullable.group({
