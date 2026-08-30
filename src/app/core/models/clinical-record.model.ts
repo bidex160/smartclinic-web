@@ -9,6 +9,44 @@ export type ClinicalRecordType =
 
 export type ClinicalRecordStatus = 'DRAFT' | 'FINALIZED';
 
+export type ClinicalDocumentationFieldType =
+  | 'TEXT'
+  | 'TEXTAREA'
+  | 'NUMBER'
+  | 'DATE'
+  | 'SELECT'
+  | 'MULTI_SELECT'
+  | 'BOOLEAN';
+export type ClinicalDocumentationTemplateMode = 'STANDARD' | 'DEFAULT' | 'CUSTOM';
+export type ClinicalDocumentationSnapshotSource = 'SYSTEM_DEFAULT' | 'PROVIDER_CUSTOM';
+export type ClinicalStructuredValue = string | number | boolean | readonly string[] | null;
+export type ClinicalStructuredData = Readonly<Record<string, ClinicalStructuredValue>>;
+
+export interface ClinicalDocumentationField {
+  readonly key: string;
+  readonly label: string;
+  readonly type: ClinicalDocumentationFieldType;
+  readonly required: boolean;
+  readonly core: boolean;
+  readonly options?: readonly string[];
+  readonly placeholder?: string;
+  readonly sortOrder: number;
+}
+
+export interface ProviderCareServiceClinicalDocumentation {
+  readonly clinicalRecordType: ClinicalRecordType;
+  readonly templateMode: ClinicalDocumentationTemplateMode;
+  readonly templateVersion: number | null;
+  readonly fields: readonly ClinicalDocumentationField[];
+}
+
+export interface ClinicalRecordDocumentationSnapshot {
+  readonly schemaVersion: 1;
+  readonly source: ClinicalDocumentationSnapshotSource;
+  readonly providerTemplateVersion: number | null;
+  readonly fields: readonly ClinicalDocumentationField[];
+}
+
 export interface ClinicalRecordAttachment {
   readonly reference: string;
   readonly originalName: string;
@@ -50,6 +88,8 @@ export interface ClinicalRecord {
   readonly careAppointmentReference: string | null;
   readonly service: { readonly code: string; readonly name: string } | null;
   readonly consultation: ClinicalConsultationDetail | null;
+  readonly documentation: ClinicalRecordDocumentationSnapshot | null;
+  readonly structuredData: ClinicalStructuredData | null;
   readonly attachments: readonly ClinicalRecordAttachment[];
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -152,6 +192,7 @@ export interface CreateClinicalRecordRequest {
   readonly title: string;
   readonly summary?: string | null;
   readonly consultation?: ClinicalConsultationDetailRequest;
+  readonly structuredData?: ClinicalStructuredData | null;
 }
 
 export type UpdateClinicalRecordRequest = Partial<CreateClinicalRecordRequest>;

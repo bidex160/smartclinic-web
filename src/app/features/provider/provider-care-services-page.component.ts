@@ -10,10 +10,11 @@ import {
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
 import { formatMinor, majorToMinor, minorToMajor } from './care-money';
+import { ProviderClinicalDocumentationComponent } from './provider-clinical-documentation.component';
 
 @Component({
   selector: 'app-provider-care-services-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ProviderClinicalDocumentationComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
     <header>
@@ -86,6 +87,7 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
             >
               Appointments
             </th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Clinical Record</th>
 
             <th
               scope="col"
@@ -166,6 +168,13 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
                     Disabled
                   </span>
                 }
+              </td>
+
+              <td class="px-4 py-4 text-sm">
+                @if (item.clinicalDocumentation; as documentation) {
+                  <p class="font-semibold">{{ clinicalTypeLabel(documentation.clinicalRecordType) }}</p>
+                  <p class="mt-1 text-slate-500">{{ documentation.templateMode === 'STANDARD' ? 'Standard' : documentation.templateMode === 'CUSTOM' ? 'Custom' : 'Default' }}@if (documentation.templateVersion) { · v{{ documentation.templateVersion }} }</p>
+                } @else { <span class="text-slate-500">Not required</span> }
               </td>
 
               <!-- FastTrack -->
@@ -389,6 +398,14 @@ import { formatMinor, majorToMinor, minorToMajor } from './care-money';
                 </div>
               }
             </fieldset>
+            @if (editing(); as offering) {
+              <app-provider-clinical-documentation [offeringId]="offering.id" />
+            } @else {
+              <section class="rounded-xl border p-4">
+                <h3 class="font-bold">Clinical Documentation</h3>
+                <p class="mt-1 text-sm text-slate-600">Documentation settings become available after the offering is created. The platform service controls the Clinical Record type.</p>
+              </section>
+            }
             @if (!editing()) {
               <section class="rounded-xl bg-amber-50 p-4">
                 <h3 class="font-bold">Visibility</h3>
@@ -667,6 +684,9 @@ export class ProviderCareServicesPageComponent {
       });
   }
   modeLabel = careDeliveryModeLabel;
+  clinicalTypeLabel(value: string) {
+    return value.split('_').map((part) => part[0] + part.slice(1).toLowerCase()).join(' ');
+  }
   modeHelp(mode: CareDeliveryMode) {
     return mode === 'IN_PERSON'
       ? 'Patient visits a provider location.'

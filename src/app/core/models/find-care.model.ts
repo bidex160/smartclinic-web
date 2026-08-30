@@ -1,5 +1,5 @@
 import { PublicBookingFundingAttemptStatus } from './public-booking.model';
-import { ClinicalRecordType } from './clinical-record.model';
+import { ClinicalDocumentationTemplateMode, ClinicalRecordType } from './clinical-record.model';
 
 export type CareDeliveryMode = 'IN_PERSON' | 'VIRTUAL' | 'HOME_VISIT';
 
@@ -29,6 +29,11 @@ export interface ProviderCareServiceOffering {
   readonly fastTrackFeeMinor: string | null;
   readonly fastTrackCurrency: string | null;
   readonly isActive: boolean;
+  readonly clinicalDocumentation: {
+    readonly clinicalRecordType: ClinicalRecordType;
+    readonly templateMode: ClinicalDocumentationTemplateMode;
+    readonly templateVersion: number | null;
+  } | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

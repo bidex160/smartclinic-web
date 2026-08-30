@@ -7,6 +7,10 @@ import {
   ProviderCareServiceOffering,
   UpdateProviderCareServiceOffering,
 } from '../models/find-care.model';
+import {
+  ClinicalDocumentationField,
+  ProviderCareServiceClinicalDocumentation,
+} from '../models/clinical-record.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProviderCareServicesApiService {
@@ -30,6 +34,23 @@ export class ProviderCareServicesApiService {
   setActive(id: string, active: boolean) {
     return this.http.patch<ProviderCareServiceOffering>(
       `${this.base}/${encodeURIComponent(id)}/${active ? 'activate' : 'deactivate'}`,
+      {},
+    );
+  }
+  getClinicalDocumentation(id: string) {
+    return this.http.get<ProviderCareServiceClinicalDocumentation | null>(
+      `${this.base}/${encodeURIComponent(id)}/clinical-documentation`,
+    );
+  }
+  saveClinicalDocumentation(id: string, fields: readonly ClinicalDocumentationField[]) {
+    return this.http.patch<ProviderCareServiceClinicalDocumentation>(
+      `${this.base}/${encodeURIComponent(id)}/clinical-documentation`,
+      { fields },
+    );
+  }
+  resetClinicalDocumentation(id: string) {
+    return this.http.post<ProviderCareServiceClinicalDocumentation>(
+      `${this.base}/${encodeURIComponent(id)}/clinical-documentation/reset`,
       {},
     );
   }

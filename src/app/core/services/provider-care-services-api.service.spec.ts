@@ -39,4 +39,13 @@ describe('ProviderCareServicesApiService', () => {
         .body,
     ).toEqual({});
   });
+  it('uses the authoritative clinical documentation endpoints and payload', () => {
+    api.getClinicalDocumentation('offering-id').subscribe();
+    http.expectOne('http://api.test/api/v1/provider/care-services/offering-id/clinical-documentation').flush(null);
+    const fields = [{ key: 'findings', label: 'Findings', type: 'TEXTAREA' as const, required: true, core: true, sortOrder: 0 }];
+    api.saveClinicalDocumentation('offering-id', fields).subscribe();
+    expect(http.expectOne('http://api.test/api/v1/provider/care-services/offering-id/clinical-documentation').request.body).toEqual({ fields });
+    api.resetClinicalDocumentation('offering-id').subscribe();
+    expect(http.expectOne('http://api.test/api/v1/provider/care-services/offering-id/clinical-documentation/reset').request.body).toEqual({});
+  });
 });

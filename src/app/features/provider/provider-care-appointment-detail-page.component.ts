@@ -3,17 +3,19 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { CareAppointment } from '../../core/models/find-care.model';
-import { ClinicalRecord, ClinicalRecordAttachment, ClinicalRecordType, UpdateClinicalRecordRequest } from '../../core/models/clinical-record.model';
+import { ClinicalRecord, ClinicalRecordAttachment, ClinicalRecordType, ClinicalStructuredData, UpdateClinicalRecordRequest } from '../../core/models/clinical-record.model';
 import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
 import { ClinicalRecordsApiService } from '../../core/services/clinical-records-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
 import { ProviderPrescriptionSectionComponent } from './provider-prescription-section.component';
+import { ClinicalDocumentationFormComponent } from '../../shared/clinical-documentation-form.component';
+import { ClinicalDocumentationViewComponent } from '../../shared/clinical-documentation-view.component';
 type Decision = 'complete' | 'no-show' | 'cancel' | null;
 @Component({
   selector: 'app-provider-care-appointment-detail-page',
-  imports: [RouterLink, ReactiveFormsModule, ProviderPrescriptionSectionComponent],
+  imports: [RouterLink, ReactiveFormsModule, ProviderPrescriptionSectionComponent, ClinicalDocumentationFormComponent, ClinicalDocumentationViewComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/care-appointments" class="font-bold text-brand-700 underline"
@@ -137,12 +139,26 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
           @if (recordLoading()) { <p role="status" class="mt-4">Loading clinical record…</p> }
           @else if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') { <p class="mt-4 rounded-xl bg-slate-50 p-4">Clinical documentation will be available when the appointment starts.</p> }
           @else if (recordError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4">{{ recordError() }} <button type="button" (click)="loadClinicalRecord()" class="font-bold underline">Try again</button></p> }
-          @else if (requiredType !== 'CONSULTATION') { <p class="mt-4 rounded-xl bg-slate-50 p-4">This service requires a {{ recordTypeLabel(requiredType).toLowerCase() }} clinical record. Structured entry for this record type is not available yet.</p> }
           @else if (clinicalRecord(); as record) {
+            @if (requiredType !== 'CONSULTATION') {
+              @if (record.documentation; as documentation) {
+                <div class="mt-5">
+                  @if (record.status === 'DRAFT') {
+                    <p class="mb-4 text-sm text-slate-600">Complete the structured result below. Supporting files are evidence and do not replace this documentation.</p>
+                    <app-clinical-documentation-form [documentation]="documentation" [data]="record.structuredData" [pending]="recordPending()" (save)="saveStructuredRecord($event)" />
+                    <button type="button" (click)="finalizeOpen.set(true)" [disabled]="recordPending()" class="mt-4 rounded-xl border px-5 py-3 font-bold">Finalize record</button>
+                  } @else {
+                    <app-clinical-documentation-view [documentation]="documentation" [data]="record.structuredData" />
+                  }
+                  @if (recordMutationError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ recordMutationError() }}</p> }
+                </div>
+              } @else { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4">Clinical documentation could not be loaded. Refresh and try again.</p> }
+            } @else {
             <div class="mt-4"><h3 class="font-bold">{{ record.title }}</h3>@if (record.summary) { <p class="mt-2 whitespace-pre-wrap text-slate-700">{{ record.summary }}</p> }
             @if (record.consultation; as c) { <dl class="mt-5 grid gap-4">@for (field of consultationFields(c); track field.label) { @if (field.value) { <div><dt class="font-semibold">{{ field.label }}</dt><dd class="mt-1 whitespace-pre-wrap text-slate-700">{{ field.value }}</dd></div> } }</dl> }
             @if (record.status === 'DRAFT') { <div class="mt-5 flex flex-wrap gap-3"><button type="button" (click)="openRecordForm()" class="rounded-xl border px-5 py-3 font-bold">Record consultation</button><button type="button" (click)="finalizeOpen.set(true)" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Finalize record</button></div> }
             </div>
+            }
           }
           @if (clinicalRecord(); as record) {
             <div class="mt-6 border-t pt-6"><h3 class="text-lg font-bold">Supporting files</h3>
@@ -388,6 +404,11 @@ export class ProviderCareAppointmentDetailPageComponent {
     const body: UpdateClinicalRecordRequest = { recordType: 'CONSULTATION', title: value.title.trim(), summary: nullable(value.summary), consultation: { presentingComplaint: nullable(value.presentingComplaint), historyOfPresentingComplaint: nullable(value.historyOfPresentingComplaint), observations: nullable(value.observations), assessment: nullable(value.assessment), diagnosis: nullable(value.diagnosis), plan: nullable(value.plan), followUpInstructions: nullable(value.followUpInstructions) } };
     this.recordPending.set(true); this.recordMutationError.set(null);
     this.clinicalRecordsApi.updateForProviderAppointment(this.reference, body).pipe(finalize(() => this.recordPending.set(false))).subscribe({ next: () => { this.recordFormOpen.set(false); this.feedback.set('Clinical record draft saved.'); this.loadClinicalRecord(); }, error: error => this.recordMutationError.set(this.safeRecordError(error)) });
+  }
+  saveStructuredRecord(structuredData: ClinicalStructuredData): void {
+    if (this.recordPending()) return;
+    this.recordPending.set(true); this.recordMutationError.set(null);
+    this.clinicalRecordsApi.updateForProviderAppointment(this.reference, { structuredData }).pipe(finalize(() => this.recordPending.set(false))).subscribe({ next: () => { this.feedback.set('Clinical record draft saved.'); this.loadClinicalRecord(); }, error: error => this.recordMutationError.set(this.safeRecordError(error)) });
   }
   finalizeClinicalRecord(): void {
     if (this.recordPending()) return; this.recordPending.set(true); this.recordMutationError.set(null);

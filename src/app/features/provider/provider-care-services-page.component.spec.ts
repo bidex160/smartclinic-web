@@ -17,6 +17,9 @@ describe('ProviderCareServicesPageComponent', () => {
       create: vi.fn((body) => of(body)),
       update: vi.fn((reference, body) => of({ reference, ...body })),
       setActive: vi.fn(() => of({})),
+      getClinicalDocumentation: vi.fn(() => of({ clinicalRecordType: 'CONSULTATION', templateMode: 'STANDARD', templateVersion: null, fields: [] })),
+      saveClinicalDocumentation: vi.fn((id, fields) => of({ id, fields })),
+      resetClinicalDocumentation: vi.fn(() => of({})),
     };
     await TestBed.configureTestingModule({
       imports: [ProviderCareServicesPageComponent],
@@ -69,6 +72,7 @@ describe('ProviderCareServicesPageComponent', () => {
     const offering: ProviderCareServiceOffering = {
       id: 'offering-id', careServiceDefinitionId: 'definition-id', definition,
       descriptionOverride: null, isActive: true,
+      clinicalDocumentation: { clinicalRecordType: 'CONSULTATION', templateMode: 'STANDARD', templateVersion: null },
       deliveryOptions: [
         { deliveryMode: 'IN_PERSON', priceMinor: '1500000', currency: 'NGN' },
         { deliveryMode: 'VIRTUAL', priceMinor: '1000000', currency: 'NGN' },
@@ -96,6 +100,7 @@ describe('ProviderCareServicesPageComponent', () => {
     const offering: ProviderCareServiceOffering = {
       id: 'offering-id', careServiceDefinitionId: 'definition-id', definition,
       descriptionOverride: null, isActive: true,
+      clinicalDocumentation: { clinicalRecordType: 'CONSULTATION', templateMode: 'STANDARD', templateVersion: null },
       deliveryOptions: [{ deliveryMode: 'VIRTUAL', priceMinor: '1000000', currency: 'NGN' }],
       supportsAppointmentRequests: true, supportsFastTrack: false,
       fastTrackFeeMinor: null, fastTrackCurrency: null,
