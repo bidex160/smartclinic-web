@@ -9,10 +9,11 @@ import { ProviderCareServicesApiService } from '../../core/services/provider-car
 import { ClinicalRecordsApiService } from '../../core/services/clinical-records-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
+import { ProviderPrescriptionSectionComponent } from './provider-prescription-section.component';
 type Decision = 'complete' | 'no-show' | 'cancel' | null;
 @Component({
   selector: 'app-provider-care-appointment-detail-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, ProviderPrescriptionSectionComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/care-appointments" class="font-bold text-brand-700 underline"
@@ -157,6 +158,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
           }
         </section>
       }
+      @if (a.status === 'IN_PROGRESS') { <app-provider-prescription-section [appointmentReference]="a.appointmentReference" [appointmentStatus]="a.status" /> }
       <div class="mt-6 flex flex-wrap gap-3">
         @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
           <button

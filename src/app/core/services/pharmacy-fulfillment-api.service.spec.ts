@@ -1,0 +1,16 @@
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { API_CONFIG } from '../config/api-config.token';
+import { PharmacyFulfillmentApiService } from './pharmacy-fulfillment-api.service';
+
+describe('PharmacyFulfillmentApiService',()=>{
+ let api:PharmacyFulfillmentApiService,http:HttpTestingController;
+ beforeEach(()=>{TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),{provide:API_CONFIG,useValue:{baseUrl:'/api/v1'}}]});api=TestBed.inject(PharmacyFulfillmentApiService);http=TestBed.inject(HttpTestingController);});
+ afterEach(()=>http.verify());
+ it('uses exact prescription routes and never sends provider identity',()=>{const body={items:[{medicationName:'Amoxicillin',strength:null,dosage:'1 tablet',frequency:'twice daily',duration:'5 days',quantity:'10',route:'oral',instructions:null}]};api.createPrescription('SC-CA-1',body).subscribe();const r=http.expectOne('/api/v1/provider/care-appointments/SC-CA-1/clinical-orders/prescriptions');expect(r.request.method).toBe('POST');expect(r.request.body).toEqual(body);expect(r.request.body.providerId).toBeUndefined();r.flush({});});
+ it('uses the dedicated patient pharmacy directory with exact geography query names',()=>{api.searchPharmacies({q:'UCH',country:'NG',stateOrRegion:'Oyo',city:'Ibadan',page:2,limit:10}).subscribe();const r=http.expectOne(x=>x.url==='/api/v1/me/clinical-order-fulfillment-providers');expect(r.request.params.get('stateOrRegion')).toBe('Oyo');expect(r.request.params.get('page')).toBe('2');r.flush({items:[],page:2,limit:10,total:0,totalPages:0});});
+ it('submits quote items in minor units and accepts unavailable items explicitly',()=>{const body={currency:'NGN',expiresAt:'2026-09-01T10:00:00.000Z',items:[{sortOrder:0,availability:'AVAILABLE' as const,quantitySupplied:2,unitPriceMinor:150050,note:null}]};api.createQuote('SC-COF-1',body).subscribe();let r=http.expectOne('/api/v1/provider/order-fulfillments/SC-COF-1/quotes');expect(r.request.body).toEqual(body);r.flush({});api.acceptQuote('SC-PHQ-1',true).subscribe();r=http.expectOne('/api/v1/me/pharmacy-quotes/SC-PHQ-1/accept');expect(r.request.body).toEqual({acknowledgeUnavailableItems:true});r.flush({});});
+ it('uses authoritative pharmacy funding and dispensing commands',()=>{api.initializeFunding('SC-PHQ-1').subscribe();let r=http.expectOne('/api/v1/me/pharmacy-quotes/SC-PHQ-1/funding/initialize');expect(r.request.body).toBeNull();r.flush({});api.verifyFunding('SC-PHQ-1').subscribe();r=http.expectOne('/api/v1/me/pharmacy-quotes/SC-PHQ-1/funding/verify-latest');r.flush({});api.dispensing('SC-COF-1','ready-for-pickup').subscribe();r=http.expectOne('/api/v1/provider/order-fulfillments/SC-COF-1/ready-for-pickup');r.flush({});});
+ it('uses public references for service-unit management',()=>{api.createServiceUnit({code:'UCH_PHARMACY',name:'UCH Pharmacy',type:'PHARMACY'}).subscribe();const r=http.expectOne('/api/v1/provider/service-units');expect(r.request.body.type).toBe('PHARMACY');r.flush({});});
+});
