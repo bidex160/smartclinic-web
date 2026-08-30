@@ -27,6 +27,7 @@ export class PatientRegisterPageComponent {
     password: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(128)]],
   });
 
+  readonly showPassword = signal(false);
   register(): void {
     this.submitted.set(true);
     this.error.set(null);

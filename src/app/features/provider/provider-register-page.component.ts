@@ -50,7 +50,7 @@ export class ProviderRegisterPageComponent {
   registerCities: ICity[] = [];
 
   readonly registrationStateCode = new FormControl('', { nonNullable: true });
-
+readonly showPassword = signal(false);
   readonly form = this.fb.group({
     displayName: [
       '',
