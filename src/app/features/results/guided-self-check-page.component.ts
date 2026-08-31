@@ -54,7 +54,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               <p class="mt-2">{{ action.message }}</p>
               @if (action.cta.type === 'HEALTH_CHECK_PACKAGE') {
                 <a
-                  routerLink="/health-check/packages"
+                  routerLink="/me/book"
                   [queryParams]="{ package: action.cta.packageCode }"
                   class="mt-4 inline-flex rounded-lg bg-brand-700 px-4 py-3 font-bold text-white"
                   >View Health Checks</a

@@ -64,6 +64,8 @@ export interface PublicBookingResponse {
   readonly visitAddressSummary: BookingVisitAddressSummary | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly commercialConfiguration?:
+    import('./health-check-package.model').HealthCheckConfigurationQuote | null;
 }
 
 export type PublicBookingFundingStatus =
@@ -115,5 +117,6 @@ export interface PublicBookingPaymentStatus {
   readonly pointsReserved: number;
   readonly pointsAmount: string;
   readonly remainingExternalAmount: string | null;
-  readonly redemptionStatus: import('./health-check-reward-redemption.model').HealthCheckRewardRedemptionStatus | null;
+  readonly redemptionStatus:
+    import('./health-check-reward-redemption.model').HealthCheckRewardRedemptionStatus | null;
 }

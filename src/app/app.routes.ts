@@ -350,8 +350,8 @@ export const routes: Routes = [
         title: 'Book a Health Check | SmartClinic',
         canActivate: [authenticatedUserGuard],
         loadComponent: () =>
-          import('./features/results/patient-booking-page.component').then(
-            (c) => c.PatientBookingPageComponent,
+          import('./features/results/patient-health-check-v2-booking-page.component').then(
+            (c) => c.PatientHealthCheckV2BookingPageComponent,
           ),
       },
       {

@@ -40,6 +40,8 @@ export interface PatientHealthCheckHistoryItem {
 
 export interface PatientHealthCheckDetail extends PatientHealthCheckHistoryItem {
   readonly visitAddress: import('./public-booking.model').OperationalVisitAddress | null;
+  readonly commercialConfiguration:
+    import('./health-check-package.model').HealthCheckConfigurationQuote | null;
 }
 
 export interface PatientPortalProfile {
@@ -54,8 +56,9 @@ export interface PatientPortalProfile {
 }
 
 export interface CreateSelfHealthCheckRequest {
-  readonly healthCheckPackageId: string;
-  readonly fulfilmentModeId: string;
+  readonly configurationReference?: string;
+  readonly healthCheckPackageId?: string;
+  readonly fulfilmentModeId?: string;
   readonly preferredDate: string;
   readonly preferredTimeWindowStart: string;
   readonly preferredTimezone: string;

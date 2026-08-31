@@ -92,7 +92,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               </p>
             }
             <a
-              routerLink="/health-check/packages"
+              routerLink="/me/book"
               [queryParams]="{ package: option.code }"
               class="mt-auto pt-6 font-bold text-brand-700"
               >View Health Check options →</a

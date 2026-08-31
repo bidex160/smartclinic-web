@@ -5,6 +5,7 @@ import { PatientHealthCheckDetail } from '../../core/models/patient-health-check
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
+import { formatEarningMoney } from '../provider/provider-earning-presentation';
 
 @Component({
   selector: 'app-patient-health-check-detail-page',
@@ -46,7 +47,8 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                 <div class="mt-4 border-t pt-4">
                   <h3 class="font-bold">Appointment location</h3>
                   <address class="mt-2 not-italic">
-                    <strong>{{ l.name }}</strong><br />{{ l.addressLine1 }}
+                    <strong>{{ l.name }}</strong
+                    ><br />{{ l.addressLine1 }}
                     @if (l.addressLine2) {
                       <br />{{ l.addressLine2 }}
                     }
@@ -113,10 +115,81 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
             </section>
           }
         </div>
+        @if (d.commercialConfiguration; as c) {
+          <section class="mt-7 rounded-2xl border bg-white p-6">
+            <h2 class="text-xl font-bold">Frozen commercial configuration</h2>
+            <p class="mt-2 text-sm text-slate-600">
+              This is the configuration recorded when this booking was created.
+            </p>
+            <dl class="mt-5 grid gap-3 sm:grid-cols-2">
+              <div>
+                <dt class="text-sm text-slate-600">Provider</dt>
+                <dd class="font-bold">{{ c.provider.name }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm text-slate-600">Fulfilment</dt>
+                <dd class="font-bold">{{ c.fulfilmentMode.name }}</dd>
+              </div>
+              @if (c.providerLocation) {
+                <div class="sm:col-span-2">
+                  <dt class="text-sm text-slate-600">Provider location</dt>
+                  <dd class="font-bold">
+                    {{ c.providerLocation.name }} · {{ c.providerLocation.addressLine1 }},
+                    {{ c.providerLocation.city }}
+                  </dd>
+                </div>
+              }
+            </dl>
+            @if (c.includedContents.length) {
+              <h3 class="mt-5 font-bold">Included contents</h3>
+              <ul class="mt-2 list-disc pl-5">
+                @for (item of c.includedContents; track item.code) {
+                  <li>{{ item.name }}</li>
+                }
+              </ul>
+            }
+            @if (c.selectedAddons.length) {
+              <h3 class="mt-5 font-bold">Selected add-ons</h3>
+              <ul class="mt-2 grid gap-2">
+                @for (item of c.selectedAddons; track item.code) {
+                  <li class="flex justify-between">
+                    <span>{{ item.name }}</span
+                    ><strong>{{ money(item.amountMinor, c.pricing.currency) }}</strong>
+                  </li>
+                }
+              </ul>
+            }
+            <dl class="mt-5 grid gap-2 rounded-xl bg-brand-50 p-4">
+              <div class="flex justify-between">
+                <dt>Package</dt>
+                <dd>{{ money(c.pricing.basePackagePriceMinor, c.pricing.currency) }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt>Add-ons</dt>
+                <dd>{{ money(c.pricing.clinicalAddonsTotalMinor, c.pricing.currency) }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt>Fulfilment fee</dt>
+                <dd>{{ money(c.pricing.fulfilmentFeeMinor, c.pricing.currency) }}</dd>
+              </div>
+              <div class="flex justify-between border-t pt-2 font-bold">
+                <dt>Total</dt>
+                <dd>{{ money(c.pricing.totalMinor, c.pricing.currency) }}</dd>
+              </div>
+            </dl>
+          </section>
+        }
         @if (d.fundingStatus !== 'SETTLED' && d.bookingStatus === 'AWAITING_FUNDING') {
-          <div class="mt-7"><app-patient-payment-panel [reference]="d.bookingReference" (statusChanged)="paymentChanged()" /></div>
+          <div class="mt-7">
+            <app-patient-payment-panel
+              [reference]="d.bookingReference"
+              (statusChanged)="paymentChanged()"
+            />
+          </div>
         } @else if (d.fundingStatus === 'SETTLED') {
-          <p class="mt-7 rounded-xl bg-green-50 p-4 font-bold text-green-950">Funding settled · {{ statusLabel(d.bookingStatus) }}</p>
+          <p class="mt-7 rounded-xl bg-green-50 p-4 font-bold text-green-950">
+            Funding settled · {{ statusLabel(d.bookingStatus) }}
+          </p>
         }
         @if (d.hasCompletedResult) {
           <a
@@ -139,6 +212,7 @@ export class PatientHealthCheckDetailPageComponent {
   readonly detail = signal<PatientHealthCheckDetail | null>(null);
   readonly loading = signal(true);
   readonly error = signal(false);
+  readonly money = formatEarningMoney;
   constructor() {
     this.load();
   }
@@ -150,7 +224,9 @@ export class PatientHealthCheckDetailPageComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({ next: (detail) => this.detail.set(detail), error: () => this.error.set(true) });
   }
-  paymentChanged(): void { this.load(); }
+  paymentChanged(): void {
+    this.load();
+  }
   statusLabel(status: string): string {
     return (
       (

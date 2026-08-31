@@ -77,4 +77,30 @@ describe('HealthCheckPackagesApiService', () => {
     expect(request.request.body.totalMinor).toBeUndefined();
     request.flush({});
   });
+
+  it('serializes the exact provider discovery context without internal ids', () => {
+    service
+      .discoverProviders({
+        packageCode: 'ESSENTIAL',
+        fulfilmentModeCode: 'HOME_VISIT',
+        preferredDate: '2026-09-10',
+        preferredTime: '09:30',
+        timezone: 'Africa/Lagos',
+        countryCode: 'NG',
+        stateOrRegion: 'Lagos',
+        city: 'Ikeja',
+        postalCode: '100001',
+        page: 2,
+        limit: 10,
+      })
+      .subscribe();
+    const request = httpTesting.expectOne(
+      (r) => r.url === 'http://api.example.test/api/v1/health-check-packages/providers',
+    );
+    expect(request.request.params.get('packageCode')).toBe('ESSENTIAL');
+    expect(request.request.params.get('preferredTime')).toBe('09:30');
+    expect(request.request.params.get('page')).toBe('2');
+    expect(request.request.params.has('providerId')).toBe(false);
+    request.flush({ items: [], page: 2, limit: 10, total: 0, totalPages: 0 });
+  });
 });
