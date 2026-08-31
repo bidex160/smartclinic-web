@@ -1,12 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-} from '@angular/core';
-import {
-  RouterLink,
-  RouterLinkActive,
-} from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
@@ -14,10 +7,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 
 @Component({
   selector: 'app-admin-session-header',
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-  ],
+  imports: [RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- =========================================================
@@ -57,9 +47,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block text-lg font-bold text-white">
-              SmartClinic
-            </span>
+            <span class="block text-lg font-bold text-white"> SmartClinic </span>
 
             <span
               class="
@@ -76,10 +64,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </div>
 
       <!-- Navigation -->
-      <nav
-        aria-label="SmartClinic operations"
-        class="flex-1 overflow-y-auto px-4 py-6"
-      >
+      <nav aria-label="SmartClinic operations" class="flex-1 overflow-y-auto px-4 py-6">
         <div class="grid gap-1">
           <!-- Dashboard -->
           <a
@@ -155,15 +140,60 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Provider Assignments
           </a>
-          <a routerLink="/admin/referrals" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Referrals</a>
-          <a routerLink="/admin/reward-withdrawals" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Reward Withdrawals</a>
-          <a routerLink="/admin/care-services" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Care Services</a>
+          <a
+            routerLink="/admin/referrals"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Referrals</a
+          >
+          <a
+            routerLink="/admin/reward-withdrawals"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Reward Withdrawals</a
+          >
+          <a
+            routerLink="/admin/care-services"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Care Services</a
+          >
+          <a
+            routerLink="/admin/guided-self-check"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Self-Check Operations</a
+          >
 
-          <p class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300">Commercial</p>
-          <a routerLink="/admin/provider-earnings" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Revenue</a>
-          <a routerLink="/admin/provider-payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Payouts</a>
-          <a routerLink="/admin/provider-payout-accounts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Payout Accounts</a>
-          <a routerLink="/admin/commission-settings" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700">Commission Settings</a>
+          <p
+            class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300"
+          >
+            Commercial
+          </p>
+          <a
+            routerLink="/admin/provider-earnings"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Revenue</a
+          >
+          <a
+            routerLink="/admin/provider-payouts"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Payouts</a
+          >
+          <a
+            routerLink="/admin/provider-payout-accounts"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Payout Accounts</a
+          >
+          <a
+            routerLink="/admin/commission-settings"
+            routerLinkActive="!bg-brand-700 !text-white"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            >Commission Settings</a
+          >
 
           <!-- PROVIDERS -->
           <p
@@ -197,7 +227,6 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Providers
           </a>
-
         </div>
       </nav>
 
@@ -209,9 +238,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               {{ user.displayName }}
             </p>
 
-            <p class="mt-1 text-xs font-medium text-brand-300">
-              Admin / Operations
-            </p>
+            <p class="mt-1 text-xs font-medium text-brand-300">Admin / Operations</p>
           </div>
         }
 
@@ -284,9 +311,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block font-bold text-brand-900">
-              SmartClinic
-            </span>
+            <span class="block font-bold text-brand-900"> SmartClinic </span>
 
             <span
               class="
@@ -307,9 +332,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               {{ user.displayName }}
             </p>
 
-            <p class="text-xs text-slate-500">
-              Admin / Operations
-            </p>
+            <p class="text-xs text-slate-500">Admin / Operations</p>
           </div>
         }
       </div>
@@ -343,10 +366,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </summary>
 
       <div class="border-t border-slate-100 px-4 py-4">
-        <nav
-          aria-label="Mobile SmartClinic operations"
-          class="grid gap-1"
-        >
+        <nav aria-label="Mobile SmartClinic operations" class="grid gap-1">
           <a
             routerLink="/admin/dashboard"
             routerLinkActive="bg-brand-100 text-brand-900"
@@ -403,15 +423,58 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Provider Assignments
           </a>
-          <a routerLink="/admin/referrals" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Referrals</a>
-          <a routerLink="/admin/reward-withdrawals" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Reward Withdrawals</a>
-          <a routerLink="/admin/care-services" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Care Services</a>
+          <a
+            routerLink="/admin/referrals"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Referrals</a
+          >
+          <a
+            routerLink="/admin/reward-withdrawals"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Reward Withdrawals</a
+          >
+          <a
+            routerLink="/admin/care-services"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Care Services</a
+          >
+          <a
+            routerLink="/admin/guided-self-check"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Self-Check Operations</a
+          >
 
-          <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Commercial</p>
-          <a routerLink="/admin/provider-earnings" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Revenue</a>
-          <a routerLink="/admin/provider-payouts" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Payouts</a>
-          <a routerLink="/admin/provider-payout-accounts" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Payout Accounts</a>
-          <a routerLink="/admin/commission-settings" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Commission Settings</a>
+          <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+            Commercial
+          </p>
+          <a
+            routerLink="/admin/provider-earnings"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Revenue</a
+          >
+          <a
+            routerLink="/admin/provider-payouts"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Payouts</a
+          >
+          <a
+            routerLink="/admin/provider-payout-accounts"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Payout Accounts</a
+          >
+          <a
+            routerLink="/admin/commission-settings"
+            routerLinkActive="bg-brand-100 text-brand-900"
+            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >Commission Settings</a
+          >
 
           <p
             class="

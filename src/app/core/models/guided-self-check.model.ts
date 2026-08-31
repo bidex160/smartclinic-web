@@ -17,6 +17,7 @@ export type GuidedSelfCheckAnswerState = 'KNOWN' | 'DONT_KNOW';
 export type GuidedSelfCheckNextActionType =
   | 'CONTINUE_STAYING_WELL'
   | 'BOOK_ESSENTIAL_CHECK'
+  | 'FIND_CARE'
   | 'REQUEST_PROFESSIONAL_CONTACT'
   | 'SEEK_URGENT_ASSESSMENT';
 export type GuidedSelfCheckValue =
@@ -108,12 +109,18 @@ export interface GuidedSelfCheckQuestionnaire {
 }
 export interface GuidedSelfCheckNextAction {
   type: GuidedSelfCheckNextActionType;
-  source: 'CLASSIFICATION' | 'PROFESSIONAL_REVIEW';
+  source: 'CLASSIFICATION' | 'AI_ANALYSIS' | 'PROFESSIONAL_REVIEW';
   titleKey: string;
   title: string;
   message: string;
   cta: {
-    type: 'NONE' | 'HEALTH_CHECK_PACKAGE' | 'PROFESSIONAL_REVIEW' | 'FIND_CARE';
+    type:
+      | 'NONE'
+      | 'HEALTH_CHECK_PACKAGE'
+      | 'PROFESSIONAL_REVIEW'
+      | 'PROFESSIONAL_CONTACT'
+      | 'FIND_CARE'
+      | 'URGENT_ASSESSMENT';
     packageCode?: string;
     domain?: string;
   };
@@ -134,6 +141,12 @@ export interface GuidedSelfCheckPatientResult {
     required: boolean;
     status: string | null;
     completedAt: string | null;
+    patientGuidance: string | null;
+  };
+  analysis: null | {
+    required: boolean;
+    status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    humanReviewRecommended: boolean;
   };
   patientMessageKey?: string;
   title?: string;

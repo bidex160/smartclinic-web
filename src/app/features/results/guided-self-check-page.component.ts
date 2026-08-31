@@ -48,6 +48,34 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               ><span class="mt-1 block">{{ reviewLabel(check.professionalReview?.status) }}</span>
             </p>
           }
+          @if (check.classification?.classification === 'AMBER' && check.analysis) {
+            <p class="mt-4 rounded-xl bg-amber-50 p-4">
+              <strong>AMBER Self-Check analysis</strong>
+              <span class="mt-1 block">{{ analysisLabel(check.analysis.status) }}</span>
+              @if (check.analysis.humanReviewRecommended) {
+                <span class="mt-1 block"
+                  >Additional human review has been recommended internally.</span
+                >
+              }
+            </p>
+          }
+          @if (check.classification?.classification === 'RED') {
+            <section class="mt-4 rounded-xl border-2 border-red-500 bg-red-50 p-4">
+              <h3 class="font-bold text-red-950">Urgent Self-Check guidance</h3>
+              <p class="mt-2">{{ check.classification?.message }}</p>
+            </section>
+            @if (check.professionalReview?.status === 'COMPLETED') {
+              <section class="mt-4 rounded-xl border bg-white p-4">
+                <h3 class="font-bold">Professional recommended next step</h3>
+                <p class="mt-2">
+                  {{
+                    check.professionalReview?.patientGuidance ||
+                      'Follow the recommended next action below.'
+                  }}
+                </p>
+              </section>
+            }
+          }
           @if (check.nextAction; as action) {
             <section class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-5">
               <h3 class="font-bold">{{ action.title }}</h3>
@@ -65,6 +93,17 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
                   class="mt-4 inline-flex rounded-lg bg-red-700 px-4 py-3 font-bold text-white"
                   >Find care</a
                 >
+              } @else if (action.cta.type === 'URGENT_ASSESSMENT') {
+                <a
+                  routerLink="/request-care"
+                  class="mt-4 inline-flex rounded-lg bg-red-800 px-4 py-3 font-bold text-white"
+                  >Find urgent assessment options</a
+                >
+              } @else if (action.cta.type === 'PROFESSIONAL_CONTACT') {
+                <p class="mt-4 rounded-lg bg-white p-3 text-sm">
+                  Professional contact has been recommended. An in-app contact-request workflow is
+                  not currently available; do not delay seeking care if you are concerned.
+                </p>
               } @else if (action.cta.type === 'NONE') {
                 <a
                   routerLink="/me/health-passport"
@@ -553,5 +592,17 @@ export class GuidedSelfCheckPageComponent {
       : v === 'IN_REVIEW'
         ? 'Review in progress'
         : 'Review pending';
+  }
+  analysisLabel(v: string) {
+    return (
+      (
+        {
+          PENDING: 'Analysis is awaiting processing.',
+          PROCESSING: 'Analysis is in progress.',
+          COMPLETED: 'Analysis is complete. Your recommended next step is shown below.',
+          FAILED: 'Analysis could not be completed yet. Your AMBER classification is unchanged.',
+        } as Record<string, string>
+      )[v] ?? 'Analysis status is available.'
+    );
   }
 }

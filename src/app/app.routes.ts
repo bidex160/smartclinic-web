@@ -13,6 +13,15 @@ import { PatientLayoutComponent } from './features/results/patient-layout.compon
 
 export const routes: Routes = [
   {
+    path: 'internal/guided-self-check-reviews/:reference',
+    title: 'Internal Self-Check review | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () =>
+      import('./features/admin/internal-guided-self-check-review-page.component').then(
+        (c) => c.InternalGuidedSelfCheckReviewPageComponent,
+      ),
+  },
+  {
     path: '',
     title: 'SmartClinic | Your health check, made simple',
     loadComponent: () =>
@@ -111,6 +120,33 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/results/patient-dashboard-page.component').then(
             (c) => c.PatientDashboardPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check',
+        title: 'Guided Self-Check Clinical Operations | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-operations-page.component').then(
+            (c) => c.GuidedSelfCheckOperationsPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/reviews/:reference',
+        title: 'Urgent Self-Check Review | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-review-detail-page.component').then(
+            (c) => c.GuidedSelfCheckReviewDetailPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/analyses/:reference',
+        title: 'Self-Check AI Analysis | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-analysis-detail-page.component').then(
+            (c) => c.GuidedSelfCheckAnalysisDetailPageComponent,
           ),
       },
       {
