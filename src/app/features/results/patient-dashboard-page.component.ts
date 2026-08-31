@@ -9,6 +9,8 @@ import { PatientHealthCheckHistoryResponse } from '../../core/models/patient-hea
 import { ReferralSummary } from '../../core/models/referral.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
+import { HealthPassportOverview } from '../../core/models/health-passport.model';
+import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 
 @Component({
   selector: 'app-patient-dashboard-page',
@@ -44,9 +46,28 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
       >
         <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Patient home</p>
         <h1 class="mt-2 break-words text-3xl font-bold sm:text-4xl">
-          {{ value.dashboardMode === 'GETTING_STARTED' ? 'Welcome' : greeting() }},
-          {{ value.patient.firstName }}
+          @if (value.dashboardMode === 'GETTING_STARTED') {
+            Hi, {{ value.patient.firstName }}. Let’s take your first step towards staying healthy.
+          } @else {
+            {{ greeting() }}, {{ value.patient.firstName }}
+          }
         </h1>
+        @if (value.dashboardMode === 'GETTING_STARTED') {
+          <p class="mt-4 max-w-2xl text-brand-100">
+            Start from home in a few minutes, or book a check with a verified provider near you.
+          </p>
+          <a
+            routerLink="/me/health-journey"
+            class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-white px-6 font-bold text-brand-900 focus:ring-4 focus:ring-white/30"
+            >Start my health journey</a
+          >
+        } @else {
+          <a
+            routerLink="/me/health-passport"
+            class="mt-4 inline-flex rounded-xl border border-white/50 px-5 py-3 font-bold focus:ring-4 focus:ring-white/30"
+            >Open Smart Health Passport</a
+          >
+        }
         <p class="mt-4 text-sm text-brand-100">Your SmartClinic ID</p>
         <p class="mt-1 break-all font-mono text-xl font-bold">
           {{ value.patient.patientReference }}
@@ -163,6 +184,60 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
         </div>
       </section>
 
+      <section
+        class="mt-8 rounded-2xl border border-brand-200 bg-brand-50 p-6"
+        aria-labelledby="passport-intro-heading"
+      >
+        <h2 id="passport-intro-heading" class="text-xl font-bold text-brand-900">
+          Smart Health Passport
+        </h2>
+        <p class="mt-2 text-slate-700">
+          Your Smart Health Passport keeps your health history, checks, results and recommendations
+          together.
+        </p>
+        <a routerLink="/me/health-passport" class="mt-4 inline-block font-bold text-brand-700"
+          >View Health Passport →</a
+        >
+      </section>
+      @if (value.dashboardMode === 'ESTABLISHED' && passport(); as health) {
+        <section class="mt-8" aria-labelledby="current-health-heading">
+          <h2 id="current-health-heading" class="text-2xl font-bold">
+            Your current health journey
+          </h2>
+          <div class="mt-4 grid gap-4 md:grid-cols-3">
+            @if (health.currentNextAction; as action) {
+              <article class="rounded-2xl border bg-white p-5">
+                <p class="text-sm font-bold uppercase text-brand-700">Next action</p>
+                <h3 class="mt-2 font-bold">{{ action.title }}</h3>
+                <p class="mt-2 text-sm text-slate-600">{{ action.message }}</p>
+              </article>
+            }
+            @if (health.latestMeasurements[0]; as measurement) {
+              <article class="rounded-2xl border bg-white p-5">
+                <p class="text-sm font-bold uppercase text-brand-700">Latest measurement</p>
+                <h3 class="mt-2 font-bold">{{ measurement.type.replaceAll('_', ' ') }}</h3>
+                <p class="mt-2 text-sm text-slate-600">
+                  {{
+                    measurement.provenance === 'REPORTED_BY_YOU'
+                      ? 'Reported by you'
+                      : measurement.provenance === 'CHECKED_BY_PROVIDER'
+                        ? 'Checked by a provider'
+                        : 'Confirmed by a laboratory'
+                  }}
+                </p>
+              </article>
+            }
+            @if (health.recentActivity[0]; as activity) {
+              <article class="rounded-2xl border bg-white p-5">
+                <p class="text-sm font-bold uppercase text-brand-700">Latest activity</p>
+                <h3 class="mt-2 font-bold">{{ activity.title }}</h3>
+                <p class="mt-2 text-sm text-slate-600">{{ activity.description }}</p>
+              </article>
+            }
+          </div>
+        </section>
+      }
+
       @if (value.dashboardMode === 'GETTING_STARTED') {
         <section
           class="mt-8 rounded-2xl border bg-white p-6"
@@ -188,117 +263,133 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
         </section>
       }
 
-      <section class="mt-8" aria-labelledby="health-check-summary-heading">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 id="health-check-summary-heading" class="text-2xl font-bold text-brand-900">
-              Your Health Checks
-            </h2>
-            <p class="mt-1 text-slate-600">A summary of your preventive Health Check journey.</p>
-          </div>
-          <a routerLink="/me/health-checks" class="font-bold text-brand-700 underline"
-            >View all Health Checks</a
-          >
-        </div>
-        @if (healthChecksLoading()) {
-          <p role="status" class="mt-4 rounded-xl border bg-white p-5">
-            Loading your Health Checks…
-          </p>
-        } @else if (healthChecksError()) {
-          <div role="alert" class="mt-4 rounded-xl border border-red-200 bg-red-50 p-5">
-            <p>We couldn't load your Health Check summary.</p>
-            <button
-              type="button"
-              (click)="loadHealthChecks()"
-              class="mt-2 font-bold text-brand-700 underline"
-            >
-              Try again
-            </button>
-          </div>
-        } @else {
-          <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            @for (item of healthCheckSummary(); track item.label) {
-              <article class="rounded-2xl border border-brand-100 bg-white p-5">
-                <p class="text-sm font-semibold text-slate-600">{{ item.label }}</p>
-                <p class="mt-2 text-3xl font-bold text-brand-900">{{ item.count }}</p>
-              </article>
-            }
-          </div>
-          @if (healthChecks()?.items?.length === 0) {
-            <section class="mt-4 rounded-2xl bg-white p-7 text-center">
-              <h3 class="text-xl font-bold">No Health Checks yet.</h3>
-              <a
-                routerLink="/me/book"
-                class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white"
-                >Book your first Health Check</a
-              >
-            </section>
-          } @else {
-            <div class="mt-4 flex flex-wrap gap-3">
-              <a
-                routerLink="/me/health-checks"
-                class="rounded-xl bg-brand-700 px-6 py-3 font-bold text-white"
-                >View My Health Checks</a
-              >
-              <a
-                routerLink="/me/book"
-                class="rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700"
-                >Book another Health Check</a
-              >
+      @if (
+        value.dashboardMode === 'ESTABLISHED' ||
+        healthChecksLoading() ||
+        healthChecksError() ||
+        (healthChecks()?.items?.length ?? 0) > 0
+      ) {
+        <section class="mt-8" aria-labelledby="health-check-summary-heading">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 id="health-check-summary-heading" class="text-2xl font-bold text-brand-900">
+                Your Health Checks
+              </h2>
+              <p class="mt-1 text-slate-600">A summary of your preventive Health Check journey.</p>
             </div>
-          }
-        }
-      </section>
-
-      <section
-        class="mt-8 rounded-2xl border bg-white p-6"
-        aria-labelledby="dashboard-rewards-heading"
-      >
-        <h2 id="dashboard-rewards-heading" class="text-2xl font-bold text-brand-900">
-          Referrals & Rewards
-        </h2>
-        @if (referralsLoading()) {
-          <p role="status" class="mt-3">Loading rewards…</p>
-        } @else if (referralsError()) {
-          <div role="alert" class="mt-3">
-            <p>We could not load your referral progress.</p>
-            <button
-              type="button"
-              (click)="loadReferrals()"
-              class="mt-2 font-bold text-brand-700 underline"
+            <a routerLink="/me/health-checks" class="font-bold text-brand-700 underline"
+              >View all Health Checks</a
             >
-              Try again
-            </button>
           </div>
-        } @else if (referrals(); as rewards) {
-          <p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p>
-          @if (rewards.levelProgress.currentLevel; as current) {
-            <p class="mt-2 font-semibold">{{ current.name }} achieved</p>
+          @if (healthChecksLoading()) {
+            <p role="status" class="mt-4 rounded-xl border bg-white p-5">
+              Loading your Health Checks…
+            </p>
+          } @else if (healthChecksError()) {
+            <div role="alert" class="mt-4 rounded-xl border border-red-200 bg-red-50 p-5">
+              <p>We couldn't load your Health Check summary.</p>
+              <button
+                type="button"
+                (click)="loadHealthChecks()"
+                class="mt-2 font-bold text-brand-700 underline"
+              >
+                Try again
+              </button>
+            </div>
           } @else {
-            <p class="mt-2 font-semibold">No level achieved yet</p>
-          }
-          @if (rewards.levelProgress.highestConfiguredLevelReached) {
-            <p class="mt-1 text-sm text-slate-600">Highest level reached</p>
-          } @else if (rewards.levelProgress.nextLevel; as next) {
-            <p class="mt-1 text-sm text-slate-600">Next: {{ next.name }}</p>
-            <div class="mt-3 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
-              @for (
-                requirement of rewards.levelProgress.requirements;
-                track requirement.targetType
-              ) {
-                <p>
-                  {{ dashboardTargetLabel(requirement.targetType) }} {{ requirement.qualified }}/{{
-                    requirement.required
-                  }}
-                </p>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              @for (item of healthCheckSummary(); track item.label) {
+                <article class="rounded-2xl border border-brand-100 bg-white p-5">
+                  <p class="text-sm font-semibold text-slate-600">{{ item.label }}</p>
+                  <p class="mt-2 text-3xl font-bold text-brand-900">{{ item.count }}</p>
+                </article>
               }
             </div>
+            @if (healthChecks()?.items?.length === 0) {
+              <section class="mt-4 rounded-2xl bg-white p-7 text-center">
+                <h3 class="text-xl font-bold">No Health Checks yet.</h3>
+                <a
+                  routerLink="/me/book"
+                  class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white"
+                  >Book your first Health Check</a
+                >
+              </section>
+            } @else {
+              <div class="mt-4 flex flex-wrap gap-3">
+                <a
+                  routerLink="/me/health-checks"
+                  class="rounded-xl bg-brand-700 px-6 py-3 font-bold text-white"
+                  >View My Health Checks</a
+                >
+                <a
+                  routerLink="/me/book"
+                  class="rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700"
+                  >Book another Health Check</a
+                >
+              </div>
+            }
           }
-          <a routerLink="/me/referrals" class="mt-4 inline-flex font-bold text-brand-700 underline"
-            >View Referrals & Rewards</a
-          >
-        }
-      </section>
+        </section>
+      }
+
+      @if (
+        value.dashboardMode === 'ESTABLISHED' ||
+        referralsLoading() ||
+        referralsError() ||
+        (referrals()?.availablePoints ?? 0) > 0 ||
+        (referrals()?.registeredDirectReferrals ?? 0) > 0
+      ) {
+        <section
+          class="mt-8 rounded-2xl border bg-white p-6"
+          aria-labelledby="dashboard-rewards-heading"
+        >
+          <h2 id="dashboard-rewards-heading" class="text-2xl font-bold text-brand-900">
+            Referrals & Rewards
+          </h2>
+          @if (referralsLoading()) {
+            <p role="status" class="mt-3">Loading rewards…</p>
+          } @else if (referralsError()) {
+            <div role="alert" class="mt-3">
+              <p>We could not load your referral progress.</p>
+              <button
+                type="button"
+                (click)="loadReferrals()"
+                class="mt-2 font-bold text-brand-700 underline"
+              >
+                Try again
+              </button>
+            </div>
+          } @else if (referrals(); as rewards) {
+            <p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p>
+            @if (rewards.levelProgress.currentLevel; as current) {
+              <p class="mt-2 font-semibold">{{ current.name }} achieved</p>
+            } @else {
+              <p class="mt-2 font-semibold">No level achieved yet</p>
+            }
+            @if (rewards.levelProgress.highestConfiguredLevelReached) {
+              <p class="mt-1 text-sm text-slate-600">Highest level reached</p>
+            } @else if (rewards.levelProgress.nextLevel; as next) {
+              <p class="mt-1 text-sm text-slate-600">Next: {{ next.name }}</p>
+              <div class="mt-3 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
+                @for (
+                  requirement of rewards.levelProgress.requirements;
+                  track requirement.targetType
+                ) {
+                  <p>
+                    {{ dashboardTargetLabel(requirement.targetType) }}
+                    {{ requirement.qualified }}/{{ requirement.required }}
+                  </p>
+                }
+              </div>
+            }
+            <a
+              routerLink="/me/referrals"
+              class="mt-4 inline-flex font-bold text-brand-700 underline"
+              >View Referrals & Rewards</a
+            >
+          }
+        </section>
+      }
 
       <section class="mt-8" aria-labelledby="quick-access-heading">
         <h2 id="quick-access-heading" class="text-2xl font-bold">Quick access</h2>
@@ -425,6 +516,7 @@ export class PatientDashboardPageComponent {
   private readonly api = inject(PatientDashboardApiService);
   private readonly healthChecksApi = inject(HealthCheckResultsApiService);
   private readonly referralsApi = inject(ReferralsApiService);
+  private readonly passportApi = inject(HealthPassportApiService);
   private readonly fb = inject(FormBuilder);
   readonly dashboard = signal<PatientDashboard | null>(null);
   readonly loading = signal(true);
@@ -443,6 +535,7 @@ export class PatientDashboardPageComponent {
   readonly referrals = signal<ReferralSummary | null>(null);
   readonly referralsLoading = signal(false);
   readonly referralsError = signal(false);
+  readonly passport = signal<HealthPassportOverview | null>(null);
   readonly healthCheckSummary = computed(() => {
     const items = this.healthChecks()?.items ?? [];
     const count = (category: string) =>
@@ -456,6 +549,7 @@ export class PatientDashboardPageComponent {
   });
   readonly today = new Date().toISOString().slice(0, 10);
   readonly quickAccess = [
+    { label: 'Smart Health Passport', route: '/me/health-passport' },
     { label: 'Health Records', route: '/me/health-records' },
     { label: 'Prescriptions', route: '/me/prescriptions' },
     { label: 'My Providers', route: '/me/providers' },
@@ -472,6 +566,7 @@ export class PatientDashboardPageComponent {
     this.load();
     this.loadHealthChecks();
     this.loadReferrals();
+    this.passportApi.overview().subscribe({ next: (value) => this.passport.set(value) });
   }
   load(): void {
     if (this.loading() && this.dashboard()) return;

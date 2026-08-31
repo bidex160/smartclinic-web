@@ -79,6 +79,8 @@ export class PatientLayoutComponent {
   readonly menuOpen = signal(false);
   readonly navigation = [
     { label: 'Dashboard', route: '/me/dashboard', exact: true },
+    { label: 'Smart Health Passport', route: '/me/health-passport', exact: true },
+    { label: 'Guided Self-Checks', route: '/me/self-checks', exact: false },
     { label: 'My Health Checks', route: '/me/health-checks', exact: true },
     { label: 'Book Health Check', route: '/me/book', exact: true },
     { label: 'My Care', route: '/me/care', exact: false },

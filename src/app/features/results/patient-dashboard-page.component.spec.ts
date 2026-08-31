@@ -5,6 +5,7 @@ import { PatientDashboard } from '../../core/models/patient-dashboard.model';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
+import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 import { PatientDashboardPageComponent } from './patient-dashboard-page.component';
 
 describe('PatientDashboardPageComponent', () => {
@@ -24,6 +25,14 @@ describe('PatientDashboardPageComponent', () => {
         { provide: PatientDashboardApiService, useValue: api },
         { provide: HealthCheckResultsApiService, useValue: healthChecksApi },
         { provide: ReferralsApiService, useValue: referralsApi },
+        {
+          provide: HealthPassportApiService,
+          useValue: {
+            overview: vi.fn(() =>
+              of({ currentNextAction: null, latestMeasurements: [], recentActivity: [] }),
+            ),
+          },
+        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientDashboardPageComponent);
@@ -45,6 +54,7 @@ describe('PatientDashboardPageComponent', () => {
         { provide: PatientDashboardApiService, useValue: api },
         { provide: HealthCheckResultsApiService, useValue: healthChecksApi },
         { provide: ReferralsApiService, useValue: referralsApi },
+        { provide: HealthPassportApiService, useValue: { overview: vi.fn(() => new Subject()) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientDashboardPageComponent);
@@ -55,7 +65,8 @@ describe('PatientDashboardPageComponent', () => {
   it('renders GETTING_STARTED with the backend patient reference and checklist', async () => {
     const { fixture } = await setup();
     const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Welcome, Ada');
+    expect(text).toContain('Hi, Ada. Let’s take your first step towards staying healthy.');
+    expect(text).toContain('Start my health journey');
     expect(text).toContain('SCP-8K4M-27QD');
     expect(text).toContain('Getting started');
     expect(text).toContain('SmartClinic account created');
