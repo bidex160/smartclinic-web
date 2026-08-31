@@ -73,6 +73,16 @@ describe('GuidedSelfCheckOperationsApiService', () => {
     r.flush({});
   });
   it('uses internal detail/start/complete and preserves separate guidance and note', () => {
+    api.listMyReviews({ status: 'IN_REVIEW', priority: 'URGENT', page: 2, limit: 20 }).subscribe();
+    let list = http.expectOne((r) => r.url === '/api/v1/internal/guided-self-check-reviews');
+    expect(list.request.params.get('status')).toBe('IN_REVIEW');
+    expect(list.request.params.get('priority')).toBe('URGENT');
+    expect(list.request.params.get('page')).toBe('2');
+    expect(list.request.params.get('limit')).toBe('20');
+    expect(list.request.params.has('professionalReference')).toBe(false);
+    expect(list.request.params.has('userId')).toBe(false);
+    expect(list.request.params.has('email')).toBe(false);
+    list.flush({ items: [], total: 0, page: 2, limit: 20 });
     api.internalReview('SC-GSCR/1').subscribe();
     http.expectOne('/api/v1/internal/guided-self-check-reviews/SC-GSCR%2F1').flush({});
     api.startReview('SC-GSCR-1').subscribe();

@@ -53,6 +53,23 @@ export interface ReviewFilters {
   page?: number;
   limit?: number;
 }
+export type MyReviewStatus = 'ASSIGNED' | 'IN_REVIEW' | 'COMPLETED' | 'CANCELLED';
+export interface MyReviewFilters {
+  status?: MyReviewStatus;
+  priority?: SelfCheckReviewPriority;
+  page?: number;
+  limit?: number;
+}
+export interface MyReviewRow {
+  reference: string;
+  selfCheckReference: string;
+  classification: GuidedSelfCheckClassification;
+  priority: SelfCheckReviewPriority;
+  status: MyReviewStatus;
+  assignedAt: string;
+  startedAt: string | null;
+  createdAt: string;
+}
 export interface SelfCheckReviewRow {
   reference: string;
   selfCheckReference: string;

@@ -88,6 +88,7 @@ describe('InternalGuidedSelfCheckReviewPageComponent', () => {
     c.decision = 'FOLLOW_UP_RECOMMENDED';
     f.detectChanges();
     const text = f.nativeElement.textContent;
+    expect(text).toContain('My Reviews');
     expect(text).toContain('Original Self-Check safety guidance');
     expect(text).toContain('Recommended next action');
     expect(c.allowedActions()).toContain('FIND_CARE');

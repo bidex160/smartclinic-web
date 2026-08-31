@@ -9,6 +9,8 @@ import {
   InternalClinicalCapability,
   InternalClinicalProfessional,
   InternalReviewDetail,
+  MyReviewFilters,
+  MyReviewRow,
   Paged,
   ProfessionalFilters,
   ReprocessResult,
@@ -92,6 +94,11 @@ export class GuidedSelfCheckOperationsApiService {
     return this.http.get<InternalReviewDetail>(
       `${this.base}/internal/guided-self-check-reviews/${encodeURIComponent(reference)}`,
     );
+  }
+  listMyReviews(filters: MyReviewFilters = {}) {
+    return this.http.get<Paged<MyReviewRow>>(`${this.base}/internal/guided-self-check-reviews`, {
+      params: params(filters),
+    });
   }
   startReview(reference: string) {
     return this.http.post<SelfCheckReviewDetail>(

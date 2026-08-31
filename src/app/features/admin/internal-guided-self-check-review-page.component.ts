@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
   InternalReviewDetail,
@@ -10,9 +10,12 @@ import { GuidedSelfCheckNextActionType } from '../../core/models/guided-self-che
 import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-self-check-operations-api.service';
 @Component({
   selector: 'app-internal-guided-self-check-review-page',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-5xl px-5 py-8">
+    <a routerLink="/internal/guided-self-check-reviews" class="font-bold text-brand-700"
+      >← My Reviews</a
+    >
     <header>
       <p class="font-bold uppercase text-red-800">Internal clinical workspace</p>
       <h1 class="mt-2 text-3xl font-bold">Urgent Self-Check clinical review</h1>
@@ -144,6 +147,13 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
       @if (actionError()) {
         <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4">{{ actionError() }}</p>
       }
+      @if (r.status === 'COMPLETED' || r.status === 'CANCELLED') {
+        <a
+          routerLink="/internal/guided-self-check-reviews"
+          class="mt-5 inline-flex rounded-lg bg-brand-700 px-5 py-3 font-bold text-white"
+          >Return to My Reviews</a
+        >
+      }
     }
   </main>`,
 })
@@ -175,6 +185,8 @@ export class InternalGuidedSelfCheckReviewPageComponent {
   }
   load() {
     this.loading.set(true);
+    this.review.set(null);
+    this.error.set('');
     this.api
       .internalReview(this.ref)
       .pipe(finalize(() => this.loading.set(false)))
