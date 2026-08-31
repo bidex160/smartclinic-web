@@ -55,6 +55,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               @if (action.cta.type === 'HEALTH_CHECK_PACKAGE') {
                 <a
                   routerLink="/health-check/packages"
+                  [queryParams]="{ package: action.cta.packageCode }"
                   class="mt-4 inline-flex rounded-lg bg-brand-700 px-4 py-3 font-bold text-white"
                   >View Health Checks</a
                 >
@@ -357,12 +358,10 @@ export class GuidedSelfCheckPageComponent {
     return v.fundingStatus === 'PAID' || v.fundingStatus === 'SATISFIED_FREE';
   }
   loadFunding() {
-    this.api
-      .funding(this.reference)
-      .subscribe({
-        next: (v) => this.funding.set(v),
-        error: () => this.actionError.set('We could not load payment status. Please try again.'),
-      });
+    this.api.funding(this.reference).subscribe({
+      next: (v) => this.funding.set(v),
+      error: () => this.actionError.set('We could not load payment status. Please try again.'),
+    });
   }
   pay() {
     if (this.busy()) return;

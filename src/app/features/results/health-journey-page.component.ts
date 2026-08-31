@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { HealthCheckPackage } from '../../core/models/health-check-package.model';
+import { HealthCheckCataloguePackage } from '../../core/models/health-check-package.model';
 import { GuidedSelfCheckProduct } from '../../core/models/guided-self-check.model';
 import { GuidedSelfChecksApiService } from '../../core/services/guided-self-checks-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
@@ -67,12 +67,34 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
                   About {{ item.estimatedDurationMinutes }} minutes
                 </p>
               }
+              @if (item.includedContents.length) {
+                <h3 class="mt-5 text-sm font-bold">Included</h3>
+                <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                  @for (content of item.includedContents; track content.code) {
+                    <li class="flex gap-2">
+                      <span aria-hidden="true">✓</span><span>{{ content.name }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+              @if (item.fromPriceMinor !== null && item.currency) {
+                <p class="mt-5 text-xl font-bold">
+                  From {{ money(item.fromPriceMinor, item.currency) }}
+                </p>
+              } @else {
+                <p class="mt-5 font-semibold text-slate-600">
+                  Price shown after you choose a provider
+                </p>
+              }
             } @else {
               <p class="mt-3 text-slate-600">
                 This option is currently unavailable in the Health Check catalogue.
               </p>
             }
-            <a routerLink="/health-check/packages" class="mt-auto pt-6 font-bold text-brand-700"
+            <a
+              routerLink="/health-check/packages"
+              [queryParams]="{ package: option.code }"
+              class="mt-auto pt-6 font-bold text-brand-700"
               >View Health Check options →</a
             >
           </article>
@@ -85,7 +107,7 @@ export class HealthJourneyPageComponent {
   private readonly self = inject(GuidedSelfChecksApiService);
   private readonly packagesApi = inject(HealthCheckPackagesApiService);
   readonly product = signal<GuidedSelfCheckProduct | null>(null);
-  readonly packages = signal<readonly HealthCheckPackage[]>([]);
+  readonly packages = signal<readonly HealthCheckCataloguePackage[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly checkChoices = [
@@ -108,7 +130,7 @@ export class HealthJourneyPageComponent {
       .pipe(finalize(done))
       .subscribe({ next: (v) => this.product.set(v), error: () => this.error.set(true) });
     this.packagesApi
-      .getPackages()
+      .getCatalogue()
       .pipe(finalize(done))
       .subscribe({ next: (v) => this.packages.set(v), error: () => this.error.set(true) });
   }

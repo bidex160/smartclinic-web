@@ -47,4 +47,34 @@ describe('HealthCheckPackagesApiService', () => {
     expect(request.request.method).toBe('GET');
     request.flush(response);
   });
+
+  it('uses the V2 catalogue and sends only configuration selections for quoting', () => {
+    service.getCatalogue().subscribe();
+    let request = httpTesting.expectOne(
+      'http://api.example.test/api/v1/health-check-packages/catalogue',
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+
+    service
+      .getConfigurationQuote({
+        packageCode: 'ESSENTIAL',
+        providerReference: 'SCPR-SAFE',
+        fulfilmentModeCode: 'HOME_VISIT',
+        addonCodes: ['ADDON_A'],
+      })
+      .subscribe();
+    request = httpTesting.expectOne(
+      'http://api.example.test/api/v1/health-check-packages/configuration-quote',
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      packageCode: 'ESSENTIAL',
+      providerReference: 'SCPR-SAFE',
+      fulfilmentModeCode: 'HOME_VISIT',
+      addonCodes: ['ADDON_A'],
+    });
+    expect(request.request.body.totalMinor).toBeUndefined();
+    request.flush({});
+  });
 });

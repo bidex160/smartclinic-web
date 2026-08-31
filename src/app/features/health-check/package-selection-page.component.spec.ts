@@ -25,7 +25,7 @@ describe('PackageSelectionPageComponent', () => {
     const fixture = TestBed.createComponent(PackageSelectionPageComponent);
     const healthCheckPackage: HealthCheckPackage = {
       id: 'package-id',
-      code: 'FROM_API',
+      code: 'ESSENTIAL',
       name: 'API package',
       description: 'API description',
       benefits: ['API benefit'],
@@ -33,15 +33,35 @@ describe('PackageSelectionPageComponent', () => {
       isActive: true,
     };
     TestBed.inject(HttpTestingController)
+      .expectOne('http://api.example.test/api/v1/health-check-packages/catalogue')
+      .flush([
+        {
+          code: 'ESSENTIAL',
+          name: 'Essential Health Check',
+          description: 'API description',
+          benefits: [],
+          estimatedDurationMinutes: 45,
+          isActive: true,
+          includedContents: [
+            { code: 'BP', name: 'API content', category: 'MEASUREMENT', description: null },
+          ],
+          optionalAddons: [],
+          fromPriceMinor: null,
+          currency: null,
+          fulfilmentModes: [],
+        },
+      ]);
+    TestBed.inject(HttpTestingController)
       .expectOne('http://api.example.test/api/v1/health-check-packages')
       .flush([healthCheckPackage]);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('API benefit');
+    expect(fixture.nativeElement.textContent).toContain('API content');
+    expect(fixture.nativeElement.textContent).toContain('Price shown after you choose a provider');
     expect(fixture.nativeElement.textContent).toContain('45 minutes');
     expect(fixture.nativeElement.textContent).not.toContain('price');
 
-    fixture.componentInstance.selectPackage(healthCheckPackage);
+    fixture.componentInstance.selectPackage(fixture.componentInstance.packages()[0]);
 
     expect(state.selectedPackage()).toEqual(healthCheckPackage);
     expect(router.navigate).toHaveBeenCalledWith(['/book/fulfilment']);
