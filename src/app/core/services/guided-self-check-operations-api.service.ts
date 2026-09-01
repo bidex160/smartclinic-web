@@ -6,6 +6,10 @@ import {
   BatchReprocessResult,
   ClassificationProcessingRow,
   CompleteReviewRequest,
+  ContactWorkItemDetail,
+  ContactWorkItemFilters,
+  ContactWorkItemOutcome,
+  ContactWorkItemRow,
   InternalClinicalCapability,
   InternalClinicalProfessional,
   InternalReviewDetail,
@@ -110,6 +114,41 @@ export class GuidedSelfCheckOperationsApiService {
     return this.http.post<SelfCheckReviewDetail>(
       `${this.base}/internal/guided-self-check-reviews/${encodeURIComponent(reference)}/complete`,
       payload,
+    );
+  }
+  contactWorkItems(filters: ContactWorkItemFilters = {}) {
+    return this.http.get<Paged<ContactWorkItemRow>>(
+      `${this.base}/admin/guided-self-check-contact-work-items`,
+      { params: params(filters) },
+    );
+  }
+  contactWorkItem(reference: string) {
+    return this.http.get<ContactWorkItemDetail>(
+      `${this.base}/admin/guided-self-check-contact-work-items/${encodeURIComponent(reference)}`,
+    );
+  }
+  acknowledgeContact(reference: string) {
+    return this.http.post<ContactWorkItemRow>(
+      `${this.base}/admin/guided-self-check-contact-work-items/${encodeURIComponent(reference)}/acknowledge`,
+      {},
+    );
+  }
+  startContact(reference: string) {
+    return this.http.post<ContactWorkItemRow>(
+      `${this.base}/admin/guided-self-check-contact-work-items/${encodeURIComponent(reference)}/start`,
+      {},
+    );
+  }
+  completeContact(reference: string, outcome: ContactWorkItemOutcome, note?: string) {
+    return this.http.post<ContactWorkItemRow>(
+      `${this.base}/admin/guided-self-check-contact-work-items/${encodeURIComponent(reference)}/complete`,
+      { outcome, ...(note?.trim() && { note: note.trim() }) },
+    );
+  }
+  cancelContact(reference: string, reason?: string) {
+    return this.http.post<ContactWorkItemRow>(
+      `${this.base}/admin/guided-self-check-contact-work-items/${encodeURIComponent(reference)}/cancel`,
+      reason?.trim() ? { reason: reason.trim() } : {},
     );
   }
   analyses(status?: SelfCheckAnalysisStatus, page = 1, limit = 25) {

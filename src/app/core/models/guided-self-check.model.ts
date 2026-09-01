@@ -64,10 +64,10 @@ export interface GuidedSelfCheckFunding {
   checkoutUrl: string | null;
   accessCode: string | null;
 }
-export interface GuidedSelfCheckOption {
-  value: string;
-  label: string;
-}
+// export interface GuidedSelfCheckOption {
+//   value: string;
+//   label: string;
+// }
 export interface GuidedSelfCheckQuestion {
   key: string;
   text: string;
@@ -75,7 +75,7 @@ export interface GuidedSelfCheckQuestion {
   type: GuidedSelfCheckQuestionType;
   required: boolean;
   allowsDontKnow: boolean;
-  options: readonly GuidedSelfCheckOption[] | null;
+  options: readonly string[] | null;
   condition: unknown;
   validation: Record<string, unknown> | null;
   measurement: Record<string, unknown> | null;
@@ -147,6 +147,13 @@ export interface GuidedSelfCheckPatientResult {
     required: boolean;
     status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
     humanReviewRecommended: boolean;
+  };
+  professionalContact: null | {
+    required: boolean;
+    status: 'PENDING' | 'ACKNOWLEDGED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+    completedAt: string | null;
+    outcome:
+      'CONTACTED' | 'UNREACHABLE' | 'PATIENT_DECLINED' | 'REFERRED_TO_CLINICAL_REVIEW' | null;
   };
   patientMessageKey?: string;
   title?: string;

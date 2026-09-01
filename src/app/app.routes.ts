@@ -132,33 +132,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'guided-self-check',
-        title: 'Guided Self-Check Clinical Operations | SmartClinic',
-        canActivate: [adminPricingGuard],
-        loadComponent: () =>
-          import('./features/admin/guided-self-check-operations-page.component').then(
-            (c) => c.GuidedSelfCheckOperationsPageComponent,
-          ),
-      },
-      {
-        path: 'guided-self-check/reviews/:reference',
-        title: 'Urgent Self-Check Review | SmartClinic',
-        canActivate: [adminPricingGuard],
-        loadComponent: () =>
-          import('./features/admin/guided-self-check-review-detail-page.component').then(
-            (c) => c.GuidedSelfCheckReviewDetailPageComponent,
-          ),
-      },
-      {
-        path: 'guided-self-check/analyses/:reference',
-        title: 'Self-Check AI Analysis | SmartClinic',
-        canActivate: [adminPricingGuard],
-        loadComponent: () =>
-          import('./features/admin/guided-self-check-analysis-detail-page.component').then(
-            (c) => c.GuidedSelfCheckAnalysisDetailPageComponent,
-          ),
-      },
-      {
         path: 'profile',
         title: 'My profile | SmartClinic',
         canActivate: [authenticatedUserGuard],
@@ -752,6 +725,66 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin-dashboard-page.component').then(
             (component) => component.AdminDashboardPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check',
+        title: 'Guided Self-Check Clinical Operations | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-operations-page.component').then(
+            (c) => c.GuidedSelfCheckOperationsPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/reviews/:reference',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-review-detail-page.component').then(
+            (c) => c.GuidedSelfCheckReviewDetailPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/analyses/:reference',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-analysis-detail-page.component').then(
+            (c) => c.GuidedSelfCheckAnalysisDetailPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/contact-work-items/:reference',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-contact-detail-page.component').then(
+            (c) => c.GuidedSelfCheckContactDetailPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/governance',
+        title: 'Self-Check Clinical Governance | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-governance-page.component').then(
+            (c) => c.GuidedSelfCheckGovernancePageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/governance/new',
+        title: 'Create Clinical Ruleset | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-ruleset-new-page.component').then(
+            (c) => c.GuidedSelfCheckRulesetNewPageComponent,
+          ),
+      },
+      {
+        path: 'guided-self-check/governance/:reference',
+        title: 'Clinical Ruleset | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/guided-self-check-ruleset-detail-page.component').then(
+            (c) => c.GuidedSelfCheckRulesetDetailPageComponent,
           ),
       },
       {

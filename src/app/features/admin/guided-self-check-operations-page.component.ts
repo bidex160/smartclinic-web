@@ -6,6 +6,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-self-check-operations-api.service';
 import {
   ClassificationProcessingRow,
+  ContactWorkItemRow,
   InternalClinicalCapability,
   InternalClinicalProfessional,
   SelfCheckAnalysis,
@@ -37,6 +38,11 @@ import {
           {{ t.label }}
         </button>
       }
+      <a
+        routerLink="/admin/guided-self-check/governance"
+        class="inline-flex min-h-11 items-center rounded-xl border px-4 font-bold"
+        >Clinical Governance</a
+      >
     </nav>
     @if (loading()) {
       <p role="status" class="mt-6 rounded-2xl border bg-white p-6">
@@ -103,6 +109,61 @@ import {
             }
           </section>
         }
+        @case ('routine') {
+          <section class="mt-6">
+            <h2 class="text-xl font-bold">Routine AMBER Reviews</h2>
+            <p class="mt-1 text-slate-600">
+              Internal clinical review prompted by validated AMBER decision support.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <label class="font-semibold"
+                >Status<select [(ngModel)]="reviewStatus" class="ml-2 rounded-lg border p-2">
+                  <option value="">All statuses</option>
+                  @for (s of reviewStatuses; track s) {
+                    <option [value]="s">{{ label(s) }}</option>
+                  }
+                </select></label
+              ><button
+                type="button"
+                (click)="applyFilters()"
+                class="rounded-lg bg-brand-700 px-4 font-bold text-white"
+              >
+                Apply
+              </button>
+            </div>
+            @if (!reviews().length) {
+              <p class="mt-5 rounded-2xl border bg-white p-6">
+                No routine AMBER reviews match this view.
+              </p>
+            } @else {
+              <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                @for (r of reviews(); track r.reference) {
+                  <article class="rounded-2xl border border-amber-200 bg-white p-5">
+                    <div class="flex justify-between gap-3">
+                      <div>
+                        <span
+                          class="rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-950"
+                          >AMBER · Routine</span
+                        >
+                        <h3 class="mt-3 font-bold">{{ r.reference }}</h3>
+                        <p class="text-sm">Self-Check {{ r.selfCheckReference }}</p>
+                      </div>
+                      <strong>{{ label(r.status) }}</strong>
+                    </div>
+                    <p class="mt-3">
+                      Assigned: {{ r.assignedProfessional?.displayName || 'Not assigned' }}
+                    </p>
+                    <a
+                      [routerLink]="['/admin/guided-self-check/reviews', r.reference]"
+                      class="mt-4 inline-flex font-bold text-brand-700 underline"
+                      >Open routine review</a
+                    >
+                  </article>
+                }
+              </div>
+            }
+          </section>
+        }
         @case ('analyses') {
           <section class="mt-6">
             @if (!analyses().length) {
@@ -122,14 +183,69 @@ import {
                     </div>
                     @if (a.output?.humanReviewSuggested) {
                       <p class="mt-3 rounded-lg bg-amber-50 p-3 font-semibold">
-                        Human review recommended. No routine AMBER review workflow is currently
-                        exposed.
+                        Human review recommended. Check Routine Reviews for the authoritative review
+                        workflow.
                       </p>
                     }
                     <a
                       [routerLink]="['/admin/guided-self-check/analyses', a.reference]"
                       class="mt-4 inline-flex font-bold text-brand-700 underline"
                       >View analysis</a
+                    >
+                  </article>
+                }
+              </div>
+            }
+          </section>
+        }
+        @case ('contacts') {
+          <section class="mt-6">
+            <h2 class="text-xl font-bold">Professional Contact</h2>
+            <p class="mt-1 text-slate-600">
+              Manual SmartClinic Operations contact work. Opening a task does not call or message
+              the patient.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <label class="font-semibold"
+                >Status<select [(ngModel)]="contactStatusFilter" class="ml-2 rounded-lg border p-2">
+                  <option value="">All statuses</option>
+                  @for (s of contactStatuses; track s) {
+                    <option [value]="s">{{ contactStatus(s) }}</option>
+                  }
+                </select></label
+              ><label class="font-semibold"
+                >Priority<select [(ngModel)]="contactPriority" class="ml-2 rounded-lg border p-2">
+                  <option value="">All priorities</option>
+                  <option value="URGENT">Urgent</option>
+                  <option value="ROUTINE">Routine</option>
+                </select></label
+              ><button
+                type="button"
+                (click)="applyFilters()"
+                class="rounded-lg bg-brand-700 px-4 font-bold text-white"
+              >
+                Apply
+              </button>
+            </div>
+            @if (!contacts().length) {
+              <p class="mt-5 rounded-2xl border bg-white p-6">
+                No active professional-contact work items.
+              </p>
+            } @else {
+              <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                @for (c of contacts(); track c.reference) {
+                  <article class="rounded-2xl border bg-white p-5">
+                    <div class="flex justify-between gap-3">
+                      <span class="font-bold">{{ label(c.priority) }} priority</span
+                      ><strong>{{ contactStatus(c.status) }}</strong>
+                    </div>
+                    <h3 class="mt-3 font-bold">{{ c.reference }}</h3>
+                    <p class="text-sm">Self-Check {{ c.selfCheckReference }}</p>
+                    <p class="mt-2 text-sm">Created {{ date(c.createdAt) }}</p>
+                    <a
+                      [routerLink]="['/admin/guided-self-check/contact-work-items', c.reference]"
+                      class="mt-4 inline-flex font-bold text-brand-700 underline"
+                      >Open contact work item</a
                     >
                   </article>
                 }
@@ -304,6 +420,27 @@ import {
           </section>
         }
       }
+      @if (tab() === 'reviews' || tab() === 'routine' || tab() === 'contacts') {
+        <nav aria-label="Operations queue pages" class="mt-6 flex items-center justify-between">
+          <button
+            type="button"
+            (click)="go(page() - 1)"
+            [disabled]="loading() || page() === 1"
+            class="min-h-11 rounded-lg border px-4 font-bold disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <span>Page {{ page() }} of {{ totalPages() }}</span>
+          <button
+            type="button"
+            (click)="go(page() + 1)"
+            [disabled]="loading() || page() >= totalPages()"
+            class="min-h-11 rounded-lg border px-4 font-bold disabled:opacity-40"
+          >
+            Next
+          </button>
+        </nav>
+      }
     }
     @if (actionError()) {
       <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4 text-red-900">{{ actionError() }}</p>
@@ -315,7 +452,9 @@ export class GuidedSelfCheckOperationsPageComponent {
   private auth = inject(AuthStateService);
   tabs = [
     { key: 'reviews', label: 'Urgent Reviews' },
+    { key: 'routine', label: 'Routine Reviews' },
     { key: 'analyses', label: 'AI Analysis' },
+    { key: 'contacts', label: 'Professional Contact' },
     { key: 'processing', label: 'Classification Processing' },
     { key: 'professionals', label: 'Clinical Professionals' },
   ] as const;
@@ -325,6 +464,7 @@ export class GuidedSelfCheckOperationsPageComponent {
   error = signal('');
   actionError = signal('');
   reviews = signal<readonly SelfCheckReviewRow[]>([]);
+  contacts = signal<readonly ContactWorkItemRow[]>([]);
   analyses = signal<readonly SelfCheckAnalysis[]>([]);
   processing = signal<readonly ClassificationProcessingRow[]>([]);
   professionals = signal<readonly InternalClinicalProfessional[]>([]);
@@ -338,6 +478,12 @@ export class GuidedSelfCheckOperationsPageComponent {
     'CANCELLED',
   ];
   reviewStatus = '';
+  contactStatusFilter = '';
+  contactPriority = '';
+  contactStatuses = ['PENDING', 'ACKNOWLEDGED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+  page = signal(1);
+  total = signal(0);
+  limit = 20;
   questionnaireVersion: number | null = null;
   batchLimit = 25;
   batchMessage = signal('');
@@ -356,6 +502,19 @@ export class GuidedSelfCheckOperationsPageComponent {
   }
   select(key: (typeof this.tabs)[number]['key']) {
     this.tab.set(key);
+    this.page.set(1);
+    this.load();
+  }
+  applyFilters() {
+    this.page.set(1);
+    this.load();
+  }
+  totalPages() {
+    return Math.max(1, Math.ceil(this.total() / this.limit));
+  }
+  go(page: number) {
+    if (page < 1 || page > this.totalPages()) return;
+    this.page.set(page);
     this.load();
   }
   load() {
@@ -363,11 +522,29 @@ export class GuidedSelfCheckOperationsPageComponent {
     this.error.set('');
     if (this.tab() === 'reviews')
       this.api
-        .reviews({ status: (this.reviewStatus as never) || undefined, priority: 'URGENT' })
+        .reviews({
+          status: (this.reviewStatus as never) || undefined,
+          page: this.page(),
+          limit: this.limit,
+        })
         .pipe(finalize(() => this.loading.set(false)))
         .subscribe({
-          next: (r) => this.reviews.set(r.items),
+          next: (r) => this.setPaged(this.reviews, r),
           error: () => this.error.set('Urgent reviews could not be loaded.'),
+        });
+    else if (this.tab() === 'routine')
+      this.api
+        .reviews({
+          reviewModel: 'INTERNAL_ROUTINE',
+          classification: 'AMBER',
+          status: (this.reviewStatus as never) || undefined,
+          page: this.page(),
+          limit: this.limit,
+        })
+        .pipe(finalize(() => this.loading.set(false)))
+        .subscribe({
+          next: (r) => this.setPaged(this.reviews, r),
+          error: () => this.error.set('Routine AMBER reviews could not be loaded.'),
         });
     else if (this.tab() === 'analyses')
       this.api
@@ -376,6 +553,19 @@ export class GuidedSelfCheckOperationsPageComponent {
         .subscribe({
           next: (r) => this.analyses.set(r.items),
           error: () => this.error.set('AI analyses could not be loaded.'),
+        });
+    else if (this.tab() === 'contacts')
+      this.api
+        .contactWorkItems({
+          status: (this.contactStatusFilter as never) || undefined,
+          priority: (this.contactPriority as never) || undefined,
+          page: this.page(),
+          limit: this.limit,
+        })
+        .pipe(finalize(() => this.loading.set(false)))
+        .subscribe({
+          next: (r) => this.setPaged(this.contacts, r),
+          error: () => this.error.set('Professional contact work could not be loaded.'),
         });
     else if (this.tab() === 'processing')
       this.api
@@ -393,6 +583,15 @@ export class GuidedSelfCheckOperationsPageComponent {
           next: (r) => this.professionals.set(r.items),
           error: () => this.error.set('Clinical professionals could not be loaded.'),
         });
+  }
+  private setPaged<T>(
+    target: { set(value: readonly T[]): void },
+    result: import('../../core/models/guided-self-check-operations.model').Paged<T>,
+  ) {
+    target.set(result.items);
+    this.total.set(result.total);
+    this.page.set(result.page);
+    this.limit = result.limit;
   }
   authorize() {
     this.mutate(
@@ -461,5 +660,8 @@ export class GuidedSelfCheckOperationsPageComponent {
           new Date(v),
         )
       : 'Not recorded';
+  }
+  contactStatus(v: string) {
+    return v === 'IN_PROGRESS' ? 'In progress' : this.label(v);
   }
 }

@@ -16,15 +16,22 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
       >← Clinical Operations</a
     >
     @if (loading()) {
-      <p role="status" class="mt-6">Loading urgent review…</p>
+      <p role="status" class="mt-6">Loading internal review…</p>
     } @else if (error()) {
       <div role="alert" class="mt-6 rounded-xl bg-red-50 p-5">
         {{ error() }}
         <button type="button" (click)="load()" class="font-bold underline">Retry</button>
       </div>
     } @else if (review(); as r) {
-      <header class="mt-6 rounded-2xl bg-red-950 p-6 text-white">
-        <p class="font-bold uppercase">Urgent RED review</p>
+      <header
+        class="mt-6 rounded-2xl p-6"
+        [class.bg-red-950]="r.reviewModel === 'INTERNAL_URGENT'"
+        [class.text-white]="r.reviewModel === 'INTERNAL_URGENT'"
+        [class.bg-amber-100]="r.reviewModel === 'INTERNAL_ROUTINE'"
+      >
+        <p class="font-bold uppercase">
+          {{ r.reviewModel === 'INTERNAL_ROUTINE' ? 'Routine AMBER review' : 'Urgent RED review' }}
+        </p>
         <h1 class="mt-2 text-3xl font-bold">{{ r.reference }}</h1>
         <p class="mt-2">Self-Check {{ r.selfCheckReference }}</p>
       </header>
@@ -32,7 +39,12 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
         <section class="rounded-2xl border bg-white p-5">
           <h2 class="text-xl font-bold">Classification</h2>
           <p class="mt-3">
-            <strong>{{ r.classification }}</strong> · urgent guidance remains authoritative
+            <strong>{{ r.classification }}</strong> ·
+            {{
+              r.reviewModel === 'INTERNAL_ROUTINE'
+                ? 'classification remains AMBER'
+                : 'urgent guidance remains authoritative'
+            }}
           </p>
           <p class="mt-2 text-sm">
             Matched governed reason codes: {{ r.matchedReasonCodes.join(', ') || 'None returned' }}
@@ -82,7 +94,10 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
               {{ busy() ? 'Acknowledging…' : 'Acknowledge' }}
             </button>
           }
-          @if (r.status === 'PENDING' || r.status === 'ACKNOWLEDGED') {
+          @if (
+            (r.status === 'PENDING' || r.status === 'ACKNOWLEDGED') &&
+            r.reviewModel === 'INTERNAL_URGENT'
+          ) {
             <label class="mt-4 block font-semibold"
               >Escalation note (optional)<textarea
                 [(ngModel)]="note"
@@ -160,9 +175,6 @@ export class GuidedSelfCheckReviewDetailPageComponent {
   note = '';
   constructor() {
     this.load();
-    this.api
-      .professionals({ status: 'ACTIVE', capability: 'URGENT_SELF_CHECK_REVIEW' })
-      .subscribe({ next: (r) => this.professionals.set(r.items) });
   }
   load() {
     this.loading.set(true);
@@ -173,14 +185,21 @@ export class GuidedSelfCheckReviewDetailPageComponent {
         next: (r) => {
           this.review.set(r);
           this.professionalReference = r.assignedProfessional?.reference || '';
+          const capability =
+            r.reviewModel === 'INTERNAL_ROUTINE'
+              ? 'SELF_CHECK_CLINICAL_REVIEW'
+              : 'URGENT_SELF_CHECK_REVIEW';
+          this.api
+            .professionals({ status: 'ACTIVE', capability })
+            .subscribe({ next: (p) => this.professionals.set(p.items) });
         },
-        error: () => this.error.set('This urgent review could not be loaded.'),
+        error: () => this.error.set('This internal review could not be loaded.'),
       });
   }
   acknowledge() {
     if (
       confirm(
-        'Acknowledge this urgent review? This records that Operations has seen it; it does not complete clinical review.',
+        'Acknowledge this review? This records that Operations has seen it; it does not complete clinical review.',
       )
     )
       this.run(this.api.acknowledge(this.ref));

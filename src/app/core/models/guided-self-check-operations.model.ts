@@ -40,6 +40,7 @@ export interface AuthorizeProfessionalRequest {
 export type SelfCheckReviewStatus =
   'PENDING' | 'ACKNOWLEDGED' | 'ASSIGNED' | 'IN_REVIEW' | 'ESCALATED' | 'COMPLETED' | 'CANCELLED';
 export type SelfCheckReviewPriority = 'ROUTINE' | 'URGENT';
+export type SelfCheckReviewModel = 'INTERNAL_URGENT' | 'INTERNAL_ROUTINE';
 export type SelfCheckReviewDecision =
   | 'NO_FURTHER_REVIEW_REQUIRED'
   | 'FOLLOW_UP_RECOMMENDED'
@@ -49,6 +50,7 @@ export interface ReviewFilters {
   status?: SelfCheckReviewStatus;
   priority?: SelfCheckReviewPriority;
   classification?: GuidedSelfCheckClassification;
+  reviewModel?: SelfCheckReviewModel;
   assigned?: boolean;
   page?: number;
   limit?: number;
@@ -57,6 +59,8 @@ export type MyReviewStatus = 'ASSIGNED' | 'IN_REVIEW' | 'COMPLETED' | 'CANCELLED
 export interface MyReviewFilters {
   status?: MyReviewStatus;
   priority?: SelfCheckReviewPriority;
+  reviewModel?: SelfCheckReviewModel;
+  classification?: GuidedSelfCheckClassification;
   page?: number;
   limit?: number;
 }
@@ -73,7 +77,7 @@ export interface MyReviewRow {
 export interface SelfCheckReviewRow {
   reference: string;
   selfCheckReference: string;
-  reviewModel: 'INTERNAL_URGENT';
+  reviewModel: SelfCheckReviewModel;
   classification: GuidedSelfCheckClassification;
   priority: SelfCheckReviewPriority;
   status: SelfCheckReviewStatus;
@@ -89,6 +93,7 @@ export interface SelfCheckReviewRow {
 }
 export interface SelfCheckReviewDetail extends SelfCheckReviewRow {
   origin: 'CLASSIFICATION_REQUIRED' | 'QA_SAMPLE';
+  patientMessageKey: string | null;
   matchedReasonCodes: readonly string[];
   urgentAction: boolean;
   startedAt: string | null;
@@ -110,6 +115,11 @@ export interface SelfCheckReviewDetail extends SelfCheckReviewRow {
   }[];
 }
 export interface InternalReviewDetail extends SelfCheckReviewDetail {
+  analysis: null | {
+    status: SelfCheckAnalysisStatus;
+    humanReviewRecommended: boolean;
+    output: SelfCheckAnalysisOutput | null;
+  };
   nextAction: GuidedSelfCheckNextAction | null;
   allowedNextActionsByDecision: Record<
     SelfCheckReviewDecision,
@@ -137,6 +147,32 @@ export interface CompleteReviewRequest {
   patientGuidance?: string;
   internalClinicalNote?: string;
   contactRequired?: boolean;
+}
+
+export type ContactWorkItemStatus =
+  'PENDING' | 'ACKNOWLEDGED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type ContactWorkItemOutcome =
+  'CONTACTED' | 'UNREACHABLE' | 'PATIENT_DECLINED' | 'REFERRED_TO_CLINICAL_REVIEW';
+export interface ContactWorkItemFilters {
+  status?: ContactWorkItemStatus;
+  priority?: SelfCheckReviewPriority;
+  page?: number;
+  limit?: number;
+}
+export interface ContactWorkItemRow {
+  reference: string;
+  selfCheckReference: string;
+  priority: SelfCheckReviewPriority;
+  status: ContactWorkItemStatus;
+  createdAt: string;
+  acknowledgedAt: string | null;
+  startedAt: string | null;
+}
+export interface ContactWorkItemDetail extends ContactWorkItemRow {
+  patient: { reference: string; displayName: string; phone: string | null; email: string };
+  outcome: ContactWorkItemOutcome | null;
+  operationalNote: string | null;
+  completedAt: string | null;
 }
 
 export type SelfCheckAnalysisStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';

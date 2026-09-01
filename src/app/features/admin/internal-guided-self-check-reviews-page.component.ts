@@ -58,6 +58,17 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
             <option value="ROUTINE">Routine</option>
           </select></label
         >
+        <label class="font-semibold"
+          >Review type<select
+            [(ngModel)]="reviewType"
+            (ngModelChange)="filtersChanged()"
+            class="mt-1 w-full rounded-lg border p-3"
+          >
+            <option value="">All review types</option>
+            <option value="INTERNAL_URGENT">Urgent RED</option>
+            <option value="INTERNAL_ROUTINE">Routine AMBER</option>
+          </select></label
+        >
       </div>
     </section>
     @if (loading() && !loaded()) {
@@ -84,6 +95,9 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
                 >{{ label(r.priority) }} priority</span
               ><strong>{{ statusLabel(r.status) }}</strong>
             </div>
+            <p class="mt-3 font-bold">
+              {{ r.classification }} · {{ r.priority === 'URGENT' ? 'Urgent' : 'Routine' }}
+            </p>
             <dl class="mt-4 space-y-3">
               <div>
                 <dt class="text-sm text-slate-600">Self-Check</dt>
@@ -142,6 +156,8 @@ export class InternalGuidedSelfCheckReviewsPageComponent {
   total = signal(0);
   status: MyReviewStatus | '' = '';
   priority: SelfCheckReviewPriority | '' = '';
+  reviewType:
+    import('../../core/models/guided-self-check-operations.model').SelfCheckReviewModel | '' = '';
   constructor() {
     this.load();
   }
@@ -165,6 +181,11 @@ export class InternalGuidedSelfCheckReviewsPageComponent {
       .listMyReviews({
         ...(this.status && { status: this.status }),
         ...(this.priority && { priority: this.priority }),
+        ...(this.reviewType && {
+          reviewModel: this.reviewType,
+          classification:
+            this.reviewType === 'INTERNAL_ROUTINE' ? ('AMBER' as const) : ('RED' as const),
+        }),
         page: this.page(),
         limit: this.limit,
       })

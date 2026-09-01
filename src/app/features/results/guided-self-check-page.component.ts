@@ -48,6 +48,18 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               ><span class="mt-1 block">{{ reviewLabel(check.professionalReview?.status) }}</span>
             </p>
           }
+          @if (
+            check.nextAction?.type === 'REQUEST_PROFESSIONAL_CONTACT' && check.professionalContact;
+            as contact
+          ) {
+            <section class="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-4">
+              <h3 class="font-bold">Professional contact requested</h3>
+              <p class="mt-1">{{ contactLabel(contact.status) }}</p>
+              @if (contact.status === 'COMPLETED' && contact.outcome) {
+                <p class="mt-2"><strong>Outcome:</strong> {{ contactOutcome(contact.outcome) }}</p>
+              }
+            </section>
+          }
           @if (check.classification?.classification === 'AMBER' && check.analysis) {
             <p class="mt-4 rounded-xl bg-amber-50 p-4">
               <strong>AMBER Self-Check analysis</strong>
@@ -174,27 +186,27 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               }
               @switch (question.type) {
                 @case ('SINGLE_CHOICE') {
-                  @for (option of question.options || []; track option.value) {
+                  @for (option of question.options || []; track option) {
                     <label
                       class="mt-3 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4"
                       ><input
                         type="radio"
                         name="single-answer"
-                        [checked]="value() === option.value"
-                        (change)="value.set(option.value)"
-                      /><span>{{ option.label }}</span></label
+                        [checked]="value() === option"
+                        (change)="value.set(option)"
+                      /><span>{{ option }}</span></label
                     >
                   }
                 }
                 @case ('MULTI_CHOICE') {
-                  @for (option of question.options || []; track option.value) {
+                  @for (option of question.options || []; track option) {
                     <label
                       class="mt-3 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4"
                       ><input
                         type="checkbox"
-                        [checked]="selected(option.value)"
-                        (change)="toggle(option.value)"
-                      /><span>{{ option.label }}</span></label
+                        [checked]="selected(option)"
+                        (change)="toggle(option)"
+                      /><span>{{ option }}</span></label
                     >
                   }
                 }
@@ -588,10 +600,35 @@ export class GuidedSelfCheckPageComponent {
   }
   reviewLabel(v: string | null | undefined) {
     return v === 'COMPLETED'
-      ? 'Review completed'
+      ? 'Your clinical review is complete.'
       : v === 'IN_REVIEW'
-        ? 'Review in progress'
-        : 'Review pending';
+        ? 'A SmartClinic clinical professional is reviewing your Self-Check.'
+        : 'Your Self-Check has been queued for review by the SmartClinic clinical team.';
+  }
+  contactLabel(v: string) {
+    return (
+      (
+        {
+          PENDING: 'SmartClinic is preparing to contact you.',
+          ACKNOWLEDGED: 'SmartClinic has acknowledged your contact request.',
+          IN_PROGRESS: 'SmartClinic is working on your contact request.',
+          COMPLETED: 'Professional contact work is complete.',
+          CANCELLED: 'This contact request is no longer active.',
+        } as Record<string, string>
+      )[v] ?? 'Contact status is available.'
+    );
+  }
+  contactOutcome(v: string) {
+    return (
+      (
+        {
+          CONTACTED: 'Contacted',
+          UNREACHABLE: 'SmartClinic was unable to reach you.',
+          PATIENT_DECLINED: 'You declined contact.',
+          REFERRED_TO_CLINICAL_REVIEW: 'Referred for clinical review',
+        } as Record<string, string>
+      )[v] ?? v
+    );
   }
   analysisLabel(v: string) {
     return (

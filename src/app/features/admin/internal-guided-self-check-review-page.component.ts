@@ -17,8 +17,8 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
       >← My Reviews</a
     >
     <header>
-      <p class="font-bold uppercase text-red-800">Internal clinical workspace</p>
-      <h1 class="mt-2 text-3xl font-bold">Urgent Self-Check clinical review</h1>
+      <p class="font-bold uppercase text-brand-800">Internal clinical workspace</p>
+      <h1 class="mt-2 text-3xl font-bold">Self-Check clinical review</h1>
     </header>
     @if (loading()) {
       <p role="status" class="mt-6">Loading assigned review…</p>
@@ -28,14 +28,67 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
         <button type="button" (click)="load()" class="font-bold underline">Retry</button>
       </div>
     } @else if (review(); as r) {
-      <section class="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 p-6">
-        <h2 class="text-xl font-bold">Original Self-Check safety guidance</h2>
+      <section
+        class="mt-6 rounded-2xl border-2 p-6"
+        [class.border-red-300]="r.classification === 'RED'"
+        [class.bg-red-50]="r.classification === 'RED'"
+        [class.border-amber-300]="r.classification === 'AMBER'"
+        [class.bg-amber-50]="r.classification === 'AMBER'"
+      >
+        <h2 class="text-xl font-bold">
+          {{
+            r.classification === 'RED'
+              ? 'Original Self-Check safety guidance'
+              : 'Routine AMBER clinical review'
+          }}
+        </h2>
         <p class="mt-2">
-          This Self-Check was classified RED. Its urgent guidance remains in effect and is not
-          replaced by a later recommendation.
+          {{
+            r.classification === 'RED'
+              ? 'This Self-Check was classified RED. Its urgent guidance remains in effect and is not replaced by a later recommendation.'
+              : 'This governed classification remains AMBER. Your review determines the professional recommendation.'
+          }}
         </p>
         <p class="mt-2 font-bold">{{ r.reference }} · {{ label(r.status) }}</p>
       </section>
+      @if (r.analysis?.output; as output) {
+        <section class="mt-5 rounded-2xl border border-amber-200 bg-white p-6">
+          <h2 class="text-xl font-bold">AI decision support</h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Decision support only. Classification remains AMBER and the clinical professional makes
+            the review decision.
+          </p>
+          <p class="mt-4">{{ output.conciseSummary }}</p>
+          <dl class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt class="font-bold">Operational priority</dt>
+              <dd>{{ label(output.suggestedOperationalPriority) }}</dd>
+            </div>
+            <div>
+              <dt class="font-bold">Suggested next step</dt>
+              <dd>
+                {{ output.recommendedAction ? label(output.recommendedAction) : 'None suggested' }}
+              </dd>
+            </div>
+          </dl>
+          @if (output.notableResponses.length) {
+            <h3 class="mt-4 font-bold">Notable responses</h3>
+            <ul class="list-disc pl-5">
+              @for (v of output.notableResponses; track v) {
+                <li>{{ v }}</li>
+              }
+            </ul>
+          }
+          @if (output.informationGaps.length) {
+            <h3 class="mt-4 font-bold">Information gaps</h3>
+            <ul class="list-disc pl-5">
+              @for (v of output.informationGaps; track v) {
+                <li>{{ v }}</li>
+              }
+            </ul>
+          }
+        </section>
+      }
       <section class="mt-5 rounded-2xl border bg-white p-6">
         <h2 class="text-xl font-bold">Questionnaire responses</h2>
         @for (g of r.questionnaire.groups; track g.key) {

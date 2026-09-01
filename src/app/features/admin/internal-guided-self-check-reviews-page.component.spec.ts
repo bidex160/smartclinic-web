@@ -18,7 +18,7 @@ describe('InternalGuidedSelfCheckReviewsPageComponent', () => {
     {
       reference: 'SC-GSR-TWO',
       selfCheckReference: 'SC-GSC-TWO',
-      classification: 'RED',
+      classification: 'AMBER',
       priority: 'ROUTINE',
       status: 'IN_REVIEW',
       assignedAt: '2026-08-31T11:00:00Z',
@@ -49,6 +49,8 @@ describe('InternalGuidedSelfCheckReviewsPageComponent', () => {
     expect(text).toContain('Urgent priority');
     expect(text).toContain('Assigned');
     expect(text).toContain('In clinical review');
+    expect(text).toContain('RED · Urgent');
+    expect(text).toContain('AMBER · Routine');
     expect(text).toContain('Not started');
     expect(text).toContain('Open Review');
     expect(text).not.toContain('Patient name');
@@ -56,6 +58,11 @@ describe('InternalGuidedSelfCheckReviewsPageComponent', () => {
     expect(
       f.nativeElement.querySelector('a[href="/internal/guided-self-check-reviews/SC-GSR-ONE"]'),
     ).not.toBeNull();
+  });
+  it('preserves backend urgent-before-routine ordering', async () => {
+    const { f } = await setup();
+    const text = f.nativeElement.textContent;
+    expect(text.indexOf('SC-GSR-ONE')).toBeLessThan(text.indexOf('SC-GSR-TWO'));
   });
   it('serializes exact filters and resets pagination while Active omits status', async () => {
     const { c, api } = await setup();
@@ -82,6 +89,28 @@ describe('InternalGuidedSelfCheckReviewsPageComponent', () => {
       c.filtersChanged();
       expect(api.listMyReviews).toHaveBeenLastCalledWith({ status, page: 1, limit: 20 });
     }
+  });
+  it('serializes exact review type and classification filters and omits both for All', async () => {
+    const { c, api } = await setup();
+    c.reviewType = 'INTERNAL_ROUTINE';
+    c.filtersChanged();
+    expect(api.listMyReviews).toHaveBeenLastCalledWith({
+      reviewModel: 'INTERNAL_ROUTINE',
+      classification: 'AMBER',
+      page: 1,
+      limit: 20,
+    });
+    c.reviewType = 'INTERNAL_URGENT';
+    c.filtersChanged();
+    expect(api.listMyReviews).toHaveBeenLastCalledWith({
+      reviewModel: 'INTERNAL_URGENT',
+      classification: 'RED',
+      page: 1,
+      limit: 20,
+    });
+    c.reviewType = '';
+    c.filtersChanged();
+    expect(api.listMyReviews).toHaveBeenLastCalledWith({ page: 1, limit: 20 });
   });
   it('shows the contextual active empty state', async () => {
     const empty = await setup(of({ items: [], total: 0, page: 1, limit: 20 }));
