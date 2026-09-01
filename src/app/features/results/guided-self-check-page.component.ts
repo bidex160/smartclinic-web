@@ -1,8 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
-import { finalize } from 'rxjs';
+import { Subscription, finalize, interval, switchMap, take } from 'rxjs';
 import {
   GuidedSelfCheckDetail,
   GuidedSelfCheckFunding,
@@ -60,16 +67,29 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               }
             </section>
           } -->
-          @if (check.classification?.classification === 'AMBER' && check.analysis) {
-            <p class="mt-4 rounded-xl bg-amber-50 p-4">
-              <strong>AMBER Self-Check analysis</strong>
-              <span class="mt-1 block">{{ analysisLabel(check.analysis.status) }}</span>
-              @if (check.analysis.humanReviewRecommended) {
-                <span class="mt-1 block"
-                  >Additional human review has been recommended internally.</span
+          @if (check.classification?.classification === 'AMBER') {
+            @if (check.analysis; as analysis) {
+              @if (analysis.required) {
+                <section
+                  class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4"
+                  aria-live="polite"
+                  aria-labelledby="additional-review-heading"
                 >
+                  <h3 id="additional-review-heading" class="font-bold">
+                    {{ analysisHeading(analysis) }}
+                  </h3>
+                  <p class="mt-1">{{ analysisCopy(analysis) }}</p>
+                  @if (analysis.status !== 'FAILED') {
+                    <p class="mt-2 text-sm text-slate-700">
+                      Your original Self-Check result remains unchanged.
+                    </p>
+                  }
+                  @if (analysis.status === 'PENDING' || analysis.status === 'PROCESSING') {
+                    <p role="status" class="mt-2 text-sm font-semibold">Checking for an update…</p>
+                  }
+                </section>
               }
-            </p>
+            }
           }
           @if (check.classification?.classification === 'RED') {
             <section class="mt-4 rounded-xl border-2 border-red-500 bg-red-50 p-4">
@@ -361,7 +381,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
     }
   </main>`,
 })
-export class GuidedSelfCheckPageComponent {
+export class GuidedSelfCheckPageComponent implements OnDestroy {
   private readonly api = inject(GuidedSelfChecksApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -387,6 +407,9 @@ export class GuidedSelfCheckPageComponent {
   readonly current = computed(() => this.questions()[this.index()] ?? null);
   readonly money = formatEarningMoney;
   private popup = new PaystackPop();
+  private analysisPolling: Subscription | null = null;
+  readonly analysisPollIntervalMs = 5_000;
+  readonly analysisPollMaxAttempts = 24;
   constructor() {
     this.load();
   }
@@ -399,11 +422,50 @@ export class GuidedSelfCheckPageComponent {
       .subscribe({
         next: (v) => {
           this.detail.set(v);
+          this.syncAnalysisPolling(v);
           if (!this.funded(v)) this.loadFunding();
           else if (v.workflowStatus === 'IN_PROGRESS') this.loadQuestionnaire();
         },
         error: () => this.error.set(true),
       });
+  }
+  private syncAnalysisPolling(value: GuidedSelfCheckDetail) {
+    const analysis = value.analysis;
+    const shouldPoll =
+      value.classification?.classification === 'AMBER' &&
+      analysis?.required === true &&
+      (analysis.status === 'PENDING' || analysis.status === 'PROCESSING');
+    if (!shouldPoll) {
+      this.stopAnalysisPolling();
+      return;
+    }
+    if (this.analysisPolling) return;
+    this.analysisPolling = interval(this.analysisPollIntervalMs)
+      .pipe(
+        take(this.analysisPollMaxAttempts),
+        switchMap(() => this.api.get(this.reference)),
+        finalize(() => (this.analysisPolling = null)),
+      )
+      .subscribe({
+        next: (updated) => {
+          this.detail.set(updated);
+          const next = updated.analysis;
+          if (
+            updated.classification?.classification !== 'AMBER' ||
+            !next?.required ||
+            next.status === 'COMPLETED' ||
+            next.status === 'FAILED'
+          )
+            this.stopAnalysisPolling();
+        },
+      });
+  }
+  private stopAnalysisPolling() {
+    this.analysisPolling?.unsubscribe();
+    this.analysisPolling = null;
+  }
+  ngOnDestroy() {
+    this.stopAnalysisPolling();
   }
   funded(v: GuidedSelfCheckDetail) {
     return v.fundingStatus === 'PAID' || v.fundingStatus === 'SATISFIED_FREE';
@@ -630,16 +692,23 @@ export class GuidedSelfCheckPageComponent {
       )[v] ?? v
     );
   }
-  analysisLabel(v: string) {
-    return (
-      (
-        {
-          PENDING: 'Analysis is awaiting processing.',
-          PROCESSING: 'Analysis is in progress.',
-          COMPLETED: 'Analysis is complete. Your recommended next step is shown below.',
-          FAILED: 'Analysis could not be completed yet. Your AMBER classification is unchanged.',
-        } as Record<string, string>
-      )[v] ?? 'Analysis status is available.'
-    );
+  analysisHeading(analysis: NonNullable<GuidedSelfCheckDetail['analysis']>) {
+    if (analysis.status === 'PENDING') return 'Additional review pending';
+    if (analysis.status === 'PROCESSING') return 'Additional review in progress';
+    if (analysis.status === 'FAILED') return 'Additional review unavailable';
+    return analysis.humanReviewRecommended
+      ? 'Professional review recommended'
+      : 'Additional review complete';
+  }
+  analysisCopy(analysis: NonNullable<GuidedSelfCheckDetail['analysis']>) {
+    if (analysis.status === 'PENDING')
+      return "We're preparing an additional review of the information you provided.";
+    if (analysis.status === 'PROCESSING')
+      return "We're reviewing the information you provided to help determine the most appropriate next step.";
+    if (analysis.status === 'FAILED')
+      return "We couldn't complete the additional review right now. Your Self-Check result and safety guidance remain unchanged.";
+    return analysis.humanReviewRecommended
+      ? 'A SmartClinic clinical professional should review some of the information you provided.'
+      : "We've completed the additional review of your Self-Check information. Follow the recommended next step shown below.";
   }
 }
