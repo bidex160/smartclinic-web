@@ -169,7 +169,9 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
               ><span>Internal notes are not shown to the patient.</span
               ><span>{{ internalNote.length }} / 3000</span></span
             ></label
-          ><label class="mt-4 flex items-start gap-3"
+          >
+          
+          <!-- <label class="mt-4 flex items-start gap-3"
             ><input
               [(ngModel)]="contactRequired"
               name="contactRequired"
@@ -180,8 +182,9 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
               ><span class="block text-sm"
                 >Records the contact requirement; it does not create an appointment or call.</span
               ></span
-            ></label
-          ><button
+            ></label> -->
+            
+            <button
             type="submit"
             [disabled]="busy() || !decision || !nextAction"
             class="mt-5 rounded-lg bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50"

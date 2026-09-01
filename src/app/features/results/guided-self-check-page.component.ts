@@ -48,7 +48,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               ><span class="mt-1 block">{{ reviewLabel(check.professionalReview?.status) }}</span>
             </p>
           }
-          @if (
+          <!-- @if (
             check.nextAction?.type === 'REQUEST_PROFESSIONAL_CONTACT' && check.professionalContact;
             as contact
           ) {
@@ -59,7 +59,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
                 <p class="mt-2"><strong>Outcome:</strong> {{ contactOutcome(contact.outcome) }}</p>
               }
             </section>
-          }
+          } -->
           @if (check.classification?.classification === 'AMBER' && check.analysis) {
             <p class="mt-4 rounded-xl bg-amber-50 p-4">
               <strong>AMBER Self-Check analysis</strong>

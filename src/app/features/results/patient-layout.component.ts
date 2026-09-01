@@ -23,14 +23,20 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
         routerLink="/"
         class="flex items-center gap-3 rounded-lg focus:ring-4 focus:ring-white/30"
       >
-        <span
-          class="grid size-10 place-items-center rounded-xl bg-white font-bold text-brand-800"
-        >
-          S
-        </span>
+        <img
+            class="
+              flex h-10 w-10 items-center justify-center
+              rounded-xl
+              bg-brand-600
+              text-lg font-bold text-white
+              shadow-sm
+            "
+            src="/assets/fanvico.png"
+            alt="SmartClinic Logo"
+          />
 
         <span>
-          <strong class="block">SmartClinic</strong>
+          <strong class="block text-[15px] font-bold text-white">SmartClinic Network</strong>
           <small class="uppercase tracking-wider text-brand-100">
             Patient Portal
           </small>

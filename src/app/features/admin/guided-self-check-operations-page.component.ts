@@ -198,7 +198,7 @@ import {
             }
           </section>
         }
-        @case ('contacts') {
+        <!-- @case ('contacts') {
           <section class="mt-6">
             <h2 class="text-xl font-bold">Professional Contact</h2>
             <p class="mt-1 text-slate-600">
@@ -252,7 +252,7 @@ import {
               </div>
             }
           </section>
-        }
+        } -->
         @case ('processing') {
           <section class="mt-6">
             <div class="flex flex-wrap items-end gap-3">
@@ -420,7 +420,7 @@ import {
           </section>
         }
       }
-      @if (tab() === 'reviews' || tab() === 'routine' || tab() === 'contacts') {
+      @if (tab() === 'reviews' || tab() === 'routine') {
         <nav aria-label="Operations queue pages" class="mt-6 flex items-center justify-between">
           <button
             type="button"
@@ -454,7 +454,7 @@ export class GuidedSelfCheckOperationsPageComponent {
     { key: 'reviews', label: 'Urgent Reviews' },
     { key: 'routine', label: 'Routine Reviews' },
     { key: 'analyses', label: 'AI Analysis' },
-    { key: 'contacts', label: 'Professional Contact' },
+    // { key: 'contacts', label: 'Professional Contact' },
     { key: 'processing', label: 'Classification Processing' },
     { key: 'professionals', label: 'Clinical Professionals' },
   ] as const;
@@ -554,19 +554,19 @@ export class GuidedSelfCheckOperationsPageComponent {
           next: (r) => this.analyses.set(r.items),
           error: () => this.error.set('AI analyses could not be loaded.'),
         });
-    else if (this.tab() === 'contacts')
-      this.api
-        .contactWorkItems({
-          status: (this.contactStatusFilter as never) || undefined,
-          priority: (this.contactPriority as never) || undefined,
-          page: this.page(),
-          limit: this.limit,
-        })
-        .pipe(finalize(() => this.loading.set(false)))
-        .subscribe({
-          next: (r) => this.setPaged(this.contacts, r),
-          error: () => this.error.set('Professional contact work could not be loaded.'),
-        });
+    // else if (this.tab() === 'contacts')
+    //   this.api
+    //     .contactWorkItems({
+    //       status: (this.contactStatusFilter as never) || undefined,
+    //       priority: (this.contactPriority as never) || undefined,
+    //       page: this.page(),
+    //       limit: this.limit,
+    //     })
+    //     .pipe(finalize(() => this.loading.set(false)))
+    //     .subscribe({
+    //       next: (r) => this.setPaged(this.contacts, r),
+    //       error: () => this.error.set('Professional contact work could not be loaded.'),
+    //     });
     else if (this.tab() === 'processing')
       this.api
         .processing()

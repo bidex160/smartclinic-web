@@ -46,7 +46,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             focus:ring-brand-700
           "
         >
-          <span
+          <img
             class="
               flex h-10 w-10 items-center justify-center
               rounded-xl
@@ -54,13 +54,13 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               text-lg font-bold text-white
               shadow-sm
             "
-          >
-            S
-          </span>
+            src="/assets/fanvico.png"
+            alt="SmartClinic Logo"
+          />
 
           <span>
-            <span class="block text-lg font-bold text-white">
-              SmartClinic
+            <span class="block text-[15px] font-bold text-white">
+              SmartClinic Network
             </span>
 
             <span
