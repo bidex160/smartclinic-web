@@ -24,7 +24,7 @@ export class AdminLoginPageComponent {
   readonly submitted = signal(false);
 
   readonly form = this.formBuilder.group({
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
+    identifier: ['', [Validators.required, Validators.maxLength(254)]],
     password: ['', [Validators.required, Validators.maxLength(128)]],
   });
 
@@ -40,7 +40,7 @@ export class AdminLoginPageComponent {
     this.authState.loading.set(true);
     const value = this.form.getRawValue();
     this.authApi
-      .login({ email: value.email.trim().toLowerCase(), password: value.password })
+      .login({ identifier: value.identifier.trim(), password: value.password })
       .pipe(finalize(() => this.authState.loading.set(false)))
       .subscribe({
         next: (response) => {
@@ -77,7 +77,7 @@ export class AdminLoginPageComponent {
       });
   }
 
-  showError(controlName: 'email' | 'password'): boolean {
+  showError(controlName: 'identifier' | 'password'): boolean {
     const control = this.form.controls[controlName];
     return control.invalid && (control.touched || this.submitted());
   }

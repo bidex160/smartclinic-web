@@ -36,13 +36,20 @@ describe('AuthApiService', () => {
     (operation) => {
       const { api, http } = setup();
       if (operation === 'login')
-        api.login({ email: 'admin@example.test', password: 'secret' }).subscribe();
+        api.login({ identifier: '+234 801 234 5678', password: 'secret' }).subscribe();
       if (operation === 'refresh') api.refresh().subscribe();
       if (operation === 'logout') api.logout().subscribe();
       if (operation === 'logout-all') api.logoutAll().subscribe();
 
       const request = http.expectOne(`http://api.example.test/api/v1/auth/${operation}`);
       expect(request.request.withCredentials).toBe(true);
+      if (operation === 'login') {
+        expect(request.request.body).toEqual({
+          identifier: '+234 801 234 5678',
+          password: 'secret',
+        });
+        expect(request.request.body.email).toBeUndefined();
+      }
       request.flush(operation === 'login' || operation === 'refresh' ? session() : null);
       http.verify();
     },

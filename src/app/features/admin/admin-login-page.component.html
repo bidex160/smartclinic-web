@@ -24,22 +24,29 @@
 
     <form [formGroup]="form" (ngSubmit)="login()" novalidate class="mt-7 space-y-5">
       <div>
-        <label for="admin-email" class="block text-sm font-bold text-slate-800">Email</label>
+        <label for="admin-identifier" class="block text-sm font-bold text-slate-800"
+          >Email or phone number</label
+        >
         <input
-          id="admin-email"
-          type="email"
-          formControlName="email"
+          id="admin-identifier"
+          type="text"
+          formControlName="identifier"
           autocomplete="username"
-          placeholder="e.g. john@example.com"
-          [attr.aria-invalid]="showError('email')"
-          [attr.aria-describedby]="showError('email') ? 'admin-email-error' : null"
+          placeholder="you@example.com or +234 801 234 5678"
+          [attr.aria-invalid]="showError('identifier')"
+          [attr.aria-describedby]="
+            showError('identifier') ? 'admin-identifier-error' : 'admin-identifier-help'
+          "
           class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 aria-[invalid=true]:border-red-600"
         />
-        @if (showError('email')) {
-          <p id="admin-email-error" class="mt-2 text-sm font-semibold text-red-700">
-            Enter a valid email address.
+        @if (showError('identifier')) {
+          <p id="admin-identifier-error" class="mt-2 text-sm font-semibold text-red-700">
+            Email or phone number is required.
           </p>
         }
+        <p id="admin-identifier-help" class="mt-2 text-sm text-slate-600">
+          Use the email address or phone number linked to your SmartClinic account.
+        </p>
       </div>
       <div>
         <label for="admin-password" class="block text-sm font-bold text-slate-800">Password</label>

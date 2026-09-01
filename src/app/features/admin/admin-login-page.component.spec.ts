@@ -13,7 +13,7 @@ describe('AdminLoginPageComponent', () => {
   it('stores an ADMIN login and navigates to the operations dashboard', async () => {
     const response = loginResponse(['ADMIN']);
     const { component, authState, router } = await setup(() => of(response));
-    component.form.setValue({ email: 'admin@example.test', password: 'secret' });
+    component.form.setValue({ identifier: 'admin@example.test', password: 'secret' });
 
     component.login();
 
@@ -24,7 +24,7 @@ describe('AdminLoginPageComponent', () => {
 
   it('routes an OPERATIONS login to the operations dashboard', async () => {
     const { component, router } = await setup(() => of(loginResponse(['OPERATIONS'])));
-    component.form.setValue({ email: 'ops@example.test', password: 'secret' });
+    component.form.setValue({ identifier: 'ops@example.test', password: 'secret' });
     component.login();
     expect(router.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
   });
@@ -33,7 +33,7 @@ describe('AdminLoginPageComponent', () => {
     const { component, authState, router } = await setup(() =>
       throwError(() => new HttpErrorResponse({ status: 401, error: { message: 'raw detail' } })),
     );
-    component.form.setValue({ email: 'admin@example.test', password: 'wrong' });
+    component.form.setValue({ identifier: 'admin@example.test', password: 'wrong' });
 
     component.login();
 
@@ -44,7 +44,7 @@ describe('AdminLoginPageComponent', () => {
 
   it('routes a USER-only login to the patient dashboard', async () => {
     const { component, router } = await setup(() => of(loginResponse(['USER'])));
-    component.form.setValue({ email: 'user@example.test', password: 'secret' });
+    component.form.setValue({ identifier: 'user@example.test', password: 'secret' });
 
     component.login();
 
@@ -55,7 +55,7 @@ describe('AdminLoginPageComponent', () => {
 
   it('routes an active PROVIDER login to the dashboard without breaking admin priority', async () => {
     const { component, router } = await setup(() => of(loginResponse(['PROVIDER'])));
-    component.form.setValue({ email: 'provider@example.test', password: 'secret' });
+    component.form.setValue({ identifier: 'provider@example.test', password: 'secret' });
     component.login();
     expect(router.navigate).toHaveBeenCalledWith(['/provider/dashboard']);
   });
@@ -65,7 +65,7 @@ describe('AdminLoginPageComponent', () => {
       status: 'PENDING',
       onboardingStatus: 'SUBMITTED',
     });
-    component.form.setValue({ email: 'provider@example.test', password: 'secret' });
+    component.form.setValue({ identifier: 'provider@example.test', password: 'secret' });
     component.login();
     expect(router.navigate).toHaveBeenCalledWith(['/provider/profile']);
   });
