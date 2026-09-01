@@ -15,9 +15,16 @@ import {
 } from '../../core/models/guided-self-check-governance.model';
 import { GuidedSelfCheckGovernanceApiService } from '../../core/services/guided-self-check-governance-api.service';
 import { GovernanceConditionBuilderComponent } from './governance-condition-builder.component';
+import { GovernanceConditionViewComponent } from './governance-condition-view.component';
 @Component({
   selector: 'app-guided-self-check-ruleset-detail-page',
-  imports: [FormsModule, RouterLink, NgTemplateOutlet, GovernanceConditionBuilderComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    NgTemplateOutlet,
+    GovernanceConditionBuilderComponent,
+    GovernanceConditionViewComponent,
+  ],
   template: `<main class="mx-auto max-w-6xl px-5 py-8">
     <a routerLink="/admin/guided-self-check/governance" class="font-bold text-brand-700"
       >← Clinical Governance</a
@@ -178,6 +185,88 @@ import { GovernanceConditionBuilderComponent } from './governance-condition-buil
           >
             {{ busy() ? 'Saving…' : 'Save Draft' }}
           </button>
+        </section>
+      } @else {
+        <section class="mt-5 rounded-2xl border bg-white p-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="text-2xl font-bold">Ruleset content</h2>
+              <p class="mt-1 text-slate-600">
+                Immutable governed content preserved for review and audit.
+              </p>
+            </div>
+            @if (r.isActive) {
+              <strong class="rounded-full bg-green-100 px-3 py-1 text-green-900"
+                >Active for new compatible Self-Checks</strong
+              >
+            }
+          </div>
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-sm text-slate-600">Ruleset name</dt>
+              <dd class="font-bold">{{ r.name }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm text-slate-600">Questionnaire version</dt>
+              <dd>Version {{ r.questionnaireVersion }}</dd>
+            </div>
+            @if (r.description) {
+              <div class="sm:col-span-2">
+                <dt class="text-sm text-slate-600">Description</dt>
+                <dd class="whitespace-pre-line">{{ r.description }}</dd>
+              </div>
+            }
+            <div>
+              <dt class="text-sm text-slate-600">Total clinical rules</dt>
+              <dd>{{ r.rules.length }}</dd>
+            </div>
+          </dl>
+          <section class="mt-6">
+            <h3 class="text-xl font-bold">Approved patient messages</h3>
+            <div class="mt-3 grid gap-4 lg:grid-cols-3">
+              @for (category of categories; track category) {
+                <article class="rounded-xl bg-slate-50 p-4">
+                  <strong>{{ category }}</strong>
+                  <p class="mt-1 break-all text-sm">{{ r.patientMessageKeys[lower(category)] }}</p>
+                  @if (message(r.patientMessageKeys[lower(category)]); as configured) {
+                    <p class="mt-2 font-semibold">{{ configured.title }}</p>
+                    <p class="text-sm">{{ configured.message }}</p>
+                  } @else {
+                    <p class="mt-2 text-sm text-slate-600">
+                      Message preview is unavailable; the persisted key remains shown.
+                    </p>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+          <section class="mt-6">
+            <h3 class="text-xl font-bold">Clinical rules</h3>
+            @if (!r.rules.length) {
+              <p class="mt-3 rounded-xl bg-slate-50 p-4">
+                No clinical rules are configured in this ruleset.
+              </p>
+            }
+            <div class="mt-4 space-y-5">
+              @for (rule of r.rules; track $index) {
+                <article class="rounded-2xl border bg-slate-50 p-5">
+                  <div class="flex flex-wrap justify-between gap-3">
+                    <div>
+                      <p class="text-sm text-slate-600">Reason / rule code</p>
+                      <h4 class="break-all font-bold">{{ rule.code }}</h4>
+                    </div>
+                    <strong>{{ rule.severity }} severity</strong>
+                  </div>
+                  <div class="mt-4">
+                    <app-governance-condition-view
+                      [condition]="rule.condition"
+                      [questionnaire]="questionnaire()!"
+                    />
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
         </section>
       }
       <section class="mt-5 rounded-2xl border bg-white p-6">

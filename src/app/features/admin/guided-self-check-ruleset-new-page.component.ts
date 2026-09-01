@@ -131,7 +131,7 @@ export class GuidedSelfCheckRulesetNewPageComponent {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: (r) =>
-          this.router.navigate(['/admin/guided-self-check/governance/rulesets', r.reference]),
+          this.router.navigate(['/admin/guided-self-check/governance', r.reference]),
         error: () => this.error.set('The Draft ruleset could not be created.'),
       });
   }

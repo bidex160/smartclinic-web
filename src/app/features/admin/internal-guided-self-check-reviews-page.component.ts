@@ -83,47 +83,109 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
     } @else if (!reviews().length) {
       <p class="mt-6 rounded-2xl border bg-white p-6">{{ emptyMessage() }}</p>
     } @else {
-      <section aria-label="Assigned Self-Check reviews" class="mt-6 grid gap-4 sm:grid-cols-2">
+    <section aria-label="Assigned Self-Check reviews" class="mt-6">
+  <div class="overflow-x-auto rounded-2xl border bg-white">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Priority
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Classification
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Status
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Self-Check
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Review
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Assigned
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-700">
+            Started
+          </th>
+          <th class="px-4 py-3 text-right font-semibold text-slate-700">
+            Action
+          </th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-100 bg-white">
         @for (r of reviews(); track r.reference) {
-          <article class="rounded-2xl border bg-white p-5">
-            <div class="flex items-start justify-between gap-3">
+          <tr class="hover:bg-slate-50">
+            <td class="whitespace-nowrap px-4 py-4">
               <span
-                class="rounded-full px-3 py-1 text-sm font-bold"
+                class="inline-flex rounded-full px-3 py-1 text-xs font-bold"
                 [class.bg-red-100]="r.priority === 'URGENT'"
                 [class.text-red-900]="r.priority === 'URGENT'"
                 [class.bg-slate-100]="r.priority === 'ROUTINE'"
-                >{{ label(r.priority) }} priority</span
-              ><strong>{{ statusLabel(r.status) }}</strong>
-            </div>
-            <p class="mt-3 font-bold">
-              {{ r.classification }} · {{ r.priority === 'URGENT' ? 'Urgent' : 'Routine' }}
-            </p>
-            <dl class="mt-4 space-y-3">
-              <div>
-                <dt class="text-sm text-slate-600">Self-Check</dt>
-                <dd class="break-all font-bold">{{ r.selfCheckReference }}</dd>
-              </div>
-              <div>
-                <dt class="text-sm text-slate-600">Review</dt>
-                <dd class="break-all font-bold">{{ r.reference }}</dd>
-              </div>
-              <div>
-                <dt class="text-sm text-slate-600">Assigned</dt>
-                <dd>{{ date(r.assignedAt) }}</dd>
-              </div>
-              <div>
-                <dt class="text-sm text-slate-600">Started</dt>
-                <dd>{{ r.startedAt ? date(r.startedAt) : 'Not started' }}</dd>
-              </div>
-            </dl>
-            <a
-              [routerLink]="['/internal/guided-self-check-reviews', r.reference]"
-              class="mt-5 inline-flex min-h-11 items-center rounded-lg bg-brand-700 px-4 font-bold text-white"
-              >Open Review</a
+                [class.text-slate-700]="r.priority === 'ROUTINE'"
+              >
+                {{ label(r.priority) }}
+              </span>
+            </td>
+
+            <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-900">
+              {{ r.classification }}
+            </td>
+
+            <td class="whitespace-nowrap px-4 py-4">
+              <span class="font-semibold text-slate-700">
+                {{ statusLabel(r.status) }}
+              </span>
+            </td>
+
+            <td class="px-4 py-4">
+              <span class="block max-w-48 break-all font-medium text-slate-900">
+                {{ r.selfCheckReference }}
+              </span>
+            </td>
+
+            <td class="px-4 py-4">
+              <span class="block max-w-48 break-all font-medium text-slate-900">
+                {{ r.reference }}
+              </span>
+            </td>
+
+            <td class="whitespace-nowrap px-4 py-4 text-slate-600">
+              {{ date(r.assignedAt) }}
+            </td>
+
+            <td class="whitespace-nowrap px-4 py-4 text-slate-600">
+              {{ r.startedAt ? date(r.startedAt) : 'Not started' }}
+            </td>
+
+            <td class="whitespace-nowrap px-4 py-4 text-right">
+              <a
+                [routerLink]="[
+                  '/me/internal/guided-self-check-reviews',
+                  r.reference
+                ]"
+                class="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-700 px-4 font-bold text-white hover:bg-brand-800 focus:ring-4 focus:ring-brand-200"
+              >
+                Open Review
+              </a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td
+              colspan="8"
+              class="px-6 py-10 text-center text-slate-500"
             >
-          </article>
+              No Self-Check reviews are currently assigned to you.
+            </td>
+          </tr>
         }
-      </section>
+      </tbody>
+    </table>
+  </div>
+</section>
       <nav aria-label="Review pages" class="mt-6 flex items-center justify-between">
         <button
           type="button"

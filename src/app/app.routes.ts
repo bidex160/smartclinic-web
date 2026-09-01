@@ -12,24 +12,7 @@ import { ProviderLayoutComponent } from './features/provider/provider-layout.com
 import { PatientLayoutComponent } from './features/results/patient-layout.component';
 
 export const routes: Routes = [
-  {
-    path: 'internal/guided-self-check-reviews',
-    title: 'My Self-Check Reviews | SmartClinic',
-    canActivate: [authenticatedUserGuard],
-    loadComponent: () =>
-      import('./features/admin/internal-guided-self-check-reviews-page.component').then(
-        (c) => c.InternalGuidedSelfCheckReviewsPageComponent,
-      ),
-  },
-  {
-    path: 'internal/guided-self-check-reviews/:reference',
-    title: 'Internal Self-Check review | SmartClinic',
-    canActivate: [authenticatedUserGuard],
-    loadComponent: () =>
-      import('./features/admin/internal-guided-self-check-review-page.component').then(
-        (c) => c.InternalGuidedSelfCheckReviewPageComponent,
-      ),
-  },
+
   {
     path: '',
     title: 'SmartClinic | Your health check, made simple',
@@ -417,6 +400,24 @@ export const routes: Routes = [
             (c) => c.RegisteredHealthCheckResultPageComponent,
           ),
       },
+        {
+    path: 'internal/guided-self-check-reviews',
+    title: 'My Self-Check Reviews | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () =>
+      import('./features/admin/internal-guided-self-check-reviews-page.component').then(
+        (c) => c.InternalGuidedSelfCheckReviewsPageComponent,
+      ),
+  },
+  {
+    path: 'internal/guided-self-check-reviews/:reference',
+    title: 'Internal Self-Check review | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () =>
+      import('./features/admin/internal-guided-self-check-review-page.component').then(
+        (c) => c.InternalGuidedSelfCheckReviewPageComponent,
+      ),
+  },
     ],
   },
   {

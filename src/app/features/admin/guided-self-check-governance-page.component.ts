@@ -31,6 +31,8 @@ import { GuidedSelfCheckGovernanceApiService } from '../../core/services/guided-
       <button
         type="button"
         (click)="view = 'rulesets'"
+        [class.bg-brand-800]="view === 'rulesets'"
+        [class.text-white]="view === 'rulesets'"
         class="min-h-11 rounded-lg border px-4 font-bold"
       >
         Rulesets
@@ -38,6 +40,8 @@ import { GuidedSelfCheckGovernanceApiService } from '../../core/services/guided-
       @if (isAdmin()) {
         <button
           type="button"
+                  [class.bg-brand-800]="view === 'authorizations'"
+        [class.text-white]="view === 'authorizations'"
           (click)="openAuthorizations()"
           class="min-h-11 rounded-lg border px-4 font-bold"
         >
@@ -46,7 +50,7 @@ import { GuidedSelfCheckGovernanceApiService } from '../../core/services/guided-
       }
       <a
         routerLink="new"
-        class="inline-flex min-h-11 items-center rounded-lg bg-brand-700 px-4 font-bold text-white"
+        class="inline-flex min-h-11 items-center rounded-lg bg-green-700 px-4 font-bold text-white"
         >Create Draft Ruleset</a
       >
     </nav>
