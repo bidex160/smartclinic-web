@@ -1,6 +1,42 @@
 export type PatientDashboardMode = 'GETTING_STARTED' | 'ESTABLISHED';
 export type PatientDashboardRecommendedAction =
-  'COMPLETE_PROFILE' | 'CONNECT_PROVIDER' | 'VIEW_PROVIDER_CONNECTION' | 'FIND_CARE' | 'NONE';
+  | 'COMPLETE_PROFILE'
+  | 'CONNECT_PROVIDER'
+  | 'VIEW_PROVIDER_CONNECTION'
+  | 'FIND_CARE'
+  | 'VIEW_APPOINTMENT'
+  | 'COMPLETE_PAYMENT'
+  | 'CONTINUE_SELF_CHECK'
+  | 'VIEW_HEALTH_CHECK'
+  | 'NONE';
+
+export type PatientDashboardActionResourceDomain =
+  | 'GUIDED_SELF_CHECK'
+  | 'HEALTH_CHECK'
+  | 'CARE_REQUEST'
+  | 'CARE_APPOINTMENT'
+  | 'PROVIDER_CONNECTION';
+
+export type PatientDashboardActionTargetType =
+  | 'PROFILE'
+  | 'PAYMENT'
+  | 'GUIDED_SELF_CHECK'
+  | 'HEALTH_CHECK'
+  | 'FIND_CARE'
+  | 'CARE_APPOINTMENT'
+  | 'PROVIDER_CONNECTION'
+  | 'STAY_WELL';
+
+export interface PatientDashboardRecommendedActionDetail {
+  readonly type: PatientDashboardRecommendedAction;
+  readonly resource: {
+    readonly domain: PatientDashboardActionResourceDomain;
+    readonly reference: string;
+  } | null;
+  readonly target: {
+    readonly type: PatientDashboardActionTargetType;
+  };
+}
 
 export interface PatientDashboard {
   readonly patient: {
@@ -19,6 +55,8 @@ export interface PatientDashboard {
     readonly hasStartedCareJourney: boolean;
   };
   readonly recommendedAction: PatientDashboardRecommendedAction;
+  /** Optional only for compatibility during a staggered backend/frontend deployment. */
+  readonly recommendedActionDetail?: PatientDashboardRecommendedActionDetail;
   readonly dashboardMode: PatientDashboardMode;
 }
 

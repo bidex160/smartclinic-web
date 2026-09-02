@@ -3,9 +3,13 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { HealthPassportOverview } from '../../core/models/health-passport.model';
-import { PatientDashboard } from '../../core/models/patient-dashboard.model';
+import {
+  PatientDashboard,
+  PatientDashboardRecommendedAction,
+  PatientDashboardRecommendedActionDetail,
+} from '../../core/models/patient-dashboard.model';
 import { PatientHealthCheckHistoryResponse } from '../../core/models/patient-health-check-history.model';
-import { ReferralSummary } from '../../core/models/referral.model';
+import { ReferralImpact } from '../../core/models/referral.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
@@ -15,7 +19,7 @@ interface DashboardNextStep {
   readonly title: string;
   readonly message: string;
   readonly label: string;
-  readonly route: string;
+  readonly route: string | string[];
 }
 
 @Component({
@@ -266,16 +270,28 @@ interface DashboardNextStep {
             <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div>
                 <p class="text-xs text-slate-600">Available points</p>
-                <p class="text-xl font-bold">{{ rewards.availablePoints }}</p>
+                <p class="text-xl font-bold">{{ rewards.balances.availablePoints }}</p>
               </div>
               <div>
                 <p class="text-xs text-slate-600">Reserved points</p>
-                <p class="text-xl font-bold">{{ rewards.reservedPoints }}</p>
+                <p class="text-xl font-bold">{{ rewards.balances.reservedPoints }}</p>
               </div>
               <div>
                 <p class="text-xs text-slate-600">Lifetime earned</p>
-                <p class="text-xl font-bold">{{ rewards.lifetimeEarnedPoints }}</p>
+                <p class="text-xl font-bold">{{ rewards.balances.lifetimeEarnedPoints }}</p>
               </div>
+              <div>
+                <p class="text-xs text-slate-600">Verified referrals</p>
+                <p class="text-xl font-bold">{{ rewards.summary.qualifiedReferrals }}</p>
+              </div>
+              @if (rewards.leaderboard.optedIn) {
+                <div>
+                  <p class="text-xs text-slate-600">Leadership position</p>
+                  <p class="text-xl font-bold">
+                    {{ rewards.leaderboard.position === null ? 'Not ranked yet' : '#' + rewards.leaderboard.position }}
+                  </p>
+                </div>
+              }
               <div>
                 <p class="text-xs text-slate-600">Referral code</p>
                 <p class="break-all font-mono font-bold">{{ rewards.referralCode }}</p>
@@ -299,13 +315,25 @@ interface DashboardNextStep {
                 Copy invite link
               </button>
      @if (patientInviteUrl()) {
-  <a
-    [href]="whatsappReferralShareUrl()"
-    target="_blank"
-    rel="noopener noreferrer"
+ <a
+  [href]="whatsappReferralShareUrl()"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+>
+  <svg
+    class="h-5 w-5"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
   >
-    Share on WhatsApp
-  </a>
+    <path
+      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.198.297-.767.966-.94 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.009-.371-.011-.57-.011-.198 0-.52.074-.792.371-.272.297-1.04 1.016-1.04 2.479s1.065 2.875 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.693.625.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.99c-.003 5.45-4.437 9.889-9.885 9.889"
+    />
+  </svg>
+
+  <span>Share on WhatsApp</span>
+</a>
 }
               <a
                 routerLink="/me/referrals"
@@ -346,7 +374,7 @@ interface DashboardNextStep {
         @if (supportWhatsappUrl) {
           <a
             [href]="supportWhatsappUrl"
-            class="fixed bottom-4 right-4 z-30 rounded-full bg-[#128c7e] px-5 py-3 font-bold text-white shadow-lg focus:ring-4 focus:ring-emerald-200"
+            class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 rounded-full bg-[#128c7e] px-5 py-3 font-bold text-white shadow-lg focus:ring-4 focus:ring-emerald-200 lg:bottom-4"
             >WhatsApp help</a
           >
         }
@@ -366,7 +394,7 @@ export class PatientDashboardPageComponent {
   readonly healthChecks = signal<PatientHealthCheckHistoryResponse | null>(null);
   readonly healthChecksLoading = signal(false);
   readonly healthChecksError = signal(false);
-  readonly referrals = signal<ReferralSummary | null>(null);
+  readonly referrals = signal<ReferralImpact | null>(null);
   readonly referralsLoading = signal(false);
   readonly referralsError = signal(false);
   readonly passport = signal<HealthPassportOverview | null>(null);
@@ -417,7 +445,7 @@ export class PatientDashboardPageComponent {
     this.referralsLoading.set(true);
     this.referralsError.set(false);
     this.referralsApi
-      .summary()
+      .getMyImpact()
       .pipe(finalize(() => this.referralsLoading.set(false)))
       .subscribe({
         next: (value) => this.referrals.set(value),
@@ -425,7 +453,119 @@ export class PatientDashboardPageComponent {
       });
   }
   nextStep(value: PatientDashboard): DashboardNextStep {
-    const actions: Record<PatientDashboard['recommendedAction'], DashboardNextStep> = {
+    if (value.recommendedActionDetail) {
+      return this.structuredNextStep(value.recommendedActionDetail);
+    }
+
+    return this.legacyNextStep(value.recommendedAction);
+  }
+
+  private structuredNextStep(
+    detail: PatientDashboardRecommendedActionDetail,
+  ): DashboardNextStep {
+    const resource = detail.resource;
+    const hasReference = Boolean(resource?.reference.trim());
+
+    switch (detail.type) {
+      case 'COMPLETE_PROFILE':
+        return {
+          title: 'Complete your profile',
+          message: 'Finish your basic details so SmartClinic can support your care journey.',
+          label: 'Complete Profile',
+          route: '/me/profile',
+        };
+      case 'VIEW_APPOINTMENT':
+        return {
+          title: 'Your appointment is today',
+          message: 'You have a scheduled care appointment today.',
+          label: 'View Appointment',
+          route:
+            resource?.domain === 'CARE_APPOINTMENT' && hasReference
+              ? ['/me/care/appointments', resource.reference]
+              : '/me/care',
+        };
+      case 'COMPLETE_PAYMENT':
+        return {
+          title: 'Complete your payment',
+          message: 'Finish the payment needed to continue this service.',
+          label: 'Continue Payment',
+          route: this.paymentContinuationRoute(resource),
+        };
+      case 'CONTINUE_SELF_CHECK':
+        return {
+          title: 'Continue your Self-Check',
+          message: 'Pick up where you stopped and complete your health questions.',
+          label: 'Continue Self-Check',
+          route:
+            resource?.domain === 'GUIDED_SELF_CHECK' && hasReference
+              ? ['/me/self-checks', resource.reference]
+              : '/me/self-checks',
+        };
+      case 'VIEW_HEALTH_CHECK':
+        return {
+          title: 'Your Health Check',
+          message: 'You have an active Health Check to review.',
+          label: 'View Health Check',
+          route:
+            resource?.domain === 'HEALTH_CHECK' && hasReference
+              ? ['/me/health-checks', resource.reference]
+              : '/me/health-checks',
+        };
+      case 'FIND_CARE':
+        return {
+          title: 'Continue finding care',
+          message: 'Your care request needs your attention.',
+          label: 'Continue',
+          route:
+            resource?.domain === 'CARE_REQUEST' && hasReference
+              ? ['/me/care', resource.reference]
+              : '/me/request-care',
+        };
+      case 'VIEW_PROVIDER_CONNECTION':
+        return {
+          title: 'Your hospital connection',
+          message: 'Review or continue your hospital connection.',
+          label: 'View Connection',
+          route:
+            resource?.domain === 'PROVIDER_CONNECTION' && hasReference
+              ? ['/me/providers', resource.reference]
+              : '/me/providers',
+        };
+      case 'NONE':
+        return {
+          title: 'Start with your health',
+          message: 'Check in on your health and see what SmartClinic recommends for you.',
+          label: 'Explore Stay Well',
+          route: '/me/health-journey',
+        };
+      case 'CONNECT_PROVIDER':
+        return this.legacyNextStep('CONNECT_PROVIDER');
+    }
+  }
+
+  private paymentContinuationRoute(
+    resource: PatientDashboardRecommendedActionDetail['resource'],
+  ): string | string[] {
+    if (!resource?.reference.trim()) return '/me/care';
+
+    switch (resource.domain) {
+      case 'GUIDED_SELF_CHECK':
+        return ['/me/self-checks', resource.reference];
+      case 'HEALTH_CHECK':
+        return ['/me/health-checks', resource.reference];
+      case 'CARE_REQUEST':
+        return ['/me/care', resource.reference];
+      case 'PROVIDER_CONNECTION':
+        return ['/me/providers', resource.reference];
+      case 'CARE_APPOINTMENT':
+        return '/me/care';
+      default:
+        return '/me/care';
+    }
+  }
+
+  private legacyNextStep(action: PatientDashboardRecommendedAction): DashboardNextStep {
+    const actions: Record<PatientDashboardRecommendedAction, DashboardNextStep> = {
       COMPLETE_PROFILE: {
         title: 'Complete your profile',
         message: 'Add your basic details to finish setting up your SmartClinic account.',
@@ -451,6 +591,30 @@ export class PatientDashboardPageComponent {
         label: 'Find Care',
         route: '/me/request-care',
       },
+      VIEW_APPOINTMENT: {
+        title: 'Your appointment is today',
+        message: 'You have a scheduled care appointment today.',
+        label: 'View Appointment',
+        route: '/me/care',
+      },
+      COMPLETE_PAYMENT: {
+        title: 'Complete your payment',
+        message: 'Finish the payment needed to continue this service.',
+        label: 'Continue Payment',
+        route: '/me/care',
+      },
+      CONTINUE_SELF_CHECK: {
+        title: 'Continue your Self-Check',
+        message: 'Pick up where you stopped and complete your health questions.',
+        label: 'Continue Self-Check',
+        route: '/me/self-checks',
+      },
+      VIEW_HEALTH_CHECK: {
+        title: 'Your Health Check',
+        message: 'You have an active Health Check to review.',
+        label: 'View Health Check',
+        route: '/me/health-checks',
+      },
       NONE: {
         title: 'What would you like to do?',
         message: 'Choose preventive health, find care, or connect with your hospital.',
@@ -458,7 +622,7 @@ export class PatientDashboardPageComponent {
         route: '/me/health-journey',
       },
     };
-    return actions[value.recommendedAction];
+    return actions[action] ?? actions.NONE;
   }
   checklist(value: PatientDashboard) {
     return [
@@ -490,7 +654,7 @@ export class PatientDashboardPageComponent {
   }
 
   patientInviteLink(): string {
-  return this.referrals()?.links.PATIENT ?? '';
+  return this.referrals()?.inviteLinks.PATIENT ?? '';
 }
 
 patientInviteUrl(): string {
