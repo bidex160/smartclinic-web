@@ -41,7 +41,7 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
           <p class="mt-2">{{ action.message }}</p>
           @if (action.cta.type === 'FIND_CARE') {
             <a
-              routerLink="/request-care"
+              routerLink="/me/request-care"
               class="mt-4 inline-flex rounded-lg bg-brand-700 px-4 py-3 font-bold text-white"
               >Find Care</a
             >

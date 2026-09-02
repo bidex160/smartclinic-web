@@ -136,7 +136,7 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
           <p class="mt-2">Find the care you need or book a preventive Health Check.</p>
           <div class="mt-4 flex flex-wrap gap-3">
             <a
-              routerLink="/request-care"
+              routerLink="/me/request-care"
               class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
               >Find Care</a
             ><a
@@ -171,7 +171,7 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
             ><span class="mt-5 block font-bold text-brand-700">Choose a package →</span>
           </a>
           <a
-            routerLink="/request-care"
+            routerLink="/me/request-care"
             [class.ring-4]="value.recommendedAction === 'FIND_CARE'"
             [class.ring-brand-300]="value.recommendedAction === 'FIND_CARE'"
             class="group rounded-2xl border bg-white p-6 shadow-soft focus:ring-4 focus:ring-brand-200"

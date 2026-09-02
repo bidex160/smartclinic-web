@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { AuthApiService } from '../../core/services/auth-api.service';
+import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 
 @Component({
   selector: 'app-login-page',
@@ -213,8 +214,10 @@ export class LoginPageComponent {
           }
 
           if (roles.includes('USER')) {
-            const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-            if (returnUrl?.startsWith('/') && !returnUrl.startsWith('//')) {
+            const returnUrl = safeInternalReturnUrl(
+              this.route.snapshot.queryParamMap.get('returnUrl'),
+            );
+            if (returnUrl) {
               void this.router.navigateByUrl(returnUrl);
               return;
             }

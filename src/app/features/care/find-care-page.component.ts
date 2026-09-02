@@ -492,7 +492,7 @@ export class FindCarePageComponent {
     const request = this.request();
     if (!this.auth.authenticated() || !this.auth.isPatient()) {
       this.intent.save(request);
-      void this.router.navigate(['/login'], { queryParams: { returnUrl: '/request-care' } });
+      void this.router.navigate(['/login'], { queryParams: { returnUrl: '/me/request-care' } });
       return;
     }
     this.submitting.set(true);

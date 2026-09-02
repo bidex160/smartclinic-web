@@ -143,7 +143,7 @@ describe('FindCarePageComponent', () => {
     });
     c.submit();
     expect(care.create).not.toHaveBeenCalled();
-    expect(nav).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/request-care' } });
+    expect(nav).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/me/request-care' } });
   });
   it('uses an ISO state control while preserving the state name in the request form', async () => {
     const { fixture } = await setup();

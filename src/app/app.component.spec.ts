@@ -22,13 +22,16 @@ describe('AppComponent', () => {
     expect(fixture.nativeElement.querySelector('main')).not.toBeNull();
   });
 
-  it('shows guest sign-in, provider acquisition, and booking navigation', () => {
+  it('shows the compact guest header with My SmartClinic and menu navigation', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Sign in');
-    expect(text).toContain('For Providers');
-    expect(text).toContain('Book My Smart Health Check');
+    const header = fixture.nativeElement.querySelector('header') as HTMLElement;
+    const portal = [...header.querySelectorAll('a')].find((item) =>
+      item.textContent?.includes('My SmartClinic'),
+    );
+    expect(portal?.getAttribute('href')).toBe('/login');
+    expect(header.textContent).toContain('Menu');
+    expect(header.textContent).not.toContain('Book My Smart Health Check');
   });
 
   it('shows only entitled portal destinations for a multi-role account', () => {
@@ -45,11 +48,15 @@ describe('AppComponent', () => {
     });
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    const link = [...fixture.nativeElement.querySelectorAll('a')].find((item: HTMLAnchorElement) =>
-      item.textContent?.includes('My Health'),
+    const link = [...fixture.nativeElement.querySelectorAll('header a')].find(
+      (item: HTMLAnchorElement) => item.textContent?.includes('My SmartClinic'),
     ) as HTMLAnchorElement;
     expect(link.getAttribute('href')).toBe('/me/dashboard');
+    const menu = [...fixture.nativeElement.querySelectorAll('header button')].find(
+      (button: HTMLButtonElement) => button.textContent?.trim() === 'Menu',
+    ) as HTMLButtonElement;
+    menu.click();
+    fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Admin Portal');
-    expect(fixture.nativeElement.textContent).not.toContain('Provider Portal');
   });
 });

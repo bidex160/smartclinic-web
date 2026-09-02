@@ -4,4 +4,5 @@ export const environment = {
   api: {
     baseUrl: 'https://api.smartclinicnetwork.com/api/v1',
   },
+  publicSite: { whatsappUrl: null },
 } as const;

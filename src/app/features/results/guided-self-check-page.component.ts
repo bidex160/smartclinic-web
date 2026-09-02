@@ -121,13 +121,13 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
                 >
               } @else if (action.cta.type === 'FIND_CARE') {
                 <a
-                  routerLink="/request-care"
+                  routerLink="/me/request-care"
                   class="mt-4 inline-flex rounded-lg bg-red-700 px-4 py-3 font-bold text-white"
                   >Find care</a
                 >
               } @else if (action.cta.type === 'URGENT_ASSESSMENT') {
                 <a
-                  routerLink="/request-care"
+                  routerLink="/me/request-care"
                   class="mt-4 inline-flex rounded-lg bg-red-800 px-4 py-3 font-bold text-white"
                   >Find urgent assessment options</a
                 >

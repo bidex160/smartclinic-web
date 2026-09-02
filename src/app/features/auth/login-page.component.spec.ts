@@ -6,14 +6,20 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { LoginPageComponent } from './login-page.component';
 
 describe('LoginPageComponent', () => {
-  async function setup(fail = false) {
+  async function setup(
+    fail = false,
+    options: {
+      returnUrl?: string | null;
+      roles?: ('USER' | 'ADMIN' | 'OPERATIONS' | 'PROVIDER')[];
+    } = {},
+  ) {
     const response: any = {
       accessToken: 'token',
       user: {
         id: 'u',
         email: 'patient@example.com',
         displayName: 'Patient',
-        roles: ['USER'],
+        roles: options.roles ?? ['USER'],
         status: 'ACTIVE',
       },
     };
@@ -22,12 +28,18 @@ describe('LoginPageComponent', () => {
       imports: [LoginPageComponent],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => null } } } },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: { get: () => options.returnUrl ?? null } },
+          },
+        },
         { provide: AuthApiService, useValue: api },
       ],
     }).compileComponents();
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     const fixture = TestBed.createComponent(LoginPageComponent);
     fixture.detectChanges();
     return {
@@ -78,6 +90,31 @@ describe('LoginPageComponent', () => {
     component.submit();
     expect(auth.accessToken()).toBe('token');
     expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard']);
+  });
+  it('honors a safe internal returnUrl and preserves its package query parameter', async () => {
+    const destination = '/health-check/packages?package=ESSENTIAL';
+    const { component, router } = await setup(false, { returnUrl: destination });
+    component.form.setValue({ identifier: 'patient@example.com', password: 'existing-password' });
+    component.submit();
+    expect(router.navigateByUrl).toHaveBeenCalledWith(destination);
+    expect(router.navigate).not.toHaveBeenCalledWith(['/me/dashboard']);
+  });
+  it('rejects an external returnUrl and uses the normal patient dashboard', async () => {
+    const { component, router } = await setup(false, { returnUrl: '//example.com/phishing' });
+    component.form.setValue({ identifier: 'patient@example.com', password: 'existing-password' });
+    component.submit();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard']);
+  });
+  it('does not let a non-Patient role use a patient returnUrl', async () => {
+    const { component, router } = await setup(false, {
+      returnUrl: '/me/health-journey',
+      roles: ['PROVIDER'],
+    });
+    component.form.setValue({ identifier: 'provider@example.com', password: 'existing-password' });
+    component.submit();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/provider/dashboard']);
   });
   it('shows identifier-neutral generic authentication failure', async () => {
     const { component, fixture } = await setup(true);

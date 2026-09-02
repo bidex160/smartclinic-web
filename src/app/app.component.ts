@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthStateService } from './core/services/auth-state.service';
 import { AuthSessionService } from './core/services/auth-session.service';
 import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterOutlet],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -24,6 +24,9 @@ export class AppComponent {
 
     return url.startsWith('/admin') || url.startsWith('/provider') || url.startsWith('/me');
   });
+  readonly mySmartClinicRoute = computed(() =>
+    this.authState.isPatient() ? '/me/dashboard' : '/login',
+  );
 
   constructor() {
     this.router.events

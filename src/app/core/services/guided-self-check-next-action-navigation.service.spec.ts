@@ -21,10 +21,10 @@ describe('GuidedSelfCheckNextActionNavigationService', () => {
       queryParams: { package: 'ESSENTIAL' },
     });
     expect(service.target(action('FIND_CARE', { domain: 'CARE_REQUEST' }))).toEqual({
-      commands: ['/request-care'],
+      commands: ['/me/request-care'],
     });
     expect(service.target(action('URGENT_ASSESSMENT', { domain: 'CARE_REQUEST' }))).toEqual({
-      commands: ['/request-care'],
+      commands: ['/me/request-care'],
     });
   });
   it('does not invent a professional-contact route', () =>

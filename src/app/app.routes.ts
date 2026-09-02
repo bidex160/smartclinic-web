@@ -27,12 +27,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/join/join.component').then((component) => component.JoinComponent),
   },
-  {
-    path: 'request-care',
-    title: 'Find Care | SmartClinic',
-    loadComponent: () =>
-      import('./features/care/find-care-page.component').then((c) => c.FindCarePageComponent),
-  },
+
   {
     path: 'health-check/packages',
     title: 'Choose a Smart Health Check | SmartClinic',
@@ -114,6 +109,12 @@ export const routes: Routes = [
             (c) => c.PatientDashboardPageComponent,
           ),
       },
+        {
+    path: 'request-care',
+    title: 'Find Care | SmartClinic',
+    loadComponent: () =>
+      import('./features/care/find-care-page.component').then((c) => c.FindCarePageComponent),
+  },
       {
         path: 'profile',
         title: 'My profile | SmartClinic',

@@ -9,6 +9,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { API_CONFIG } from './core/config/api-config.token';
+import { PUBLIC_SITE_CONFIG } from './core/config/public-site-config.token';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthSessionService } from './core/services/auth-session.service';
@@ -19,6 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     { provide: API_CONFIG, useValue: environment.api },
+    { provide: PUBLIC_SITE_CONFIG, useValue: environment.publicSite },
     provideAppInitializer(() => inject(AuthSessionService).restoreSession()),
   ],
 };

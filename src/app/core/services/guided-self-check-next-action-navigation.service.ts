@@ -11,7 +11,7 @@ export class GuidedSelfCheckNextActionNavigationService {
       (action.cta.type === 'FIND_CARE' || action.cta.type === 'URGENT_ASSESSMENT') &&
       action.cta.domain === 'CARE_REQUEST'
     )
-      return { commands: ['/request-care'] };
+      return { commands: ['/me/request-care'] };
     if (action.cta.type === 'NONE') return { commands: ['/me/health-passport'] };
     return null;
   }
