@@ -1,23 +1,43 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
+import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { PatientDashboard } from '../../core/models/patient-dashboard.model';
-import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
-import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
+import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { PatientDashboardPageComponent } from './patient-dashboard-page.component';
 
 describe('PatientDashboardPageComponent', () => {
-  async function setup(overrides: Partial<PatientDashboard> = {}, dashboardError = false) {
-    const value = dashboard(overrides);
+  async function setup(
+    options: {
+      dashboard?: Partial<PatientDashboard>;
+      healthChecks?: { items: { portalCategory: string }[] };
+      supportUrl?: string | null;
+      dashboardError?: boolean;
+    } = {},
+  ) {
+    const value = dashboard(options.dashboard);
     const api = {
-      getDashboard: vi.fn(() => (dashboardError ? throwError(() => ({ status: 500 })) : of(value))),
-      getProfile: vi.fn(() => of(profile())),
-      updateProfile: vi.fn(() => of(profile())),
+      getDashboard: vi.fn(() =>
+        options.dashboardError ? throwError(() => ({ status: 500 })) : of(value),
+      ),
     };
-    const healthChecksApi = { getMyHealthChecks: vi.fn(() => of(healthChecks())) };
+    const healthChecksApi = {
+      getMyHealthChecks: vi.fn(() =>
+        of({
+          ...(options.healthChecks ?? healthChecks()),
+          page: 1,
+          limit: 50,
+          total: options.healthChecks?.items.length ?? 4,
+          totalPages: 1,
+        }),
+      ),
+    };
     const referralsApi = { summary: vi.fn(() => of(referrals())) };
+    const passportApi = { overview: vi.fn(() => of(passport())) };
     await TestBed.configureTestingModule({
       imports: [PatientDashboardPageComponent],
       providers: [
@@ -25,164 +45,166 @@ describe('PatientDashboardPageComponent', () => {
         { provide: PatientDashboardApiService, useValue: api },
         { provide: HealthCheckResultsApiService, useValue: healthChecksApi },
         { provide: ReferralsApiService, useValue: referralsApi },
-        {
-          provide: HealthPassportApiService,
-          useValue: {
-            overview: vi.fn(() =>
-              of({ currentNextAction: null, latestMeasurements: [], recentActivity: [] }),
-            ),
-          },
-        },
+        { provide: HealthPassportApiService, useValue: passportApi },
+        { provide: PUBLIC_SITE_CONFIG, useValue: { whatsappUrl: options.supportUrl ?? null } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientDashboardPageComponent);
     fixture.detectChanges();
     return { fixture, component: fixture.componentInstance, api, healthChecksApi, referralsApi };
   }
-  it('shows a deliberate loading state before rendering API data', async () => {
-    const api = {
-      getDashboard: vi.fn(() => new Subject<PatientDashboard>()),
-      getProfile: vi.fn(),
-      updateProfile: vi.fn(),
-    };
-    const healthChecksApi = { getMyHealthChecks: vi.fn(() => new Subject()) };
-    const referralsApi = { summary: vi.fn(() => new Subject()) };
+
+  it('places authoritative identity and one backend-driven next step before secondary content', async () => {
+    const { fixture } = await setup();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Welcome, Ada');
+    expect(text).toContain('SmartClinic ID: SCP-8K4M-27QD');
+    expect(text).toContain('Your next step');
+    expect(text).toContain('Complete your profile');
+    expect(
+      fixture.nativeElement
+        .querySelector('#next-step-heading')
+        .closest('section')
+        .querySelector('a')
+        .getAttribute('href'),
+    ).toBe('/me/profile');
+    expect(text.indexOf('Your next step')).toBeLessThan(text.indexOf('Your Care'));
+  });
+
+  it.each([
+    ['CONNECT_PROVIDER', 'Connect your hospital', '/me/providers/connect'],
+    ['VIEW_PROVIDER_CONNECTION', 'Continue your hospital connection', '/me/providers'],
+    ['FIND_CARE', 'Find the care you need', '/me/request-care'],
+    ['NONE', 'What would you like to do?', '/me/health-journey'],
+  ] as const)(
+    'uses the existing %s recommendation without inventing priority',
+    async (recommendedAction, title, route) => {
+      const { fixture } = await setup({ dashboard: { recommendedAction } });
+      const section = fixture.nativeElement.querySelector('#next-step-heading').closest('section');
+      expect(section.textContent).toContain(title);
+      expect(section.querySelector('a').getAttribute('href')).toBe(route);
+    },
+  );
+
+  it('keeps compact Stay Well, Find Care and My Hospital actions on established routes', async () => {
+    const { fixture } = await setup();
+    const nav = fixture.nativeElement.querySelector('[aria-label="Primary patient actions"]');
+    expect(
+      [...nav.querySelectorAll('a')].map((a: HTMLAnchorElement) => [
+        a.textContent.trim(),
+        a.getAttribute('href'),
+      ]),
+    ).toEqual([
+      ['Stay Well', '/me/health-journey'],
+      ['Find Care', '/me/request-care'],
+      ['My Hospital', '/me/providers/connect'],
+    ]);
+  });
+
+  it('renders truthful care empty states without patient, hospital, appointment or result fabrication', async () => {
+    const { fixture } = await setup();
+    const care = fixture.nativeElement
+      .querySelector('#your-care-heading')
+      .closest('section').textContent;
+    expect(care).toContain('No hospital connected yet');
+    expect(care).toContain('No care request yet');
+    expect(care).not.toMatch(/next appointment|Dr\.|hospital name/i);
+  });
+
+  it('preserves all zero Health Check statistics and adds a useful empty action', async () => {
+    const { fixture } = await setup({ healthChecks: { items: [] } });
+    const section = fixture.nativeElement
+      .querySelector('#health-check-summary-heading')
+      .closest('section');
+    expect(
+      [...section.querySelectorAll('article')].map((x: HTMLElement) =>
+        x.textContent.replace(/\s+/g, ' ').trim(),
+      ),
+    ).toEqual(['Awaiting payment0', 'Upcoming / active0', 'Completed0', 'Needs attention0']);
+    expect(section.textContent).toContain("You haven't completed a Health Check yet");
+    expect(section.querySelector('a[href="/me/health-journey"]')).not.toBeNull();
+  });
+
+  it('uses Passport projections without fabricating a clinical value', async () => {
+    const { fixture } = await setup();
+    const section = fixture.nativeElement.querySelector('#passport-heading').closest('section');
+    expect(section.textContent).toContain('Blood pressure');
+    expect(section.textContent).toContain('Reported by you');
+    expect(section.textContent).not.toContain('120/80');
+    expect(section.querySelector('a[href="/me/health-passport"]')).not.toBeNull();
+  });
+
+  it('uses authoritative referral balances, level, code and links with encoded WhatsApp sharing', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    const { fixture, component } = await setup();
+    const section = fixture.nativeElement.querySelector('#impact-heading').closest('section');
+    expect(section.textContent).toContain('Available points340');
+    expect(section.textContent).toContain('Reserved points60');
+    expect(section.textContent).toContain('Lifetime earned500');
+    expect(section.textContent).toContain('SC-ABC123');
+    expect(section.textContent).toContain('Next achievement: Level 3');
+    const share = section.querySelector('a[href^="https://wa.me/"]') as HTMLAnchorElement;
+    expect(decodeURIComponent(share.href)).toContain(
+      'https://smartclinic.example/register?ref=SC-ABC123',
+    );
+    await component.copyReferralLink();
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      'https://smartclinic.example/register?ref=SC-ABC123',
+    );
+  });
+
+  it('keeps Getting Started semantics compact and accurate', async () => {
+    const { fixture } = await setup();
+    const section = fixture.nativeElement
+      .querySelector('#getting-started-heading')
+      .closest('section');
+    expect(section.textContent).toContain('SmartClinic account created');
+    expect(section.textContent).toContain('Complete your profile');
+    expect(section.textContent).toContain('Complete');
+    expect(section.textContent).toContain('Not complete');
+  });
+
+  it('hides support WhatsApp without configuration and shows only the configured URL', async () => {
+    const hidden = await setup();
+    expect(hidden.fixture.nativeElement.textContent).not.toContain('WhatsApp help');
+    TestBed.resetTestingModule();
+    const shown = await setup({ supportUrl: 'https://wa.me/2348000000000' });
+    expect(
+      shown.fixture.nativeElement.querySelector('a[href="https://wa.me/2348000000000"]'),
+    ).not.toBeNull();
+  });
+
+  it('retains loading, API scope and recoverable dashboard error behavior', async () => {
+    const pending = new Subject<PatientDashboard>();
     await TestBed.configureTestingModule({
       imports: [PatientDashboardPageComponent],
       providers: [
         provideRouter([]),
-        { provide: PatientDashboardApiService, useValue: api },
-        { provide: HealthCheckResultsApiService, useValue: healthChecksApi },
-        { provide: ReferralsApiService, useValue: referralsApi },
-        { provide: HealthPassportApiService, useValue: { overview: vi.fn(() => new Subject()) } },
+        { provide: PatientDashboardApiService, useValue: { getDashboard: () => pending } },
+        {
+          provide: HealthCheckResultsApiService,
+          useValue: {
+            getMyHealthChecks: () =>
+              of({ ...healthChecks(), page: 1, limit: 50, total: 4, totalPages: 1 }),
+          },
+        },
+        { provide: ReferralsApiService, useValue: { summary: () => of(referrals()) } },
+        { provide: HealthPassportApiService, useValue: { overview: () => of(passport()) } },
       ],
     }).compileComponents();
-    const fixture = TestBed.createComponent(PatientDashboardPageComponent);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Loading your dashboard');
-    expect(fixture.nativeElement.textContent).not.toContain('Getting started');
-  });
-  it('renders GETTING_STARTED with the backend patient reference and checklist', async () => {
-    const { fixture } = await setup();
-    const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Hi, Ada. Let’s take your first step towards staying healthy.');
-    expect(text).toContain('Start my health journey');
-    expect(text).toContain('SCP-8K4M-27QD');
-    expect(text).toContain('Getting started');
-    expect(text).toContain('SmartClinic account created');
-    expect(text).not.toContain('Exchange Builder');
-  });
-  it('renders ESTABLISHED compactly without fake summaries or the checklist', async () => {
-    const { fixture } = await setup({ dashboardMode: 'ESTABLISHED', recommendedAction: 'NONE' });
-    const text = fixture.nativeElement.textContent;
-    expect(text).toMatch(/Good (morning|afternoon|evening), Ada/);
-    expect(text).not.toContain('Getting started');
-    expect(text).not.toContain('Upcoming appointments');
-    expect(text).not.toContain('Ready prescriptions');
-  });
-  it.each(['GETTING_STARTED', 'ESTABLISHED'] as const)(
-    'retains authoritative Health Check and rewards widgets in %s',
-    async (dashboardMode) => {
-      const { fixture, healthChecksApi, referralsApi } = await setup({ dashboardMode });
-      const text = fixture.nativeElement.textContent;
-      expect(healthChecksApi.getMyHealthChecks).toHaveBeenCalledWith({ page: 1, limit: 50 });
-      expect(referralsApi.summary).toHaveBeenCalledTimes(1);
-      expect(text).toContain('Your Health Checks');
-      expect(text).toContain('Awaiting payment');
-      expect(text).toContain('Completed');
-      expect(text).toContain('340 points');
-      expect(text).toContain('Level 2 achieved');
-    },
-  );
-  it('derives summary counts only from authoritative portal categories', async () => {
-    const { fixture } = await setup();
-    const cards = [
-      ...fixture.nativeElement.querySelectorAll(
-        '[aria-labelledby="health-check-summary-heading"] article',
-      ),
-    ].map((element: HTMLElement) => element.textContent?.replace(/\s+/g, ' ').trim());
-    expect(cards).toEqual([
-      'Awaiting payment1',
-      'Upcoming / active1',
-      'Completed1',
-      'Needs attention1',
-    ]);
-  });
-  it.each(['GETTING_STARTED', 'ESTABLISHED'] as const)(
-    'keeps all three primary actions in %s',
-    async (mode) => {
-      const { fixture } = await setup({ dashboardMode: mode });
-      const text = fixture.nativeElement.textContent;
-      expect(text).toContain('Connect to a Provider');
-      expect(text).toContain('Book a Health Check');
-      expect(text).toContain('Find Care Now');
-      expect(fixture.nativeElement.querySelector('a[href="/me/book"]')).not.toBeNull();
-      expect(fixture.nativeElement.querySelector('a[href="/request-care"]')).not.toBeNull();
-    },
-  );
-  it.each([
-    ['CONNECT_PROVIDER', 'Connect now'],
-    ['VIEW_PROVIDER_CONNECTION', 'Provider connection in progress'],
-    ['FIND_CARE', 'Ready when you are'],
-    ['NONE', 'How can we help today?'],
-  ] as const)('presents %s without hiding permanent actions', async (action, copy) => {
-    const { fixture } = await setup({ recommendedAction: action });
-    expect(fixture.nativeElement.textContent).toContain(copy);
-    expect(fixture.nativeElement.textContent).toContain('Book a Health Check');
-  });
-  it('derives connection progress from the backend booleans without completing the checklist', async () => {
-    const { fixture } = await setup({
-      recommendedAction: 'VIEW_PROVIDER_CONNECTION',
-      setup: { ...dashboard().setup, hasProviderConnection: true, hasConnectedProvider: false },
-    });
-    const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Provider connection in progress');
-    expect(fixture.nativeElement.querySelector('a[href="/me/providers"]')).not.toBeNull();
-    const item = [...fixture.nativeElement.querySelectorAll('li')].find((x: HTMLElement) =>
-      x.textContent?.includes('Connect to a healthcare provider'),
-    );
-    expect(item.textContent).toContain('Not complete');
-  });
-  it('loads authoritative profile, keeps email read-only, excludes email from PATCH, then reloads dashboard', async () => {
-    const { fixture, component, api } = await setup({ recommendedAction: 'COMPLETE_PROFILE' });
-    component.openProfile();
-    fixture.detectChanges();
-    const email = fixture.nativeElement.querySelector('#profile-email');
-    expect(email.readOnly).toBe(true);
-    component.profileForm.patchValue({
-      givenName: ' Ada ',
-      familyName: ' Okafor ',
-      phone: '',
-      dateOfBirth: '1990-01-01',
-    });
-    component.saveProfile();
-    expect(api.updateProfile).toHaveBeenCalledWith({
-      givenName: 'Ada',
-      familyName: 'Okafor',
-      phone: null,
-      dateOfBirth: '1990-01-01',
-    });
-    expect(api.getDashboard).toHaveBeenCalledTimes(2);
-  });
-  it('preserves the profile form and displays a safe backend error', async () => {
-    const { fixture, component, api } = await setup({ recommendedAction: 'COMPLETE_PROFILE' });
-    component.openProfile();
-    api.updateProfile.mockReturnValue(
-      throwError(() => ({ error: { message: 'Phone is invalid' } })),
-    );
-    component.saveProfile();
-    fixture.detectChanges();
-    expect(component.profileForm.controls.givenName.value).toBe('Ada');
-    expect(fixture.nativeElement.textContent).toContain('Phone is invalid');
-  });
-  it('shows dashboard error with retry', async () => {
-    const { fixture, component, api } = await setup({}, true);
-    expect(fixture.nativeElement.textContent).toContain('dashboard is unavailable');
-    api.getDashboard.mockReturnValue(of(dashboard()));
-    component.load();
-    fixture.detectChanges();
-    expect(api.getDashboard).toHaveBeenCalledTimes(2);
-    expect(component.dashboard()).not.toBeNull();
+    const pendingFixture = TestBed.createComponent(PatientDashboardPageComponent);
+    pendingFixture.detectChanges();
+    expect(pendingFixture.nativeElement.textContent).toContain('Loading your dashboard');
+    TestBed.resetTestingModule();
+    const failed = await setup({ dashboardError: true });
+    expect(failed.fixture.nativeElement.textContent).toContain('dashboard is unavailable');
+    TestBed.resetTestingModule();
+    const loaded = await setup();
+    expect(loaded.healthChecksApi.getMyHealthChecks).toHaveBeenCalledWith({ page: 1, limit: 50 });
+    expect(loaded.referralsApi.summary).toHaveBeenCalledOnce();
   });
 });
 
@@ -204,18 +226,6 @@ function dashboard(overrides: Partial<PatientDashboard> = {}): PatientDashboard 
     ...overrides,
   };
 }
-function profile() {
-  return {
-    user: { displayName: 'Ada Okafor', email: 'ada@example.test' },
-    patient: {
-      patientReference: 'SCP-8K4M-27QD',
-      givenName: 'Ada',
-      familyName: 'Okafor',
-      phone: null,
-      dateOfBirth: null,
-    },
-  };
-}
 function healthChecks() {
   return {
     items: [
@@ -224,15 +234,23 @@ function healthChecks() {
       { portalCategory: 'COMPLETED_HISTORY' },
       { portalCategory: 'NEEDS_ATTENTION' },
     ],
-    page: 1,
-    limit: 50,
-    total: 4,
-    totalPages: 1,
   };
 }
-function referrals() {
+function referrals(): ReferralSummaryFixture {
   return {
+    referralCode: 'SC-ABC123',
+    links: {
+      PATIENT: 'https://smartclinic.example/register?ref=SC-ABC123',
+      CLINIC: '/provider/register?ref=SC-ABC123&type=CLINIC',
+      LABORATORY: '/provider/register?ref=SC-ABC123&type=LABORATORY',
+      PHARMACY: '/provider/register?ref=SC-ABC123&type=PHARMACY',
+    },
     availablePoints: 340,
+    reservedPoints: 60,
+    withdrawalReservedPoints: 40,
+    healthCheckReservedPoints: 20,
+    lifetimeEarnedPoints: 500,
+    lifetimeRedeemedPoints: 100,
     levelProgress: {
       currentLevel: { code: 'LEVEL_2', name: 'Level 2', ordinal: 2 },
       nextLevel: { code: 'LEVEL_3', name: 'Level 3', ordinal: 3 },
@@ -243,5 +261,52 @@ function referrals() {
       highestConfiguredLevelReached: false,
       qualifiedCounts: { PATIENT: 22, CLINIC: 5, LABORATORY: 4, PHARMACY: 4 },
     },
+    currentLevel: null,
+    nextLevel: null,
+    progress: {
+      patients: { qualified: 22, required: 30 },
+      clinics: { qualified: 5, required: 6 },
+      laboratories: { qualified: 4, required: 4 },
+      pharmacies: { qualified: 4, required: 4 },
+    },
+    completed: false,
+    registeredDirectReferrals: 40,
+    qualifiedDirectReferrals: 36,
+  };
+}
+type ReferralSummaryFixture = import('../../core/models/referral.model').ReferralSummary;
+function passport() {
+  return {
+    patient: {
+      patientReference: 'SCP-8K4M-27QD',
+      givenName: 'Ada',
+      familyName: 'Okafor',
+      displayName: 'Ada Okafor',
+      dateOfBirth: null,
+    },
+    summary: {
+      completedSelfChecks: 0,
+      completedHealthChecks: 0,
+      completedGeneralCareEncounters: 0,
+      finalizedClinicalRecords: 0,
+      issuedPrescriptions: 0,
+      completedDispensings: 0,
+    },
+    latestMeasurements: [
+      {
+        type: 'BLOOD_PRESSURE',
+        value: {},
+        unit: 'mmHg',
+        recordedAt: '2026-09-01',
+        provenance: 'REPORTED_BY_YOU' as const,
+        sourceDomain: 'SELF_CHECK',
+        sourceReference: 'SC-GSC-1',
+      },
+    ],
+    reportedHealthHistory: [],
+    recentChecks: { selfChecks: [], healthChecks: [] },
+    recentMedicationContext: [],
+    currentNextAction: null,
+    recentActivity: [],
   };
 }

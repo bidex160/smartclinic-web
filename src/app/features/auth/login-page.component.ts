@@ -133,6 +133,7 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
         <div class="mt-4 grid gap-3">
           <a
             routerLink="/register"
+            [queryParams]="registrationQueryParams"
             class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-600 px-4 py-3 text-center font-bold text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
           >
             Create a patient account
@@ -173,12 +174,21 @@ export class LoginPageComponent {
   errorMessage: string | null = null;
 
   readonly showPassword = signal(false);
+  readonly registrationQueryParams = this.authFlowQueryParams();
 
   readonly form = this.fb.nonNullable.group({
     identifier: ['', Validators.required],
 
     password: ['', Validators.required],
   });
+
+  private authFlowQueryParams(): Record<string, string> | null {
+    const returnUrl = safeInternalReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+    const referralCode = this.route.snapshot.queryParamMap.get('ref')?.trim();
+    return returnUrl || referralCode
+      ? { ...(returnUrl && { returnUrl }), ...(referralCode && { ref: referralCode }) }
+      : null;
+  }
 
   submit(): void {
     if (this.form.invalid || this.authState.loading()) {

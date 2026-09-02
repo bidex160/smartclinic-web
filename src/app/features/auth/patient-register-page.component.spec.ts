@@ -43,10 +43,54 @@ describe('PatientRegisterPageComponent', () => {
   });
   it('captures an explicit referral query value without browser persistence', async () => {
     const register = vi.fn(() => of({}));
-    await TestBed.configureTestingModule({ imports: [PatientRegisterPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ ref: 'SC-ABC123' }) } } }, { provide: AuthApiService, useValue: { register } }] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [PatientRegisterPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({ ref: 'SC-ABC123' }) } },
+        },
+        { provide: AuthApiService, useValue: { register } },
+      ],
+    }).compileComponents();
     const component = TestBed.createComponent(PatientRegisterPageComponent).componentInstance;
-    component.form.setValue({ givenName: 'Ada', familyName: 'Okafor', email: 'ada@example.test', phone: '', password: 'secure-password' }); component.register();
+    component.form.setValue({
+      givenName: 'Ada',
+      familyName: 'Okafor',
+      email: 'ada@example.test',
+      phone: '',
+      password: 'secure-password',
+    });
+    component.register();
     expect(register).toHaveBeenCalledWith(expect.objectContaining({ referralCode: 'SC-ABC123' }));
-    expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(0);
+    expect(localStorage.length).toBe(0);
+    expect(sessionStorage.length).toBe(0);
+  });
+  it('preserves only a safe returnUrl on sign-in after registration', async () => {
+    const register = vi.fn(() => of({}));
+    await TestBed.configureTestingModule({
+      imports: [PatientRegisterPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              queryParamMap: convertToParamMap({
+                returnUrl: '/health-check/packages?package=COMPLETE',
+              }),
+            },
+          },
+        },
+        { provide: AuthApiService, useValue: { register } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PatientRegisterPageComponent);
+    fixture.detectChanges();
+    const links = [...fixture.nativeElement.querySelectorAll('a[href^="/login"]')];
+    expect(links[0].getAttribute('href')).toBe(
+      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
+    );
   });
 });

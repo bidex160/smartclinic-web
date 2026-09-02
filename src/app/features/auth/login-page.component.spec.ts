@@ -10,6 +10,7 @@ describe('LoginPageComponent', () => {
     fail = false,
     options: {
       returnUrl?: string | null;
+      referralCode?: string | null;
       roles?: ('USER' | 'ADMIN' | 'OPERATIONS' | 'PROVIDER')[];
     } = {},
   ) {
@@ -31,7 +32,16 @@ describe('LoginPageComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { queryParamMap: { get: () => options.returnUrl ?? null } },
+            snapshot: {
+              queryParamMap: {
+                get: (key: string) =>
+                  key === 'returnUrl'
+                    ? (options.returnUrl ?? null)
+                    : key === 'ref'
+                      ? (options.referralCode ?? null)
+                      : null,
+              },
+            },
           },
         },
         { provide: AuthApiService, useValue: api },
@@ -98,6 +108,22 @@ describe('LoginPageComponent', () => {
     component.submit();
     expect(router.navigateByUrl).toHaveBeenCalledWith(destination);
     expect(router.navigate).not.toHaveBeenCalledWith(['/me/dashboard']);
+  });
+  it('preserves the same safe returnUrl for phone login', async () => {
+    const destination = '/me/providers/connect';
+    const { component, router } = await setup(false, { returnUrl: destination });
+    component.form.setValue({ identifier: '+234 801 234 5678', password: 'existing-password' });
+    component.submit();
+    expect(router.navigateByUrl).toHaveBeenCalledWith(destination);
+  });
+  it('carries safe intent and referral attribution into patient registration', async () => {
+    const { fixture } = await setup(false, {
+      returnUrl: '/me/health-journey',
+      referralCode: 'SC-ABC123',
+    });
+    const link = fixture.nativeElement.querySelector('a[href^="/register"]') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toContain('returnUrl=%2Fme%2Fhealth-journey');
+    expect(link.getAttribute('href')).toContain('ref=SC-ABC123');
   });
   it('rejects an external returnUrl and uses the normal patient dashboard', async () => {
     const { component, router } = await setup(false, { returnUrl: '//example.com/phishing' });

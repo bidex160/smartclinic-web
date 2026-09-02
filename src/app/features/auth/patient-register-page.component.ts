@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthApiService } from '../../core/services/auth-api.service';
+import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 
 @Component({
   selector: 'app-patient-register-page',
@@ -14,7 +15,12 @@ import { AuthApiService } from '../../core/services/auth-api.service';
 export class PatientRegisterPageComponent {
   private readonly fb = inject(FormBuilder).nonNullable;
   private readonly api = inject(AuthApiService);
-  private readonly referralCode = inject(ActivatedRoute).snapshot.queryParamMap.get('ref')?.trim() || null;
+  private readonly route = inject(ActivatedRoute);
+  private readonly referralCode = this.route.snapshot.queryParamMap.get('ref')?.trim() || null;
+  private readonly returnUrl = safeInternalReturnUrl(
+    this.route.snapshot.queryParamMap.get('returnUrl'),
+  );
+  readonly loginQueryParams = this.returnUrl ? { returnUrl: this.returnUrl } : null;
   readonly pending = signal(false);
   readonly submitted = signal(false);
   readonly success = signal(false);
@@ -57,10 +63,10 @@ export class PatientRegisterPageComponent {
             this.referralCode && error.status === 400
               ? 'This referral link is no longer valid. Ask the person who invited you for a new link.'
               : error.status === 409
-              ? 'An account already exists for this email. Sign in instead.'
-              : error.status === 0
-                ? 'SmartClinic could not be reached. Check your connection and try again.'
-                : 'We could not create your account. Check the form and try again.',
+                ? 'An account already exists for this email. Sign in instead.'
+                : error.status === 0
+                  ? 'SmartClinic could not be reached. Check your connection and try again.'
+                  : 'We could not create your account. Check the form and try again.',
           );
         },
       });

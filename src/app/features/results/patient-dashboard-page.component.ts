@@ -1,517 +1,368 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { PatientDashboard, PatientPortalProfile } from '../../core/models/patient-dashboard.model';
-import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
+import { HealthPassportOverview } from '../../core/models/health-passport.model';
+import { PatientDashboard } from '../../core/models/patient-dashboard.model';
 import { PatientHealthCheckHistoryResponse } from '../../core/models/patient-health-check-history.model';
 import { ReferralSummary } from '../../core/models/referral.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
-import { ReferralsApiService } from '../../core/services/referrals-api.service';
-import { HealthPassportOverview } from '../../core/models/health-passport.model';
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
+import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { ReferralsApiService } from '../../core/services/referrals-api.service';
+
+interface DashboardNextStep {
+  readonly title: string;
+  readonly message: string;
+  readonly label: string;
+  readonly route: string;
+}
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-    @if (loading()) {
-      <section role="status" aria-live="polite" class="animate-pulse space-y-6">
-        <span class="sr-only">Loading your dashboard…</span>
-        <div class="h-28 rounded-2xl bg-slate-200"></div>
-        <div class="grid gap-4 md:grid-cols-3">
-          @for (item of [1, 2, 3]; track item) {
-            <div class="h-44 rounded-2xl bg-slate-200"></div>
-          }
-        </div>
-        <div class="h-40 rounded-2xl bg-slate-200"></div>
-      </section>
-    } @else if (error()) {
-      <section role="alert" class="rounded-2xl border border-red-200 bg-red-50 p-7">
-        <h1 class="text-2xl font-bold">Your dashboard is unavailable right now</h1>
-        <p class="mt-2">Check your connection and try again.</p>
-        <button
-          type="button"
-          (click)="load()"
-          class="mt-5 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white focus:ring-4 focus:ring-brand-200"
-        >
-          Retry
-        </button>
-      </section>
-    } @else if (dashboard(); as value) {
-      <header
-        class="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 p-6 text-white sm:p-8"
-      >
-        <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Patient home</p>
-        <h1 class="mt-2 break-words text-3xl font-bold sm:text-4xl">
-          @if (value.dashboardMode === 'GETTING_STARTED') {
-            Hi, {{ value.patient.firstName }}. Let’s take your first step towards staying healthy.
-          } @else {
-            {{ greeting() }}, {{ value.patient.firstName }}
-          }
-        </h1>
-        @if (value.dashboardMode === 'GETTING_STARTED') {
-          <p class="mt-4 max-w-2xl text-brand-100">
-            Start from home in a few minutes, or book a check with a verified provider near you.
-          </p>
-          <a
-            routerLink="/me/health-journey"
-            class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-white px-6 font-bold text-brand-900 focus:ring-4 focus:ring-white/30"
-            >Start my health journey</a
-          >
-        } @else {
-          <a
-            routerLink="/me/health-passport"
-            class="mt-4 inline-flex rounded-xl border border-white/50 px-5 py-3 font-bold focus:ring-4 focus:ring-white/30"
-            >Open Smart Health Passport</a
-          >
-        }
-        <p class="mt-4 text-sm text-brand-100">Your SmartClinic ID</p>
-        <p class="mt-1 break-all font-mono text-xl font-bold">
-          {{ value.patient.patientReference }}
-        </p>
-        <button
-          type="button"
-          (click)="copyPatientId()"
-          class="mt-4 min-h-11 rounded-xl border border-white/50 px-5 font-bold focus:ring-4 focus:ring-white/30"
-        >
-          Copy ID
-        </button>
-        <p aria-live="polite" class="mt-2 text-sm font-semibold text-brand-100">
-          {{ copyFeedback() }}
-        </p>
-      </header>
-      @if (feedback()) {
-        <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 font-semibold text-green-900">
-          {{ feedback() }}
-        </p>
-      }
-
-      @if (value.recommendedAction === 'COMPLETE_PROFILE') {
-        <section
-          class="mt-6 rounded-2xl border-2 border-brand-500 bg-brand-50 p-6"
-          aria-labelledby="profile-callout-heading"
-        >
-          <h2 id="profile-callout-heading" class="text-xl font-bold">Complete your profile</h2>
-          <p class="mt-2 text-slate-700">
-            Add your basic personal details to finish setting up your SmartClinic profile.
-          </p>
+  template: `
+    <main class="mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
+      @if (loading()) {
+        <section role="status" aria-live="polite" class="animate-pulse space-y-4">
+          <span class="sr-only">Loading your dashboard…</span>
+          <div class="h-20 rounded-2xl bg-slate-200"></div>
+          <div class="h-48 rounded-2xl bg-slate-200"></div>
+        </section>
+      } @else if (error()) {
+        <section role="alert" class="rounded-2xl border border-red-200 bg-red-50 p-6">
+          <h1 class="text-2xl font-bold">Your dashboard is unavailable right now</h1>
+          <p class="mt-2">Check your connection and try again.</p>
           <button
             type="button"
-            (click)="openProfile()"
-            class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white focus:ring-4 focus:ring-brand-200"
+            (click)="load()"
+            class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
           >
-            Complete profile
+            Retry
           </button>
         </section>
-      } @else if (
-        value.recommendedAction === 'VIEW_PROVIDER_CONNECTION' ||
-        (value.setup.hasProviderConnection && !value.setup.hasConnectedProvider)
-      ) {
+      } @else if (dashboard(); as value) {
+        <header class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Patient home</p>
+            <h1 class="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">
+              Welcome, {{ value.patient.firstName }}
+            </h1>
+            <p class="mt-1 text-sm text-slate-600">
+              SmartClinic ID:
+              <strong class="font-mono text-slate-900">{{ value.patient.patientReference }}</strong>
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="copyPatientId()"
+            class="min-h-11 rounded-xl border border-brand-200 px-4 text-sm font-bold text-brand-800 focus:ring-4 focus:ring-brand-200"
+          >
+            Copy ID
+          </button>
+          <p aria-live="polite" class="w-full text-sm font-semibold text-brand-700">
+            {{ copyFeedback() }}
+          </p>
+        </header>
+
         <section
-          class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6"
-          aria-labelledby="connection-progress-heading"
+          class="mt-4 rounded-2xl bg-brand-900 p-5 text-white shadow-soft sm:p-6"
+          aria-labelledby="next-step-heading"
         >
-          <h2 id="connection-progress-heading" class="text-xl font-bold">
-            Provider connection in progress
+          <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
+          <h2 id="next-step-heading" class="mt-1 text-2xl font-bold">
+            {{ nextStep(value).title }}
           </h2>
-          <p class="mt-2">
-            You've started connecting with a healthcare provider. View your provider connections to
-            check the latest status.
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-50 sm:text-base">
+            {{ nextStep(value).message }}
           </p>
           <a
-            routerLink="/me/providers"
-            class="mt-4 inline-flex rounded-xl bg-brand-700 px-5 py-3 font-bold text-white focus:ring-4 focus:ring-brand-200"
-            >View connections</a
+            [routerLink]="nextStep(value).route"
+            class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900 focus:ring-4 focus:ring-white/40"
+            >{{ nextStep(value).label }} <span class="ml-2" aria-hidden="true">→</span></a
           >
         </section>
-      } @else if (value.recommendedAction === 'FIND_CARE') {
-        <section
-          class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6"
-          aria-labelledby="next-care-heading"
-        >
-          <h2 id="next-care-heading" class="text-xl font-bold">Ready when you are</h2>
-          <p class="mt-2">Find the care you need or book a preventive Health Check.</p>
-          <div class="mt-4 flex flex-wrap gap-3">
-            <a
-              routerLink="/me/request-care"
-              class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-              >Find Care</a
-            ><a
-              routerLink="/me/book"
-              class="rounded-xl border border-brand-700 px-5 py-3 font-bold text-brand-800"
-              >Health Check</a
-            >
-          </div>
-        </section>
-      }
 
-      <section class="mt-8" aria-labelledby="primary-actions-heading">
-        <h2 id="primary-actions-heading" class="text-2xl font-bold">How can we help today?</h2>
-        <div class="mt-4 grid gap-4 md:grid-cols-3">
+        <nav class="mt-4 grid grid-cols-3 gap-2" aria-label="Primary patient actions">
           <a
-            routerLink="/me/providers/connect"
-            [class.ring-4]="value.recommendedAction === 'CONNECT_PROVIDER'"
-            [class.ring-brand-300]="value.recommendedAction === 'CONNECT_PROVIDER'"
-            class="group rounded-2xl border bg-white p-6 shadow-soft focus:ring-4 focus:ring-brand-200"
+            routerLink="/me/health-journey"
+            class="rounded-xl bg-white px-2 py-3 text-center text-sm font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 focus:ring-4 focus:ring-brand-200 sm:text-base"
+            >Stay Well</a
           >
-            <span class="text-lg font-bold text-brand-900">Connect to a Provider</span
-            ><span class="mt-2 block text-slate-600"
-              >Connect with a hospital, clinic, or healthcare provider.</span
-            ><span class="mt-5 block font-bold text-brand-700">Connect now →</span>
-          </a>
-          <a
-            routerLink="/me/book"
-            class="group rounded-2xl border bg-white p-6 shadow-soft focus:ring-4 focus:ring-brand-200"
-          >
-            <span class="text-lg font-bold text-brand-900">Book a Health Check</span
-            ><span class="mt-2 block text-slate-600">Choose a preventive health check package.</span
-            ><span class="mt-5 block font-bold text-brand-700">Choose a package →</span>
-          </a>
           <a
             routerLink="/me/request-care"
-            [class.ring-4]="value.recommendedAction === 'FIND_CARE'"
-            [class.ring-brand-300]="value.recommendedAction === 'FIND_CARE'"
-            class="group rounded-2xl border bg-white p-6 shadow-soft focus:ring-4 focus:ring-brand-200"
+            class="rounded-xl bg-white px-2 py-3 text-center text-sm font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 focus:ring-4 focus:ring-brand-200 sm:text-base"
+            >Find Care</a
           >
-            <span class="text-lg font-bold text-brand-900">Find Care Now</span
-            ><span class="mt-2 block text-slate-600"
-              >Find a consultation or another care service when you need it.</span
-            ><span class="mt-5 block font-bold text-brand-700">Find care →</span>
-          </a>
-        </div>
-      </section>
+          <a
+            routerLink="/me/providers/connect"
+            class="rounded-xl bg-white px-2 py-3 text-center text-sm font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 focus:ring-4 focus:ring-brand-200 sm:text-base"
+            >My Hospital</a
+          >
+        </nav>
 
-      <section
-        class="mt-8 rounded-2xl border border-brand-200 bg-brand-50 p-6"
-        aria-labelledby="passport-intro-heading"
-      >
-        <h2 id="passport-intro-heading" class="text-xl font-bold text-brand-900">
-          Smart Health Passport
-        </h2>
-        <p class="mt-2 text-slate-700">
-          Your Smart Health Passport keeps your health history, checks, results and recommendations
-          together.
-        </p>
-        <a routerLink="/me/health-passport" class="mt-4 inline-block font-bold text-brand-700"
-          >View Health Passport →</a
-        >
-      </section>
-      @if (value.dashboardMode === 'ESTABLISHED' && passport(); as health) {
-        <section class="mt-8" aria-labelledby="current-health-heading">
-          <h2 id="current-health-heading" class="text-2xl font-bold">
-            Your current health journey
-          </h2>
-          <div class="mt-4 grid gap-4 md:grid-cols-3">
-            @if (health.currentNextAction; as action) {
-              <article class="rounded-2xl border bg-white p-5">
-                <p class="text-sm font-bold uppercase text-brand-700">Next action</p>
-                <h3 class="mt-2 font-bold">{{ action.title }}</h3>
-                <p class="mt-2 text-sm text-slate-600">{{ action.message }}</p>
-              </article>
-            }
-            @if (health.latestMeasurements[0]; as measurement) {
-              <article class="rounded-2xl border bg-white p-5">
-                <p class="text-sm font-bold uppercase text-brand-700">Latest measurement</p>
-                <h3 class="mt-2 font-bold">{{ measurement.type.replaceAll('_', ' ') }}</h3>
-                <p class="mt-2 text-sm text-slate-600">
-                  {{
-                    measurement.provenance === 'REPORTED_BY_YOU'
-                      ? 'Reported by you'
-                      : measurement.provenance === 'CHECKED_BY_PROVIDER'
-                        ? 'Checked by a provider'
-                        : 'Confirmed by a laboratory'
-                  }}
-                </p>
-              </article>
-            }
-            @if (health.recentActivity[0]; as activity) {
-              <article class="rounded-2xl border bg-white p-5">
-                <p class="text-sm font-bold uppercase text-brand-700">Latest activity</p>
-                <h3 class="mt-2 font-bold">{{ activity.title }}</h3>
-                <p class="mt-2 text-sm text-slate-600">{{ activity.description }}</p>
-              </article>
-            }
+        <section class="mt-7" aria-labelledby="your-care-heading">
+          <div class="flex items-end justify-between gap-3">
+            <div>
+              <h2 id="your-care-heading" class="text-2xl font-bold text-brand-950">Your Care</h2>
+              <p class="mt-1 text-sm text-slate-600">Your current care connections and activity.</p>
+            </div>
+            <a routerLink="/me/care" class="font-bold text-brand-700 underline">View care</a>
           </div>
-        </section>
-      }
-
-      @if (value.dashboardMode === 'GETTING_STARTED') {
-        <section
-          class="mt-8 rounded-2xl border bg-white p-6"
-          aria-labelledby="getting-started-heading"
-        >
-          <h2 id="getting-started-heading" class="text-2xl font-bold">Getting started</h2>
-          <ul class="mt-5 grid gap-4">
-            @for (step of checklist(value); track step.label) {
-              <li class="flex items-start gap-3">
-                <span
-                  aria-hidden="true"
-                  class="grid size-7 shrink-0 place-items-center rounded-full border font-bold"
-                  >{{ step.complete ? '✓' : '○' }}</span
-                ><span
-                  ><strong>{{ step.label }}</strong
-                  ><span class="block text-sm text-slate-600">{{
-                    step.complete ? 'Complete' : 'Not complete'
-                  }}</span></span
+          <div class="mt-3 grid gap-3 md:grid-cols-2">
+            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+              <h3 class="font-bold">Hospital connection</h3>
+              @if (value.setup.hasConnectedProvider) {
+                <p class="mt-1 text-sm text-slate-600">You have a connected healthcare provider.</p>
+                <a routerLink="/me/providers" class="mt-2 inline-block font-bold text-brand-700"
+                  >View My Hospitals →</a
                 >
-              </li>
-            }
-          </ul>
-        </section>
-      }
-
-      <section class="mt-8" aria-labelledby="health-check-summary-heading">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 id="health-check-summary-heading" class="text-2xl font-bold text-brand-900">
-              Your Health Checks
-            </h2>
-            <p class="mt-1 text-slate-600">A summary of your preventive Health Check journey.</p>
-          </div>
-          <a routerLink="/me/health-checks" class="font-bold text-brand-700 underline"
-            >View all Health Checks</a
-          >
-        </div>
-        @if (healthChecksLoading()) {
-          <p role="status" class="mt-4 rounded-xl border bg-white p-5">
-            Loading your Health Checks…
-          </p>
-        } @else if (healthChecksError()) {
-          <div role="alert" class="mt-4 rounded-xl border border-red-200 bg-red-50 p-5">
-            <p>We couldn't load your Health Check summary.</p>
-            <button
-              type="button"
-              (click)="loadHealthChecks()"
-              class="mt-2 font-bold text-brand-700 underline"
-            >
-              Try again
-            </button>
-          </div>
-        } @else {
-          <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            @for (item of healthCheckSummary(); track item.label) {
-              <article class="rounded-2xl border border-brand-100 bg-white p-5">
-                <p class="text-sm font-semibold text-slate-600">{{ item.label }}</p>
-                <p class="mt-2 text-3xl font-bold text-brand-900">{{ item.count }}</p>
-              </article>
-            }
-          </div>
-          @if (healthChecks()?.items?.length === 0) {
-            <section class="mt-4 rounded-2xl bg-white p-7 text-center">
-              <h3 class="text-xl font-bold">No Health Checks yet.</h3>
-              <a
-                routerLink="/me/book"
-                class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white"
-                >Book your first Health Check</a
-              >
-            </section>
-          } @else {
-            <div class="mt-4 flex flex-wrap gap-3">
-              <a
-                routerLink="/me/health-checks"
-                class="rounded-xl bg-brand-700 px-6 py-3 font-bold text-white"
-                >View My Health Checks</a
-              >
-              <a
-                routerLink="/me/book"
-                class="rounded-xl border border-brand-600 px-6 py-3 font-bold text-brand-700"
-                >Book another Health Check</a
-              >
-            </div>
-          }
-        }
-      </section>
-
-      <section
-        class="mt-8 rounded-2xl border bg-white p-6"
-        aria-labelledby="dashboard-rewards-heading"
-      >
-        <h2 id="dashboard-rewards-heading" class="text-2xl font-bold text-brand-900">
-          Referrals & Rewards
-        </h2>
-        @if (referralsLoading()) {
-          <p role="status" class="mt-3">Loading rewards…</p>
-        } @else if (referralsError()) {
-          <div role="alert" class="mt-3">
-            <p>We could not load your referral progress.</p>
-            <button
-              type="button"
-              (click)="loadReferrals()"
-              class="mt-2 font-bold text-brand-700 underline"
-            >
-              Try again
-            </button>
-          </div>
-        } @else if (referrals(); as rewards) {
-          <p class="mt-3 text-3xl font-bold">{{ rewards.availablePoints }} points</p>
-          @if (rewards.levelProgress.currentLevel; as current) {
-            <p class="mt-2 font-semibold">{{ current.name }} achieved</p>
-          } @else {
-            <p class="mt-2 font-semibold">No level achieved yet</p>
-          }
-          @if (rewards.levelProgress.highestConfiguredLevelReached) {
-            <p class="mt-1 text-sm text-slate-600">Highest level reached</p>
-          } @else if (rewards.levelProgress.nextLevel; as next) {
-            <p class="mt-1 text-sm text-slate-600">Next: {{ next.name }}</p>
-            <div class="mt-3 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
-              @for (
-                requirement of rewards.levelProgress.requirements;
-                track requirement.targetType
-              ) {
-                <p>
-                  {{ dashboardTargetLabel(requirement.targetType) }}
-                  {{ requirement.qualified }}/{{ requirement.required }}
-                </p>
+              } @else if (value.setup.hasProviderConnection) {
+                <p class="mt-1 text-sm text-slate-600">Your provider connection is in progress.</p>
+                <a routerLink="/me/providers" class="mt-2 inline-block font-bold text-brand-700"
+                  >View connection →</a
+                >
+              } @else {
+                <p class="mt-1 text-sm text-slate-600">No hospital connected yet.</p>
+                <a
+                  routerLink="/me/providers/connect"
+                  class="mt-2 inline-block font-bold text-brand-700"
+                  >Choose My Hospital →</a
+                >
               }
+            </article>
+            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+              <h3 class="font-bold">Care activity</h3>
+              @if (value.setup.hasCareRequest) {
+                <p class="mt-1 text-sm text-slate-600">You have care activity in My Care.</p>
+                <a routerLink="/me/care" class="mt-2 inline-block font-bold text-brand-700"
+                  >Open My Care →</a
+                >
+              } @else {
+                <p class="mt-1 text-sm text-slate-600">No care request yet.</p>
+                <a routerLink="/me/request-care" class="mt-2 inline-block font-bold text-brand-700"
+                  >Find Care →</a
+                >
+              }
+            </article>
+          </div>
+        </section>
+
+        <section class="mt-7" aria-labelledby="health-check-summary-heading">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 id="health-check-summary-heading" class="text-2xl font-bold text-brand-950">
+                Health Check summary
+              </h2>
+              <p class="mt-1 text-sm text-slate-600">Your preventive Health Check activity.</p>
             </div>
-          }
-          <a routerLink="/me/referrals" class="mt-4 inline-flex font-bold text-brand-700 underline"
-            >View Referrals & Rewards</a
-          >
-        }
-      </section>
-
-      <section class="mt-8" aria-labelledby="quick-access-heading">
-        <h2 id="quick-access-heading" class="text-2xl font-bold">Quick access</h2>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          @for (item of quickAccess; track item.route) {
-            <a
-              [routerLink]="item.route"
-              class="min-h-14 rounded-xl border bg-white p-4 font-bold text-brand-800 focus:ring-4 focus:ring-brand-200"
-              >{{ item.label }}</a
+            <a routerLink="/me/health-checks" class="font-bold text-brand-700 underline"
+              >View all</a
             >
-          }
-        </div>
-      </section>
-    }
-
-    @if (profileOpen()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <section
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="profile-editor-heading"
-          class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
-        >
-          <h2 id="profile-editor-heading" class="text-2xl font-bold">Complete your profile</h2>
-          @if (profileLoading()) {
-            <p role="status" class="mt-5">Loading your profile…</p>
-          } @else if (profileLoadError()) {
-            <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4">
-              Your profile could not be loaded.
-              <button type="button" (click)="loadProfile()" class="font-bold underline">
+          </div>
+          @if (healthChecksLoading()) {
+            <p role="status" class="mt-3 rounded-xl bg-white p-4">Loading your Health Checks…</p>
+          } @else if (healthChecksError()) {
+            <p role="alert" class="mt-3 rounded-xl bg-red-50 p-4">
+              We couldn't load your Health Check summary.
+              <button type="button" (click)="loadHealthChecks()" class="font-bold underline">
                 Try again
               </button>
             </p>
-          } @else if (profile()) {
-            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="mt-5 grid gap-4">
-              <label for="profile-given-name" class="font-bold"
-                >First name *<input
-                  id="profile-given-name"
-                  formControlName="givenName"
-                  maxlength="100"
-                  placeholder="e.g. Ada"
-                  class="mt-1 block min-h-12 w-full rounded-xl border px-3"
-                />
-                @if (
-                  profileForm.controls.givenName.touched && profileForm.controls.givenName.invalid
-                ) {
-                  <span class="mt-1 block text-sm text-red-700">Enter your first name.</span>
-                }
-              </label>
-              <label for="profile-family-name" class="font-bold"
-                >Last name *<input
-                  id="profile-family-name"
-                  formControlName="familyName"
-                  maxlength="100"
-                  placeholder="e.g. Okafor"
-                  class="mt-1 block min-h-12 w-full rounded-xl border px-3"
-                />
-                @if (
-                  profileForm.controls.familyName.touched && profileForm.controls.familyName.invalid
-                ) {
-                  <span class="mt-1 block text-sm text-red-700">Enter your last name.</span>
-                }
-              </label>
-              <label for="profile-email" class="font-bold"
-                >Email<input
-                  id="profile-email"
-                  [value]="profile()!.user.email"
-                  readonly
-                  class="mt-1 block min-h-12 w-full rounded-xl border bg-slate-100 px-3 text-slate-600"
-                /><span class="mt-1 block text-sm font-normal text-slate-500"
-                  >Email belongs to your SmartClinic account and cannot be changed here.</span
-                ></label
-              >
-              <label for="profile-phone" class="font-bold"
-                >Phone <span class="font-normal text-slate-500">(optional)</span
-                ><input
-                  id="profile-phone"
-                  type="tel"
-                  formControlName="phone"
-                  maxlength="30"
-                  placeholder="e.g. +234 801 234 5678"
-                  class="mt-1 block min-h-12 w-full rounded-xl border px-3"
-                />
-                @if (profileForm.controls.phone.touched && profileForm.controls.phone.invalid) {
-                  <span class="mt-1 block text-sm text-red-700">Enter a valid phone number.</span>
-                }
-              </label>
-              <label for="profile-dob" class="font-bold"
-                >Date of birth <span class="font-normal text-slate-500">(optional)</span
-                ><input
-                  id="profile-dob"
-                  type="date"
-                  formControlName="dateOfBirth"
-                  [max]="today"
-                  class="mt-1 block min-h-12 w-full rounded-xl border px-3"
-              /></label>
-              @if (profileSaveError()) {
-                <p role="alert" class="rounded-xl bg-red-50 p-4">{{ profileSaveError() }}</p>
+          } @else {
+            <div class="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+              @for (item of healthCheckSummary(); track item.label) {
+                <article
+                  class="flex items-center justify-between gap-2 rounded-xl bg-white p-3 ring-1 ring-slate-200"
+                >
+                  <p class="text-sm font-semibold text-slate-600">{{ item.label }}</p>
+                  <p class="text-xl font-bold text-brand-900">{{ item.count }}</p>
+                </article>
               }
-              <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  (click)="closeProfile()"
-                  [disabled]="profileSaving()"
-                  class="rounded-xl border px-5 py-3 font-bold"
+            </div>
+            @if (healthChecks()?.items?.length === 0) {
+              <div
+                class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-50 p-4"
+              >
+                <p>You haven't completed a Health Check yet.</p>
+                <a routerLink="/me/health-journey" class="font-bold text-brand-700"
+                  >Explore Health Checks →</a
                 >
-                  Cancel</button
-                ><button
-                  type="submit"
-                  [disabled]="profileSaving() || profileForm.invalid"
-                  class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50"
-                >
-                  {{ profileSaving() ? 'Saving…' : 'Save profile' }}
-                </button>
               </div>
-            </form>
+            }
           }
         </section>
-      </div>
-    }
-  </main>`,
+
+        <section
+          class="mt-7 rounded-2xl bg-white p-5 ring-1 ring-slate-200"
+          aria-labelledby="passport-heading"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 id="passport-heading" class="text-2xl font-bold text-brand-950">
+                Smart Health Passport
+              </h2>
+              <p class="mt-1 text-sm text-slate-600">
+                A concise view of your recorded health journey.
+              </p>
+            </div>
+            <a
+              routerLink="/me/health-passport"
+              class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+              >Open Health Passport</a
+            >
+          </div>
+          @if (passport(); as health) {
+            <div class="mt-4 grid gap-3 sm:grid-cols-3">
+              @if (health.currentNextAction; as action) {
+                <div>
+                  <p class="text-xs font-bold uppercase text-brand-700">Current action</p>
+                  <p class="mt-1 font-bold">{{ action.title }}</p>
+                </div>
+              }
+              @if (health.latestMeasurements[0]; as measurement) {
+                <div>
+                  <p class="text-xs font-bold uppercase text-brand-700">Latest measurement</p>
+                  <p class="mt-1 font-bold">{{ measurementLabel(measurement.type) }}</p>
+                  <p class="text-sm text-slate-600">
+                    {{ provenanceLabel(measurement.provenance) }}
+                  </p>
+                </div>
+              }
+              @if (health.recentActivity[0]; as activity) {
+                <div>
+                  <p class="text-xs font-bold uppercase text-brand-700">Latest activity</p>
+                  <p class="mt-1 font-bold">{{ activity.title }}</p>
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="mt-7 rounded-2xl bg-brand-50 p-5" aria-labelledby="impact-heading">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 id="impact-heading" class="text-2xl font-bold text-brand-950">
+                Help someone access SmartClinic
+              </h2>
+              <p class="mt-1 max-w-2xl text-sm text-slate-600">
+                Invite people or participating healthcare organisations and track your verified
+                impact.
+              </p>
+            </div>
+            <a routerLink="/me/impact" class="font-bold text-brand-700 underline">View Impact</a>
+          </div>
+          @if (referralsLoading()) {
+            <p role="status" class="mt-4">Loading your impact…</p>
+          } @else if (referralsError()) {
+            <p role="alert" class="mt-4">
+              We couldn't load your referral progress.
+              <button type="button" (click)="loadReferrals()" class="font-bold underline">
+                Try again
+              </button>
+            </p>
+          } @else if (referrals(); as rewards) {
+            <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div>
+                <p class="text-xs text-slate-600">Available points</p>
+                <p class="text-xl font-bold">{{ rewards.availablePoints }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-600">Reserved points</p>
+                <p class="text-xl font-bold">{{ rewards.reservedPoints }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-600">Lifetime earned</p>
+                <p class="text-xl font-bold">{{ rewards.lifetimeEarnedPoints }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-600">Referral code</p>
+                <p class="break-all font-mono font-bold">{{ rewards.referralCode }}</p>
+              </div>
+            </div>
+            @if (rewards.levelProgress.nextLevel; as next) {
+              <p class="mt-3 text-sm"><strong>Next achievement:</strong> {{ next.name }}</p>
+            }
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                (click)="copyReferralCode()"
+                class="min-h-11 rounded-xl bg-brand-700 px-4 font-bold text-white"
+              >
+                Copy referral code</button
+              ><button
+                type="button"
+                (click)="copyReferralLink()"
+                class="min-h-11 rounded-xl border border-brand-700 px-4 font-bold text-brand-800"
+              >
+                Copy invite link
+              </button>
+     @if (patientInviteUrl()) {
+  <a
+    [href]="whatsappReferralShareUrl()"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Share on WhatsApp
+  </a>
+}
+              <a
+                routerLink="/me/referrals"
+                class="inline-flex min-h-11 items-center px-2 font-bold text-brand-700 underline"
+                >Referral activity</a
+              >
+            </div>
+            <p aria-live="polite" class="mt-2 text-sm font-semibold text-brand-700">
+              {{ referralFeedback() }}
+            </p>
+          }
+        </section>
+
+        @if (value.dashboardMode === 'GETTING_STARTED') {
+          <section class="mt-7" aria-labelledby="getting-started-heading">
+            <h2 id="getting-started-heading" class="text-xl font-bold text-brand-950">
+              Getting started
+            </h2>
+            <ul class="mt-3 grid gap-2 sm:grid-cols-2">
+              @for (step of checklist(value); track step.label) {
+                <li class="flex items-center gap-3 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+                  <span
+                    aria-hidden="true"
+                    class="grid size-7 shrink-0 place-items-center rounded-full bg-slate-100 font-bold"
+                    >{{ step.complete ? '✓' : '○' }}</span
+                  ><span
+                    ><strong class="block text-sm">{{ step.label }}</strong
+                    ><span class="text-xs text-slate-600">{{
+                      step.complete ? 'Complete' : 'Not complete'
+                    }}</span></span
+                  >
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (supportWhatsappUrl) {
+          <a
+            [href]="supportWhatsappUrl"
+            class="fixed bottom-4 right-4 z-30 rounded-full bg-[#128c7e] px-5 py-3 font-bold text-white shadow-lg focus:ring-4 focus:ring-emerald-200"
+            >WhatsApp help</a
+          >
+        }
+      }
+    </main>
+  `,
 })
 export class PatientDashboardPageComponent {
   private readonly api = inject(PatientDashboardApiService);
   private readonly healthChecksApi = inject(HealthCheckResultsApiService);
   private readonly referralsApi = inject(ReferralsApiService);
   private readonly passportApi = inject(HealthPassportApiService);
-  private readonly fb = inject(FormBuilder);
+  private readonly publicSiteConfig = inject(PUBLIC_SITE_CONFIG, { optional: true });
   readonly dashboard = signal<PatientDashboard | null>(null);
   readonly loading = signal(true);
   readonly error = signal(false);
-  readonly profileOpen = signal(false);
-  readonly profile = signal<PatientPortalProfile | null>(null);
-  readonly profileLoading = signal(false);
-  readonly profileLoadError = signal(false);
-  readonly profileSaving = signal(false);
-  readonly profileSaveError = signal<string | null>(null);
-  readonly feedback = signal('');
-  readonly copyFeedback = signal('');
   readonly healthChecks = signal<PatientHealthCheckHistoryResponse | null>(null);
   readonly healthChecksLoading = signal(false);
   readonly healthChecksError = signal(false);
@@ -519,6 +370,9 @@ export class PatientDashboardPageComponent {
   readonly referralsLoading = signal(false);
   readonly referralsError = signal(false);
   readonly passport = signal<HealthPassportOverview | null>(null);
+  readonly copyFeedback = signal('');
+  readonly referralFeedback = signal('');
+  readonly supportWhatsappUrl = this.publicSiteConfig?.whatsappUrl?.trim() || null;
   readonly healthCheckSummary = computed(() => {
     const items = this.healthChecks()?.items ?? [];
     const count = (category: string) =>
@@ -530,20 +384,6 @@ export class PatientDashboardPageComponent {
       { label: 'Needs attention', count: count('NEEDS_ATTENTION') },
     ];
   });
-  readonly today = new Date().toISOString().slice(0, 10);
-  readonly quickAccess = [
-    { label: 'Smart Health Passport', route: '/me/health-passport' },
-    { label: 'Health Records', route: '/me/health-records' },
-    { label: 'Prescriptions', route: '/me/prescriptions' },
-    { label: 'My Providers', route: '/me/providers' },
-    { label: 'My Impact', route: '/me/impact' },
-  ] as const;
-  readonly profileForm = this.fb.nonNullable.group({
-    givenName: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/\S/)]],
-    familyName: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/\S/)]],
-    phone: ['', [Validators.maxLength(30), Validators.pattern(/^$|^\+?[0-9][0-9 ()-]{6,29}$/)]],
-    dateOfBirth: [''],
-  });
 
   constructor() {
     this.load();
@@ -551,21 +391,14 @@ export class PatientDashboardPageComponent {
     this.loadReferrals();
     this.passportApi.overview().subscribe({ next: (value) => this.passport.set(value) });
   }
+
   load(): void {
-    if (this.loading() && this.dashboard()) return;
     this.loading.set(true);
     this.error.set(false);
     this.api
       .getDashboard()
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({
-        next: (value) => this.dashboard.set(value),
-        error: () => this.error.set(true),
-      });
-  }
-  greeting(): string {
-    const hour = new Date().getHours();
-    return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+      .subscribe({ next: (value) => this.dashboard.set(value), error: () => this.error.set(true) });
   }
   loadHealthChecks(): void {
     if (this.healthChecksLoading()) return;
@@ -591,27 +424,41 @@ export class PatientDashboardPageComponent {
         error: () => this.referralsError.set(true),
       });
   }
-  async copyPatientId(): Promise<void> {
-    const reference = this.dashboard()?.patient.patientReference;
-    if (!reference) return;
-    try {
-      await navigator.clipboard.writeText(reference);
-      this.copyFeedback.set('Patient ID copied');
-    } catch {
-      this.copyFeedback.set('Copy was unavailable. Select the Patient ID to copy it manually.');
-    }
-  }
-  dashboardTargetLabel(target: string): string {
-    return (
-      (
-        {
-          PATIENT: 'Patients',
-          CLINIC: 'Clinics',
-          LABORATORY: 'Labs',
-          PHARMACY: 'Pharmacies',
-        } as Record<string, string>
-      )[target] ?? target
-    );
+  nextStep(value: PatientDashboard): DashboardNextStep {
+    const actions: Record<PatientDashboard['recommendedAction'], DashboardNextStep> = {
+      COMPLETE_PROFILE: {
+        title: 'Complete your profile',
+        message: 'Add your basic details to finish setting up your SmartClinic account.',
+        label: 'Complete profile',
+        route: '/me/profile',
+      },
+      CONNECT_PROVIDER: {
+        title: 'Connect your hospital',
+        message:
+          'Choose a hospital or healthcare provider and connect it to your SmartClinic account.',
+        label: 'Choose My Hospital',
+        route: '/me/providers/connect',
+      },
+      VIEW_PROVIDER_CONNECTION: {
+        title: 'Continue your hospital connection',
+        message: 'Review the latest status of the provider connection you started.',
+        label: 'View connection',
+        route: '/me/providers',
+      },
+      FIND_CARE: {
+        title: 'Find the care you need',
+        message: 'Tell SmartClinic what care you need and review appropriate options.',
+        label: 'Find Care',
+        route: '/me/request-care',
+      },
+      NONE: {
+        title: 'What would you like to do?',
+        message: 'Choose preventive health, find care, or connect with your hospital.',
+        label: 'Explore Stay Well',
+        route: '/me/health-journey',
+      },
+    };
+    return actions[value.recommendedAction];
   }
   checklist(value: PatientDashboard) {
     return [
@@ -624,63 +471,84 @@ export class PatientDashboardPageComponent {
       },
     ];
   }
-  openProfile(): void {
-    this.profileOpen.set(true);
-    this.loadProfile();
+  measurementLabel(type: string): string {
+    return type
+      .replaceAll('_', ' ')
+      .toLowerCase()
+      .replace(/^./, (c) => c.toUpperCase());
   }
-  closeProfile(): void {
-    this.profileOpen.set(false);
-    this.profileSaveError.set(null);
+  provenanceLabel(value: string): string {
+    return (
+      (
+        {
+          REPORTED_BY_YOU: 'Reported by you',
+          CHECKED_BY_PROVIDER: 'Checked by a provider',
+          CONFIRMED_BY_LABORATORY: 'Confirmed by a laboratory',
+        } as Record<string, string>
+      )[value] ?? value
+    );
   }
-  loadProfile(): void {
-    this.profileLoading.set(true);
-    this.profileLoadError.set(false);
-    this.api
-      .getProfile()
-      .pipe(finalize(() => this.profileLoading.set(false)))
-      .subscribe({
-        next: (profile) => {
-          this.profile.set(profile);
-          this.profileForm.reset({
-            givenName: profile.patient.givenName,
-            familyName: profile.patient.familyName,
-            phone: profile.patient.phone ?? '',
-            dateOfBirth: profile.patient.dateOfBirth ?? '',
-          });
-        },
-        error: () => this.profileLoadError.set(true),
-      });
+
+  patientInviteLink(): string {
+  return this.referrals()?.links.PATIENT ?? '';
+}
+
+patientInviteUrl(): string {
+  const link = this.patientInviteLink();
+
+  if (!link) {
+    return '';
   }
-  saveProfile(): void {
-    if (this.profileForm.invalid || this.profileSaving()) {
-      this.profileForm.markAllAsTouched();
-      return;
+
+  try {
+    return new URL(link, window.location.origin).toString();
+  } catch {
+    return '';
+  }
+}
+whatsappReferralShareUrl(): string {
+  const inviteUrl = this.patientInviteUrl();
+
+  if (!inviteUrl) {
+    return '';
+  }
+
+  return `https://wa.me/?text=${encodeURIComponent(
+    `Join SmartClinic using my invitation: ${inviteUrl}`,
+  )}`;
+}
+  async copyPatientId(): Promise<void> {
+    await this.copy(
+      this.dashboard()?.patient.patientReference ?? '',
+      'Patient ID copied.',
+      this.copyFeedback,
+    );
+  }
+  async copyReferralCode(): Promise<void> {
+    await this.copy(
+      this.referrals()?.referralCode ?? '',
+      'Referral code copied.',
+      this.referralFeedback,
+    );
+  }
+async copyReferralLink(): Promise<void> {
+  await this.copy(
+    this.patientInviteUrl(),
+    'Invite link copied.',
+    this.referralFeedback,
+  );
+}
+  private async copy(
+    value: string,
+    success: string,
+    feedback: { set(value: string): void },
+  ): Promise<void> {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      feedback.set(success);
+    } catch {
+      feedback.set('Copy was unavailable. Select the value and copy it manually.');
     }
-    const value = this.profileForm.getRawValue();
-    this.profileSaving.set(true);
-    this.profileSaveError.set(null);
-    this.api
-      .updateProfile({
-        givenName: value.givenName.trim(),
-        familyName: value.familyName.trim(),
-        phone: value.phone.trim() || null,
-        dateOfBirth: value.dateOfBirth || null,
-      })
-      .pipe(finalize(() => this.profileSaving.set(false)))
-      .subscribe({
-        next: (profile) => {
-          this.profile.set(profile);
-          this.profileOpen.set(false);
-          this.feedback.set('Your profile was updated.');
-          this.loading.set(false);
-          this.load();
-        },
-        error: (error: HttpErrorResponse) =>
-          this.profileSaveError.set(
-            typeof error.error?.message === 'string'
-              ? error.error.message
-              : 'Your profile could not be saved. Please review the details and try again.',
-          ),
-      });
   }
 }
