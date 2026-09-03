@@ -1,19 +1,21 @@
 import { Injectable } from '@angular/core';
 import {
   Country,
-  State,
-  City,
+  // State,
+  // City,
   ICountry,
   IState,
   ICity,
 } from 'country-state-city';
+import { STATE_CITIES } from './state-and-cities';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LocationDataService {
+  statesandcities = STATE_CITIES
   getCountries(): ICountry[] {
-    return Country.getAllCountries();
+    return Country.getAllCountries().filter((country) => country.isoCode === 'NG');
   }
 
   getStates(countryCode: string): IState[] {
@@ -21,7 +23,11 @@ export class LocationDataService {
       return [];
     }
 
-    return State.getStatesOfCountry(countryCode);
+    return this.statesandcities.map((state) => ({
+      name: state.name,
+      isoCode: state.name,
+      countryCode: 'NG',
+    }));
   }
 
   getCities(
@@ -32,9 +38,16 @@ export class LocationDataService {
       return [];
     }
 
-    return City.getCitiesOfState(
-      countryCode,
-      stateCode,
-    );
+
+    return this.statesandcities.find((state) => state.name === stateCode)?.cities.map((city) => ({
+      name: city,
+      stateCode: stateCode,
+      countryCode: countryCode,
+    })) ?? [];
+
+    // return City.getCitiesOfState(
+    //   countryCode,
+    //   stateCode,
+    // );
   }
 }
