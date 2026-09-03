@@ -51,7 +51,7 @@ export class ProviderSetupPageComponent {
   readonly setupForm = this.formBuilder.group(
     {
       displayName: ['', [Validators.required, Validators.maxLength(120)]],
-      password: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(128)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(128)]],
       confirmPassword: ['', Validators.required],
     },
     { validators: matchingPasswords },

@@ -82,7 +82,7 @@ readonly showPassword = signal(false);
       '',
       [
         Validators.required,
-        Validators.minLength(12),
+        Validators.minLength(6),
         Validators.maxLength(128),
       ],
     ],

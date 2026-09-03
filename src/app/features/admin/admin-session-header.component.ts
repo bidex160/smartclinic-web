@@ -34,7 +34,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             focus:ring-brand-700
           "
         >
-           <img
+          <img
             class="
               flex h-10 w-10 items-center justify-center
               rounded-xl
@@ -227,6 +227,25 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Providers
           </a>
+          @if (authState.currentUser()?.roles?.includes('ADMIN')) {
+            <p
+              class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300"
+            >
+              Health Checks
+            </p>
+            <a
+              routerLink="/admin/health-checks/packages"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              >Packages</a
+            >
+            <a
+              routerLink="/admin/health-checks/clinical-contents"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              >Clinical Contents</a
+            >
+          }
         </div>
       </nav>
 
@@ -501,6 +520,23 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Providers
           </a>
+          @if (authState.currentUser()?.roles?.includes('ADMIN')) {
+            <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+              Health Checks
+            </p>
+            <a
+              routerLink="/admin/health-checks/packages"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+              >Packages</a
+            >
+            <a
+              routerLink="/admin/health-checks/clinical-contents"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+              >Clinical Contents</a
+            >
+          }
 
           <div class="my-3 border-t border-slate-200"></div>
 

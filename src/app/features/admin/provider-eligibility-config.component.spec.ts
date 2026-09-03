@@ -71,6 +71,86 @@ describe('ProviderEligibilityConfigComponent', () => {
       currency: 'NGN',
     });
   });
+  it('keeps optional add-ons service-scoped and renders active, inactive, and unavailable states', async () => {
+    const { component, fixture } = await setup();
+    fixture.detectChanges();
+    expect(component.addonConfiguration('service-location')?.items[0].offering?.priceMinor).toBe(
+      500000,
+    );
+    expect(component.addonConfiguration('service-home')?.items[0].offering?.priceMinor).toBe(
+      550000,
+    );
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Optional add-ons');
+    expect(text).toContain('₦5,000');
+    expect(text).toContain('Not currently approved for this Health Check package');
+    expect(text).toContain('Provider configuration is currently unavailable.');
+    expect(fixture.nativeElement.querySelector('input[formcontrolname="category"]')).toBeNull();
+  });
+  it('configures, updates, reactivates, and stops an add-on using authoritative service currency', async () => {
+    const { component, api, fixture } = await setup();
+    const service = component.services()[0];
+    const configured = component.addonConfiguration(service.id)!;
+    const active = configured.items[0];
+    component.editAddon(service, active);
+    expect(component.addonPriceForm.controls.price.value).toBe('5000.00');
+    component.addonPriceForm.setValue({ price: '6250.50' });
+    component.saveAddon(service, active);
+    expect(api.configureServiceAddon).toHaveBeenCalledWith(service.id, {
+      addonCode: 'CHOLESTEROL',
+      priceMinor: 625050,
+      currency: 'NGN',
+    });
+    const unconfigured = configured.items[1];
+    component.editAddon(service, unconfigured);
+    component.addonPriceForm.setValue({ price: '0' });
+    component.saveAddon(service, unconfigured);
+    expect(api.configureServiceAddon).toHaveBeenLastCalledWith(service.id, {
+      addonCode: 'ECG',
+      priceMinor: 0,
+      currency: 'NGN',
+    });
+    const inactive = configured.items[2];
+    component.editAddon(service, inactive);
+    expect(component.addonPriceForm.controls.price.value).toBe('3000.00');
+    component.stopOffering(service, active);
+    expect(api.deactivateServiceAddon).not.toHaveBeenCalled();
+    expect(component.pendingAction()?.label).toContain('saved provider price will be retained');
+    component.confirmAction();
+    expect(api.deactivateServiceAddon).toHaveBeenCalledWith(service.id, 'CHOLESTEROL');
+  });
+  it('enforces backend canConfigure and page editability even when a service is inactive', async () => {
+    const { component, api, fixture } = await setup();
+    const inactiveService = { ...component.services()[0], isActive: false };
+    const configurable = component.addonConfiguration('service-location')!.items[1];
+    component.editAddon(inactiveService, configurable);
+    expect(component.editingAddon()).toBe('service-location:ECG');
+    component.cancelAddon();
+    const blocked = component.addonConfiguration('service-location')!.items[3];
+    component.editAddon(inactiveService, blocked);
+    expect(component.editingAddon()).toBeNull();
+    component.stopOffering(inactiveService, blocked);
+    expect(api.deactivateServiceAddon).not.toHaveBeenCalled();
+    fixture.componentRef.setInput('editable', false);
+    component.editAddon(inactiveService, configurable);
+    expect(component.editingAddon()).toBeNull();
+  });
+  it('surfaces a safe backend add-on conflict message contextually', async () => {
+    const { component } = await setup({
+      addonError: new HttpErrorResponse({
+        status: 409,
+        error: { message: 'Clinical add-on currency must match the Provider package currency' },
+      }),
+    });
+    const service = component.services()[0];
+    const addon = component.addonConfiguration(service.id)!.items[1];
+    component.editAddon(service, addon);
+    component.addonPriceForm.setValue({ price: '5000' });
+    component.saveAddon(service, addon);
+    expect(component.error()).toBe(
+      'Clinical add-on currency must match the Provider package currency',
+    );
+  });
   it('rejects blank and negative prices and preserves input after a server conflict', async () => {
     const { component, api } = await setup();
     const item = component.services()[0];
@@ -81,7 +161,9 @@ describe('ProviderEligibilityConfigComponent', () => {
     component.servicePriceForm.setValue({ currency: 'NGN', price: '-1' });
     component.saveServicePrice(item);
     expect(api.updateServicePrice).not.toHaveBeenCalled();
-    api.updateServicePrice.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 409 })));
+    api.updateServicePrice.mockReturnValueOnce(
+      throwError(() => new HttpErrorResponse({ status: 409 })),
+    );
     component.servicePriceForm.setValue({ currency: 'NGN', price: '47000' });
     component.saveServicePrice(item);
     expect(component.servicePriceForm.controls.price.value).toBe('47000');
@@ -114,9 +196,19 @@ describe('ProviderEligibilityConfigComponent', () => {
   });
   it('restores an edited provider location state code without clearing persisted geography', async () => {
     const { component } = await setup();
-    component.editLocation({ ...locationRows()[0], locationReference: 'SCPL-TEST', postalCode: null, state: 'Oyo', city: 'Kisi' });
+    component.editLocation({
+      ...locationRows()[0],
+      locationReference: 'SCPL-TEST',
+      postalCode: null,
+      state: 'Oyo',
+      city: 'Kisi',
+    });
     expect(component.locationStateCode.value).toBe('OY');
-    expect(component.locationForm.getRawValue()).toMatchObject({ countryCode: 'NG', state: 'Oyo', city: 'Kisi' });
+    expect(component.locationForm.getRawValue()).toMatchObject({
+      countryCode: 'NG',
+      state: 'Oyo',
+      city: 'Kisi',
+    });
     component.onLocationStateChange('LA');
     expect(component.locationForm.getRawValue()).toMatchObject({ state: 'Lagos', city: '' });
   });
@@ -203,7 +295,13 @@ describe('ProviderEligibilityConfigComponent', () => {
     expect(text).toContain('No active provider location');
     expect(text).not.toContain('Provider is eligible');
   });
-  async function setup(options: { empty?: boolean; createServiceError?: HttpErrorResponse } = {}) {
+  async function setup(
+    options: {
+      empty?: boolean;
+      createServiceError?: HttpErrorResponse;
+      addonError?: HttpErrorResponse;
+    } = {},
+  ) {
     const services = options.empty ? [] : serviceRows();
     const api = {
       listServices: vi.fn(() => of(services)),
@@ -212,6 +310,11 @@ describe('ProviderEligibilityConfigComponent', () => {
       ),
       setServiceActive: vi.fn(() => of(services[0])),
       updateServicePrice: vi.fn((_id: string, body: unknown) => of(body)),
+      getServiceAddons: vi.fn((id: string) => of(addonConfiguration(id))),
+      configureServiceAddon: vi.fn(() =>
+        options.addonError ? throwError(() => options.addonError) : of({}),
+      ),
+      deactivateServiceAddon: vi.fn(() => of({})),
       linkLocation: vi.fn(() => of(services[0])),
       unlinkLocation: vi.fn(() => of(undefined)),
       listLocations: vi.fn(() => of(options.empty ? [] : locationRows())),
@@ -301,6 +404,64 @@ function serviceRows() {
       updatedAt: '2026-01-01',
     },
   ];
+}
+function addonConfiguration(serviceId: string) {
+  const activePrice = serviceId === 'service-location' ? 500000 : 550000;
+  const base = {
+    description: 'SmartClinic catalogue description',
+    category: 'LAB',
+    resultType: 'NONE' as const,
+    unit: null,
+    canonicalActive: true,
+    eligibilityActive: true,
+    canConfigure: true,
+    configurationUnavailableReason: null,
+  };
+  return {
+    providerServiceId: serviceId,
+    currency: 'NGN',
+    items: [
+      {
+        ...base,
+        code: 'CHOLESTEROL',
+        name: 'Cholesterol Test',
+        offering: { priceMinor: activePrice, currency: 'NGN', isActive: true },
+      },
+      { ...base, code: 'ECG', name: 'ECG', offering: null },
+      {
+        ...base,
+        code: 'VISION',
+        name: 'Vision',
+        offering: { priceMinor: 300000, currency: 'NGN', isActive: false },
+      },
+      {
+        ...base,
+        code: 'OLD_TEST',
+        name: 'Old test',
+        canonicalActive: false,
+        canConfigure: false,
+        configurationUnavailableReason: 'CANONICAL_CONTENT_INACTIVE' as const,
+        offering: { priceMinor: 100000, currency: 'NGN', isActive: false },
+      },
+      {
+        ...base,
+        code: 'PACKAGE_OFF',
+        name: 'Package off',
+        eligibilityActive: false,
+        canConfigure: false,
+        configurationUnavailableReason: 'PACKAGE_ELIGIBILITY_INACTIVE' as const,
+        offering: null,
+      },
+      {
+        ...base,
+        code: 'PROVIDER_OFF',
+        name: 'Provider off',
+        canConfigure: false,
+        configurationUnavailableReason: 'PROVIDER_CONFIGURATION_DISABLED' as const,
+        offering: null,
+      },
+    ],
+  };
 }
 function locationRows() {
   return [

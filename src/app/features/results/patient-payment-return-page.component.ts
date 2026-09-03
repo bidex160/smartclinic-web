@@ -49,7 +49,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
               {{
                 payment.bookingStatus === 'SCHEDULED'
                   ? 'Your appointment is scheduled.'
-                  : 'We are now finding a suitable provider for your Health Check.'
+                  : "Your selected provider has received your request. We'll update you when they respond."
               }}
             </p>
           } @else if (payment.paymentStatus === 'FAILED' || payment.paymentStatus === 'CANCELLED') {

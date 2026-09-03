@@ -39,6 +39,7 @@ interface JoinEntrance {
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './join-portal.component.html',
+ styleUrls: ['./../../../join/join.component.scss'],
 })
 export class JoinPortalComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

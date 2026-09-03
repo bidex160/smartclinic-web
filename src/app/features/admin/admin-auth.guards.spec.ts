@@ -3,7 +3,7 @@ import { Router, UrlTree } from '@angular/router';
 
 import { UserRole } from '../../core/models/auth.model';
 import { AuthStateService } from '../../core/services/auth-state.service';
-import { adminPricingGuard } from './admin-auth.guards';
+import { adminOnlyGuard, adminPricingGuard } from './admin-auth.guards';
 
 describe('adminPricingGuard', () => {
   it.each<UserRole>(['ADMIN', 'OPERATIONS'])('allows the %s role', async (role) => {
@@ -68,6 +68,23 @@ describe('adminPricingGuard', () => {
   function runGuard() {
     return TestBed.runInInjectionContext(() => adminPricingGuard({} as never, {} as never));
   }
+});
+
+describe('adminOnlyGuard', () => {
+  it('allows ADMIN and denies OPERATIONS, PROVIDER, and USER', async () => {
+    for (const role of ['ADMIN', 'OPERATIONS', 'PROVIDER', 'USER'] as UserRole[]) {
+      TestBed.resetTestingModule();
+      const router = { createUrlTree: vi.fn(() => ({ redirected: true }) as unknown as UrlTree) };
+      TestBed.configureTestingModule({ providers: [{ provide: Router, useValue: router }] });
+      const state = TestBed.inject(AuthStateService);
+      authenticate(state, [role]);
+      state.completeInitialization();
+      const result = await TestBed.runInInjectionContext(() =>
+        adminOnlyGuard({} as never, {} as never),
+      );
+      expect(result === true).toBe(role === 'ADMIN');
+    }
+  });
 });
 
 function authenticate(state: AuthStateService, roles: UserRole[]): void {

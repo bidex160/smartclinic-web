@@ -11,6 +11,8 @@ import {
   ProviderLocation,
   ProviderLocationRequest,
   ProviderService,
+  ProviderServiceAddonConfiguration,
+  ConfigureProviderServiceAddonRequest,
   UpdateProviderServicePriceRequest,
 } from '../models/provider-eligibility.model';
 
@@ -39,6 +41,22 @@ export class ProviderSelfConfigurationApiService {
     return this.http.patch<ProviderService>(
       `${this.base}/services/${encodeURIComponent(id)}/${active ? 'activate' : 'deactivate'}`,
       {},
+      { context: this.mutation },
+    );
+  }
+  getServiceAddons(id: string) {
+    return this.http.get<ProviderServiceAddonConfiguration>(
+      `${this.base}/services/${encodeURIComponent(id)}/addons`,
+    );
+  }
+  configureServiceAddon(id: string, body: ConfigureProviderServiceAddonRequest) {
+    return this.http.post(`${this.base}/services/${encodeURIComponent(id)}/addons`, body, {
+      context: this.mutation,
+    });
+  }
+  deactivateServiceAddon(id: string, addonCode: string) {
+    return this.http.delete(
+      `${this.base}/services/${encodeURIComponent(id)}/addons/${encodeURIComponent(addonCode)}`,
       { context: this.mutation },
     );
   }

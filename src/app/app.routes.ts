@@ -4,7 +4,7 @@ import {
   hasCompleteBookingDraftGuard,
   hasSelectedPackageGuard,
 } from './features/booking/booking-flow.guards';
-import { adminPricingGuard } from './features/admin/admin-auth.guards';
+import { adminOnlyGuard, adminPricingGuard } from './features/admin/admin-auth.guards';
 import { providerGuard } from './features/provider/provider-auth.guard';
 import { authenticatedUserGuard } from './features/results/authenticated-user.guard';
 import { AdminLayoutComponent } from './features/admin/admin-layout.component';
@@ -12,7 +12,6 @@ import { ProviderLayoutComponent } from './features/provider/provider-layout.com
 import { PatientLayoutComponent } from './features/results/patient-layout.component';
 
 export const routes: Routes = [
-
   {
     path: '',
     title: 'SmartClinic | Your health check, made simple',
@@ -109,12 +108,12 @@ export const routes: Routes = [
             (c) => c.PatientDashboardPageComponent,
           ),
       },
-        {
-    path: 'request-care',
-    title: 'Find Care | SmartClinic',
-    loadComponent: () =>
-      import('./features/care/find-care-page.component').then((c) => c.FindCarePageComponent),
-  },
+      {
+        path: 'request-care',
+        title: 'Find Care | SmartClinic',
+        loadComponent: () =>
+          import('./features/care/find-care-page.component').then((c) => c.FindCarePageComponent),
+      },
       {
         path: 'profile',
         title: 'My profile | SmartClinic',
@@ -401,24 +400,24 @@ export const routes: Routes = [
             (c) => c.RegisteredHealthCheckResultPageComponent,
           ),
       },
-        {
-    path: 'internal/guided-self-check-reviews',
-    title: 'My Self-Check Reviews | SmartClinic',
-    canActivate: [authenticatedUserGuard],
-    loadComponent: () =>
-      import('./features/admin/internal-guided-self-check-reviews-page.component').then(
-        (c) => c.InternalGuidedSelfCheckReviewsPageComponent,
-      ),
-  },
-  {
-    path: 'internal/guided-self-check-reviews/:reference',
-    title: 'Internal Self-Check review | SmartClinic',
-    canActivate: [authenticatedUserGuard],
-    loadComponent: () =>
-      import('./features/admin/internal-guided-self-check-review-page.component').then(
-        (c) => c.InternalGuidedSelfCheckReviewPageComponent,
-      ),
-  },
+      {
+        path: 'internal/guided-self-check-reviews',
+        title: 'My Self-Check Reviews | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/admin/internal-guided-self-check-reviews-page.component').then(
+            (c) => c.InternalGuidedSelfCheckReviewsPageComponent,
+          ),
+      },
+      {
+        path: 'internal/guided-self-check-reviews/:reference',
+        title: 'Internal Self-Check review | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/admin/internal-guided-self-check-review-page.component').then(
+            (c) => c.InternalGuidedSelfCheckReviewPageComponent,
+          ),
+      },
     ],
   },
   {
@@ -795,6 +794,42 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin-access-denied-page.component').then(
             (component) => component.AdminAccessDeniedPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks/packages',
+        title: 'Health Check Packages | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-health-check-packages-page.component').then(
+            (c) => c.AdminHealthCheckPackagesPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks/packages/:code',
+        title: 'Health Check Package | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-health-check-package-detail-page.component').then(
+            (c) => c.AdminHealthCheckPackageDetailPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks/clinical-contents',
+        title: 'Clinical Contents | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-health-check-clinical-contents-page.component').then(
+            (c) => c.AdminHealthCheckClinicalContentsPageComponent,
+          ),
+      },
+      {
+        path: 'health-checks/clinical-contents/:reference',
+        title: 'Clinical Content | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-health-check-clinical-content-detail-page.component').then(
+            (c) => c.AdminHealthCheckClinicalContentDetailPageComponent,
           ),
       },
       {

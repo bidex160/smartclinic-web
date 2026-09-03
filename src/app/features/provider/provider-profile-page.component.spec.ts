@@ -59,13 +59,31 @@ describe('ProviderProfilePageComponent', () => {
     expect(api.submit).not.toHaveBeenCalled();
   });
   it('translates persisted state name to UI code without clearing the existing city', async () => {
-    const { component } = await setup({ ...profile('REJECTED'), stateOrRegion: 'Oyo', city: 'Kisi' });
+    const { component } = await setup({
+      ...profile('REJECTED'),
+      stateOrRegion: 'Oyo',
+      city: 'Kisi',
+    });
     expect(component.profileStateCode.value).toBe('OY');
-    expect(component.form.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
-    expect(component.profileCities.some(city => city.name === 'Kisi')).toBe(true);
+    expect(component.form.getRawValue()).toMatchObject({
+      countryCode: 'NG',
+      stateOrRegion: 'Oyo',
+      city: 'Kisi',
+    });
+    expect(component.profileCities.some((city) => city.name === 'Kisi')).toBe(true);
     component.onProfileCountryChange('GH');
     expect(component.profileStateCode.value).toBe('');
     expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
+  });
+  it('offers every supported provider type including Hospital and Pharmacy', async () => {
+    const { fixture } = await setup(profile('REJECTED'));
+    fixture.detectChanges();
+    const options = fixture.nativeElement.querySelectorAll(
+      '#profile-type option',
+    ) as NodeListOf<HTMLOptionElement>;
+    const values = Array.from(options).map((option) => option.value);
+    expect(values).toContain('HOSPITAL');
+    expect(values).toContain('PHARMACY');
   });
   async function setup(value = profile('SUBMITTED')) {
     const api = {
@@ -78,6 +96,7 @@ describe('ProviderProfilePageComponent', () => {
       listLocations: () => of([]),
       listAvailability: () => of([]),
       listExceptions: () => of([]),
+      getServiceAddons: () => of({ providerServiceId: '', currency: 'NGN', items: [] }),
     };
     TestBed.configureTestingModule({
       imports: [ProviderProfilePageComponent],

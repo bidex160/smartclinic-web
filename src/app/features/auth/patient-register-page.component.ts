@@ -30,7 +30,7 @@ export class PatientRegisterPageComponent {
     familyName: ['', [Validators.required, Validators.maxLength(80)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
     phone: ['', [Validators.maxLength(30)]],
-    password: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(128)]],
+    password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(128)]],
   });
 
   readonly showPassword = signal(false);

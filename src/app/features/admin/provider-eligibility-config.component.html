@@ -139,13 +139,23 @@
           </div>
           <div>
             <label for="service-currency" class="font-bold">Currency</label>
-            <input id="service-currency" formControlName="currency" maxlength="3"
-              class="mt-2 min-h-11 w-full rounded-lg border px-3" placeholder="e.g. NGN" />
+            <input
+              id="service-currency"
+              formControlName="currency"
+              maxlength="3"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+              placeholder="e.g. NGN"
+            />
           </div>
           <div>
             <label for="service-price" class="font-bold">Price</label>
-            <input id="service-price" formControlName="price" inputmode="decimal"
-              class="mt-2 min-h-11 w-full rounded-lg border px-3" placeholder="e.g. 45000" />
+            <input
+              id="service-price"
+              formControlName="price"
+              inputmode="decimal"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+              placeholder="e.g. 45000"
+            />
             <p class="mt-1 text-xs text-slate-600">Enter 0 to offer this capability free.</p>
           </div>
           <div>
@@ -170,7 +180,9 @@
           </button>
         </form>
         @if (priceError()) {
-          <p role="alert" class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-900">{{ priceError() }}</p>
+          <p role="alert" class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-900">
+            {{ priceError() }}
+          </p>
         }
         <div class="mt-6 space-y-4">
           @for (item of services(); track item.id) {
@@ -184,25 +196,247 @@
                   <p class="text-sm">
                     Capability state: <strong>{{ item.isActive ? 'Active' : 'Inactive' }}</strong>
                   </p>
-                  <p class="mt-1 text-sm">Price: <strong>{{ formatServicePrice(item) }}</strong></p>
+                  <p class="mt-1 text-sm">
+                    Price: <strong>{{ formatServicePrice(item) }}</strong>
+                  </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   @if (canEditServicePrice()) {
-                    <button type="button" (click)="editServicePrice(item)" class="rounded-lg border px-4 py-2 font-bold">Edit price</button>
+                    <button
+                      type="button"
+                      (click)="editServicePrice(item)"
+                      class="rounded-lg border px-4 py-2 font-bold"
+                    >
+                      Edit price
+                    </button>
                   }
-                  <button type="button" (click)="toggleService(item)" class="rounded-lg border px-4 py-2 font-bold">
+                  <button
+                    type="button"
+                    (click)="toggleService(item)"
+                    class="rounded-lg border px-4 py-2 font-bold"
+                  >
                     {{ item.isActive ? 'Deactivate' : 'Activate' }}
                   </button>
                 </div>
               </div>
               @if (editingServicePrice() === item.id) {
-                <form [formGroup]="servicePriceForm" (ngSubmit)="saveServicePrice(item)" class="mt-4 grid gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-[8rem_1fr_auto_auto] sm:items-end">
-                  <div><label [for]="'price-currency-' + item.id" class="font-bold">Currency</label><input [id]="'price-currency-' + item.id" formControlName="currency" maxlength="3" class="mt-2 min-h-11 w-full rounded-lg border px-3" /></div>
-                  <div><label [for]="'price-amount-' + item.id" class="font-bold">Price</label><input [id]="'price-amount-' + item.id" formControlName="price" inputmode="decimal" class="mt-2 min-h-11 w-full rounded-lg border px-3" /><p class="mt-1 text-xs text-slate-600">Zero means free; blank is invalid.</p></div>
-                  <button type="button" (click)="cancelServicePrice()" [disabled]="mutating()" class="min-h-11 rounded-lg border px-4 font-bold">Cancel</button>
-                  <button type="submit" [disabled]="mutating()" class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white disabled:opacity-60">{{ mutating() ? 'Saving…' : 'Save price' }}</button>
+                <form
+                  [formGroup]="servicePriceForm"
+                  (ngSubmit)="saveServicePrice(item)"
+                  class="mt-4 grid gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-[8rem_1fr_auto_auto] sm:items-end"
+                >
+                  <div>
+                    <label [for]="'price-currency-' + item.id" class="font-bold">Currency</label
+                    ><input
+                      [id]="'price-currency-' + item.id"
+                      formControlName="currency"
+                      maxlength="3"
+                      class="mt-2 min-h-11 w-full rounded-lg border px-3"
+                    />
+                  </div>
+                  <div>
+                    <label [for]="'price-amount-' + item.id" class="font-bold">Price</label
+                    ><input
+                      [id]="'price-amount-' + item.id"
+                      formControlName="price"
+                      inputmode="decimal"
+                      class="mt-2 min-h-11 w-full rounded-lg border px-3"
+                    />
+                    <p class="mt-1 text-xs text-slate-600">Zero means free; blank is invalid.</p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="cancelServicePrice()"
+                    [disabled]="mutating()"
+                    class="min-h-11 rounded-lg border px-4 font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    [disabled]="mutating()"
+                    class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white disabled:opacity-60"
+                  >
+                    {{ mutating() ? 'Saving…' : 'Save price' }}
+                  </button>
                 </form>
               }
+              <section class="mt-5 border-t pt-5" [attr.aria-labelledby]="'addons-' + item.id">
+                <h4 [id]="'addons-' + item.id" class="font-bold">Optional add-ons</h4>
+                <p class="mt-1 text-sm text-slate-600">
+                  SmartClinic controls which optional add-ons are approved for each Health Check
+                  package. You control whether you offer an approved add-on and its
+                  provider-specific price.
+                </p>
+                @if (loadingAddons().has(item.id)) {
+                  <p role="status" class="mt-3 text-sm">Loading optional add-ons…</p>
+                } @else if (addonErrors()[item.id]) {
+                  <div role="alert" class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-900">
+                    <p>{{ addonErrors()[item.id] }}</p>
+                    <button
+                      type="button"
+                      (click)="loadServiceAddons(item.id)"
+                      class="mt-2 font-bold underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                } @else if (addonConfiguration(item.id); as configuration) {
+                  <div class="mt-4 grid gap-3">
+                    @for (addon of configuration.items; track addon.code) {
+                      <article class="rounded-xl bg-slate-50 p-4">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <h5 class="font-bold">{{ addon.name }}</h5>
+                            <p class="font-mono text-xs text-slate-600">{{ addon.code }}</p>
+                            @if (addon.description) {
+                              <p class="mt-2 text-sm text-slate-700">{{ addon.description }}</p>
+                            }
+                            <p class="mt-2 text-xs text-slate-600">
+                              {{ addon.category }} · {{ addon.resultType }} ·
+                              {{ addon.unit || 'No unit' }}
+                            </p>
+                            <p class="mt-2 text-sm">
+                              <strong>SmartClinic eligibility:</strong>
+                              {{
+                                addon.eligibilityActive && addon.canonicalActive
+                                  ? 'Approved'
+                                  : 'Unavailable'
+                              }}
+                            </p>
+                            @if (addon.offering) {
+                              <p class="mt-1 text-sm">
+                                <strong>Provider offering:</strong>
+                                {{ addon.offering.isActive ? 'Offered' : 'Not currently offered' }}
+                              </p>
+                              <p class="mt-1 text-sm">
+                                <strong>Provider price:</strong> {{ formatAddonPrice(addon) }}
+                              </p>
+                            } @else {
+                              <p class="mt-1 text-sm">
+                                <strong>Provider offering:</strong> Not configured
+                              </p>
+                            }
+                            @if (!addon.canConfigure) {
+                              <p class="mt-2 font-semibold text-amber-900">
+                                {{ addonUnavailableMessage(addon) }}
+                              </p>
+                              @if (
+                                addon.configurationUnavailableReason ===
+                                'CANONICAL_CONTENT_INACTIVE'
+                              ) {
+                                <p class="mt-1 text-sm text-slate-600">
+                                  Your saved provider configuration is retained, but this add-on is
+                                  not currently available for new patient selections.
+                                </p>
+                              } @else if (
+                                addon.configurationUnavailableReason ===
+                                'PACKAGE_ELIGIBILITY_INACTIVE'
+                              ) {
+                                <p class="mt-1 text-sm text-slate-600">
+                                  SmartClinic has made this add-on unavailable for this package.
+                                  Your saved provider configuration has not been deleted.
+                                </p>
+                              }
+                            }
+                          </div>
+                          @if (
+                            addon.canConfigure &&
+                            editable() &&
+                            editingAddon() !== addonKey(item.id, addon.code)
+                          ) {
+                            <div class="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                (click)="editAddon(item, addon)"
+                                [disabled]="mutating()"
+                                class="rounded-lg border px-4 py-2 font-bold disabled:opacity-60"
+                              >
+                                {{
+                                  addon.offering?.isActive
+                                    ? 'Edit price'
+                                    : addon.offering
+                                      ? 'Offer again'
+                                      : 'Configure'
+                                }}
+                              </button>
+                              @if (addon.offering?.isActive) {
+                                <button
+                                  type="button"
+                                  (click)="stopOffering(item, addon)"
+                                  [disabled]="mutating()"
+                                  class="rounded-lg border px-4 py-2 font-bold text-red-800 disabled:opacity-60"
+                                >
+                                  Stop offering
+                                </button>
+                              }
+                            </div>
+                          }
+                        </div>
+                        @if (editingAddon() === addonKey(item.id, addon.code)) {
+                          <form
+                            [formGroup]="addonPriceForm"
+                            (ngSubmit)="saveAddon(item, addon)"
+                            class="mt-4 grid gap-3 rounded-lg bg-white p-4 sm:grid-cols-[1fr_auto_auto] sm:items-end"
+                          >
+                            <div>
+                              <label
+                                [for]="'addon-price-' + item.id + '-' + addon.code"
+                                class="font-bold"
+                                >Provider price</label
+                              >
+                              <div class="mt-2 flex items-center gap-2">
+                                <span class="font-bold">{{ configuration.currency }}</span
+                                ><input
+                                  [id]="'addon-price-' + item.id + '-' + addon.code"
+                                  formControlName="price"
+                                  inputmode="decimal"
+                                  placeholder="e.g. 5000"
+                                  class="min-h-11 w-full rounded-lg border px-3"
+                                />
+                              </div>
+                              <p class="mt-1 text-xs text-slate-600">
+                                Set the amount patients pay when they select this add-on from this
+                                Health Check service. Zero means free.
+                              </p>
+                              @if (addonPriceError()) {
+                                <p role="alert" class="mt-1 text-sm text-red-800">
+                                  {{ addonPriceError() }}
+                                </p>
+                              }
+                            </div>
+                            <button
+                              type="button"
+                              (click)="cancelAddon()"
+                              [disabled]="mutating()"
+                              class="min-h-11 rounded-lg border px-4 font-bold"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              [disabled]="mutating() || !addon.canConfigure"
+                              class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white disabled:opacity-60"
+                            >
+                              {{
+                                mutating()
+                                  ? 'Saving…'
+                                  : addon.offering?.isActive
+                                    ? 'Save price'
+                                    : 'Offer add-on'
+                              }}
+                            </button>
+                          </form>
+                        }
+                      </article>
+                    } @empty {
+                      <p class="rounded-lg bg-slate-50 p-3 text-sm">
+                        No optional add-ons are currently available for this Health Check service.
+                      </p>
+                    }
+                  </div>
+                }
+              </section>
               @if (mode(item.fulfilmentModeId)?.code === 'PROVIDER_LOCATION') {
                 <div class="mt-4 border-t pt-4">
                   <h4 class="font-bold">Available at</h4>
@@ -227,19 +461,19 @@
                     <p class="mt-2 text-amber-900">No location linked.</p>
                   }
                   <!-- @if (availableLocations(item).length) { -->
-                    <label [for]="'link-' + item.id" class="mt-3 block font-bold"
-                      >Link active location</label
-                    ><select
-                      #locationChoice
-                      [id]="'link-' + item.id"
-                      (change)="link(item.id, locationChoice.value); locationChoice.value = ''"
-                      class="mt-2 min-h-11 w-full rounded-lg border px-3"
-                    >
-                      <option value="">Select location</option>
-                      @for (place of availableLocations(item); track place.id) {
-                        <option [value]="place.id">{{ place.name }} — {{ place.city }}</option>
-                      }
-                    </select>
+                  <label [for]="'link-' + item.id" class="mt-3 block font-bold"
+                    >Link active location</label
+                  ><select
+                    #locationChoice
+                    [id]="'link-' + item.id"
+                    (change)="link(item.id, locationChoice.value); locationChoice.value = ''"
+                    class="mt-2 min-h-11 w-full rounded-lg border px-3"
+                  >
+                    <option value="">Select location</option>
+                    @for (place of availableLocations(item); track place.id) {
+                      <option [value]="place.id">{{ place.name }} — {{ place.city }}</option>
+                    }
+                  </select>
                   <!-- } -->
                 </div>
               } @else if (mode(item.fulfilmentModeId)?.code === 'HOME_VISIT') {
@@ -289,91 +523,83 @@
               class="mt-2 min-h-11 w-full rounded-lg border px-3"
             />
           </div>
-         <!-- Country -->
-<div>
-  <label for="location-country" class="font-bold">
-    Country
-  </label>
+          <!-- Country -->
+          <div>
+            <label for="location-country" class="font-bold"> Country </label>
 
-  <select
-    id="location-country"
-    formControlName="countryCode"
-    (change)="onLocationCountryChange($any($event.target).value)"
-    class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3"
-  >
-    <option value="">Select country</option>
+            <select
+              id="location-country"
+              formControlName="countryCode"
+              (change)="onLocationCountryChange($any($event.target).value)"
+              class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3"
+            >
+              <option value="">Select country</option>
 
-    @for (country of countries; track country.isoCode) {
-      <option [value]="country.isoCode">
-        {{ country.name }}
-      </option>
-    }
-  </select>
-</div>
+              @for (country of countries; track country.isoCode) {
+                <option [value]="country.isoCode">
+                  {{ country.name }}
+                </option>
+              }
+            </select>
+          </div>
 
-<!-- State -->
-<div>
-  <label for="location-state" class="font-bold">
-    State or region
-  </label>
+          <!-- State -->
+          <div>
+            <label for="location-state" class="font-bold"> State or region </label>
 
-  <select
-    id="location-state"
-    [formControl]="locationStateCode"
-    (change)="onLocationStateChange($any($event.target).value)"
-    [disabled]="!locationForm.controls.countryCode.value"
-    class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
-  >
-    <option value="">Select state or region</option>
+            <select
+              id="location-state"
+              [formControl]="locationStateCode"
+              (change)="onLocationStateChange($any($event.target).value)"
+              [disabled]="!locationForm.controls.countryCode.value"
+              class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+            >
+              <option value="">Select state or region</option>
 
-    @for (state of locationStates; track state.isoCode) {
-      <option [value]="state.isoCode">
-        {{ state.name }}
-      </option>
-    }
-  </select>
-</div>
+              @for (state of locationStates; track state.isoCode) {
+                <option [value]="state.isoCode">
+                  {{ state.name }}
+                </option>
+              }
+            </select>
+          </div>
 
-<!-- City -->
-<div>
-  <label for="location-city" class="font-bold">
-    City
-  </label>
+          <!-- City -->
+          <div>
+            <label for="location-city" class="font-bold"> City </label>
 
-  <select
-    id="location-city"
-    formControlName="city"
-    [disabled]="!locationStateCode.value"
-    class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
-  >
-    <option value="">Select city</option>
+            <select
+              id="location-city"
+              formControlName="city"
+              [disabled]="!locationStateCode.value"
+              class="mt-2 min-h-11 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
+            >
+              <option value="">Select city</option>
 
-    @for (city of locationCities; track city.name) {
-      <option [value]="city.name">
-        {{ city.name }}
-      </option>
-    }
-  </select>
-</div>
+              @for (city of locationCities; track city.name) {
+                <option [value]="city.name">
+                  {{ city.name }}
+                </option>
+              }
+            </select>
+          </div>
 
-<!-- Postal code -->
-<div>
-  <label for="location-postal" class="font-bold">
-    Postal code
-    <span class="font-normal text-slate-500">
-      (optional)
-    </span>
-  </label>
+          <!-- Postal code -->
+          <div>
+            <label for="location-postal" class="font-bold">
+              Postal code
+              <span class="font-normal text-slate-500"> (optional) </span>
+            </label>
 
-  <input
-    id="location-postal"
-    formControlName="postalCode"
-    maxlength="30"
-    autocomplete="postal-code"
-    placeholder="e.g. 200103"
-    class="mt-2 min-h-11 w-full rounded-lg border px-3"
-  />
-</div>
+            <input
+              id="location-postal"
+              formControlName="postalCode"
+              maxlength="30"
+              autocomplete="postal-code"
+              placeholder="e.g. 200103"
+              class="mt-2 min-h-11 w-full rounded-lg border px-3"
+            />
+          </div>
           <button
             type="submit"
             [disabled]="mutating()"

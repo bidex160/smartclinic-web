@@ -217,6 +217,7 @@
           formControlName="phone"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:border-brand-600 focus:ring-4 focus:ring-brand-100"
         />
+         <span class="text-sm font-normal">&nbsp;</span> 
       </div>
 
 <!-- Password -->
@@ -228,12 +229,7 @@
     Password
   </label>
 
-  <p
-    id="register-password-help"
-    class="mt-1 text-sm text-slate-600"
-  >
-    Use 12–128 characters.
-  </p>
+
 
   <div class="relative mt-2">
     <input
@@ -242,6 +238,7 @@
       autocomplete="new-password"
       aria-describedby="register-password-help"
       formControlName="password"
+      placeholder="Enter a password"
       class="min-h-12 w-full rounded-lg border border-slate-300 px-3 pr-12 focus:border-brand-600 focus:ring-4 focus:ring-brand-100"
     />
 
@@ -295,6 +292,12 @@
       }
     </button>
   </div>
+    <p
+    id="register-password-help"
+    class="mt-1 text-sm text-slate-600"
+  >
+    Use 6–128 characters.
+  </p>
 </div>
 
       <!-- Professional reference -->

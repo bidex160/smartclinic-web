@@ -60,6 +60,7 @@ import {
       </datalist>
     </label>
   `,
+ styleUrls: ['./../../join/join.component.scss'],
 })
 export class LocationFieldsComponent {
   readonly countries = COUNTRIES;

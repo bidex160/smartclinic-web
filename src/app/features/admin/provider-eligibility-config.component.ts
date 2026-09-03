@@ -19,7 +19,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { forkJoin, finalize, Observable } from 'rxjs';
+import { catchError, forkJoin, finalize, Observable, of } from 'rxjs';
 import { FulfilmentMode } from '../../core/models/fulfilment-mode.model';
 import { HealthCheckPackage } from '../../core/models/health-check-package.model';
 import {
@@ -28,6 +28,8 @@ import {
   ProviderAvailabilityException,
   ProviderLocation,
   ProviderService,
+  ProviderServiceAddonConfiguration,
+  ProviderServiceAddonConfigurationItem,
 } from '../../core/models/provider-eligibility.model';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
@@ -41,8 +43,9 @@ type Tab = 'services' | 'locations' | 'availability' | 'exceptions';
 interface PendingAction {
   label: string;
   run: () => Observable<unknown>;
-  refresh: 'services' | 'locations' | 'availability' | 'exceptions';
+  refresh: 'services' | 'locations' | 'availability' | 'exceptions' | 'addons';
   success: string;
+  serviceId?: string;
 }
 function orderedTimes(control: AbstractControl): ValidationErrors | null {
   const start = control.get('startTime')?.value as string;
@@ -95,6 +98,11 @@ export class ProviderEligibilityConfigComponent implements OnInit {
   readonly editingException = signal<string | null>(null);
   readonly editingServicePrice = signal<string | null>(null);
   readonly priceError = signal<string | null>(null);
+  readonly addonConfigurations = signal<Record<string, ProviderServiceAddonConfiguration>>({});
+  readonly addonErrors = signal<Record<string, string>>({});
+  readonly loadingAddons = signal<ReadonlySet<string>>(new Set());
+  readonly editingAddon = signal<string | null>(null);
+  readonly addonPriceError = signal<string | null>(null);
   readonly weekdays: readonly DayOfWeek[] = [
     'MONDAY',
     'TUESDAY',
@@ -165,6 +173,7 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     currency: ['NGN', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
     price: ['', Validators.required],
   });
+  readonly addonPriceForm = this.fb.group({ price: ['', Validators.required] });
   readonly locationForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
     addressLine1: ['', [Validators.required, Validators.maxLength(255)]],
@@ -200,16 +209,15 @@ export class ProviderEligibilityConfigComponent implements OnInit {
     },
     { validators: pairedTimes },
   );
-  readonly countries: ICountry[] =
-  this.locationData.getCountries();
+  readonly countries: ICountry[] = this.locationData.getCountries();
 
-locationStates: IState[] = [];
-locationCities: ICity[] = [];
+  locationStates: IState[] = [];
+  locationCities: ICity[] = [];
 
-readonly locationStateCode = new FormControl('', { nonNullable: true });
+  readonly locationStateCode = new FormControl('', { nonNullable: true });
   ngOnInit() {
     this.loadAll();
-    this.onLocationCountryChange('NG')
+    this.onLocationCountryChange('NG');
   }
   selectTab(tab: Tab) {
     this.activeTab.set(tab);
@@ -246,6 +254,7 @@ readonly locationStateCode = new FormControl('', { nonNullable: true });
           this.locations.set(r.locations);
           this.availability.set(r.availability);
           this.exceptions.set(r.exceptions);
+          this.loadAddons(r.services);
         },
         error: (e) => this.handle(e, 'Provider configuration could not be loaded.'),
       });
@@ -259,7 +268,9 @@ readonly locationStateCode = new FormControl('', { nonNullable: true });
     const currency = value.currency.trim().toUpperCase();
     const priceMinor = majorToMinor(value.price, currency);
     if (priceMinor === null) {
-      this.priceError.set('Enter a valid price with no more than the currency’s supported decimal places. Zero means free.');
+      this.priceError.set(
+        'Enter a valid price with no more than the currency’s supported decimal places. Zero means free.',
+      );
       return;
     }
     this.priceError.set(null);
@@ -301,7 +312,9 @@ readonly locationStateCode = new FormControl('', { nonNullable: true });
     const currency = value.currency.trim().toUpperCase();
     const priceMinor = majorToMinor(value.price, currency);
     if (priceMinor === null) {
-      this.priceError.set('Enter a valid price with no more than the currency’s supported decimal places. Zero means free.');
+      this.priceError.set(
+        'Enter a valid price with no more than the currency’s supported decimal places. Zero means free.',
+      );
       return;
     }
     this.priceError.set(null);
@@ -314,6 +327,88 @@ readonly locationStateCode = new FormControl('', { nonNullable: true });
   }
   formatServicePrice(item: ProviderService): string {
     return formatMinor(item.priceMinor, item.currency);
+  }
+  addonConfiguration(serviceId: string): ProviderServiceAddonConfiguration | null {
+    return this.addonConfigurations()[serviceId] ?? null;
+  }
+  addonKey(serviceId: string, code: string): string {
+    return `${serviceId}:${code}`;
+  }
+  editAddon(service: ProviderService, item: ProviderServiceAddonConfigurationItem): void {
+    if (!this.selfApi || !this.editable() || !item.canConfigure || this.mutating()) return;
+    this.editingAddon.set(this.addonKey(service.id, item.code));
+    this.addonPriceError.set(null);
+    this.addonPriceForm.setValue({
+      price: item.offering ? minorToMajor(item.offering.priceMinor, item.offering.currency) : '',
+    });
+  }
+  cancelAddon(): void {
+    if (this.mutating()) return;
+    this.editingAddon.set(null);
+    this.addonPriceError.set(null);
+  }
+  saveAddon(service: ProviderService, item: ProviderServiceAddonConfigurationItem): void {
+    const configuration = this.addonConfiguration(service.id);
+    if (
+      !this.selfApi ||
+      !configuration ||
+      !this.editable() ||
+      !item.canConfigure ||
+      this.addonPriceForm.invalid ||
+      this.mutating()
+    ) {
+      this.addonPriceForm.markAllAsTouched();
+      return;
+    }
+    const priceMinor = majorToMinor(
+      this.addonPriceForm.controls.price.value,
+      configuration.currency,
+    );
+    if (priceMinor === null) {
+      this.addonPriceError.set(
+        'Enter a valid price with no more than the currency’s supported decimal places. Zero means free.',
+      );
+      return;
+    }
+    const wasActive = item.offering?.isActive === true;
+    const existed = item.offering !== null;
+    this.addonPriceError.set(null);
+    this.mutate(
+      this.selfApi.configureServiceAddon(service.id, {
+        addonCode: item.code,
+        priceMinor,
+        currency: configuration.currency,
+      }),
+      wasActive
+        ? 'Optional add-on price updated.'
+        : existed
+          ? 'Optional add-on is now offered to patients.'
+          : 'Optional add-on configured.',
+      'addons',
+      () => this.editingAddon.set(null),
+      service.id,
+      'Optional add-on configuration could not be updated.',
+    );
+  }
+  stopOffering(service: ProviderService, item: ProviderServiceAddonConfigurationItem): void {
+    if (!this.selfApi || !this.editable() || !item.canConfigure) return;
+    this.ask(
+      'Stop offering this add-on to new patients? Your saved provider price will be retained.',
+      () => this.selfApi!.deactivateServiceAddon(service.id, item.code),
+      'addons',
+      'Optional add-on is no longer offered to patients.',
+      service.id,
+    );
+  }
+  formatAddonPrice(item: ProviderServiceAddonConfigurationItem): string {
+    return item.offering ? formatMinor(item.offering.priceMinor, item.offering.currency) : '';
+  }
+  addonUnavailableMessage(item: ProviderServiceAddonConfigurationItem): string {
+    if (item.configurationUnavailableReason === 'CANONICAL_CONTENT_INACTIVE')
+      return 'Unavailable in the SmartClinic catalogue';
+    if (item.configurationUnavailableReason === 'PACKAGE_ELIGIBILITY_INACTIVE')
+      return 'Not currently approved for this Health Check package';
+    return 'Provider configuration is currently unavailable.';
   }
   createLocation() {
     if (!this.editable() || this.locationForm.invalid || this.mutating()) {
@@ -442,15 +537,16 @@ readonly locationStateCode = new FormControl('', { nonNullable: true });
     run: () => Observable<unknown>,
     refresh: PendingAction['refresh'],
     success: string,
+    serviceId?: string,
   ) {
     if (!this.editable()) return;
-    this.pendingAction.set({ label, run, refresh, success });
+    this.pendingAction.set({ label, run, refresh, success, serviceId });
   }
   confirmAction() {
     const a = this.pendingAction();
     if (!a || this.mutating()) return;
     this.pendingAction.set(null);
-    this.mutate(a.run(), a.success, a.refresh);
+    this.mutate(a.run(), a.success, a.refresh, undefined, a.serviceId);
   }
   link(serviceId: string, locationId: string) {
     if (!this.editable() || !locationId) return;
@@ -504,56 +600,53 @@ readonly locationStateCode = new FormControl('', { nonNullable: true });
     return this.activeLocations().filter((l) => !service.providerLocationIds.includes(l.id));
   }
   onLocationCountryChange(countryCode: string): void {
-  this.locationStates =
-    this.locationData.getStates(countryCode);
+    this.locationStates = this.locationData.getStates(countryCode);
 
-  this.locationCities = [];
-  this.locationStateCode.setValue('', { emitEvent: false });
+    this.locationCities = [];
+    this.locationStateCode.setValue('', { emitEvent: false });
 
-  this.locationForm.patchValue({
-    state: '',
-    city: '',
-  });
-}
-
-onLocationStateChange(stateCode: string): void {
-  const countryCode =
-    this.locationForm.controls.countryCode.value ?? '';
-
-  const state = this.locationStates.find(
-    (item) => item.isoCode === stateCode,
-  );
-
-  this.locationStateCode.setValue(stateCode, { emitEvent: false });
-
-  this.locationCities =
-    this.locationData.getCities(countryCode, stateCode);
-
-  this.locationForm.patchValue({
-    // Save the NAME because this is what your backend
-    // matching currently compares against.
-    state: state?.name ?? '',
-    city: '',
-  });
-}
-private initializeLocationGeography(countryCode: string, stateName: string, city: string): void {
-  this.locationStates = countryCode ? this.locationData.getStates(countryCode) : [];
-  this.locationCities = [];
-  this.locationStateCode.setValue('', { emitEvent: false });
-  const selectedState = this.locationStates.find(
-    state => state.name.trim().toLowerCase() === stateName.trim().toLowerCase(),
-  );
-  if (selectedState) {
-    this.locationStateCode.setValue(selectedState.isoCode, { emitEvent: false });
-    this.locationCities = this.locationData.getCities(countryCode, selectedState.isoCode);
+    this.locationForm.patchValue({
+      state: '',
+      city: '',
+    });
   }
-  this.locationForm.patchValue({ countryCode, state: stateName, city }, { emitEvent: false });
-}
+
+  onLocationStateChange(stateCode: string): void {
+    const countryCode = this.locationForm.controls.countryCode.value ?? '';
+
+    const state = this.locationStates.find((item) => item.isoCode === stateCode);
+
+    this.locationStateCode.setValue(stateCode, { emitEvent: false });
+
+    this.locationCities = this.locationData.getCities(countryCode, stateCode);
+
+    this.locationForm.patchValue({
+      // Save the NAME because this is what your backend
+      // matching currently compares against.
+      state: state?.name ?? '',
+      city: '',
+    });
+  }
+  private initializeLocationGeography(countryCode: string, stateName: string, city: string): void {
+    this.locationStates = countryCode ? this.locationData.getStates(countryCode) : [];
+    this.locationCities = [];
+    this.locationStateCode.setValue('', { emitEvent: false });
+    const selectedState = this.locationStates.find(
+      (state) => state.name.trim().toLowerCase() === stateName.trim().toLowerCase(),
+    );
+    if (selectedState) {
+      this.locationStateCode.setValue(selectedState.isoCode, { emitEvent: false });
+      this.locationCities = this.locationData.getCities(countryCode, selectedState.isoCode);
+    }
+    this.locationForm.patchValue({ countryCode, state: stateName, city }, { emitEvent: false });
+  }
   private mutate(
     operation: Observable<unknown>,
     success: string,
     refresh: PendingAction['refresh'],
     done?: () => void,
+    serviceId?: string,
+    failure = 'Provider configuration could not be updated.',
   ) {
     this.mutating.set(true);
     this.error.set(null);
@@ -562,16 +655,23 @@ private initializeLocationGeography(countryCode: string, stateName: string, city
       next: () => {
         this.message.set(success);
         done?.();
-        this.reload(refresh);
+        this.reload(refresh, serviceId);
         this.changed.emit();
       },
-      error: (e) => this.handle(e, 'Provider configuration could not be updated.'),
+      error: (e) =>
+        failure.startsWith('Optional add-on')
+          ? this.handleAddonError(e, failure)
+          : this.handle(e, failure),
     });
   }
-  private reload(kind: PendingAction['refresh']) {
+  private reload(kind: PendingAction['refresh'], serviceId?: string) {
+    if (kind === 'addons' && serviceId) this.loadServiceAddons(serviceId);
     if (kind === 'services')
       this.api.listServices(this.providerId()).subscribe({
-        next: (rows) => this.services.set(rows),
+        next: (rows) => {
+          this.services.set(rows);
+          this.loadAddons(rows);
+        },
         error: (e) => this.handle(e, 'Updated data could not be refreshed.'),
       });
     if (kind === 'locations')
@@ -589,6 +689,70 @@ private initializeLocationGeography(countryCode: string, stateName: string, city
         next: (rows) => this.exceptions.set(rows),
         error: (e) => this.handle(e, 'Updated data could not be refreshed.'),
       });
+  }
+  private loadAddons(services: readonly ProviderService[]): void {
+    if (!this.selfApi || services.length === 0) {
+      this.addonConfigurations.set({});
+      return;
+    }
+    this.loadingAddons.set(new Set(services.map((service) => service.id)));
+    forkJoin(
+      services.map((service) =>
+        this.selfApi!.getServiceAddons(service.id).pipe(
+          catchError(() => {
+            this.addonErrors.update((errors) => ({
+              ...errors,
+              [service.id]: 'Optional add-ons could not be loaded for this service.',
+            }));
+            return of(null);
+          }),
+        ),
+      ),
+    ).subscribe((rows) => {
+      const next: Record<string, ProviderServiceAddonConfiguration> = {};
+      for (const row of rows) if (row) next[row.providerServiceId] = row;
+      this.addonConfigurations.set(next);
+      this.loadingAddons.set(new Set());
+    });
+  }
+  loadServiceAddons(serviceId: string): void {
+    if (!this.selfApi) return;
+    this.loadingAddons.update((ids) => new Set([...ids, serviceId]));
+    this.addonErrors.update((errors) => {
+      const next = { ...errors };
+      delete next[serviceId];
+      return next;
+    });
+    this.selfApi
+      .getServiceAddons(serviceId)
+      .pipe(
+        finalize(() =>
+          this.loadingAddons.update((ids) => {
+            const next = new Set(ids);
+            next.delete(serviceId);
+            return next;
+          }),
+        ),
+      )
+      .subscribe({
+        next: (value) => this.addonConfigurations.update((all) => ({ ...all, [serviceId]: value })),
+        error: (e) => {
+          this.addonErrors.update((errors) => ({
+            ...errors,
+            [serviceId]: 'Optional add-ons could not be refreshed for this service.',
+          }));
+          this.handle(e, 'Optional add-on configuration could not be refreshed.');
+        },
+      });
+  }
+  private handleAddonError(error: HttpErrorResponse, fallback: string): void {
+    const backendMessage = error.error?.message;
+    if ([400, 403, 404, 409].includes(error.status) && typeof backendMessage === 'string') {
+      this.error.set(backendMessage);
+      queueMicrotask(() => this.errorSummary()?.nativeElement.focus());
+      return;
+    }
+    this.handle(error, fallback);
   }
   private handle(error: HttpErrorResponse, fallback: string) {
     if (error.status === 403) {

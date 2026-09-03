@@ -11,7 +11,8 @@ import {
 } from '@angular/core';
 import {
   AbstractControl,
-  FormBuilder,
+  FormControl,
+  FormRecord,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
@@ -19,7 +20,8 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
-  HealthCheckMeasurementCode,
+  AdditionalHealthCheckResult,
+  HealthCheckEncounterRequirement,
   ProviderHealthCheckEncounter,
   SaveHealthCheckMeasurementsRequest,
 } from '../../core/models/provider-health-check-encounter.model';
@@ -49,7 +51,6 @@ export class ProviderHealthCheckPageComponent {
   private readonly offersApi = inject(ProviderOffersApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly formBuilder = inject(FormBuilder).nonNullable;
   private readonly errorSummary = viewChild<ElementRef<HTMLElement>>('errorSummary');
   readonly reference = this.route.snapshot.paramMap.get('reference') ?? '';
   readonly encounter = signal<ProviderHealthCheckEncounter | null>(null);
@@ -61,20 +62,7 @@ export class ProviderHealthCheckPageComponent {
   readonly statusMessage = signal<string | null>(null);
   readonly completionConfirmation = signal(false);
   readonly completed = computed(() => this.encounter()?.status === 'COMPLETED');
-  readonly hasAllSavedMeasurements = computed(() => this.encounter()?.measurements.length === 6);
-
-  private measurementControl() {
-    return this.formBuilder.control<number | null>(null, [Validators.required, finiteFourDecimals]);
-  }
-  readonly form = this.formBuilder.group({
-    systolic: this.measurementControl(),
-    diastolic: this.measurementControl(),
-    bloodGlucose: this.measurementControl(),
-    bmi: this.measurementControl(),
-    temperature: this.measurementControl(),
-    oxygenSaturation: this.measurementControl(),
-    pulse: this.measurementControl(),
-  });
+  readonly form = new FormRecord<FormControl<number | null>>({});
 
   constructor() {
     this.load();
@@ -140,25 +128,28 @@ export class ProviderHealthCheckPageComponent {
       this.form.markAllAsTouched();
       return;
     }
+    const request = this.buildRequest();
+    if (!request) {
+      this.error.set('The encounter requirements do not contain all compatibility measurements.');
+      return;
+    }
     this.beginMutation();
     this.api
-      .saveMeasurements(this.reference, this.request())
+      .saveMeasurements(this.reference, request)
       .pipe(finalize(() => this.mutating.set(false)))
       .subscribe({
         next: (encounter) => {
           this.applyEncounter(encounter);
-          this.statusMessage.set('All six measurements were saved.');
+          this.statusMessage.set('Health Check results were saved.');
         },
         error: (error: HttpErrorResponse) =>
-          this.handleError(error, 'Measurements could not be saved.'),
+          this.handleError(error, 'Health Check results could not be saved.'),
       });
   }
 
   requestCompletion(): void {
     if (
-      this.encounter()?.status === 'IN_PROGRESS' &&
-      this.hasAllSavedMeasurements() &&
-      !this.mutating()
+      this.encounter()?.status === 'IN_PROGRESS' && !this.mutating()
     )
       this.completionConfirmation.set(true);
   }
@@ -169,7 +160,6 @@ export class ProviderHealthCheckPageComponent {
     if (
       !this.completionConfirmation() ||
       this.encounter()?.status !== 'IN_PROGRESS' ||
-      !this.hasAllSavedMeasurements() ||
       this.mutating()
     )
       return;
@@ -188,35 +178,103 @@ export class ProviderHealthCheckPageComponent {
       });
   }
 
-  recordedAt(code: HealthCheckMeasurementCode): string | null {
+  recordedAt(code: string): string | null {
     return this.encounter()?.measurements.find((item) => item.code === code)?.recordedAt ?? null;
   }
 
-  private request(): SaveHealthCheckMeasurementsRequest {
-    const value = this.form.getRawValue();
+  primaryControl(requirement: HealthCheckEncounterRequirement): FormControl<number | null> {
+    return this.form.controls[this.controlKey(requirement.code, 'primary')];
+  }
+  secondaryControl(requirement: HealthCheckEncounterRequirement): FormControl<number | null> {
+    return this.form.controls[this.controlKey(requirement.code, 'secondary')];
+  }
+  inputId(requirement: HealthCheckEncounterRequirement, part: 'primary' | 'secondary'): string {
+    return `result-${encodeURIComponent(requirement.code)}-${part}`;
+  }
+  sourceLabel(requirement: HealthCheckEncounterRequirement): string {
+    return requirement.source === 'SELECTED_ADDON' ? 'Selected add-on' : 'Included in package';
+  }
+
+  private buildRequest(): SaveHealthCheckMeasurementsRequest | null {
+    const valueFor = (code: string, part: 'primary' | 'secondary' = 'primary') =>
+      this.form.controls[this.controlKey(code, part)]?.value;
+    const values = {
+      systolic: valueFor('BLOOD_PRESSURE'),
+      diastolic: valueFor('BLOOD_PRESSURE', 'secondary'),
+      bloodGlucose: valueFor('BLOOD_GLUCOSE'),
+      bmi: valueFor('BMI'),
+      temperature: valueFor('TEMPERATURE'),
+      oxygenSaturation: valueFor('OXYGEN_SATURATION'),
+      pulse: valueFor('PULSE'),
+    };
+    if (Object.values(values).some((value) => value === null || value === undefined)) return null;
+    const legacyCodes = new Set([
+      'BLOOD_PRESSURE',
+      'BLOOD_GLUCOSE',
+      'BMI',
+      'TEMPERATURE',
+      'OXYGEN_SATURATION',
+      'PULSE',
+    ]);
+    const additionalResults: AdditionalHealthCheckResult[] = [];
+    const seen = new Set<string>();
+    for (const requirement of this.encounter()?.requirements ?? []) {
+      if (
+        seen.has(requirement.code) ||
+        legacyCodes.has(requirement.code) ||
+        !requirement.requiresRecordedResult ||
+        requirement.resultType === 'NONE'
+      )
+        continue;
+      seen.add(requirement.code);
+      const primary = this.primaryControl(requirement).value;
+      if (primary === null) continue;
+      if (requirement.resultType === 'BLOOD_PRESSURE') {
+        const secondary = this.secondaryControl(requirement).value;
+        if (secondary !== null)
+          additionalResults.push({
+            code: requirement.code,
+            value: Number(primary),
+            secondaryValue: Number(secondary),
+          });
+      } else {
+        additionalResults.push({ code: requirement.code, value: Number(primary) });
+      }
+    }
     return {
-      bloodPressure: { systolic: Number(value.systolic), diastolic: Number(value.diastolic) },
-      bloodGlucose: { value: Number(value.bloodGlucose) },
-      bmi: { value: Number(value.bmi) },
-      temperature: { value: Number(value.temperature) },
-      oxygenSaturation: { value: Number(value.oxygenSaturation) },
-      pulse: { value: Number(value.pulse) },
+      bloodPressure: { systolic: Number(values.systolic), diastolic: Number(values.diastolic) },
+      bloodGlucose: { value: Number(values.bloodGlucose) },
+      bmi: { value: Number(values.bmi) },
+      temperature: { value: Number(values.temperature) },
+      oxygenSaturation: { value: Number(values.oxygenSaturation) },
+      pulse: { value: Number(values.pulse) },
+      ...(additionalResults.length && { additionalResults }),
     };
   }
   private applyEncounter(encounter: ProviderHealthCheckEncounter): void {
     this.encounter.set(encounter);
-    const measurement = (code: HealthCheckMeasurementCode) =>
-      encounter.measurements.find((item) => item.code === code);
-    this.form.setValue({
-      systolic: measurement('BLOOD_PRESSURE')?.value ?? null,
-      diastolic: measurement('BLOOD_PRESSURE')?.secondaryValue ?? null,
-      bloodGlucose: measurement('BLOOD_GLUCOSE')?.value ?? null,
-      bmi: measurement('BMI')?.value ?? null,
-      temperature: measurement('TEMPERATURE')?.value ?? null,
-      oxygenSaturation: measurement('OXYGEN_SATURATION')?.value ?? null,
-      pulse: measurement('PULSE')?.value ?? null,
-    });
+    for (const key of Object.keys(this.form.controls)) this.form.removeControl(key);
+    const seen = new Set<string>();
+    for (const requirement of encounter.requirements) {
+      if (seen.has(requirement.code) || requirement.resultType === 'NONE') continue;
+      seen.add(requirement.code);
+      const measurement = encounter.measurements.find((item) => item.code === requirement.code);
+      const validators = [finiteFourDecimals];
+      if (requirement.requiresRecordedResult) validators.unshift(Validators.required);
+      this.form.addControl(
+        this.controlKey(requirement.code, 'primary'),
+        new FormControl<number | null>(measurement?.value ?? null, { validators }),
+      );
+      if (requirement.resultType === 'BLOOD_PRESSURE')
+        this.form.addControl(
+          this.controlKey(requirement.code, 'secondary'),
+          new FormControl<number | null>(measurement?.secondaryValue ?? null, { validators }),
+        );
+    }
     encounter.status === 'IN_PROGRESS' ? this.form.enable() : this.form.disable();
+  }
+  private controlKey(code: string, part: 'primary' | 'secondary'): string {
+    return `${part}:${encodeURIComponent(code)}`;
   }
   private beginMutation(): void {
     this.mutating.set(true);
@@ -228,16 +286,19 @@ export class ProviderHealthCheckPageComponent {
       void this.router.navigate(['/provider/access-denied']);
       return;
     }
+    const backendMessage = error.error?.message;
     const messages: Record<number, string> = {
       404: 'This booking or encounter is unavailable to this provider.',
       409: 'This Health Check cannot start until the booking has a confirmed scheduled appointment, or its lifecycle state no longer allows this action.',
-      400: 'Review all six measurement values and try again.',
-      422: 'One or more measurement values could not be accepted.',
+      400: 'Review the Health Check result values and try again.',
+      422: 'One or more Health Check result values could not be accepted.',
     };
     this.error.set(
       error.status === 0
         ? 'SmartClinic could not be reached. Check your connection and try again.'
-        : (messages[error.status] ?? fallback),
+        : [400, 409, 422].includes(error.status) && typeof backendMessage === 'string'
+          ? backendMessage
+          : (messages[error.status] ?? fallback),
     );
     queueMicrotask(() => this.errorSummary()?.nativeElement.focus());
   }

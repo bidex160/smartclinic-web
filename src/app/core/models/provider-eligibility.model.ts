@@ -23,6 +23,37 @@ export interface UpdateProviderServicePriceRequest {
   readonly priceMinor: number;
   readonly currency: string;
 }
+export type ProviderServiceAddonConfigurationUnavailableReason =
+  'PROVIDER_CONFIGURATION_DISABLED' | 'CANONICAL_CONTENT_INACTIVE' | 'PACKAGE_ELIGIBILITY_INACTIVE';
+export type ProviderServiceAddonResultType = 'NONE' | 'SINGLE_NUMERIC' | 'BLOOD_PRESSURE';
+export interface ProviderServiceAddonOffering {
+  readonly priceMinor: number;
+  readonly currency: string;
+  readonly isActive: boolean;
+}
+export interface ProviderServiceAddonConfigurationItem {
+  readonly code: string;
+  readonly name: string;
+  readonly description: string | null;
+  readonly category: string;
+  readonly resultType: ProviderServiceAddonResultType;
+  readonly unit: string | null;
+  readonly canonicalActive: boolean;
+  readonly eligibilityActive: boolean;
+  readonly canConfigure: boolean;
+  readonly configurationUnavailableReason: ProviderServiceAddonConfigurationUnavailableReason | null;
+  readonly offering: ProviderServiceAddonOffering | null;
+}
+export interface ProviderServiceAddonConfiguration {
+  readonly providerServiceId: string;
+  readonly currency: string;
+  readonly items: readonly ProviderServiceAddonConfigurationItem[];
+}
+export interface ConfigureProviderServiceAddonRequest {
+  readonly addonCode: string;
+  readonly priceMinor: number;
+  readonly currency: string;
+}
 export interface ProviderLocation {
   readonly locationReference: string;
   readonly id: string;

@@ -94,7 +94,7 @@
         </div>
         <div>
           <label for="setup-password" class="font-bold">Password</label>
-          <p id="password-help" class="mt-1 text-sm text-slate-600">Use 12–128 characters.</p>
+          <p id="password-help" class="mt-1 text-sm text-slate-600">Use 6–128 characters.</p>
           <input
             id="setup-password"
             type="password"
@@ -107,7 +107,7 @@
           />
           @if (setupForm.controls.password.touched && setupForm.controls.password.invalid) {
             <p class="mt-2 text-sm font-semibold text-red-700">
-              Password must contain 12–128 characters.
+              Password must contain 6–128 characters.
             </p>
           }
         </div>

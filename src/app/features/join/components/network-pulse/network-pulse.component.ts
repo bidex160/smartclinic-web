@@ -34,6 +34,7 @@ interface Summary {
       </div>
     </section>
   `,
+styleUrls: ['./../../../join/join.component.scss'],
 })
 export class NetworkPulseComponent implements OnInit {
   private http = inject(HttpClient);

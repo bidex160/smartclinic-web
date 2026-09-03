@@ -17,5 +17,6 @@ import {  CommunityLeaderboardComponent } from "./components/community-leaderboa
 ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './join.component.html',
+  styleUrls: ['./join.component.scss'],
 })
 export class JoinComponent {}

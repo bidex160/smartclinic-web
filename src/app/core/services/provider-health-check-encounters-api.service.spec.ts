@@ -47,6 +47,10 @@ function request() {
     temperature: { value: 36.8 },
     oxygenSaturation: { value: 98 },
     pulse: { value: 72 },
+    additionalResults: [
+      { code: 'CHOLESTEROL', value: 4.2 },
+      { code: 'ANKLE_PRESSURE', value: 118, secondaryValue: 76 },
+    ],
   };
 }
 function encounter() {
@@ -58,6 +62,19 @@ function encounter() {
     participant: { givenName: 'Ada', familyName: 'Okafor' },
     healthCheckPackage: { code: 'ESSENTIAL', name: 'Essential' },
     fulfilmentMode: { code: 'HOME_VISIT', name: 'Home Visit' },
+    confirmedSchedule: null,
+    visitAddress: null,
+    requirements: [
+      {
+        code: 'CHOLESTEROL',
+        name: 'Cholesterol',
+        category: 'MEASUREMENT',
+        resultType: 'SINGLE_NUMERIC',
+        unit: 'mmol/L',
+        source: 'SELECTED_ADDON',
+        requiresRecordedResult: true,
+      },
+    ],
     measurements: [],
   };
 }

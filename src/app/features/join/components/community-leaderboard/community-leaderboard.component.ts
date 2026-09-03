@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { ReferralsApiService } from '../../../../core/services/referrals-api.service';
 
-
 interface PersonLeaderboardRow {
   name: string;
   points: number;
@@ -38,6 +37,7 @@ type Tab = 'people' | 'cities' | 'countries';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './community-leaderboard.component.html',
+styleUrls: ['./../../../join/join.component.scss'],
 })
 export class CommunityLeaderboardComponent implements OnInit {
   private readonly referralApi = inject(ReferralsApiService);

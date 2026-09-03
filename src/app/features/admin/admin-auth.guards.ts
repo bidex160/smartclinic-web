@@ -15,3 +15,13 @@ export const adminPricingGuard: CanActivateFn = async () => {
 
   return authState.canManagePricing() ? true : router.createUrlTree(['/admin/access-denied']);
 };
+
+export const adminOnlyGuard: CanActivateFn = async () => {
+  const authState = inject(AuthStateService);
+  const router = inject(Router);
+  await authState.waitForInitialization();
+  if (!authState.authenticated()) return router.createUrlTree(['/login']);
+  return authState.currentUser()?.roles.includes('ADMIN')
+    ? true
+    : router.createUrlTree(['/admin/access-denied']);
+};

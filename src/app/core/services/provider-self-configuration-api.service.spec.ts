@@ -76,6 +76,33 @@ describe('ProviderSelfConfigurationApiService', () => {
     expect(r.request.body).not.toHaveProperty('providerId');
     r.flush({});
   });
+  it('uses the exact provider-owned add-on projection, upsert, and soft-deactivation routes', () => {
+    const { api, http } = setup();
+    api.getServiceAddons('service/id').subscribe();
+    let r = http.expectOne('http://api.test/api/v1/provider/services/service%2Fid/addons');
+    expect(r.request.method).toBe('GET');
+    r.flush({ providerServiceId: 'service/id', currency: 'NGN', items: [] });
+    api
+      .configureServiceAddon('service/id', {
+        addonCode: 'CHOLESTEROL',
+        priceMinor: 500000,
+        currency: 'NGN',
+      })
+      .subscribe();
+    r = http.expectOne('http://api.test/api/v1/provider/services/service%2Fid/addons');
+    expect(r.request.method).toBe('POST');
+    expect(r.request.body).toEqual({
+      addonCode: 'CHOLESTEROL',
+      priceMinor: 500000,
+      currency: 'NGN',
+    });
+    expect(r.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    r.flush({});
+    api.deactivateServiceAddon('service/id', 'CHOLESTEROL').subscribe();
+    r = http.expectOne('http://api.test/api/v1/provider/services/service%2Fid/addons/CHOLESTEROL');
+    expect(r.request.method).toBe('DELETE');
+    r.flush({});
+  });
   function setup() {
     TestBed.configureTestingModule({
       providers: [
