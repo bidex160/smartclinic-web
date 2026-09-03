@@ -40,6 +40,8 @@ describe('AdminHealthCheckClinicalContentsPageComponent', () => {
       name: 'Clinician consultation',
       description: 'A review',
       category: 'LAB',
+      resultType: 'NONE',
+      unit: '',
       displayOrder: 5,
       isActive: false,
     });
@@ -63,6 +65,8 @@ describe('AdminHealthCheckClinicalContentsPageComponent', () => {
       name: 'Clinician consultation',
       description: '',
       category: 'custom spelling',
+      resultType: 'NONE',
+      unit: '',
       displayOrder: 0,
       isActive: true,
     });
@@ -71,7 +75,7 @@ describe('AdminHealthCheckClinicalContentsPageComponent', () => {
     expect(api.createClinicalContent).not.toHaveBeenCalled();
   });
 
-  it('keeps server filtering and the NONE/null-unit creation restriction', async () => {
+  it('keeps server filtering and renders the supported result-type choices', async () => {
     const { component, api, fixture } = await setup();
     component.filters.patchValue({
       search: 'consult',
@@ -92,7 +96,69 @@ describe('AdminHealthCheckClinicalContentsPageComponent', () => {
     );
     component.creating.set(true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('limited to non-measurement content');
+    const select = fixture.nativeElement.querySelector(
+      '#clinical-content-result-type',
+    ) as HTMLSelectElement;
+    expect(Array.from(select.options).map((option) => option.value)).toEqual([
+      'NONE',
+      'SINGLE_NUMERIC',
+      'BLOOD_PRESSURE',
+    ]);
+    expect(Array.from(select.options).map((option) => option.textContent?.trim())).toEqual([
+      'None',
+      'Single numeric value',
+      'Blood pressure',
+    ]);
+    expect(fixture.nativeElement.textContent).not.toContain('limited to non-measurement content');
+  });
+
+  it('does not require or submit a stale unit for NONE', async () => {
+    const { component, api, fixture } = await setup();
+    component.createForm.patchValue({
+      code: 'CLINICIAN_REVIEW',
+      name: 'Clinician review',
+      category: 'SERVICE',
+      resultType: 'SINGLE_NUMERIC',
+      unit: 'mg/dL',
+    });
+    component.resultTypeChanged();
+    component.createForm.controls.resultType.setValue('NONE');
+    component.resultTypeChanged();
+    fixture.detectChanges();
+    expect(component.createForm.controls.unit.value).toBe('');
+    expect(component.createForm.controls.unit.valid).toBe(true);
+    expect(fixture.nativeElement.querySelector('#clinical-content-unit')).toBeNull();
+    component.create();
+    expect(api.createClinicalContent).toHaveBeenCalledWith(
+      expect.objectContaining({ resultType: 'NONE', unit: null }),
+    );
+  });
+
+  it.each([
+    ['SINGLE_NUMERIC', 'mg/dL'],
+    ['BLOOD_PRESSURE', 'mmHg'],
+  ] as const)('requires and submits trimmed Unit for %s', async (resultType, unit) => {
+    const { component, api, fixture } = await setup();
+    component.creating.set(true);
+    component.createForm.patchValue({
+      code: resultType === 'SINGLE_NUMERIC' ? 'CHOLESTEROL' : 'RESTING_BP',
+      name: resultType === 'SINGLE_NUMERIC' ? 'Cholesterol' : 'Resting blood pressure',
+      category: resultType === 'SINGLE_NUMERIC' ? 'LAB' : 'VITALS',
+      resultType,
+      unit: '',
+    });
+    component.resultTypeChanged();
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('#clinical-content-unit') as HTMLInputElement;
+    expect(input).not.toBeNull();
+    expect(component.createForm.controls.unit.hasError('required')).toBe(true);
+    component.createForm.controls.unit.setValue('   ');
+    expect(component.createForm.controls.unit.hasError('required')).toBe(true);
+    component.createForm.controls.unit.setValue(`  ${unit}  `);
+    component.create();
+    expect(api.createClinicalContent).toHaveBeenCalledWith(
+      expect.objectContaining({ resultType, unit }),
+    );
   });
 
   async function setup() {

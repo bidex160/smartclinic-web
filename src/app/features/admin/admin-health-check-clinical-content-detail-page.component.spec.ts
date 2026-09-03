@@ -49,6 +49,26 @@ describe('AdminHealthCheckClinicalContentDetailPageComponent', () => {
     expect(component.form.controls.category.invalid).toBe(true);
   });
 
+  it('displays result type and unit as friendly read-only metadata', async () => {
+    const { fixture } = await setup(
+      content({ resultType: 'SINGLE_NUMERIC' as const, unit: 'mg/dL' }),
+    );
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Result type');
+    expect(text).toContain('Single numeric value');
+    expect(text).toContain('Unit');
+    expect(text).toContain('mg/dL');
+    expect(fixture.nativeElement.querySelector('[formControlName="resultType"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[formControlName="unit"]')).toBeNull();
+  });
+
+  it('displays NONE content without an applicable unit', async () => {
+    const { fixture } = await setup(content());
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('None');
+    expect(text).toContain('Not applicable');
+  });
+
   async function setup(value: ReturnType<typeof content>) {
     const api = {
       clinicalContentDetail: vi.fn(() => of(value)),

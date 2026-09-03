@@ -19,6 +19,10 @@ import {
 } from '../../core/models/admin-health-check-catalogue.model';
 import { AdminHealthCheckCatalogueApiService } from '../../core/services/admin-health-check-catalogue-api.service';
 
+function requiredTrimmed(control: AbstractControl): ValidationErrors | null {
+  return typeof control.value === 'string' && control.value.trim() ? null : { required: true };
+}
+
 @Component({
   selector: 'app-admin-health-check-clinical-contents-page',
   imports: [ReactiveFormsModule, RouterLink],
@@ -65,7 +69,7 @@ import { AdminHealthCheckCatalogueApiService } from '../../core/services/admin-h
             placeholder="e.g. Clinician consultation"
             class="rounded-xl border p-3 font-normal"
         />
-      <span class="text-sm font-normal">&nbsp;</span>  
+      <span class="text-sm font-normal">&nbsp;</span>
       </label>
         <label class="grid gap-2 font-bold sm:col-span-2"
           >Description<textarea
@@ -101,13 +105,31 @@ import { AdminHealthCheckCatalogueApiService } from '../../core/services/admin-h
             >Controls the canonical catalogue display order.</small
           ></label
         >
-        <div class="rounded-xl bg-slate-50 p-4 sm:col-span-2">
-          <strong>Result type: None</strong>
-          <p class="mt-1 text-sm text-slate-600">
-            New catalogue items are currently limited to non-measurement content until dynamic
-            clinical result capture is enabled.
-          </p>
-        </div>
+        <label for="clinical-content-result-type" class="grid gap-2 font-bold"
+          >Result type<select
+            id="clinical-content-result-type"
+            formControlName="resultType"
+            (change)="resultTypeChanged()"
+            class="rounded-xl border p-3 font-normal"
+          >
+            <option value="NONE">None</option>
+            <option value="SINGLE_NUMERIC">Single numeric value</option>
+            <option value="BLOOD_PRESSURE">Blood pressure</option>
+          </select></label
+        >
+        @if (createForm.controls.resultType.value !== 'NONE') {
+          <label for="clinical-content-unit" class="grid gap-2 font-bold"
+            >Unit<input
+              id="clinical-content-unit"
+              formControlName="unit"
+              [placeholder]="
+                createForm.controls.resultType.value === 'BLOOD_PRESSURE'
+                  ? 'e.g. mmHg'
+                  : 'e.g. mg/dL'
+              "
+              class="rounded-xl border p-3 font-normal"
+          /></label>
+        }
         <label class="flex items-center gap-3 font-bold"
           ><input type="checkbox" formControlName="isActive" /> Active after creation</label
         >
@@ -278,6 +300,11 @@ export class AdminHealthCheckClinicalContentsPageComponent {
       nonNullable: true,
       validators: [Validators.required, this.supportedCategory],
     }),
+    resultType: new FormControl<HealthCheckClinicalResultType>('NONE', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    unit: new FormControl('', { nonNullable: true }),
     displayOrder: new FormControl(0, {
       nonNullable: true,
       validators: [Validators.required, Validators.min(0), Validators.max(32767)],
@@ -323,6 +350,16 @@ export class AdminHealthCheckClinicalContentsPageComponent {
     const v = this.filters.getRawValue();
     return Boolean(v.search || v.isActive || v.category || v.resultType);
   }
+  resultTypeChanged(): void {
+    const unit = this.createForm.controls.unit;
+    if (this.createForm.controls.resultType.value === 'NONE') {
+      unit.clearValidators();
+      unit.setValue('');
+    } else {
+      unit.setValidators([requiredTrimmed, Validators.maxLength(16)]);
+    }
+    unit.updateValueAndValidity();
+  }
   create(): void {
     if (this.createForm.invalid || this.mutating()) return;
     this.mutating.set(true);
@@ -333,8 +370,8 @@ export class AdminHealthCheckClinicalContentsPageComponent {
       name: v.name,
       description: v.description || null,
       category: v.category,
-      resultType: 'NONE',
-      unit: null,
+      resultType: v.resultType,
+      unit: v.resultType === 'NONE' ? null : v.unit.trim(),
       displayOrder: v.displayOrder,
       isActive: v.isActive,
     };
@@ -350,6 +387,8 @@ export class AdminHealthCheckClinicalContentsPageComponent {
             name: '',
             description: '',
             category: '',
+            resultType: 'NONE',
+            unit: '',
             displayOrder: 0,
             isActive: true,
           });

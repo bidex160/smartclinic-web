@@ -63,12 +63,16 @@ import { AdminHealthCheckCatalogueApiService } from '../../core/services/admin-h
             <p class="mt-2 rounded-xl bg-slate-50 p-3 font-mono">{{ item.code }}</p>
             <small class="text-slate-600">Codes cannot be changed after creation.</small>
           </div>
-          <div>
-            <span class="font-bold">Result contract</span>
-            <p class="mt-2 rounded-xl bg-slate-50 p-3">
-              {{ item.resultType }} · {{ item.unit || 'No unit' }}
-            </p>
-            <small class="text-slate-600">Result type and unit are immutable.</small>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <span class="font-bold">Result type</span>
+              <p class="mt-2 rounded-xl bg-slate-50 p-3">{{ resultTypeLabel(item.resultType) }}</p>
+            </div>
+            <div>
+              <span class="font-bold">Unit</span>
+              <p class="mt-2 rounded-xl bg-slate-50 p-3">{{ item.unit || 'Not applicable' }}</p>
+            </div>
+            <small class="col-span-2 text-slate-600">Result type and unit are immutable.</small>
           </div>
           <label class="grid gap-2 font-bold"
             >Clinical content name<input
@@ -236,6 +240,11 @@ export class AdminHealthCheckClinicalContentDetailPageComponent {
   historicalCategory(): string | null {
     const category = this.content()?.category;
     return category && !isHealthCheckClinicalContentCategory(category) ? category : null;
+  }
+  resultTypeLabel(value: AdminClinicalContentDetail['resultType']): string {
+    if (value === 'SINGLE_NUMERIC') return 'Single numeric value';
+    if (value === 'BLOOD_PRESSURE') return 'Blood pressure';
+    return 'None';
   }
   private mutate(
     request: ReturnType<AdminHealthCheckCatalogueApiService['updateClinicalContent']>,

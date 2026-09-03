@@ -65,20 +65,20 @@ describe('AdminHealthCheckCatalogueApiService', () => {
     expect(request.request.params.get('limit')).toBe('25');
   });
 
-  it('creates only the typed NONE/null contract and has no delete requests', () => {
+  it('posts the confirmed result type and unit contract and has no delete requests', () => {
     service
       .createClinicalContent({
-        code: 'CLINICIAN_CONSULTATION',
-        name: 'Clinician consultation',
-        category: 'SERVICE',
-        resultType: 'NONE',
-        unit: null,
+        code: 'CHOLESTEROL',
+        name: 'Cholesterol',
+        category: 'LAB',
+        resultType: 'SINGLE_NUMERIC',
+        unit: 'mg/dL',
       })
       .subscribe();
     const request = http.expectOne(`${base}/clinical-contents`);
     expect(request.request.method).toBe('POST');
-    expect(request.request.body.resultType).toBe('NONE');
-    expect(request.request.body.unit).toBeNull();
+    expect(request.request.body.resultType).toBe('SINGLE_NUMERIC');
+    expect(request.request.body.unit).toBe('mg/dL');
     service.setClinicalContentActive('HC-CONTENT-1', false).subscribe();
     expect(http.expectOne(`${base}/clinical-contents/HC-CONTENT-1/deactivate`).request.method).toBe(
       'POST',

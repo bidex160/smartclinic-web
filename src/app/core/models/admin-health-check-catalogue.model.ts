@@ -109,8 +109,8 @@ export interface CreateAdminClinicalContentRequest {
   readonly name: string;
   readonly description?: string | null;
   readonly category: string;
-  readonly resultType: 'NONE';
-  readonly unit: null;
+  readonly resultType: HealthCheckClinicalResultType;
+  readonly unit?: string | null;
   readonly displayOrder?: number;
   readonly isActive?: boolean;
 }
