@@ -60,8 +60,12 @@ import PaystackPop from '@paystack/inline-js';
             <div>
               <dt class="text-sm text-slate-500">Location</dt>
               <dd>
-                {{ r.geography.city }}, {{ r.geography.stateOrRegion }},
-                {{ r.geography.countryCode }}
+                @if (r.geography; as geography) {
+                  {{ geography.city }}, {{ geography.stateOrRegion }},
+                  {{ geography.countryCode }}
+                } @else {
+                  Virtual care
+                }
               </dd>
             </div>
             <div>
@@ -88,26 +92,62 @@ import PaystackPop from '@paystack/inline-js';
           <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(r.status) }}</p>
         </section>
         @if (r.status === 'PROVIDER_ACCEPTED' || r.funding) {
-          <section class="mt-6 rounded-2xl border bg-white p-6" aria-labelledby="care-payment-title">
+          <section
+            class="mt-6 rounded-2xl border bg-white p-6"
+            aria-labelledby="care-payment-title"
+          >
             <h2 id="care-payment-title" class="text-xl font-bold">Payment</h2>
             @if (fundingLoading()) {
               <p role="status" class="mt-3 text-slate-600">Loading payment status…</p>
             } @else if (funding(); as payment) {
               <dl class="mt-4 grid gap-4 sm:grid-cols-2">
-                <div><dt class="text-sm text-slate-500">Service price</dt><dd class="font-bold">{{ payment.amountMinor !== null && payment.currency ? formatPrice(payment.amountMinor, payment.currency) : 'Not available' }}</dd></div>
-                <div><dt class="text-sm text-slate-500">Payment status</dt><dd class="font-bold">{{ fundingLabel(payment) }}</dd></div>
+                <div>
+                  <dt class="text-sm text-slate-500">Service price</dt>
+                  <dd class="font-bold">
+                    {{
+                      payment.amountMinor !== null && payment.currency
+                        ? formatPrice(payment.amountMinor, payment.currency)
+                        : 'Not available'
+                    }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-sm text-slate-500">Payment status</dt>
+                  <dd class="font-bold">{{ fundingLabel(payment) }}</dd>
+                </div>
               </dl>
               @if (payment.fundingStatus === 'SATISFIED_FREE') {
-                <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">No payment required. Your provider can schedule your care.</p>
+                <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">
+                  No payment required. Your provider can schedule your care.
+                </p>
               } @else if (payment.fundingStatus === 'PAID') {
-                <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">Payment confirmed. Your provider can schedule your care.</p>
+                <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">
+                  Payment confirmed. Your provider can schedule your care.
+                </p>
               } @else if (r.status === 'PROVIDER_ACCEPTED' && payment.initializationAllowed) {
-                <button type="button" (click)="payNow()" [disabled]="paymentPending()" class="mt-4 min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60">{{ paymentPending() ? 'Preparing secure payment…' : 'Pay now' }}</button>
+                <button
+                  type="button"
+                  (click)="payNow()"
+                  [disabled]="paymentPending()"
+                  class="mt-4 min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60"
+                >
+                  {{ paymentPending() ? 'Preparing secure payment…' : 'Pay now' }}
+                </button>
               }
             } @else if (r.status === 'PROVIDER_ACCEPTED') {
-              <button type="button" (click)="loadFunding()" class="mt-4 rounded-xl border px-5 py-3 font-bold">Refresh payment status</button>
+              <button
+                type="button"
+                (click)="loadFunding()"
+                class="mt-4 rounded-xl border px-5 py-3 font-bold"
+              >
+                Refresh payment status
+              </button>
             }
-            @if (paymentError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ paymentError() }}</p> }
+            @if (paymentError()) {
+              <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
+                {{ paymentError() }}
+              </p>
+            }
           </section>
         }
         @if (r.appointment; as a) {
@@ -283,56 +323,80 @@ export class CareDetailPageComponent {
     if (this.fundingLoading()) return;
     this.fundingLoading.set(true);
     if (!preserveError) this.paymentError.set(null);
-    this.api.getFunding(this.reference).pipe(finalize(() => this.fundingLoading.set(false))).subscribe({
-      next: (funding) => this.funding.set(funding),
-      error: () => this.paymentError.set('We could not load the authoritative payment status. Try again.'),
-    });
+    this.api
+      .getFunding(this.reference)
+      .pipe(finalize(() => this.fundingLoading.set(false)))
+      .subscribe({
+        next: (funding) => this.funding.set(funding),
+        error: () =>
+          this.paymentError.set('We could not load the authoritative payment status. Try again.'),
+      });
   }
   payNow(): void {
     const funding = this.funding();
-    if (this.paymentPending() || !funding?.initializationAllowed || funding.paid || funding.amountMinor === 0) return;
+    if (
+      this.paymentPending() ||
+      !funding?.initializationAllowed ||
+      funding.paid ||
+      funding.amountMinor === 0
+    )
+      return;
     this.paymentPending.set(true);
     this.paymentError.set(null);
-    this.api.initializeFunding(this.reference).pipe(finalize(() => this.paymentPending.set(false))).subscribe({
-      next: (initialized) => {
-        this.funding.set(initialized);
-        if (initialized.fundingStatus === 'PAID' || initialized.fundingStatus === 'SATISFIED_FREE') {
-          this.refreshAfterPayment();
-          return;
-        }
-        if (!initialized.accessCode) {
-          this.paymentError.set('Secure payment could not be started. Refresh the payment status and try again.');
-          return;
-        }
-        this.popup.resumeTransaction(initialized.accessCode, {
-          onSuccess: () => this.verifyPayment(),
-          onError: () => {
-            this.paymentError.set('Payment was not completed. You can safely try again.');
-            this.loadFunding(true);
-          },
-        });
-      },
-      error: (error) => {
-        this.paymentError.set(this.paymentFailureMessage(error));
-        this.loadFunding(true);
-      },
-    });
+    this.api
+      .initializeFunding(this.reference)
+      .pipe(finalize(() => this.paymentPending.set(false)))
+      .subscribe({
+        next: (initialized) => {
+          this.funding.set(initialized);
+          if (
+            initialized.fundingStatus === 'PAID' ||
+            initialized.fundingStatus === 'SATISFIED_FREE'
+          ) {
+            this.refreshAfterPayment();
+            return;
+          }
+          if (!initialized.accessCode) {
+            this.paymentError.set(
+              'Secure payment could not be started. Refresh the payment status and try again.',
+            );
+            return;
+          }
+          this.popup.resumeTransaction(initialized.accessCode, {
+            onSuccess: () => this.verifyPayment(),
+            onError: () => {
+              this.paymentError.set('Payment was not completed. You can safely try again.');
+              this.loadFunding(true);
+            },
+          });
+        },
+        error: (error) => {
+          this.paymentError.set(this.paymentFailureMessage(error));
+          this.loadFunding(true);
+        },
+      });
   }
   verifyPayment(): void {
     if (this.paymentPending()) return;
     this.paymentPending.set(true);
     this.paymentError.set(null);
-    this.api.verifyLatestFunding(this.reference).pipe(finalize(() => this.paymentPending.set(false))).subscribe({
-      next: (funding) => {
-        this.funding.set(funding);
-        this.refreshAfterPayment();
-        if (funding.fundingStatus !== 'PAID') this.paymentError.set('Payment has not been confirmed yet. You can retry safely.');
-      },
-      error: () => {
-        this.paymentError.set('We could not confirm the payment yet. Refresh the payment status or try again.');
-        this.loadFunding(true);
-      },
-    });
+    this.api
+      .verifyLatestFunding(this.reference)
+      .pipe(finalize(() => this.paymentPending.set(false)))
+      .subscribe({
+        next: (funding) => {
+          this.funding.set(funding);
+          this.refreshAfterPayment();
+          if (funding.fundingStatus !== 'PAID')
+            this.paymentError.set('Payment has not been confirmed yet. You can retry safely.');
+        },
+        error: () => {
+          this.paymentError.set(
+            'We could not confirm the payment yet. Refresh the payment status or try again.',
+          );
+          this.loadFunding(true);
+        },
+      });
   }
   fundingLabel(funding: CareRequestFunding): string {
     if (funding.fundingStatus === 'PAID') return 'Paid';
@@ -344,7 +408,20 @@ export class CareDetailPageComponent {
     this.api.get(this.reference).subscribe({ next: (value) => this.request.set(value) });
   }
   private summaryFunding(request: CareRequest): CareRequestFunding {
-    return { careRequestReference: request.reference, fundingRequired: request.funding?.status !== 'SATISFIED_FREE', amountMinor: request.service.price?.priceMinor ?? null, currency: request.service.price?.currency ?? null, fundingStatus: request.funding?.status ?? null, paid: request.funding?.satisfied ?? false, initializationAllowed: false, paymentAttemptStatus: null, paymentReference: null, checkoutUrl: null, accessCode: null, paidAt: null };
+    return {
+      careRequestReference: request.reference,
+      fundingRequired: request.funding?.status !== 'SATISFIED_FREE',
+      amountMinor: request.service.price?.priceMinor ?? null,
+      currency: request.service.price?.currency ?? null,
+      fundingStatus: request.funding?.status ?? null,
+      paid: request.funding?.satisfied ?? false,
+      initializationAllowed: false,
+      paymentAttemptStatus: null,
+      paymentReference: null,
+      checkoutUrl: null,
+      accessCode: null,
+      paidAt: null,
+    };
   }
   private paymentFailureMessage(error: { status?: number; error?: { message?: unknown } }): string {
     const message = typeof error?.error?.message === 'string' ? error.error.message : '';

@@ -63,14 +63,11 @@ export class PackageSelectionPageComponent {
       )
       .subscribe({
         next: ({ catalogue, legacy }) => {
-          const supported = catalogue.filter(
-            (item) => item.code === 'ESSENTIAL' || item.code === 'COMPLETE',
-          );
-          this.packages.set(supported);
+          this.packages.set(catalogue);
           this.legacyPackages.set(legacy);
           const requested = this.route.snapshot.queryParamMap.get('package');
           this.preselectedCode.set(
-            requested && supported.some((item) => item.code === requested) ? requested : null,
+            requested && catalogue.some((item) => item.code === requested) ? requested : null,
           );
         },
         error: (error: HttpErrorResponse) => this.error.set(this.getErrorMessage(error)),

@@ -26,8 +26,8 @@ import { LocationDataService } from '../../core/services/location-data.service';
     </p>
     <h1 class="mt-2 text-4xl font-bold text-brand-950">Find Care</h1>
     <p class="mt-3 max-w-2xl text-slate-600">
-      Tell us what care you need and where. SmartClinic uses current provider information to help
-      coordinate your request.
+      Tell us what care you need and how you would like to receive it. SmartClinic uses current
+      provider information to help coordinate your request.
     </p>
     @if (success(); as request) {
       <section class="mt-8 rounded-3xl border border-green-200 bg-green-50 p-7">
@@ -63,13 +63,19 @@ import { LocationDataService } from '../../core/services/location-data.service';
             <dt class="text-sm text-slate-600">Preferred provider</dt>
             <dd>{{ request.preferredProvider?.displayName || 'SmartClinic will match you' }}</dd>
           </div>
-          <div>
-            <dt class="text-sm text-slate-600">Requested location</dt>
-            <dd>
-              {{ request.geography.city }}, {{ request.geography.stateOrRegion }},
-              {{ request.geography.countryCode }}
-            </dd>
-          </div>
+          @if (request.geography; as geography) {
+            <div>
+              <dt class="text-sm text-slate-600">Requested location</dt>
+              <dd>
+                {{ geography.city }}, {{ geography.stateOrRegion }}, {{ geography.countryCode }}
+              </dd>
+            </div>
+          } @else if (request.deliveryMode === 'VIRTUAL') {
+            <div>
+              <dt class="text-sm text-slate-600">Location</dt>
+              <dd>Virtual care</dd>
+            </div>
+          }
         </dl>
         <p class="mt-5 text-slate-700">
           We’ll show the current provider-response or matching step in My Care.
@@ -83,46 +89,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-7" novalidate>
         <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">1. Where do you need care?</legend>
-          <div class="mt-3 grid gap-5 md:grid-cols-3">
-            <label class="font-semibold"
-              >Country<select
-                formControlName="countryCode"
-                (change)="countryChanged($any($event.target).value)"
-                class="mt-2 min-h-12 w-full rounded-xl border px-3"
-              >
-                <option value="">Select country</option>
-                @for (c of countries; track c.isoCode) {
-                  <option [value]="c.isoCode">{{ c.name }}</option>
-                }
-              </select></label
-            ><label class="font-semibold"
-              >State / Region<select
-                [formControl]="requestStateCode"
-                (change)="stateChanged($any($event.target).value)"
-                class="mt-2 min-h-12 w-full rounded-xl border px-3"
-              >
-                <option value="">Select state or region</option>
-                @for (s of states(); track s.isoCode) {
-                  <option [value]="s.isoCode">{{ s.name }}</option>
-                }
-              </select></label
-            ><label class="font-semibold"
-              >City<select
-                formControlName="city"
-                (change)="discoverProviders()"
-                class="mt-2 min-h-12 w-full rounded-xl border px-3"
-              >
-                <option value="">Select city</option>
-                @for (c of cities(); track c.name) {
-                  <option [value]="c.name">{{ c.name }}</option>
-                }
-              </select></label
-            >
-          </div>
-        </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">2. What do you need?</legend>
+          <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
           @if (servicesLoading()) {
             <p role="status" class="mt-3">Loading care services…</p>
           } @else if (servicesError()) {
@@ -136,7 +103,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
             <label class="mt-3 block font-semibold"
               >Care service<select
                 formControlName="serviceCode"
-                (change)="discoverProviders()"
+                (change)="serviceChanged()"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3"
               >
                 <option value="">Select the care you need</option>
@@ -151,7 +118,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
           }
         </fieldset>
         <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">3. Delivery mode</legend>
+          <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
           @if (deliveryModes().length) {
             <div class="mt-3 grid gap-3 sm:grid-cols-3">
               @for (mode of deliveryModes(); track mode) {
@@ -177,12 +144,55 @@ import { LocationDataService } from '../../core/services/location-data.service';
             </div>
           } @else {
             <p class="mt-3 text-sm text-slate-600">
-              Choose a location and service to see supported delivery modes.
+              Choose a care service to see supported delivery modes.
             </p>
           }
         </fieldset>
+        @if (requiresGeography()) {
+          <fieldset class="rounded-3xl border bg-white p-6">
+            <legend class="px-2 text-xl font-bold">3. Location</legend>
+            <div class="mt-3 grid gap-5 md:grid-cols-3">
+              <label class="font-semibold"
+                >Country<select
+                  formControlName="countryCode"
+                  (change)="countryChanged($any($event.target).value)"
+                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
+                >
+                  <option value="">Select country</option>
+                  @for (c of countries; track c.isoCode) {
+                    <option [value]="c.isoCode">{{ c.name }}</option>
+                  }
+                </select></label
+              ><label class="font-semibold"
+                >State / Region<select
+                  [formControl]="requestStateCode"
+                  (change)="stateChanged($any($event.target).value)"
+                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
+                >
+                  <option value="">Select state or region</option>
+                  @for (s of states(); track s.isoCode) {
+                    <option [value]="s.isoCode">{{ s.name }}</option>
+                  }
+                </select></label
+              ><label class="font-semibold"
+                >City<select
+                  formControlName="city"
+                  (change)="discoverProviders()"
+                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
+                >
+                  <option value="">Select city</option>
+                  @for (c of cities(); track c.name) {
+                    <option [value]="c.name">{{ c.name }}</option>
+                  }
+                </select></label
+              >
+            </div>
+          </fieldset>
+        }
         <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">4. Preferred provider</legend>
+          <legend class="px-2 text-xl font-bold">
+            {{ requiresGeography() ? '4' : '3' }}. Preferred provider
+          </legend>
           <label class="mt-3 block font-semibold"
             >Provider<select
               formControlName="preferredProviderReference"
@@ -232,7 +242,9 @@ import { LocationDataService } from '../../core/services/location-data.service';
           }
         </fieldset>
         <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">5. Optional request details</legend>
+          <legend class="px-2 text-xl font-bold">
+            {{ requiresGeography() ? '5' : '4' }}. Optional request details
+          </legend>
           <div class="mt-3 grid gap-5 sm:grid-cols-2">
             <label class="font-semibold"
               >Preferred date (optional)<input
@@ -315,9 +327,9 @@ export class FindCarePageComponent {
   readonly error = signal<string | null>(null);
   readonly success = signal<CareRequest | null>(null);
   readonly form = this.fb.nonNullable.group({
-    countryCode: ['NG', Validators.required],
-    stateOrRegion: ['', Validators.required],
-    city: ['', Validators.required],
+    countryCode: ['NG'],
+    stateOrRegion: [''],
+    city: [''],
     serviceCode: ['', Validators.required],
     deliveryMode: ['' as CareDeliveryMode | '', Validators.required],
     preferredProviderReference: [''],
@@ -332,13 +344,22 @@ export class FindCarePageComponent {
   readonly selectedDescription = () =>
     this.services().find((s) => s.code === this.form.controls.serviceCode.value)?.description ??
     null;
-  readonly providerSearchReady = () =>
-    !!(
-      this.form.controls.serviceCode.value &&
-      this.form.controls.countryCode.value &&
-      this.form.controls.stateOrRegion.value &&
-      this.form.controls.city.value
+  readonly requiresGeography = () => {
+    const mode = this.form.controls.deliveryMode.value;
+    return mode === 'IN_PERSON' || mode === 'HOME_VISIT';
+  };
+  readonly providerSearchReady = () => {
+    if (!this.form.controls.serviceCode.value || !this.form.controls.deliveryMode.value)
+      return false;
+    return (
+      !this.requiresGeography() ||
+      !!(
+        this.form.controls.countryCode.value &&
+        this.form.controls.stateOrRegion.value &&
+        this.form.controls.city.value
+      )
     );
+  };
   readonly deliveryModes = () => {
     return [
       ...new Set(
@@ -357,11 +378,16 @@ export class FindCarePageComponent {
     const saved = this.intent.take();
     if (saved) {
       this.form.patchValue(saved);
-      this.states.set(this.locations.getStates(saved.countryCode));
-      const state = this.states().find((s) => s.name.trim().toLowerCase() === saved.stateOrRegion.trim().toLowerCase());
-      if (state) {
-        this.requestStateCode.setValue(state.isoCode, { emitEvent: false });
-        this.cities.set(this.locations.getCities(saved.countryCode, state.isoCode));
+      this.updateGeographyValidators();
+      if (saved.countryCode && saved.stateOrRegion) {
+        this.states.set(this.locations.getStates(saved.countryCode));
+        const state = this.states().find(
+          (s) => s.name.trim().toLowerCase() === saved.stateOrRegion?.trim().toLowerCase(),
+        );
+        if (state) {
+          this.requestStateCode.setValue(state.isoCode, { emitEvent: false });
+          this.cities.set(this.locations.getCities(saved.countryCode, state.isoCode));
+        }
       }
       this.discoverProviders();
     }
@@ -392,23 +418,34 @@ export class FindCarePageComponent {
     );
     this.providers.set([]);
   }
+  serviceChanged() {
+    this.form.patchValue({ deliveryMode: '', preferredProviderReference: '' });
+    this.discoveryProviders.set([]);
+    this.providers.set([]);
+    this.updateGeographyValidators();
+    this.discoverProviders();
+  }
   discoverProviders() {
     this.form.controls.preferredProviderReference.setValue('');
-    if (!this.providerSearchReady()) {
+    const v = this.form.getRawValue();
+    const deliveryMode = v.deliveryMode || undefined;
+    if (!v.serviceCode || (deliveryMode && !this.providerSearchReady())) {
       this.providers.set([]);
       return;
     }
     this.providersLoading.set(true);
     this.providersError.set(false);
-    const v = this.form.getRawValue();
-    const deliveryMode = v.deliveryMode || undefined;
     this.api
       .getProviders({
         serviceCode: v.serviceCode,
-        countryCode: v.countryCode,
-        stateOrRegion: v.stateOrRegion,
-        city: v.city,
         ...(deliveryMode ? { deliveryMode } : {}),
+        ...(deliveryMode && deliveryMode !== 'VIRTUAL'
+          ? {
+              countryCode: v.countryCode,
+              stateOrRegion: v.stateOrRegion,
+              city: v.city,
+            }
+          : {}),
         limit: 50,
       })
       .pipe(finalize(() => this.providersLoading.set(false)))
@@ -432,14 +469,27 @@ export class FindCarePageComponent {
       });
   }
   deliveryModeChanged() {
+    this.form.controls.preferredProviderReference.setValue('');
+    this.updateGeographyValidators();
     this.discoverProviders();
+  }
+  private updateGeographyValidators() {
+    for (const control of [
+      this.form.controls.countryCode,
+      this.form.controls.stateOrRegion,
+      this.form.controls.city,
+    ]) {
+      if (this.requiresGeography()) control.setValidators(Validators.required);
+      else control.clearValidators();
+      control.updateValueAndValidity({ emitEvent: false });
+    }
   }
   deliveryModeLabel(mode: CareDeliveryMode) {
     return careDeliveryModeLabel(mode);
   }
   deliveryModeHelp(mode: CareDeliveryMode) {
     return mode === 'VIRTUAL'
-      ? 'Consult online; your geography remains important for coverage.'
+      ? 'Consult online from anywhere; no service location is required.'
       : mode === 'HOME_VISIT'
         ? 'Care at your selected service area.'
         : 'Attend an eligible provider location.';
@@ -475,9 +525,13 @@ export class FindCarePageComponent {
       ...(v.preferredProviderReference
         ? { preferredProviderReference: v.preferredProviderReference }
         : {}),
-      countryCode: v.countryCode,
-      stateOrRegion: v.stateOrRegion,
-      city: v.city,
+      ...(v.deliveryMode !== 'VIRTUAL'
+        ? {
+            countryCode: v.countryCode,
+            stateOrRegion: v.stateOrRegion,
+            city: v.city,
+          }
+        : {}),
       ...(v.preferredDate ? { preferredDate: v.preferredDate } : {}),
       ...(v.preferredTime ? { preferredTime: v.preferredTime } : {}),
       contactMethod: v.contactMethod,
@@ -485,6 +539,7 @@ export class FindCarePageComponent {
     };
   }
   submit() {
+    this.updateGeographyValidators();
     if (this.form.invalid || this.submitting()) {
       this.form.markAllAsTouched();
       return;

@@ -30,7 +30,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             inline-flex items-center gap-3
             rounded-lg
             focus:outline-none
-            focus:ring-4
+            focus:ring-1 ml-2
             focus:ring-brand-700
           "
         >
@@ -81,7 +81,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               hover:bg-brand-800
               hover:text-white
               focus:outline-none
-              focus:ring-4
+              focus:ring-1 ml-2
               focus:ring-brand-700
             "
           >
@@ -114,7 +114,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               hover:bg-brand-800
               hover:text-white
               focus:outline-none
-              focus:ring-4
+              focus:ring-1 ml-2
               focus:ring-brand-700
             "
           >
@@ -134,7 +134,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               hover:bg-brand-800
               hover:text-white
               focus:outline-none
-              focus:ring-4
+              focus:ring-1 ml-2
               focus:ring-brand-700
             "
           >
@@ -143,25 +143,25 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/admin/referrals"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Referrals</a
           >
           <a
             routerLink="/admin/reward-withdrawals"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Reward Withdrawals</a
           >
           <a
             routerLink="/admin/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Care Services</a
           >
           <a
             routerLink="/admin/guided-self-check"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Self-Check Operations</a
           >
 
@@ -173,25 +173,25 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/admin/provider-earnings"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Revenue</a
           >
           <a
             routerLink="/admin/provider-payouts"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Payouts</a
           >
           <a
             routerLink="/admin/provider-payout-accounts"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Payout Accounts</a
           >
           <a
             routerLink="/admin/commission-settings"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >Commission Settings</a
           >
 
@@ -221,7 +221,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               hover:bg-brand-800
               hover:text-white
               focus:outline-none
-              focus:ring-4
+              focus:ring-1 ml-2
               focus:ring-brand-700
             "
           >
@@ -236,13 +236,13 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             <a
               routerLink="/admin/health-checks/packages"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
               >Packages</a
             >
             <a
               routerLink="/admin/health-checks/clinical-contents"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-brand-700"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
               >Clinical Contents</a
             >
           }
@@ -277,7 +277,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             hover:bg-brand-800
             hover:text-white
             focus:outline-none
-            focus:ring-4
+            focus:ring-1 ml-2
             focus:ring-brand-700
             disabled:cursor-wait
             disabled:opacity-60
@@ -313,7 +313,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             inline-flex items-center gap-2
             rounded-lg
             focus:outline-none
-            focus:ring-4
+            focus:ring-1 ml-2
             focus:ring-brand-200
           "
         >
@@ -376,7 +376,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           text-brand-800
           hover:bg-brand-50
           focus:outline-none
-          focus:ring-4
+          focus:ring-1 ml-2
           focus:ring-inset
           focus:ring-brand-200
         "
@@ -553,7 +553,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               text-brand-700
               hover:bg-brand-50
               focus:outline-none
-              focus:ring-4
+              focus:ring-1 ml-2
               focus:ring-brand-200
               disabled:cursor-wait
               disabled:opacity-60

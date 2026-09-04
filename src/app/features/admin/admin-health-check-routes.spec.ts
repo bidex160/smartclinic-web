@@ -6,6 +6,7 @@ describe('Admin Health Check catalogue routes', () => {
     const admin = routes.find((route) => route.path === 'admin');
     const expected = [
       'health-checks/packages',
+      'health-checks/packages/new',
       'health-checks/packages/:code',
       'health-checks/clinical-contents',
       'health-checks/clinical-contents/:reference',

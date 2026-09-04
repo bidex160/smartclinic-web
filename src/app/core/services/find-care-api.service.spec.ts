@@ -42,14 +42,24 @@ describe('Find Care API services', () => {
     expect(req.request.params.get('city')).toBe('Ibadan');
     req.flush({ items: [], page: 1, limit: 50, total: 0, totalPages: 0 });
   });
+  it('omits empty geography from VIRTUAL provider discovery', () => {
+    find
+      .getProviders({
+        serviceCode: 'GENERAL_CONSULTATION',
+        deliveryMode: 'VIRTUAL',
+        limit: 50,
+      })
+      .subscribe();
+    const request = http.expectOne((r) => r.url.endsWith('/public/find-care/providers'));
+    expect(request.request.params.keys().sort()).toEqual(['deliveryMode', 'limit', 'serviceCode']);
+    expect(request.request.params.get('deliveryMode')).toBe('VIRTUAL');
+    request.flush({ items: [], page: 1, limit: 50, total: 0, totalPages: 0 });
+  });
   it('submits only the Care Request contract with providerReference', () => {
     const body = {
       serviceCode: 'DENTAL',
       deliveryMode: 'VIRTUAL' as const,
       preferredProviderReference: 'SCPR-ABCDEF0123456789',
-      countryCode: 'NG',
-      stateOrRegion: 'Oyo',
-      city: 'Ibadan',
       contactMethod: 'EMAIL' as const,
     };
     care.create(body).subscribe();

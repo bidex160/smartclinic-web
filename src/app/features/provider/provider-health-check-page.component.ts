@@ -195,62 +195,185 @@ export class ProviderHealthCheckPageComponent {
     return requirement.source === 'SELECTED_ADDON' ? 'Selected add-on' : 'Included in package';
   }
 
-  private buildRequest(): SaveHealthCheckMeasurementsRequest | null {
-    const valueFor = (code: string, part: 'primary' | 'secondary' = 'primary') =>
-      this.form.controls[this.controlKey(code, part)]?.value;
-    const values = {
-      systolic: valueFor('BLOOD_PRESSURE'),
-      diastolic: valueFor('BLOOD_PRESSURE', 'secondary'),
-      bloodGlucose: valueFor('BLOOD_GLUCOSE'),
-      bmi: valueFor('BMI'),
-      temperature: valueFor('TEMPERATURE'),
-      oxygenSaturation: valueFor('OXYGEN_SATURATION'),
-      pulse: valueFor('PULSE'),
-    };
-    if (Object.values(values).some((value) => value === null || value === undefined)) return null;
-    const legacyCodes = new Set([
+private buildRequest(): SaveHealthCheckMeasurementsRequest | null {
+  const encounter = this.encounter();
+
+  if (!encounter) {
+    return null;
+  }
+
+  const requirements = encounter.requirements ?? [];
+
+  const valueFor = (
+    code: string,
+    part: 'primary' | 'secondary' = 'primary',
+  ) => this.form.controls[this.controlKey(code, part)]?.value;
+
+  const requiresResult = (code: string): boolean => {
+    const requirement = requirements.find(
+      (item) => item.code === code,
+    );
+
+    return Boolean(
+      requirement &&
+        requirement.requiresRecordedResult &&
+        requirement.resultType !== 'NONE',
+    );
+  };
+
+  const request: SaveHealthCheckMeasurementsRequest = {};
+
+  /*
+   * Legacy/compatibility measurements.
+   *
+   * These should only be included when they are actually part of this
+   * encounter's snapshot-driven requirements.
+   */
+
+  if (requiresResult('BLOOD_PRESSURE')) {
+    const systolic = valueFor('BLOOD_PRESSURE');
+    const diastolic = valueFor(
       'BLOOD_PRESSURE',
-      'BLOOD_GLUCOSE',
-      'BMI',
-      'TEMPERATURE',
-      'OXYGEN_SATURATION',
-      'PULSE',
-    ]);
-    const additionalResults: AdditionalHealthCheckResult[] = [];
-    const seen = new Set<string>();
-    for (const requirement of this.encounter()?.requirements ?? []) {
-      if (
-        seen.has(requirement.code) ||
-        legacyCodes.has(requirement.code) ||
-        !requirement.requiresRecordedResult ||
-        requirement.resultType === 'NONE'
-      )
-        continue;
-      seen.add(requirement.code);
-      const primary = this.primaryControl(requirement).value;
-      if (primary === null) continue;
-      if (requirement.resultType === 'BLOOD_PRESSURE') {
-        const secondary = this.secondaryControl(requirement).value;
-        if (secondary !== null)
-          additionalResults.push({
-            code: requirement.code,
-            value: Number(primary),
-            secondaryValue: Number(secondary),
-          });
-      } else {
-        additionalResults.push({ code: requirement.code, value: Number(primary) });
-      }
+      'secondary',
+    );
+
+    if (
+      systolic === null ||
+      systolic === undefined ||
+      diastolic === null ||
+      diastolic === undefined
+    ) {
+      return null;
     }
-    return {
-      bloodPressure: { systolic: Number(values.systolic), diastolic: Number(values.diastolic) },
-      bloodGlucose: { value: Number(values.bloodGlucose) },
-      bmi: { value: Number(values.bmi) },
-      temperature: { value: Number(values.temperature) },
-      oxygenSaturation: { value: Number(values.oxygenSaturation) },
-      pulse: { value: Number(values.pulse) },
-      ...(additionalResults.length && { additionalResults }),
+
+    request.bloodPressure = {
+      systolic: Number(systolic),
+      diastolic: Number(diastolic),
     };
   }
+
+  if (requiresResult('BLOOD_GLUCOSE')) {
+    const value = valueFor('BLOOD_GLUCOSE');
+
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    request.bloodGlucose = {
+      value: Number(value),
+    };
+  }
+
+  if (requiresResult('BMI')) {
+    const value = valueFor('BMI');
+
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    request.bmi = {
+      value: Number(value),
+    };
+  }
+
+  if (requiresResult('TEMPERATURE')) {
+    const value = valueFor('TEMPERATURE');
+
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    request.temperature = {
+      value: Number(value),
+    };
+  }
+
+  if (requiresResult('OXYGEN_SATURATION')) {
+    const value = valueFor('OXYGEN_SATURATION');
+
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    request.oxygenSaturation = {
+      value: Number(value),
+    };
+  }
+
+  if (requiresResult('PULSE')) {
+    const value = valueFor('PULSE');
+
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    request.pulse = {
+      value: Number(value),
+    };
+  }
+
+  /*
+   * Arbitrary result-bearing catalogue items.
+   */
+  const legacyCodes = new Set([
+    'BLOOD_PRESSURE',
+    'BLOOD_GLUCOSE',
+    'BMI',
+    'TEMPERATURE',
+    'OXYGEN_SATURATION',
+    'PULSE',
+  ]);
+
+  const additionalResults: AdditionalHealthCheckResult[] = [];
+  const seen = new Set<string>();
+
+  for (const requirement of requirements) {
+    if (
+      seen.has(requirement.code) ||
+      legacyCodes.has(requirement.code) ||
+      !requirement.requiresRecordedResult ||
+      requirement.resultType === 'NONE'
+    ) {
+      continue;
+    }
+
+    seen.add(requirement.code);
+
+    const primary = this.primaryControl(requirement).value;
+
+    if (primary === null || primary === undefined) {
+      return null;
+    }
+
+    if (requirement.resultType === 'BLOOD_PRESSURE') {
+      const secondary =
+        this.secondaryControl(requirement).value;
+
+      if (secondary === null || secondary === undefined) {
+        return null;
+      }
+
+      additionalResults.push({
+        code: requirement.code,
+        value: Number(primary),
+        secondaryValue: Number(secondary),
+      });
+
+      continue;
+    }
+
+    additionalResults.push({
+      code: requirement.code,
+      value: Number(primary),
+    });
+  }
+
+  if (additionalResults.length > 0) {
+    request.additionalResults = additionalResults;
+  }
+
+  return request;
+}
   private applyEncounter(encounter: ProviderHealthCheckEncounter): void {
     this.encounter.set(encounter);
     for (const key of Object.keys(this.form.controls)) this.form.removeControl(key);

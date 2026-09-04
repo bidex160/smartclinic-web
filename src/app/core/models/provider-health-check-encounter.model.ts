@@ -51,12 +51,41 @@ export interface AdditionalHealthCheckResult {
   readonly secondaryValue?: number;
 }
 
+// export interface SaveHealthCheckMeasurementsRequest {
+//   readonly bloodPressure: { readonly systolic: number; readonly diastolic: number };
+//   readonly bloodGlucose: { readonly value: number };
+//   readonly bmi: { readonly value: number };
+//   readonly temperature: { readonly value: number };
+//   readonly oxygenSaturation: { readonly value: number };
+//   readonly pulse: { readonly value: number };
+//   readonly additionalResults?: readonly AdditionalHealthCheckResult[];
+// }
+
 export interface SaveHealthCheckMeasurementsRequest {
-  readonly bloodPressure: { readonly systolic: number; readonly diastolic: number };
-  readonly bloodGlucose: { readonly value: number };
-  readonly bmi: { readonly value: number };
-  readonly temperature: { readonly value: number };
-  readonly oxygenSaturation: { readonly value: number };
-  readonly pulse: { readonly value: number };
-  readonly additionalResults?: readonly AdditionalHealthCheckResult[];
+  bloodPressure?: {
+    systolic: number;
+    diastolic: number;
+  };
+
+  bloodGlucose?: {
+    value: number;
+  };
+
+  bmi?: {
+    value: number;
+  };
+
+  temperature?: {
+    value: number;
+  };
+
+  oxygenSaturation?: {
+    value: number;
+  };
+
+  pulse?: {
+    value: number;
+  };
+
+  additionalResults?: AdditionalHealthCheckResult[];
 }

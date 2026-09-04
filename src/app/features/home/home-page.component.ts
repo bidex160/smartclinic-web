@@ -59,14 +59,7 @@ export class HomePageComponent {
       .getCatalogue()
       .pipe(finalize(() => this.catalogueLoading.set(false)))
       .subscribe({
-        next: (items) =>
-          this.catalogue.set(
-            items
-              .filter(
-                (item) => item.isActive && (item.code === 'ESSENTIAL' || item.code === 'COMPLETE'),
-              )
-              .sort((a, b) => this.packageOrder(a.code) - this.packageOrder(b.code)),
-          ),
+        next: (items) => this.catalogue.set(items.filter((item) => item.isActive)),
         error: () => this.catalogueError.set(true),
       });
   }
@@ -79,9 +72,5 @@ export class HomePageComponent {
     return this.authState.isPatient()
       ? { package: packageCode }
       : { returnUrl: `/health-check/packages?package=${packageCode}` };
-  }
-
-  private packageOrder(code: string): number {
-    return code === 'ESSENTIAL' ? 0 : 1;
   }
 }

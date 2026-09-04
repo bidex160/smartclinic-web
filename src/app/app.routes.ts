@@ -806,6 +806,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'health-checks/packages/new',
+        title: 'New Health Check Package | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-health-check-package-new-page.component').then(
+            (c) => c.AdminHealthCheckPackageNewPageComponent,
+          ),
+      },
+      {
         path: 'health-checks/packages/:code',
         title: 'Health Check Package | SmartClinic',
         canActivate: [adminOnlyGuard],

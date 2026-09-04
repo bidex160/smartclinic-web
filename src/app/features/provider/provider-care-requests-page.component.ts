@@ -49,8 +49,12 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
                 <td class="p-4">{{ item.service.name }}</td>
                 <td class="p-4">{{ deliveryModeLabel(item.deliveryMode) }}</td>
                 <td class="p-4">
-                  {{ item.geography.city }}, {{ item.geography.stateOrRegion }},
-                  {{ item.geography.countryCode }}
+                  @if (item.geography; as geography) {
+                    {{ geography.city }}, {{ geography.stateOrRegion }},
+                    {{ geography.countryCode }}
+                  } @else {
+                    Virtual care
+                  }
                 </td>
                 <td class="p-4">
                   {{

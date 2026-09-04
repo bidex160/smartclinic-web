@@ -24,6 +24,22 @@ describe('AdminHealthCheckCatalogueApiService', () => {
   it('uses the confirmed package catalogue endpoints and exact mutation bodies', () => {
     service.listPackages().subscribe();
     expect(http.expectOne(`${base}/packages`).request.method).toBe('GET');
+    service
+      .createPackage({
+        code: 'EXECUTIVE',
+        name: 'Executive Health Check',
+        benefits: ['Broader screening'],
+        estimatedDurationMinutes: 60,
+      })
+      .subscribe();
+    const create = http.expectOne(`${base}/packages`);
+    expect(create.request.method).toBe('POST');
+    expect(create.request.body).toEqual({
+      code: 'EXECUTIVE',
+      name: 'Executive Health Check',
+      benefits: ['Broader screening'],
+      estimatedDurationMinutes: 60,
+    });
     service.updatePackage('ESSENTIAL', { benefits: ['Benefit'] }).subscribe();
     const patch = http.expectOne(`${base}/packages/ESSENTIAL`);
     expect(patch.request.method).toBe('PATCH');

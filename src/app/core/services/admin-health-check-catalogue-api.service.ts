@@ -8,6 +8,7 @@ import {
   AdminClinicalContentPage,
   AdminHealthCheckPackageDetail,
   AdminHealthCheckPackageSummary,
+  CreateAdminHealthCheckPackageRequest,
   CreateAdminClinicalContentRequest,
   ReorderAdminPackageContentsRequest,
   UpdateAdminClinicalContentRequest,
@@ -21,6 +22,9 @@ export class AdminHealthCheckCatalogueApiService {
 
   listPackages() {
     return this.http.get<AdminHealthCheckPackageSummary[]>(`${this.base}/packages`);
+  }
+  createPackage(request: CreateAdminHealthCheckPackageRequest) {
+    return this.http.post<AdminHealthCheckPackageDetail>(`${this.base}/packages`, request);
   }
   packageDetail(code: string) {
     return this.http.get<AdminHealthCheckPackageDetail>(`${this.base}/packages/${code}`);

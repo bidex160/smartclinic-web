@@ -22,7 +22,7 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
     <aside
       class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-brand-900 p-5 text-white lg:flex"
     >
-      <a routerLink="/" class="flex items-center gap-3 rounded-lg focus:ring-4 focus:ring-white/30">
+      <a routerLink="/" class="flex items-center gap-3 rounded-lg focus:ring-1 ml-2 focus:ring-white/30">
         <img
           class="
               flex h-10 w-10 items-center justify-center
@@ -53,7 +53,7 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
                   [routerLink]="item.route"
                   routerLinkActive="bg-white/15"
                   [routerLinkActiveOptions]="{ exact: item.exact }"
-                  class="flex min-h-11 items-center rounded-xl px-4 py-2 font-semibold hover:bg-white/10 focus:ring-4 focus:ring-white/30"
+                  class="flex min-h-11 items-center rounded-xl px-4 py-2 font-semibold hover:bg-white/10 focus:ring-1 ml-2 focus:ring-white/30"
                 >
                   {{ item.label }}
                 </a>
@@ -66,7 +66,7 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
       <button
         type="button"
         (click)="logout()"
-        class="mt-auto min-h-11 rounded-xl border border-white/30 px-4 text-left font-bold focus:ring-4 focus:ring-white/30"
+        class="mt-auto min-h-11 rounded-xl border border-white/30 px-4 text-left font-bold focus:ring-1 ml-2 focus:ring-white/30"
       >
         Sign out
       </button>

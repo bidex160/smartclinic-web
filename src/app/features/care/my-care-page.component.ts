@@ -19,7 +19,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         </p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <a routerLink="/me/request-care" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+        <a
+          routerLink="/me/request-care"
+          class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
           >Find Care</a
         ><a routerLink="/me/fasttrack" class="rounded-xl border px-5 py-3 font-bold"
           >FastTrack requests</a
@@ -39,7 +41,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <p class="mt-2 text-slate-600">
           Find an eligible provider or ask SmartClinic to help match you.
         </p>
-        <a routerLink="/me/request-care" class="mt-5 inline-block font-bold text-brand-700 underline"
+        <a
+          routerLink="/me/request-care"
+          class="mt-5 inline-block font-bold text-brand-700 underline"
           >Find Care</a
         >
       </section>
@@ -70,7 +74,13 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
                   }}
                 </td>
                 <td class="p-4">{{ deliveryModeLabel(item.deliveryMode) }}</td>
-                <td class="p-4">{{ item.geography.city }}, {{ item.geography.stateOrRegion }}</td>
+                <td class="p-4">
+                  @if (item.geography; as geography) {
+                    {{ geography.city }}, {{ geography.stateOrRegion }}
+                  } @else {
+                    Virtual care
+                  }
+                </td>
                 <td class="p-4">{{ label(item.status) }}</td>
                 <td class="p-4">{{ fundingLabel(item) }}</td>
                 <td class="p-4">{{ utils.formatDateTime(item.createdAt) }}</td>

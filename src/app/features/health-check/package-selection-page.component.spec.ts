@@ -66,4 +66,47 @@ describe('PackageSelectionPageComponent', () => {
     expect(state.selectedPackage()).toEqual(healthCheckPackage);
     expect(router.navigate).toHaveBeenCalledWith(['/book/fulfilment']);
   });
+
+  it('accepts an arbitrary backend-defined package code', async () => {
+    await TestBed.configureTestingModule({
+      imports: [PackageSelectionPageComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: API_CONFIG, useValue: { baseUrl: 'http://api.example.test/api/v1' } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PackageSelectionPageComponent);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('http://api.example.test/api/v1/health-check-packages/catalogue').flush([
+      {
+        code: 'EXECUTIVE',
+        name: 'Executive Health Check',
+        description: null,
+        benefits: [],
+        estimatedDurationMinutes: 90,
+        isActive: true,
+        includedContents: [],
+        optionalAddons: [],
+        fromPriceMinor: 1500000,
+        currency: 'NGN',
+        fulfilmentModes: [],
+      },
+    ]);
+    http.expectOne('http://api.example.test/api/v1/health-check-packages').flush([
+      {
+        id: 'executive-id',
+        code: 'EXECUTIVE',
+        name: 'Executive Health Check',
+        description: null,
+        benefits: [],
+        estimatedDurationMinutes: 90,
+        isActive: true,
+      },
+    ]);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.packages().map((item) => item.code)).toEqual(['EXECUTIVE']);
+    expect(fixture.nativeElement.textContent).toContain('Executive Health Check');
+  });
 });

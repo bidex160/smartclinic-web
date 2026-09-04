@@ -56,7 +56,7 @@ export interface HealthCheckConfigurationQuote {
 }
 
 export interface HealthCheckProviderDiscoveryRequest {
-  readonly packageCode: 'ESSENTIAL' | 'COMPLETE';
+  readonly packageCode: string;
   readonly fulfilmentModeCode: 'PROVIDER_LOCATION' | 'HOME_VISIT';
   readonly preferredDate: string;
   readonly preferredTime: string;

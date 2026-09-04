@@ -44,7 +44,10 @@ import { majorToMinor, minorToMajor } from './care-money';
                     maxlength="3"
                     placeholder="e.g. NGN"
                     class="rounded-xl border p-3 uppercase"
-                /></label>
+                />
+                <span class="text-sm font-normal">&nbsp;</span>
+              </label>
+                
               </div>
             }
           </fieldset>

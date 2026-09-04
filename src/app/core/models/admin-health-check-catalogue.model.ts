@@ -104,6 +104,14 @@ export interface UpdateAdminHealthCheckPackageRequest {
   readonly estimatedDurationMinutes?: number | null;
 }
 
+export interface CreateAdminHealthCheckPackageRequest {
+  readonly code: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly benefits?: readonly string[];
+  readonly estimatedDurationMinutes?: number | null;
+}
+
 export interface CreateAdminClinicalContentRequest {
   readonly code: string;
   readonly name: string;

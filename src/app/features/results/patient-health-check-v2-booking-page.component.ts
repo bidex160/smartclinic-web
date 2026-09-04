@@ -103,12 +103,9 @@ export class PatientHealthCheckV2BookingPageComponent {
       .pipe(finalize(() => this.catalogueLoading.set(false)))
       .subscribe({
         next: (items) => {
-          const allowed = items.filter(
-            (item) => item.code === 'ESSENTIAL' || item.code === 'COMPLETE',
-          );
-          this.packages.set(allowed);
+          this.packages.set(items);
           const requested = this.route.snapshot.queryParamMap.get('package');
-          if (requested && allowed.some((item) => item.code === requested))
+          if (requested && items.some((item) => item.code === requested))
             this.form.controls.packageCode.setValue(requested);
         },
         error: () => this.catalogueError.set(true),
@@ -165,7 +162,7 @@ export class PatientHealthCheckV2BookingPageComponent {
     this.discoveryError.set('');
     this.api
       .discoverProviders({
-        packageCode: value.packageCode as 'ESSENTIAL' | 'COMPLETE',
+        packageCode: value.packageCode,
         fulfilmentModeCode: value.fulfilmentModeCode as 'PROVIDER_LOCATION' | 'HOME_VISIT',
         preferredDate: value.preferredDate,
         preferredTime: value.preferredTime,

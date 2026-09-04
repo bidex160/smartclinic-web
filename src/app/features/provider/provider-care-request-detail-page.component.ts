@@ -65,7 +65,11 @@ import { formatMinor } from './care-money';
           <div>
             <dt class="text-sm text-slate-500">Requested location</dt>
             <dd>
-              {{ r.geography.city }}, {{ r.geography.stateOrRegion }}, {{ r.geography.countryCode }}
+              @if (r.geography; as geography) {
+                {{ geography.city }}, {{ geography.stateOrRegion }}, {{ geography.countryCode }}
+              } @else {
+                Virtual care
+              }
             </dd>
           </div>
           <div>
@@ -95,7 +99,9 @@ import { formatMinor } from './care-money';
           <h2 class="text-xl font-bold">Payment status</h2>
           <p class="mt-2 font-semibold">{{ fundingLabel(r) }}</p>
           @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
-            <p class="mt-2 text-slate-600">Awaiting patient payment. Care Chat remains available while payment is pending.</p>
+            <p class="mt-2 text-slate-600">
+              Awaiting patient payment. Care Chat remains available while payment is pending.
+            </p>
           }
         </section>
       }
@@ -121,14 +127,18 @@ import { formatMinor } from './care-money';
       @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r)) {
         <button
           type="button"
-           (click)="openSchedule(r)"
+          (click)="openSchedule(r)"
           class="mt-6 min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
         >
           Schedule appointment
         </button>
       }
       @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
-        <p class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950">Schedule appointment is unavailable while patient payment is pending.</p>
+        <p
+          class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950"
+        >
+          Schedule appointment is unavailable while patient payment is pending.
+        </p>
       }
       @if (chatAvailable()) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
@@ -395,14 +405,14 @@ export class ProviderCareRequestDetailPageComponent {
   }
 
   private toHourMinute(value?: string | null): string {
-  if (!value) {
-    return '';
-  }
-  // Handles HH:mm and HH:mm:ss
-  const match = value.match(/^(\d{2}):(\d{2})/);
+    if (!value) {
+      return '';
+    }
+    // Handles HH:mm and HH:mm:ss
+    const match = value.match(/^(\d{2}):(\d{2})/);
 
-  return match ? `${match[1]}:${match[2]}` : '';
-}
+    return match ? `${match[1]}:${match[2]}` : '';
+  }
 
   private localNow() {
     const parts = new Intl.DateTimeFormat('en-CA', {
@@ -526,30 +536,27 @@ export class ProviderCareRequestDetailPageComponent {
     return 'Awaiting payment';
   }
 
- openSchedule(request: CareRequest): void {
-  this.scheduleError.set(null);
+  openSchedule(request: CareRequest): void {
+    this.scheduleError.set(null);
 
-  const now = this.localNow();
+    const now = this.localNow();
 
-  const preferredDate = request.preferredDate ?? '';
-  const preferredTime = request.preferredTime ?? '';
+    const preferredDate = request.preferredDate ?? '';
+    const preferredTime = request.preferredTime ?? '';
 
-  const preferredIsFuture =
-    !!preferredDate &&
-    (
-      preferredDate > now.date ||
-      (preferredDate === now.date && preferredTime > now.time)
-    );
+    const preferredIsFuture =
+      !!preferredDate &&
+      (preferredDate > now.date || (preferredDate === now.date && preferredTime > now.time));
 
-  this.scheduleForm.reset({
-    scheduledDate: preferredIsFuture ? preferredDate : '',
-    scheduledTimeFrom: preferredIsFuture ? preferredTime : '',
-    scheduledTimeTo: '',
-    providerLocationReference: '',
-    timezone: this.timezone,
-    notes: '',
-  });
+    this.scheduleForm.reset({
+      scheduledDate: preferredIsFuture ? preferredDate : '',
+      scheduledTimeFrom: preferredIsFuture ? preferredTime : '',
+      scheduledTimeTo: '',
+      providerLocationReference: '',
+      timezone: this.timezone,
+      notes: '',
+    });
 
-  this.scheduleOpen.set(true);
-}
+    this.scheduleOpen.set(true);
+  }
 }

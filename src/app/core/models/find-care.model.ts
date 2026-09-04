@@ -124,9 +124,9 @@ export interface CreateCareRequest {
   readonly serviceCode: string;
   readonly deliveryMode: CareDeliveryMode;
   readonly preferredProviderReference?: string;
-  readonly countryCode: string;
-  readonly stateOrRegion: string;
-  readonly city: string;
+  readonly countryCode?: string;
+  readonly stateOrRegion?: string;
+  readonly city?: string;
   readonly preferredDate?: string;
   readonly preferredTime?: string;
   readonly contactMethod: CareRequestContactMethod;
@@ -155,7 +155,7 @@ export interface CareRequest {
     readonly countryCode: string;
     readonly stateOrRegion: string;
     readonly city: string;
-  };
+  } | null;
   readonly preferredProvider: CareRequestProviderSummary | null;
   readonly assignedProvider: CareRequestProviderSummary | null;
   readonly preferredDate: string | null;

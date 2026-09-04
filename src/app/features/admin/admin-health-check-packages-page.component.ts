@@ -10,13 +10,20 @@ import { AdminHealthCheckCatalogueApiService } from '../../core/services/admin-h
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:py-12">
-      <header>
-        <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Health Checks</p>
-        <h1 class="mt-2 text-3xl font-bold text-brand-950">Health Check Packages</h1>
-        <p class="mt-2 max-w-3xl text-slate-600">
-          Manage SmartClinic Health Check packages, included clinical contents and approved optional
-          add-ons.
-        </p>
+      <header class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Health Checks</p>
+          <h1 class="mt-2 text-3xl font-bold text-brand-950">Health Check Packages</h1>
+          <p class="mt-2 max-w-3xl text-slate-600">
+            Manage SmartClinic Health Check packages, included clinical contents and approved
+            optional add-ons.
+          </p>
+        </div>
+        <a
+          routerLink="/admin/health-checks/packages/new"
+          class="inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white focus:ring-4 focus:ring-brand-200"
+          >+ New package</a
+        >
       </header>
       @if (loading()) {
         <p role="status" class="mt-8 rounded-2xl bg-white p-6">Loading Health Check packages…</p>
