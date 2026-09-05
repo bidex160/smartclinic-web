@@ -471,6 +471,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/provider/provider-health-record-access-page.component').then((c) => c.ProviderHealthRecordAccessPageComponent),
       },
       {
+        path: 'shared-health-passports/:patientReference',
+        title: 'Shared Health Passport | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-shared-health-passport-page.component').then((c) => c.ProviderSharedHealthPassportPageComponent),
+      },
+      {
         path: 'shared-health-records',
         title: 'Shared Health Records | SmartClinic',
         canActivate: [providerGuard],
