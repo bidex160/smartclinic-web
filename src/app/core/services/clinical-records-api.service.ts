@@ -17,6 +17,7 @@ import {
   UpdateClinicalRecordRequest,
   SharedClinicalRecord,
   SharedClinicalRecordSummary,
+  ShareableHealthPassport,
 } from '../models/clinical-record.model';
 
 @Injectable({ providedIn: 'root' })
@@ -132,6 +133,10 @@ export class ClinicalRecordsApiService {
 
   getSharedAttachmentAccess(recordReference: string, attachmentReference: string) {
     return this.http.get<ClinicalRecordAttachmentAccess>(`${this.base}/provider/shared-clinical-records/${encodeURIComponent(recordReference)}/attachments/${encodeURIComponent(attachmentReference)}/access`);
+  }
+
+  getSharedHealthPassport(patientReference: string) {
+    return this.http.get<ShareableHealthPassport>(`${this.base}/provider/shared-health-passports/${encodeURIComponent(patientReference)}`);
   }
 
   private providerEndpoint(reference: string) {

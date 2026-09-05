@@ -103,7 +103,7 @@ export interface ClinicalRecordPage {
   readonly totalPages: number;
 }
 
-export type ClinicalRecordAccessScope = 'ALL_RECORDS' | 'RECORD_TYPE' | 'SINGLE_RECORD';
+export type ClinicalRecordAccessScope = 'HEALTH_PASSPORT' | 'ALL_RECORDS' | 'RECORD_TYPE' | 'SINGLE_RECORD';
 export type ClinicalRecordAccessGrantStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED';
 export type ClinicalRecordAccessAction = 'VIEW' | 'ATTACHMENT_ACCESS';
 export type ClinicalRecordAccessRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'EXPIRED';
@@ -182,10 +182,23 @@ export interface ClinicalRecordAccessRequest {
 
 export interface ClinicalRecordAccessAudit {
   readonly provider: ClinicalRecordProviderSummary;
-  readonly clinicalRecord: Pick<ClinicalRecord, 'reference' | 'title' | 'recordType'>;
+  readonly sourceDomain: 'CLINICAL_RECORD' | 'HEALTH_PASSPORT';
+  readonly sourceReference: string;
+  readonly clinicalRecord: Pick<ClinicalRecord, 'reference' | 'title' | 'recordType'> | null;
   readonly action: ClinicalRecordAccessAction;
   readonly createdAt: string;
 }
+
+export type HealthPassportProvenance = 'REPORTED_BY_YOU' | 'CHECKED_BY_PROVIDER';
+export interface ShareablePassportSource { readonly sourceDomain: string; readonly sourceReference: string; readonly provenance: HealthPassportProvenance; }
+export interface ShareablePassportGuidedSelfCheck extends ShareablePassportSource { readonly eventKey: string; readonly type: string; readonly occurredAt: string; readonly title: string; readonly description: string; readonly context: { readonly classificationStatus: string; readonly classification: string | null; readonly patientMessageKey: string | null; readonly nextAction: unknown | null; readonly professionalReview: { readonly required: boolean; readonly status: string | null; readonly completedAt: string | null } }; }
+export interface ShareablePassportHistory extends Omit<ShareablePassportSource, 'sourceDomain'> { readonly key: string; readonly label: string; readonly answerState: string; readonly value: unknown; readonly reportedAt: string; }
+export interface ShareablePassportProvider { readonly providerReference: string; readonly displayName: string; }
+export interface ShareablePassportMeasurement extends ShareablePassportSource { readonly type: string; readonly value: { readonly value?: unknown; readonly systolic?: unknown; readonly diastolic?: unknown; readonly primary?: unknown; readonly secondary?: unknown }; readonly unit: string | null; readonly recordedAt: string; readonly provider?: ShareablePassportProvider; }
+export interface ShareablePassportHealthCheckResult extends ShareablePassportSource { readonly code: string; readonly name: string; readonly category: string; readonly resultType: 'SINGLE_NUMERIC' | 'BLOOD_PRESSURE'; readonly value: { readonly value?: unknown; readonly systolic?: unknown; readonly diastolic?: unknown }; readonly unit: string | null; readonly recordedAt: string; }
+export interface ShareablePassportHealthCheck { readonly reference: string; readonly package: { readonly code: string; readonly name: string }; readonly completedAt: string; readonly provider: ShareablePassportProvider; readonly fulfilmentMode: { readonly code: string; readonly name: string }; readonly clinicalWork: readonly { readonly code: string; readonly name: string; readonly category: string; readonly resultType: 'NONE' | 'SINGLE_NUMERIC' | 'BLOOD_PRESSURE'; readonly unit: string | null; readonly source: string; readonly requiresRecordedResult: boolean }[]; readonly results: readonly ShareablePassportHealthCheckResult[]; }
+export interface ShareablePassportClinicalRecord extends ShareablePassportSource { readonly reference: string; readonly recordType: ClinicalRecordType; readonly title: string; readonly summary: string | null; readonly occurredAt: string; readonly finalizedAt: string; readonly provider: ShareablePassportProvider; }
+export interface ShareableHealthPassport { readonly patient: { readonly patientReference: string; readonly displayName: string; readonly dateOfBirth: string | null }; readonly authorization: { readonly includesHealthPassport: boolean; readonly includesFinalizedClinicalRecords: boolean }; readonly guidedSelfChecks: readonly ShareablePassportGuidedSelfCheck[]; readonly reportedHealthHistory: readonly ShareablePassportHistory[]; readonly reportedMeasurements: readonly ShareablePassportMeasurement[]; readonly healthChecks: readonly ShareablePassportHealthCheck[]; readonly clinicalRecords: readonly ShareablePassportClinicalRecord[]; }
 
 export interface ClinicalRecordAccessPage<T> {
   readonly items: readonly T[];

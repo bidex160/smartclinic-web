@@ -25,8 +25,8 @@ export class HealthRecordSharingPageComponent {
   openRevoke(grant: ClinicalRecordAccessGrant): void { if (grant.status === 'ACTIVE' && !this.revoking()) this.revokeTarget.set(grant); }
   cancelRevoke(): void { if (!this.revoking()) this.revokeTarget.set(null); }
   confirmRevoke(): void { const grant = this.revokeTarget(); if (!grant || grant.status !== 'ACTIVE' || this.revoking()) return; this.revoking.set(grant.reference); this.mutationError.set(''); this.api.revokeAccessGrant(grant.reference).pipe(finalize(() => this.revoking.set(null))).subscribe({ next: revoked => { this.grants.update(items => items.map(item => item.reference === revoked.reference ? revoked : item)); this.revokeTarget.set(null); }, error: () => this.mutationError.set('Unable to revoke access. Please refresh and try again.') }); }
-  scopeLabel(g: ClinicalRecordAccessGrant): string { return g.scope === 'ALL_RECORDS' ? 'All records' : g.scope === 'RECORD_TYPE' ? 'Record type' : 'Single record'; }
-  accessLabel(g: ClinicalRecordAccessGrant): string { return g.scope === 'ALL_RECORDS' ? 'All finalized health records' : g.scope === 'RECORD_TYPE' ? `${this.typeLabel(g.recordType)} records` : g.clinicalRecord?.title ?? 'Selected health record'; }
+  scopeLabel(g: ClinicalRecordAccessGrant): string { return g.scope === 'HEALTH_PASSPORT' ? 'Health Passport' : g.scope === 'ALL_RECORDS' ? 'All health records' : g.scope === 'RECORD_TYPE' ? 'Record type' : 'Single record'; }
+  accessLabel(g: ClinicalRecordAccessGrant): string { return g.scope === 'HEALTH_PASSPORT' ? 'Shareable Health Passport only' : g.scope === 'ALL_RECORDS' ? 'Health Passport + finalized clinical records' : g.scope === 'RECORD_TYPE' ? `${this.typeLabel(g.recordType)} records` : g.clinicalRecord?.title ?? 'Selected health record'; }
   statusLabel(v: string): string { return v[0] + v.slice(1).toLowerCase(); }
   typeLabel(v: string | null): string { return v ? v.split('_').map(x => x[0] + x.slice(1).toLowerCase()).join(' ') : '—'; }
   date(v: string): string { return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(v)); }

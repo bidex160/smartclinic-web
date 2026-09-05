@@ -37,6 +37,7 @@ describe('ClinicalRecordsApiService', () => {
     api.listShared().subscribe(); http.expectOne(r => r.url === '/api/v1/provider/shared-clinical-records').flush({ items: [] });
     api.getShared('SC-CLR-1').subscribe(); http.expectOne('/api/v1/provider/shared-clinical-records/SC-CLR-1').flush({});
     api.getSharedAttachmentAccess('SC-CLR-1', 'SC-CLA-1').subscribe(); http.expectOne('/api/v1/provider/shared-clinical-records/SC-CLR-1/attachments/SC-CLA-1/access').flush({ url: 'https://example.test', expiresAt: '2026-08-29T11:00:00Z' });
+    api.getSharedHealthPassport('SCP-AB12-CD34').subscribe(); const passport = http.expectOne('/api/v1/provider/shared-health-passports/SCP-AB12-CD34'); expect(passport.request.method).toBe('GET'); passport.flush({});
   });
   it('maps provider and patient access-request routes with exact bodies and references', () => {
     const body = { patientReference: 'SCP-AB12-CD34', scope: 'RECORD_TYPE' as const, recordType: 'LAB_RESULT' as const, reason: 'Coordinate care', requestedExpiresAt: '2026-09-20T12:00:00.000Z' };

@@ -25,6 +25,9 @@ export interface RegisterRequest {
   readonly email: string;
   readonly phone?: string;
   readonly password: string;
+  readonly countryCode: string;
+  readonly stateOrRegion: string;
+  readonly city: string;
 }
 
 export type AuthSessionResponse = LoginResponse;

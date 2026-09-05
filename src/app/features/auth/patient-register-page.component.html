@@ -111,6 +111,92 @@
 
 
         </div>
+      <div>
+  <label for="register-country" class="block text-sm font-bold">
+    Country
+  </label>
+
+  <select
+    id="register-country"
+    formControlName="countryCode"
+    autocomplete="country"
+    (change)="onCountryChange()"
+    [attr.aria-invalid]="invalid('countryCode')"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 focus:border-brand-600 focus:ring-4 focus:ring-brand-100"
+  >
+    <option value="">Select country</option>
+
+    @for (country of countries; track country.isoCode) {
+      <option [value]="country.isoCode">
+        {{ country.name }}
+      </option>
+    }
+  </select>
+
+  @if (invalid('countryCode')) {
+    <p class="mt-2 text-sm font-semibold text-red-700">
+      Select your country.
+    </p>
+  }
+</div>
+
+<div>
+  <label for="register-state" class="block text-sm font-bold">
+    State / region
+  </label>
+
+  <select
+    id="register-state"
+    formControlName="stateOrRegion"
+    autocomplete="address-level1"
+    [disabled]="!form.controls.countryCode.value"
+    (change)="onStateChange()"
+    [attr.aria-invalid]="invalid('stateOrRegion')"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 focus:border-brand-600 focus:ring-4 focus:ring-brand-100 disabled:bg-slate-100"
+  >
+    <option value="">Select state or region</option>
+
+    @for (state of states; track state.isoCode) {
+      <option [value]="state.name">
+        {{ state.name }}
+      </option>
+    }
+  </select>
+
+  @if (invalid('stateOrRegion')) {
+    <p class="mt-2 text-sm font-semibold text-red-700">
+      Select your state or region.
+    </p>
+  }
+</div>
+<div class="sm:col-span-2">
+  <label for="register-city" class="block text-sm font-bold">
+    City
+  </label>
+
+  <select
+    id="register-city"
+    formControlName="city"
+    autocomplete="address-level2"
+    [disabled]="!form.controls.stateOrRegion.value"
+    [attr.aria-invalid]="invalid('city')"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 focus:border-brand-600 focus:ring-4 focus:ring-brand-100 disabled:bg-slate-100"
+  >
+    <option value="">Select city</option>
+
+    @for (city of cities; track city.name) {
+      <option [value]="city.name">
+        {{ city.name }}
+      </option>
+    }
+  </select>
+
+  @if (invalid('city')) {
+    <p class="mt-2 text-sm font-semibold text-red-700">
+      Select your city.
+    </p>
+  }
+</div>
         <div class="sm:col-span-2">
           <label for="register-password" class="block text-sm font-bold"> Password </label>
 

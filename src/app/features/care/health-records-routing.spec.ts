@@ -16,7 +16,7 @@ describe('Health Records routing', () => {
       expect(me?.children?.find(route => route.path === path)?.canActivate).toContain(authenticatedUserGuard);
     }
     const provider = routes.find(route => route.path === 'provider');
-    for (const path of ['shared-health-records', 'shared-health-records/:reference', 'health-record-access']) {
+    for (const path of ['shared-health-records', 'shared-health-records/:reference', 'shared-health-passports/:patientReference', 'health-record-access']) {
       expect(provider?.children?.find(route => route.path === path)?.canActivate).toContain(providerGuard);
     }
   });

@@ -15,8 +15,18 @@ describe('HealthRecordSharingPageComponent', () => {
     ];
     await TestBed.configureTestingModule({ imports: [HealthRecordSharingPageComponent], providers: [provideRouter([]), { provide: ClinicalRecordsApiService, useValue: { listAccessGrants: () => of({ items: grants }) } }] }).compileComponents();
     const fixture: ComponentFixture<HealthRecordSharingPageComponent> = TestBed.createComponent(HealthRecordSharingPageComponent); fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('All finalized health records'); expect(fixture.nativeElement.textContent).toContain('Consultation records'); expect(fixture.nativeElement.textContent).toContain('Expired'); expect(fixture.nativeElement.textContent).toContain('Revoked');
+    expect(fixture.nativeElement.textContent).toContain('Health Passport + finalized clinical records'); expect(fixture.nativeElement.textContent).toContain('Consultation records'); expect(fixture.nativeElement.textContent).toContain('Expired'); expect(fixture.nativeElement.textContent).toContain('Revoked');
     expect(fixture.nativeElement.querySelectorAll('button').length).toBe(1);
+  });
+
+  it('renders a Health Passport-only grant without changing connection state', async () => {
+    const passport = { ...active, reference: 'SC-CRG-P', scope: 'HEALTH_PASSPORT' as const };
+    const revokeAccessGrant = vi.fn(() => of({ ...passport, status: 'REVOKED' }));
+    await TestBed.configureTestingModule({ imports: [HealthRecordSharingPageComponent], providers: [provideRouter([]), { provide: ClinicalRecordsApiService, useValue: { listAccessGrants: () => of({ items: [passport] }), revokeAccessGrant } }] }).compileComponents();
+    const fixture = TestBed.createComponent(HealthRecordSharingPageComponent); fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Shareable Health Passport only');
+    fixture.componentInstance.openRevoke(passport); fixture.componentInstance.confirmRevoke();
+    expect(revokeAccessGrant).toHaveBeenCalledWith('SC-CRG-P');
   });
 
   it('confirms revocation, prevents double submit, and replaces the row with the backend response', async () => {
