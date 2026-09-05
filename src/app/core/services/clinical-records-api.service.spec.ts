@@ -38,4 +38,12 @@ describe('ClinicalRecordsApiService', () => {
     api.getShared('SC-CLR-1').subscribe(); http.expectOne('/api/v1/provider/shared-clinical-records/SC-CLR-1').flush({});
     api.getSharedAttachmentAccess('SC-CLR-1', 'SC-CLA-1').subscribe(); http.expectOne('/api/v1/provider/shared-clinical-records/SC-CLR-1/attachments/SC-CLA-1/access').flush({ url: 'https://example.test', expiresAt: '2026-08-29T11:00:00Z' });
   });
+  it('maps provider and patient access-request routes with exact bodies and references', () => {
+    const body = { patientReference: 'SCP-AB12-CD34', scope: 'RECORD_TYPE' as const, recordType: 'LAB_RESULT' as const, reason: 'Coordinate care', requestedExpiresAt: '2026-09-20T12:00:00.000Z' };
+    api.createProviderAccessRequest(body).subscribe(); const create = http.expectOne('/api/v1/provider/clinical-record-access-requests'); expect(create.request.method).toBe('POST'); expect(create.request.body).toEqual(body); create.flush({});
+    api.listProviderAccessRequests(2, 10).subscribe(); const providerList = http.expectOne(r => r.url === '/api/v1/provider/clinical-record-access-requests'); expect(providerList.request.params.get('page')).toBe('2'); expect(providerList.request.params.get('limit')).toBe('10'); providerList.flush({ items: [] });
+    api.listPatientAccessRequests(3, 20).subscribe(); const patientList = http.expectOne(r => r.url === '/api/v1/me/clinical-record-access-requests'); expect(patientList.request.params.get('page')).toBe('3'); patientList.flush({ items: [] });
+    api.approveAccessRequest('SC-CRA-ABC').subscribe(); const approve = http.expectOne('/api/v1/me/clinical-record-access-requests/SC-CRA-ABC/approve'); expect(approve.request.method).toBe('POST'); expect(approve.request.body).toBeNull(); approve.flush({});
+    api.declineAccessRequest('SC-CRA-ABC').subscribe(); const decline = http.expectOne('/api/v1/me/clinical-record-access-requests/SC-CRA-ABC/decline'); expect(decline.request.method).toBe('POST'); expect(decline.request.body).toBeNull(); decline.flush({});
+  });
 });

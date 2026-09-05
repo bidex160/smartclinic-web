@@ -102,9 +102,9 @@ function session(): LoginResponse {
     accessToken: 'restored-token',
     user: {
       id: 'id',
-      email: 'admin@example.test',
-      displayName: 'Admin',
-      roles: ['ADMIN'],
+      email: null,
+      displayName: 'Patient',
+      roles: ['USER'],
       status: 'ACTIVE',
     },
   };

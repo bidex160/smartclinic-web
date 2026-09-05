@@ -157,10 +157,10 @@ export class PharmacyFulfillmentApiService {
       `${this.base}/me/pharmacy-quotes/${this.enc(ref)}/funding`,
     );
   }
-  initializeFunding(ref: string) {
+  initializeFunding(ref: string, request?: import('../models/payment-email.model').PaymentEmailRequest) {
     return this.http.post<PharmacyFundingResponse>(
       `${this.base}/me/pharmacy-quotes/${this.enc(ref)}/funding/initialize`,
-      null,
+      request ?? null,
     );
   }
   verifyFunding(ref: string) {

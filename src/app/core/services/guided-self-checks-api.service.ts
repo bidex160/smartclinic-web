@@ -32,10 +32,10 @@ export class GuidedSelfChecksApiService {
       `${this.base}/me/guided-self-checks/${reference}/funding`,
     );
   }
-  initializeFunding(reference: string) {
+  initializeFunding(reference: string, request?: import('../models/payment-email.model').PaymentEmailRequest) {
     return this.http.post<GuidedSelfCheckFunding>(
       `${this.base}/me/guided-self-checks/${reference}/funding/initialize`,
-      {},
+      request ?? {},
     );
   }
   verifyFunding(reference: string) {

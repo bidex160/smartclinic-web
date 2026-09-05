@@ -44,10 +44,10 @@ describe('GuidedSelfChecksApiService', () => {
     });
   });
   it('uses authoritative funding initialization and verification endpoints', () => {
-    api.initializeFunding('SC-GSC-A').subscribe();
-    expect(
-      http.expectOne('/api/v1/me/guided-self-checks/SC-GSC-A/funding/initialize').request.method,
-    ).toBe('POST');
+    api.initializeFunding('SC-GSC-A', { paymentEmail: 'ada@example.com' }).subscribe();
+    const initialize = http.expectOne('/api/v1/me/guided-self-checks/SC-GSC-A/funding/initialize');
+    expect(initialize.request.method).toBe('POST');
+    expect(initialize.request.body).toEqual({ paymentEmail: 'ada@example.com' });
     api.verifyFunding('SC-GSC-A').subscribe();
     expect(
       http.expectOne('/api/v1/me/guided-self-checks/SC-GSC-A/funding/verify-latest').request.method,

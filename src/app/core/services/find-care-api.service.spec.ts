@@ -80,12 +80,13 @@ describe('Find Care API services', () => {
     expect(create.request.body).toEqual(body);
     expect(create.request.body.feeMinor).toBeUndefined();
     create.flush({});
-    fast.initializePayment('SC-FT-ABCDEF0123456789').subscribe();
-    http
+    fast.initializePayment('SC-FT-ABCDEF0123456789', { paymentEmail: 'ada@example.com' }).subscribe();
+    const initialize = http
       .expectOne(
         'http://api.test/api/v1/me/fasttrack-requests/SC-FT-ABCDEF0123456789/funding/initialize',
-      )
-      .flush({});
+      );
+    expect(initialize.request.body).toEqual({ paymentEmail: 'ada@example.com' });
+    initialize.flush({});
     fast.verifyPayment('SC-FT-ABCDEF0123456789').subscribe();
     http
       .expectOne(

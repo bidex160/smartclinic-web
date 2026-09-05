@@ -31,10 +31,10 @@ export class FastTrackApiService {
       `${this.base}/me/fasttrack-requests/${encodeURIComponent(reference)}`,
     );
   }
-  initializePayment(reference: string): Observable<FastTrackPaymentStatus> {
+  initializePayment(reference: string, request?: import('../models/payment-email.model').PaymentEmailRequest): Observable<FastTrackPaymentStatus> {
     return this.http.post<FastTrackPaymentStatus>(
       `${this.base}/me/fasttrack-requests/${encodeURIComponent(reference)}/funding/initialize`,
-      null,
+      request ?? null,
     );
   }
   getPayment(reference: string): Observable<FastTrackPaymentStatus> {

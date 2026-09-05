@@ -7,10 +7,12 @@ import {
   ClinicalRecordAccessGrant,
   ClinicalRecordAccessPage,
   ClinicalRecordAccessProvider,
+  ClinicalRecordAccessRequest,
   ClinicalRecordAttachment,
   ClinicalRecordAttachmentAccess,
   ClinicalRecordPage,
   CreateClinicalRecordAccessGrantRequest,
+  CreateClinicalRecordAccessRequest,
   CreateClinicalRecordRequest,
   UpdateClinicalRecordRequest,
   SharedClinicalRecord,
@@ -98,6 +100,26 @@ export class ClinicalRecordsApiService {
 
   listAccessAudit(page = 1, limit = 20) {
     return this.http.get<ClinicalRecordAccessPage<ClinicalRecordAccessAudit>>(`${this.base}/me/clinical-record-access-audit`, { params: new HttpParams().set('page', page).set('limit', limit) });
+  }
+
+  createProviderAccessRequest(body: CreateClinicalRecordAccessRequest) {
+    return this.http.post<ClinicalRecordAccessRequest>(`${this.base}/provider/clinical-record-access-requests`, body);
+  }
+
+  listProviderAccessRequests(page = 1, limit = 20) {
+    return this.http.get<ClinicalRecordAccessPage<ClinicalRecordAccessRequest>>(`${this.base}/provider/clinical-record-access-requests`, { params: new HttpParams().set('page', page).set('limit', limit) });
+  }
+
+  listPatientAccessRequests(page = 1, limit = 20) {
+    return this.http.get<ClinicalRecordAccessPage<ClinicalRecordAccessRequest>>(`${this.base}/me/clinical-record-access-requests`, { params: new HttpParams().set('page', page).set('limit', limit) });
+  }
+
+  approveAccessRequest(reference: string) {
+    return this.http.post<ClinicalRecordAccessRequest>(`${this.base}/me/clinical-record-access-requests/${encodeURIComponent(reference)}/approve`, null);
+  }
+
+  declineAccessRequest(reference: string) {
+    return this.http.post<ClinicalRecordAccessRequest>(`${this.base}/me/clinical-record-access-requests/${encodeURIComponent(reference)}/decline`, null);
   }
 
   listShared(page = 1, limit = 20) {

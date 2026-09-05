@@ -12,11 +12,11 @@ describe('Health Records routing', () => {
   });
   it('registers guarded sharing, audit and provider shared-record routes', () => {
     const me = routes.find(route => route.path === 'me');
-    for (const path of ['health-records/sharing', 'health-records/sharing/new', 'health-records/sharing/:reference', 'health-records/access-history']) {
+    for (const path of ['health-records/sharing', 'health-records/sharing/new', 'health-records/sharing/:reference', 'health-records/access-history', 'health-records/access-requests']) {
       expect(me?.children?.find(route => route.path === path)?.canActivate).toContain(authenticatedUserGuard);
     }
     const provider = routes.find(route => route.path === 'provider');
-    for (const path of ['shared-health-records', 'shared-health-records/:reference']) {
+    for (const path of ['shared-health-records', 'shared-health-records/:reference', 'health-record-access']) {
       expect(provider?.children?.find(route => route.path === path)?.canActivate).toContain(providerGuard);
     }
   });

@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
 import { finalize, forkJoin } from 'rxjs';
 import { FastTrackPaymentStatus, FastTrackRequest } from '../../core/models/find-care.model';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { UtilsService } from '../../core/services/utils.service';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 @Component({
   selector: 'app-fasttrack-detail-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/me/fasttrack" class="font-bold text-brand-700 underline"
@@ -89,6 +90,7 @@ import { UtilsService } from '../../core/services/utils.service';
           <p class="mt-2 text-sm">
             Popup completion is not payment proof. SmartClinic confirms payment with the backend.
           </p>
+          <app-payment-contact-email />
           <button
             type="button"
             (click)="pay()"
@@ -117,6 +119,7 @@ import { UtilsService } from '../../core/services/utils.service';
   </main>`,
 })
 export class FastTrackDetailPageComponent {
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   private readonly api = inject(FastTrackApiService);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
@@ -151,10 +154,14 @@ export class FastTrackDetailPageComponent {
     if (this.paying()) return;
     const r = this.request();
     if (!r || !['READY_FOR_PAYMENT', 'PAYMENT_PENDING'].includes(r.status)) return;
+    const paymentEmail = this.paymentContact?.request();
+    if (paymentEmail === null) return;
     this.paying.set(true);
     this.error.set(null);
-    this.api
-      .initializePayment(this.reference)
+    const initialization = paymentEmail
+      ? this.api.initializePayment(this.reference, paymentEmail)
+      : this.api.initializePayment(this.reference);
+    initialization
       .pipe(finalize(() => this.paying.set(false)))
       .subscribe({
         next: (p) => {
@@ -168,7 +175,13 @@ export class FastTrackDetailPageComponent {
             onError: () => this.error.set('Payment was not completed. You can safely try again.'),
           });
         },
-        error: () => this.error.set('We could not start secure payment. Try again.'),
+        error: (error) =>
+          this.error.set(
+            error?.status === 400 &&
+              error?.error?.message === 'A valid payment email is required to continue'
+              ? error.error.message
+              : 'We could not start secure payment. Try again.',
+          ),
       });
   }
   verify() {

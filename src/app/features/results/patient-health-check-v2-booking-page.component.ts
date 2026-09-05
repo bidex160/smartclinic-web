@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -11,9 +12,11 @@ import {
   HealthCheckProviderOffering,
 } from '../../core/models/health-check-package.model';
 import { PublicBookingResponse } from '../../core/models/public-booking.model';
+import { ProviderRecruitmentInvitationResponse } from '../../core/models/provider-recruitment-invitation.model';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
+import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
 import { formatEarningMoney } from '../provider/provider-earning-presentation';
 import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
 
@@ -32,6 +35,7 @@ export class PatientHealthCheckV2BookingPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly locations = inject(LocationDataService);
+  private readonly providerInvitations = inject(ProviderRecruitmentInvitationsApiService);
 
   readonly steps = ['Appointment', 'Provider', 'Customise', 'Review & Pay'] as const;
   readonly currentStep = signal<BookingStep>(1);
@@ -75,6 +79,37 @@ export class PatientHealthCheckV2BookingPageComponent {
     }),
   });
 
+  showProviderInvitation = signal(false);
+
+  submittingProviderInvitation = signal(false);
+
+  providerInvitationSuccess = signal<ProviderRecruitmentInvitationResponse | null>(null);
+
+  providerInvitationError = signal<string | null>(null);
+
+  providerInvitationContactError = signal<string | null>(null);
+
+  providerInvitationContext = signal<{
+    source: 'HEALTH_CHECK_NO_PROVIDER';
+    packageCode: string;
+    fulfilmentModeCode: string;
+    preferredDate: string;
+    preferredTime: string;
+    countryCode: string;
+    stateOrRegion: string;
+    city: string;
+  } | null>(null);
+
+  providerInviteForm = this.fb.nonNullable.group({
+    organisationName: [
+      '',
+      [Validators.required, Validators.pattern(/\S/), Validators.maxLength(160)],
+    ],
+
+    email: ['', [Validators.email, Validators.maxLength(254)]],
+
+    phone: ['', [Validators.maxLength(32)]],
+  });
   constructor() {
     this.states.set(this.locations.getStates('NG'));
     this.loadCatalogue();
@@ -340,5 +375,150 @@ export class PatientHealthCheckV2BookingPageComponent {
       if (typeof content?.scrollIntoView === 'function')
         content.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+  }
+
+  openProviderInvitation(): void {
+    const value = this.form.getRawValue();
+
+    this.providerInvitationError.set(null);
+    this.providerInvitationContactError.set(null);
+    this.providerInvitationSuccess.set(null);
+
+    this.providerInviteForm.reset({
+      organisationName: '',
+      email: '',
+      phone: '',
+    });
+
+    this.providerInvitationContext.set({
+      source: 'HEALTH_CHECK_NO_PROVIDER',
+
+      packageCode: value.packageCode ?? '',
+
+      fulfilmentModeCode: value.fulfilmentModeCode ?? '',
+
+      preferredDate: value.preferredDate ?? '',
+
+      preferredTime: value.preferredTime ?? '',
+
+      countryCode: value.address.countryCode,
+
+      stateOrRegion: value.address?.stateOrRegion ?? '',
+
+      city: value.address?.city ?? '',
+    });
+
+    this.showProviderInvitation.set(true);
+  }
+
+  closeProviderInvitation(): void {
+    if (this.submittingProviderInvitation()) {
+      return;
+    }
+
+    this.showProviderInvitation.set(false);
+
+    this.providerInvitationContext.set(null);
+
+    this.providerInvitationSuccess.set(null);
+
+    this.providerInvitationError.set(null);
+
+    this.providerInvitationContactError.set(null);
+
+    this.providerInviteForm.reset({
+      organisationName: '',
+      email: '',
+      phone: '',
+    });
+  }
+
+  submitProviderInvitation(): void {
+    if (this.submittingProviderInvitation()) return;
+    this.providerInvitationError.set(null);
+    this.providerInvitationContactError.set(null);
+
+    const untrimmed = this.providerInviteForm.getRawValue();
+    this.providerInviteForm.patchValue({
+      organisationName: untrimmed.organisationName.trim(),
+      email: untrimmed.email.trim(),
+      phone: untrimmed.phone.trim(),
+    });
+
+    this.providerInviteForm.markAllAsTouched();
+
+    if (this.providerInviteForm.invalid) {
+      return;
+    }
+
+    const context = this.providerInvitationContext();
+
+    if (!context) {
+      this.providerInvitationError.set(
+        'The Health Check invitation context is unavailable. Please close this window and try again.',
+      );
+
+      return;
+    }
+
+    const formValue = this.providerInviteForm.getRawValue();
+
+    const organisationName = formValue.organisationName.trim();
+
+    const email = formValue.email.trim();
+
+    const phone = formValue.phone.trim();
+
+    if (!email && !phone) {
+      this.providerInvitationContactError.set(
+        'Provide either an email address or phone number for the provider.',
+      );
+
+      return;
+    }
+
+    const payload = {
+      organisationName,
+
+      ...(email
+        ? {
+            email,
+          }
+        : {}),
+
+      ...(phone
+        ? {
+            phone,
+          }
+        : {}),
+
+      source: context.source,
+
+      packageCode: context.packageCode,
+
+      fulfilmentModeCode: context.fulfilmentModeCode,
+
+      ...(context.preferredDate ? { preferredDate: context.preferredDate } : {}),
+      ...(context.preferredTime ? { preferredTime: context.preferredTime } : {}),
+      ...(context.countryCode ? { countryCode: context.countryCode.toUpperCase() } : {}),
+      ...(context.stateOrRegion ? { stateOrRegion: context.stateOrRegion.trim() } : {}),
+      ...(context.city ? { city: context.city.trim() } : {}),
+    };
+
+    this.submittingProviderInvitation.set(true);
+    this.providerInvitations
+      .create(payload)
+      .pipe(finalize(() => this.submittingProviderInvitation.set(false)))
+      .subscribe({
+        next: (invitation) => this.providerInvitationSuccess.set(invitation),
+        error: (error: HttpErrorResponse) => {
+          const message = error.error?.message;
+          this.providerInvitationError.set(
+            (error.status === 400 || error.status === 409) && typeof message === 'string'
+              ? message
+              : 'The provider invitation could not be submitted. Please try again.',
+          );
+        },
+      });
   }
 }

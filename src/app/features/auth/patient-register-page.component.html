@@ -61,34 +61,55 @@
             <p class="mt-2 text-sm font-semibold text-red-700">Enter your last name.</p>
           }
         </div>
-        <div class="sm:col-span-2">
-          <label for="register-email" class="block text-sm font-bold">Email</label
-          ><input
-            id="register-email"
-            type="email"
-            formControlName="email"
-            autocomplete="email"
-            placeholder="e.g. ada@example.com"
-            maxlength="254"
-            [attr.aria-invalid]="invalid('email')"
-            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:ring-4 focus:ring-brand-100"
-          />
-          @if (invalid('email')) {
-            <p class="mt-2 text-sm font-semibold text-red-700">Enter a valid email address.</p>
-          }
-        </div>
+     <div class="sm:col-span-2">
+  <label for="register-email" class="block text-sm font-bold">
+    Email
+  </label>
+
+  <input
+    id="register-email"
+    type="email"
+    formControlName="email"
+    autocomplete="email"
+    placeholder="e.g. ada@example.com"
+    maxlength="254"
+    [attr.aria-invalid]="invalid('email')"
+    class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:ring-4 focus:ring-brand-100"
+  />
+
+  <p class="mt-2 text-sm text-slate-500">
+    We currently require an email address for payments and account recovery.
+  </p>
+
+  @if (invalid('email')) {
+    <p class="mt-2 text-sm font-semibold text-red-700">
+      Enter a valid email address.
+    </p>
+  }
+</div>
         <div class="sm:col-span-2">
           <label for="register-phone" class="block text-sm font-bold"
             >Phone <span class="font-normal text-slate-500">(optional)</span></label
-          ><input
-            id="register-phone"
-            type="tel"
-            formControlName="phone"
-            autocomplete="tel"
-            placeholder="e.g. +234 800 000 0000"
-            maxlength="30"
-            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:ring-4 focus:ring-brand-100"
-          />
+          >
+          
+         <input
+  id="register-phone"
+  type="tel"
+  formControlName="phone"
+  autocomplete="tel"
+  placeholder="e.g. +234 800 000 0000"
+  maxlength="30"
+  [attr.aria-invalid]="invalid('phone')"
+  class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:ring-4 focus:ring-brand-100"
+/>
+
+@if (invalid('phone')) {
+  <p class="mt-2 text-sm font-semibold text-red-700">
+    Enter a valid phone number.
+  </p>
+}
+
+
         </div>
         <div class="sm:col-span-2">
           <label for="register-password" class="block text-sm font-bold"> Password </label>

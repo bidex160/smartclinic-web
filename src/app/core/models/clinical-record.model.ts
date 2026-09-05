@@ -106,6 +106,9 @@ export interface ClinicalRecordPage {
 export type ClinicalRecordAccessScope = 'ALL_RECORDS' | 'RECORD_TYPE' | 'SINGLE_RECORD';
 export type ClinicalRecordAccessGrantStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED';
 export type ClinicalRecordAccessAction = 'VIEW' | 'ATTACHMENT_ACCESS';
+export type ClinicalRecordAccessRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'EXPIRED';
+export type ClinicalRecordAccessConnectionStatus =
+  | 'AWAITING_FUNDING' | 'SUBMITTED' | 'UNABLE_TO_VERIFY' | 'CONNECTED' | 'REJECTED' | 'CANCELLED';
 
 export interface ClinicalRecordProviderSummary {
   readonly providerReference: string;
@@ -144,6 +147,37 @@ export interface CreateClinicalRecordAccessGrantRequest {
   readonly recordType?: ClinicalRecordType;
   readonly clinicalRecordReference?: string;
   readonly expiresAt?: string | null;
+}
+
+export interface CreateClinicalRecordAccessRequest {
+  readonly patientReference: string;
+  readonly scope: ClinicalRecordAccessScope;
+  readonly recordType?: ClinicalRecordType;
+  readonly clinicalRecordReference?: string;
+  readonly reason: string;
+  readonly requestedExpiresAt?: string | null;
+}
+
+export interface ClinicalRecordAccessRequest {
+  readonly reference: string;
+  readonly patient: { readonly patientReference: string };
+  readonly provider: ClinicalRecordProviderSummary;
+  readonly scope: ClinicalRecordAccessScope;
+  readonly recordType: ClinicalRecordType | null;
+  readonly clinicalRecordReference: string | null;
+  readonly reason: string;
+  readonly requestedExpiresAt: string | null;
+  readonly status: ClinicalRecordAccessRequestStatus;
+  readonly expiresAt: string;
+  readonly respondedAt: string | null;
+  readonly approvedGrantReference: string | null;
+  readonly connection?: {
+    readonly eligible: boolean;
+    readonly reference: string | null;
+    readonly status: ClinicalRecordAccessConnectionStatus | null;
+  };
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 export interface ClinicalRecordAccessAudit {

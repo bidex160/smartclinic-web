@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
@@ -10,9 +10,10 @@ import {
   ProviderOrderFulfillment,
 } from '../../core/models/pharmacy-fulfillment.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 @Component({
   selector: 'app-prescription-detail-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
     <a routerLink="/me/prescriptions" class="font-bold text-brand-700 underline">← Prescriptions</a>
@@ -105,6 +106,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                     ></label
                   >
                 }
+                <app-payment-contact-email />
                 <button
                   type="button"
                   (click)="acceptQuote(q.reference)"
@@ -201,6 +203,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   </main>`,
 })
 export class PrescriptionDetailPageComponent {
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   private api = inject(PharmacyFulfillmentApiService);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
@@ -283,6 +286,8 @@ export class PrescriptionDetailPageComponent {
       });
   }
   pay(ref: string) {
+    const paymentEmail = this.paymentContact?.request();
+    if (paymentEmail === null) return;
     this.pending.set(true);
     this.api.getFunding(ref).subscribe({
       next: (state) => {
@@ -291,7 +296,10 @@ export class PrescriptionDetailPageComponent {
           this.pending.set(false);
           return;
         }
-        this.api.initializeFunding(ref).subscribe({
+        const initialization = paymentEmail
+          ? this.api.initializeFunding(ref, paymentEmail)
+          : this.api.initializeFunding(ref);
+        initialization.subscribe({
           next: (init) => {
             if (init.fundingStatus === 'SATISFIED_FREE') {
               this.refreshFulfillment();
@@ -322,8 +330,13 @@ export class PrescriptionDetailPageComponent {
               },
             });
           },
-          error: () => {
-            this.error.set('Payment could not be initialized.');
+          error: (error) => {
+            this.error.set(
+              error?.status === 400 &&
+                error?.error?.message === 'A valid payment email is required to continue'
+                ? error.error.message
+                : 'Payment could not be initialized.',
+            );
             this.pending.set(false);
           },
         });

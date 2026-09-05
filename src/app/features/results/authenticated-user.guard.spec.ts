@@ -10,7 +10,7 @@ describe('authenticatedUserGuard', () => {
       accessToken: 'token',
       user: {
         id: '1',
-        email: 'user@example.test',
+        email: null,
         displayName: 'User',
         roles: ['USER'],
         status: 'ACTIVE',

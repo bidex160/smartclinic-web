@@ -61,7 +61,7 @@ export interface PatientDashboard {
 }
 
 export interface PatientPortalProfile {
-  readonly user: { readonly displayName: string; readonly email: string };
+  readonly user: { readonly displayName: string; readonly email: string | null };
   readonly patient: {
     readonly patientReference: string;
     readonly givenName: string;

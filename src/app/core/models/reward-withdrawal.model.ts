@@ -18,7 +18,7 @@ export interface RewardWithdrawal {
 }
 
 export interface AdminRewardWithdrawal extends Omit<RewardWithdrawal, 'maskedAccountNumber'> {
-  readonly user?: { readonly displayName: string; readonly email: string };
+  readonly user?: { readonly displayName: string; readonly email: string | null };
   readonly accountNumber: string;
   readonly conversionRate: { readonly points: number; readonly amount: string };
   readonly externalReference: string | null;

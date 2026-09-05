@@ -3,7 +3,7 @@ export type UserStatus = 'ACTIVE' | 'INVITED' | 'SUSPENDED' | 'DEACTIVATED';
 
 export interface CurrentUser {
   readonly id: string;
-  readonly email: string;
+  readonly email: string | null;
   readonly displayName: string;
   readonly roles: UserRole[];
   readonly status: UserStatus;

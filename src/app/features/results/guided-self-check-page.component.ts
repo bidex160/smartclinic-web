@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
+  ViewChild,
   computed,
   inject,
   signal,
@@ -19,9 +20,10 @@ import {
 } from '../../core/models/guided-self-check.model';
 import { GuidedSelfChecksApiService } from '../../core/services/guided-self-checks-api.service';
 import { formatEarningMoney } from '../provider/provider-earning-presentation';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 @Component({
   selector: 'app-guided-self-check-page',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-3xl px-5 py-8 sm:px-8">
     <a routerLink="/me/self-checks" class="font-bold text-brand-700">← My Self-Checks</a>
@@ -155,6 +157,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
               Self-Check price: <strong>{{ money(f.amountMinor, f.currency) }}</strong>
             </p>
             <p class="mt-2 text-slate-600">Payment status: {{ fundingLabel(f.fundingStatus) }}</p>
+            <app-payment-contact-email />
             <button
               type="button"
               (click)="pay()"
@@ -382,6 +385,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
   </main>`,
 })
 export class GuidedSelfCheckPageComponent implements OnDestroy {
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   private readonly api = inject(GuidedSelfChecksApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -478,10 +482,14 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
   }
   pay() {
     if (this.busy()) return;
+    const paymentEmail = this.paymentContact?.request();
+    if (paymentEmail === null) return;
     this.busy.set(true);
     this.actionError.set('');
-    this.api
-      .initializeFunding(this.reference)
+    const initialization = paymentEmail
+      ? this.api.initializeFunding(this.reference, paymentEmail)
+      : this.api.initializeFunding(this.reference);
+    initialization
       .pipe(finalize(() => this.busy.set(false)))
       .subscribe({
         next: (v) => {
@@ -497,7 +505,13 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
             });
           else this.actionError.set('Secure payment could not be opened. Please try again.');
         },
-        error: () => this.actionError.set('We could not start payment. Please try again.'),
+        error: (error) =>
+          this.actionError.set(
+            error?.status === 400 &&
+              error?.error?.message === 'A valid payment email is required to continue'
+              ? error.error.message
+              : 'We could not start payment. Please try again.',
+          ),
       });
   }
   verify() {

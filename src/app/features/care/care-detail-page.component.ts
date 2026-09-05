@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CareRequest, CareRequestFunding } from '../../core/models/find-care.model';
@@ -10,10 +10,11 @@ import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from './care-delivery-mode';
 import { formatMinor } from '../provider/care-money';
 import PaystackPop from '@paystack/inline-js';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 
 @Component({
   selector: 'app-care-detail-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
@@ -125,6 +126,7 @@ import PaystackPop from '@paystack/inline-js';
                   Payment confirmed. Your provider can schedule your care.
                 </p>
               } @else if (r.status === 'PROVIDER_ACCEPTED' && payment.initializationAllowed) {
+                <app-payment-contact-email />
                 <button
                   type="button"
                   (click)="payNow()"
@@ -267,6 +269,7 @@ import PaystackPop from '@paystack/inline-js';
   `,
 })
 export class CareDetailPageComponent {
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   private readonly api = inject(CareRequestsApiService);
   private readonly chatApi = inject(CareChatApiService);
   private readonly find = inject(FindCareApiService);
@@ -333,6 +336,8 @@ export class CareDetailPageComponent {
       });
   }
   payNow(): void {
+    const paymentEmail = this.paymentContact?.request();
+    if (paymentEmail === null) return;
     const funding = this.funding();
     if (
       this.paymentPending() ||
@@ -343,8 +348,10 @@ export class CareDetailPageComponent {
       return;
     this.paymentPending.set(true);
     this.paymentError.set(null);
-    this.api
-      .initializeFunding(this.reference)
+    const initialization = paymentEmail
+      ? this.api.initializeFunding(this.reference, paymentEmail)
+      : this.api.initializeFunding(this.reference);
+    initialization
       .pipe(finalize(() => this.paymentPending.set(false)))
       .subscribe({
         next: (initialized) => {
@@ -426,7 +433,9 @@ export class CareDetailPageComponent {
   private paymentFailureMessage(error: { status?: number; error?: { message?: unknown } }): string {
     const message = typeof error?.error?.message === 'string' ? error.error.message : '';
     if (error?.status === 409 && message) return message;
-    if (error?.status === 400) return 'A valid account email is required before payment can start.';
+    if (error?.status === 400 && message === 'A valid payment email is required to continue')
+      return message;
+    if (error?.status === 400) return 'Check your payment details and try again.';
     return 'We could not start payment. Refresh the Care Request and try again.';
   }
   private checkFastTrack(r: CareRequest) {

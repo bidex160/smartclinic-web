@@ -1,69 +1,576 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import PaystackPop from '@paystack/inline-js';
 import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token';
 import { HealthCheckRewardPreview } from '../../core/models/health-check-reward-redemption.model';
-import { PublicBookingCheckoutOption, PublicBookingPaymentStatus } from '../../core/models/public-booking.model';
+import {
+  PublicBookingCheckoutOption,
+  PublicBookingPaymentStatus,
+} from '../../core/models/public-booking.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { safePaystackCheckoutUrl } from '../booking/paystack-checkout-url';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 
 @Component({
-  selector: 'app-patient-payment-panel', imports: [ReactiveFormsModule], changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <section class="rounded-2xl border bg-white p-6" aria-labelledby="patient-payment-heading">
-      <h2 id="patient-payment-heading" class="text-xl font-bold text-brand-900">Payment</h2>
-      @if (statusLoading()) { <p role="status" class="mt-4">Loading payment status…</p> }
-      @if (error()) { <div role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ error() }}</div> }
-      @if (status(); as payment) {
-        @if (payment.fundingStatus === 'SETTLED') {
-          <div role="status" class="mt-4 rounded-xl bg-green-50 p-4 text-green-950"><strong>{{ payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount) ? 'Paid with reward points' : 'Payment confirmed' }}</strong><p class="mt-1">{{ payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount) ? 'Your Health Check has been paid for with reward points.' : matchingCopy(payment.bookingStatus) }}</p>@if (payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)) { <p class="mt-1">{{ matchingCopy(payment.bookingStatus) }}</p> }</div>
-          @if (payment.pointsReserved > 0) { <div class="mt-5 rounded-xl border p-4"><p class="flex justify-between gap-4"><span>Reward points used</span><strong>{{ payment.pointsReserved }} points</strong></p><p class="mt-2 flex justify-between gap-4"><span>Reward value</span><strong>−{{ utils.formatMoney(payment.pointsAmount, payment.currency) }}</strong></p></div> }
-        } @else if (!statusLoading()) {
-          <section class="mt-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5" aria-labelledby="patient-rewards-heading"><h3 id="patient-rewards-heading" class="font-bold text-brand-900">Your rewards</h3>
-            @if (rewardsLoading()) { <p role="status" class="mt-3">Loading your reward points…</p> }
-            @else if (rewardsError()) { <div role="alert" class="mt-3"><p>Reward points are temporarily unavailable. You can continue without them.</p><button type="button" (click)="loadRewards()" class="mt-2 font-bold text-brand-700 underline">Try rewards again</button></div> }
-            @else if (preview(); as rewards) {
-              @if (activePoints() > 0 && redemptionStatus() === 'RESERVED') { <div><p class="mt-3 text-lg font-bold">{{ activePoints() }} points reserved</p><p class="mt-1 text-sm text-slate-600">These points remain reserved for this Health Check until payment settles or you remove them.</p><button type="button" (click)="releasePoints()" [disabled]="busy()" class="mt-3 font-bold text-red-700 underline disabled:opacity-50">{{ releasing() ? 'Removing points…' : 'Remove points' }}</button></div> }
-              @else if (rewards.availablePoints === 0) { <p class="mt-3 text-slate-600">You don't have reward points available to use yet.</p> }
-              @else { <p class="mt-3"><strong>{{ rewards.availablePoints }}</strong> points available</p><p class="mt-1 text-sm text-slate-600">Maximum you can use for this Health Check: {{ rewards.maximumRedeemablePoints }} points</p><form [formGroup]="pointsForm" (ngSubmit)="applyPoints()" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"><label class="flex-1 font-semibold">Points to use<input type="number" min="1" step="1" formControlName="points" class="mt-1 w-full rounded-lg border bg-white p-3" placeholder="e.g. 500"></label><button type="button" (click)="useMaximum()" [disabled]="busy()" class="min-h-11 rounded-lg border border-brand-700 px-4 font-bold text-brand-700">Use maximum</button><button type="submit" [disabled]="pointsForm.invalid || busy()" class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white disabled:opacity-50">{{ applying() ? 'Applying points…' : 'Apply points' }}</button></form>
-              }
-              @if (pointsError()) { <p role="alert" class="mt-3 text-sm font-semibold text-red-800">{{ pointsError() }}</p> }
-            }
-          </section>
-
-          <section class="mt-5 rounded-xl border p-5" aria-labelledby="payment-summary-heading"><h3 id="payment-summary-heading" class="font-bold">Payment summary</h3><dl class="mt-3 grid gap-2">@if (bookingTotal(); as total) { <div class="flex justify-between gap-4"><dt>Health Check total</dt><dd class="font-bold">{{ utils.formatMoney(total, paymentCurrency()) }}</dd></div> }@if (activePoints() > 0) { <div class="flex justify-between gap-4"><dt>Reward points</dt><dd>{{ activePoints() }} points</dd></div><div class="flex justify-between gap-4"><dt>Reward value</dt><dd>−{{ utils.formatMoney(pointsAmount(), paymentCurrency()) }}</dd></div> }<div class="flex justify-between gap-4 border-t pt-2"><dt class="font-bold">Remaining to pay</dt><dd class="font-bold">{{ utils.formatMoney(remainingAmount(), paymentCurrency()) }}</dd></div></dl></section>
-
-          <fieldset [disabled]="busy()" class="mt-5"><legend class="text-xl font-bold text-brand-900">How would you like to pay?</legend><div class="mt-3 grid gap-3 md:grid-cols-3">@for (option of options; track option.value) { <label class="cursor-pointer rounded-xl border p-4 focus-within:ring-4 focus-within:ring-brand-200" [class.border-brand-700]="selected() === option.value" [class.bg-brand-50]="selected() === option.value"><input type="radio" name="patient-payment-option" [value]="option.value" [checked]="selected() === option.value" (change)="select(option.value)" /><strong class="ml-2">{{ option.label }}</strong><span class="mt-2 block text-sm text-slate-600">{{ option.description }}</span></label> }</div></fieldset>
-          <p class="mt-4 text-sm text-slate-600">Your request is sent to your selected provider after funding is settled. Pay later does not send the request or reserve an appointment.</p>
-          <button type="button" (click)="initiate()" [disabled]="busy() || isZero(remainingAmount())" class="mt-5 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-60">{{ pending() ? pendingLabel() : actionLabel() }}</button>
-          @if (payLater()) { <div role="status" class="mt-5 rounded-xl bg-amber-50 p-4 text-amber-950"><strong>Booking saved — payment still required</strong>@if (activePoints() > 0) { <p class="mt-1">{{ activePoints() }} points are reserved for this booking.</p> }<p class="mt-1">Your request has not been sent to the selected provider. Choose Pay now or Payment link when you are ready.</p></div> }
-          @if (checkoutUrl()) { <div class="mt-5 rounded-xl bg-brand-50 p-4"><h3 class="font-bold">Payment link ready</h3><p class="mt-1 text-sm">This hosted link is only for payment and does not provide access to your SmartClinic account.</p><input aria-label="Payment link" readonly [value]="checkoutUrl()" class="mt-3 w-full rounded-lg border bg-white p-3 text-sm" /><div class="mt-3 flex flex-wrap gap-3"><button type="button" (click)="openPaymentPage()" class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white">Open secure payment page</button><button type="button" (click)="copyLink()" class="min-h-11 rounded-lg border border-brand-700 px-4 font-bold text-brand-700">Copy payment link</button></div><p aria-live="polite" class="mt-2 text-sm">{{ copyFeedback() }}</p></div> }
-          <button type="button" (click)="refreshAll()" [disabled]="refreshing()" class="mt-4 block font-bold text-brand-700 underline">{{ refreshing() ? 'Checking payment status…' : 'Check payment status' }}</button>
+  selector: 'app-patient-payment-panel',
+  imports: [ReactiveFormsModule, PaymentContactEmailComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: ` <section
+    class="rounded-2xl border bg-white p-6"
+    aria-labelledby="patient-payment-heading"
+  >
+    <h2 id="patient-payment-heading" class="text-xl font-bold text-brand-900">Payment</h2>
+    @if (statusLoading()) {
+      <p role="status" class="mt-4">Loading payment status…</p>
+    }
+    @if (error()) {
+      <div role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ error() }}</div>
+    }
+    @if (status(); as payment) {
+      @if (payment.fundingStatus === 'SETTLED') {
+        <div role="status" class="mt-4 rounded-xl bg-green-50 p-4 text-green-950">
+          <strong>{{
+            payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)
+              ? 'Paid with reward points'
+              : 'Payment confirmed'
+          }}</strong>
+          <p class="mt-1">
+            {{
+              payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)
+                ? 'Your Health Check has been paid for with reward points.'
+                : matchingCopy(payment.bookingStatus)
+            }}
+          </p>
+          @if (payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)) {
+            <p class="mt-1">{{ matchingCopy(payment.bookingStatus) }}</p>
+          }
+        </div>
+        @if (payment.pointsReserved > 0) {
+          <div class="mt-5 rounded-xl border p-4">
+            <p class="flex justify-between gap-4">
+              <span>Reward points used</span><strong>{{ payment.pointsReserved }} points</strong>
+            </p>
+            <p class="mt-2 flex justify-between gap-4">
+              <span>Reward value</span
+              ><strong>−{{ utils.formatMoney(payment.pointsAmount, payment.currency) }}</strong>
+            </p>
+          </div>
         }
+      } @else if (!statusLoading()) {
+        <section
+          class="mt-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5"
+          aria-labelledby="patient-rewards-heading"
+        >
+          <h3 id="patient-rewards-heading" class="font-bold text-brand-900">Your rewards</h3>
+          @if (rewardsLoading()) {
+            <p role="status" class="mt-3">Loading your reward points…</p>
+          } @else if (rewardsError()) {
+            <div role="alert" class="mt-3">
+              <p>Reward points are temporarily unavailable. You can continue without them.</p>
+              <button
+                type="button"
+                (click)="loadRewards()"
+                class="mt-2 font-bold text-brand-700 underline"
+              >
+                Try rewards again
+              </button>
+            </div>
+          } @else if (preview(); as rewards) {
+            @if (activePoints() > 0 && redemptionStatus() === 'RESERVED') {
+              <div>
+                <p class="mt-3 text-lg font-bold">{{ activePoints() }} points reserved</p>
+                <p class="mt-1 text-sm text-slate-600">
+                  These points remain reserved for this Health Check until payment settles or you
+                  remove them.
+                </p>
+                <button
+                  type="button"
+                  (click)="releasePoints()"
+                  [disabled]="busy()"
+                  class="mt-3 font-bold text-red-700 underline disabled:opacity-50"
+                >
+                  {{ releasing() ? 'Removing points…' : 'Remove points' }}
+                </button>
+              </div>
+            } @else if (rewards.availablePoints === 0) {
+              <p class="mt-3 text-slate-600">You don't have reward points available to use yet.</p>
+            } @else {
+              <p class="mt-3">
+                <strong>{{ rewards.availablePoints }}</strong> points available
+              </p>
+              <p class="mt-1 text-sm text-slate-600">
+                Maximum you can use for this Health Check:
+                {{ rewards.maximumRedeemablePoints }} points
+              </p>
+              <form
+                [formGroup]="pointsForm"
+                (ngSubmit)="applyPoints()"
+                class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
+              >
+                <label class="flex-1 font-semibold"
+                  >Points to use<input
+                    type="number"
+                    min="1"
+                    step="1"
+                    formControlName="points"
+                    class="mt-1 w-full rounded-lg border bg-white p-3"
+                    placeholder="e.g. 500" /></label
+                ><button
+                  type="button"
+                  (click)="useMaximum()"
+                  [disabled]="busy()"
+                  class="min-h-11 rounded-lg border border-brand-700 px-4 font-bold text-brand-700"
+                >
+                  Use maximum</button
+                ><button
+                  type="submit"
+                  [disabled]="pointsForm.invalid || busy()"
+                  class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white disabled:opacity-50"
+                >
+                  {{ applying() ? 'Applying points…' : 'Apply points' }}
+                </button>
+              </form>
+            }
+            @if (pointsError()) {
+              <p role="alert" class="mt-3 text-sm font-semibold text-red-800">
+                {{ pointsError() }}
+              </p>
+            }
+          }
+        </section>
+
+        <section class="mt-5 rounded-xl border p-5" aria-labelledby="payment-summary-heading">
+          <h3 id="payment-summary-heading" class="font-bold">Payment summary</h3>
+          <dl class="mt-3 grid gap-2">
+            @if (bookingTotal(); as total) {
+              <div class="flex justify-between gap-4">
+                <dt>Health Check total</dt>
+                <dd class="font-bold">{{ utils.formatMoney(total, paymentCurrency()) }}</dd>
+              </div>
+            }
+            @if (activePoints() > 0) {
+              <div class="flex justify-between gap-4">
+                <dt>Reward points</dt>
+                <dd>{{ activePoints() }} points</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt>Reward value</dt>
+                <dd>−{{ utils.formatMoney(pointsAmount(), paymentCurrency()) }}</dd>
+              </div>
+            }
+            <div class="flex justify-between gap-4 border-t pt-2">
+              <dt class="font-bold">Remaining to pay</dt>
+              <dd class="font-bold">
+                {{ utils.formatMoney(remainingAmount(), paymentCurrency()) }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <fieldset [disabled]="busy()" class="mt-5">
+          <legend class="text-xl font-bold text-brand-900">How would you like to pay?</legend>
+          <div class="mt-3 grid gap-3 md:grid-cols-3">
+            @for (option of options; track option.value) {
+              <label
+                class="cursor-pointer rounded-xl border p-4 focus-within:ring-4 focus-within:ring-brand-200"
+                [class.border-brand-700]="selected() === option.value"
+                [class.bg-brand-50]="selected() === option.value"
+                ><input
+                  type="radio"
+                  name="patient-payment-option"
+                  [value]="option.value"
+                  [checked]="selected() === option.value"
+                  (change)="select(option.value)"
+                /><strong class="ml-2">{{ option.label }}</strong
+                ><span class="mt-2 block text-sm text-slate-600">{{
+                  option.description
+                }}</span></label
+              >
+            }
+          </div>
+        </fieldset>
+        <p class="mt-4 text-sm text-slate-600">
+          Your request is sent to your selected provider after funding is settled. Pay later does
+          not send the request or reserve an appointment.
+        </p>
+        @if (selected() !== 'PAY_LATER') {
+          <app-payment-contact-email />
+        }
+        <button
+          type="button"
+          (click)="initiate()"
+          [disabled]="busy() || isZero(remainingAmount())"
+          class="mt-5 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-60"
+        >
+          {{ pending() ? pendingLabel() : actionLabel() }}
+        </button>
+        @if (payLater()) {
+          <div role="status" class="mt-5 rounded-xl bg-amber-50 p-4 text-amber-950">
+            <strong>Booking saved — payment still required</strong>
+            @if (activePoints() > 0) {
+              <p class="mt-1">{{ activePoints() }} points are reserved for this booking.</p>
+            }
+            <p class="mt-1">
+              Your request has not been sent to the selected provider. Choose Pay now or Payment
+              link when you are ready.
+            </p>
+          </div>
+        }
+        @if (checkoutUrl()) {
+          <div class="mt-5 rounded-xl bg-brand-50 p-4">
+            <h3 class="font-bold">Payment link ready</h3>
+            <p class="mt-1 text-sm">
+              This hosted link is only for payment and does not provide access to your SmartClinic
+              account.
+            </p>
+            <input
+              aria-label="Payment link"
+              readonly
+              [value]="checkoutUrl()"
+              class="mt-3 w-full rounded-lg border bg-white p-3 text-sm"
+            />
+            <div class="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                (click)="openPaymentPage()"
+                class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white"
+              >
+                Open secure payment page</button
+              ><button
+                type="button"
+                (click)="copyLink()"
+                class="min-h-11 rounded-lg border border-brand-700 px-4 font-bold text-brand-700"
+              >
+                Copy payment link
+              </button>
+            </div>
+            <p aria-live="polite" class="mt-2 text-sm">{{ copyFeedback() }}</p>
+          </div>
+        }
+        <button
+          type="button"
+          (click)="refreshAll()"
+          [disabled]="refreshing()"
+          class="mt-4 block font-bold text-brand-700 underline"
+        >
+          {{ refreshing() ? 'Checking payment status…' : 'Check payment status' }}
+        </button>
       }
-    </section>`,
+    }
+  </section>`,
 })
 export class PatientPaymentPanelComponent implements OnInit {
-  @Input({ required: true }) reference = ''; @Output() readonly statusChanged = new EventEmitter<PublicBookingPaymentStatus>();
-  private readonly api = inject(HealthCheckResultsApiService); private readonly navigateExternal = inject(EXTERNAL_NAVIGATOR); private readonly fb = inject(FormBuilder); readonly utils = inject(UtilsService);
-  popup = new PaystackPop(); readonly selected = signal<PublicBookingCheckoutOption>('PAY_NOW'); readonly status = signal<PublicBookingPaymentStatus|null>(null); readonly preview = signal<HealthCheckRewardPreview|null>(null); readonly statusLoading=signal(true);readonly rewardsLoading=signal(true);readonly rewardsError=signal(false);readonly refreshing=signal(false);readonly pending=signal(false);readonly applying=signal(false);readonly releasing=signal(false);readonly error=signal<string|null>(null);readonly pointsError=signal<string|null>(null);readonly checkoutUrl=signal<string|null>(null);readonly payLater=signal(false);readonly copyFeedback=signal('');
-  readonly pointsForm=this.fb.nonNullable.group({points:[1,[Validators.required,Validators.min(1),Validators.pattern(/^\d+$/)]]});readonly busy=computed(()=>this.pending()||this.applying()||this.releasing());
-  readonly options=[{value:'PAY_NOW' as const,label:'Pay now',description:'Pay securely with Paystack.'},{value:'PAYMENT_LINK' as const,label:'Payment link',description:'Open or share a secure hosted checkout link.'},{value:'PAY_LATER' as const,label:'Pay later',description:'Keep this booking awaiting payment and return later.'}];
-  ngOnInit(){this.refresh();this.loadRewards()}
-  select(option:PublicBookingCheckoutOption){if(!this.busy()){this.selected.set(option);this.error.set(null)}}
-  activePoints(){return this.status()?.pointsReserved??this.preview()?.activeRedemption?.pointsReserved??0} redemptionStatus(){return this.status()?.redemptionStatus??this.preview()?.activeRedemption?.status??null} bookingTotal(){return this.status()?.bookingTotal??this.preview()?.bookingOutstandingAmount??null} pointsAmount(){return this.status()?.pointsAmount??this.preview()?.activeRedemption?.pointsAmount??'0.00'} remainingAmount(){return this.status()?.remainingExternalAmount??this.preview()?.activeRedemption?.remainingExternalAmount??this.preview()?.bookingOutstandingAmount??null} paymentCurrency(){return this.status()?.currency??this.preview()?.currency??null}
-  isZero(amount:string|null|undefined){return amount!=null&&/^0+(?:\.0+)?$/.test(amount)}
-  actionLabel(){if(this.selected()==='PAY_NOW'){const remaining=this.remainingAmount();return this.activePoints()>0&&remaining?`Pay ${this.utils.formatMoney(remaining,this.paymentCurrency())}`:'Pay securely'}return this.selected()==='PAYMENT_LINK'?'Get payment link':'Pay later'} pendingLabel(){return this.selected()==='PAY_NOW'?'Preparing secure payment…':this.selected()==='PAYMENT_LINK'?'Creating payment link…':'Saving booking…'}
-  useMaximum(){const max=this.preview()?.maximumRedeemablePoints;if(max)this.pointsForm.controls.points.setValue(max)}
-  applyPoints(){const rewards=this.preview();const points=this.pointsForm.controls.points.value;if(!rewards||this.pointsForm.invalid||this.busy())return;if(points>rewards.maximumRedeemablePoints||points>rewards.availablePoints){this.pointsError.set(`Enter no more than ${Math.min(rewards.maximumRedeemablePoints,rewards.availablePoints)} points.`);return}this.applying.set(true);this.pointsError.set(null);this.api.applyMyHealthCheckRewards(this.reference,points).subscribe({next:result=>{this.applying.set(false);if(!result.requiresExternalPayment||this.isZero(result.remainingExternalAmount)){this.error.set(null)}this.refreshAll()},error:(e:HttpErrorResponse)=>{this.applying.set(false);this.pointsError.set(this.rewardMutationError(e))}})}
-  releasePoints(){if(this.busy()||this.redemptionStatus()!=='RESERVED')return;this.releasing.set(true);this.pointsError.set(null);this.api.releaseMyHealthCheckRewards(this.reference).subscribe({next:()=>{this.releasing.set(false);this.refreshAll()},error:(e:HttpErrorResponse)=>{this.releasing.set(false);this.pointsError.set(e.status===409?"These points can't be changed while a payment is in progress.":'We could not remove the reserved points. Try again.')}})}
-  loadRewards(){if(!this.reference)return;this.rewardsLoading.set(true);this.rewardsError.set(false);this.api.previewMyHealthCheckRewards(this.reference).subscribe({next:value=>{this.preview.set(value);this.rewardsLoading.set(false)},error:()=>{this.rewardsLoading.set(false);this.rewardsError.set(true)}})}
-  initiate(){if(!this.reference||this.busy()||this.status()?.fundingStatus==='SETTLED'||this.isZero(this.remainingAmount()))return;this.pending.set(true);this.error.set(null);this.checkoutUrl.set(null);this.payLater.set(false);const option=this.selected();if(this.redemptionStatus()==='RESERVED'){this.api.getMyHealthCheckPayment(this.reference).subscribe({next:latest=>{this.applyStatus(latest);if(latest.fundingStatus==='SETTLED'||this.isZero(latest.remainingExternalAmount)){this.pending.set(false);return}this.startPayment(option)},error:()=>{this.pending.set(false);this.fail('We could not refresh payment details. Try again.')}})}else this.startPayment(option)}
-  private startPayment(option:PublicBookingCheckoutOption){this.api.initiateMyHealthCheckPayment(this.reference,option).subscribe({next:result=>{this.pending.set(false);if(result.bookingReference!==this.reference||result.checkoutOption!==option)return this.fail('We could not start payment. Try again.');if(option==='PAY_LATER'){this.payLater.set(true);this.refreshAll();return}if(option==='PAYMENT_LINK'){const url=safePaystackCheckoutUrl(result.checkoutUrl);if(!url)return this.fail('We could not create a secure payment link. Try again.');this.checkoutUrl.set(url);this.refreshAll();return}if(!result.accessCode)return this.fail('We could not start payment. Try again.');this.popup.resumeTransaction(result.accessCode,{onSuccess:()=>this.verify(),onError:()=>this.fail('Payment was not completed. Your reward points remain reserved and you can try again.')})},error:()=>{this.pending.set(false);this.fail('We could not start payment. Try again.')}})}
-  verify(){if(this.refreshing())return;this.refreshing.set(true);this.error.set(null);this.api.verifyMyHealthCheckPayment(this.reference).subscribe({next:s=>{this.applyStatus(s);this.refreshing.set(false);this.loadRewards()},error:()=>{this.refreshing.set(false);this.fail('We could not verify the payment yet. Refresh or try again.')}})}
-  refresh(){if(!this.reference||this.refreshing())return;this.refreshing.set(true);this.error.set(null);this.api.getMyHealthCheckPayment(this.reference).subscribe({next:s=>{this.applyStatus(s);this.statusLoading.set(false);this.refreshing.set(false)},error:()=>{this.statusLoading.set(false);this.refreshing.set(false);this.fail('We could not load payment status. Try again.')}})} refreshAll(){this.refresh();this.loadRewards()}
-  private applyStatus(s:PublicBookingPaymentStatus){this.status.set(s);if(s.fundingStatus==='SETTLED')this.statusChanged.emit(s)} private fail(message:string){this.error.set(message)} private rewardMutationError(e:HttpErrorResponse){if(e.status===409)return 'These points could not be applied. Check your available points and payment status, then try again.';if(e.status===404)return 'This Health Check is no longer available for reward redemption.';return 'We could not apply your reward points. Try again.'}
-  openPaymentPage(){const url=safePaystackCheckoutUrl(this.checkoutUrl());if(url)this.navigateExternal(url)} async copyLink(){const url=this.checkoutUrl();if(!url)return;try{await navigator.clipboard.writeText(url);this.copyFeedback.set('Payment link copied.')}catch{this.copyFeedback.set('Copy was unavailable. Select and copy the link manually.')}} matchingCopy(status:string){return status==='SCHEDULED'?'Your appointment is scheduled.':"Your selected provider has received your request. We'll update you when they respond."}
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
+  @Input({ required: true }) reference = '';
+  @Output() readonly statusChanged = new EventEmitter<PublicBookingPaymentStatus>();
+  private readonly api = inject(HealthCheckResultsApiService);
+  private readonly navigateExternal = inject(EXTERNAL_NAVIGATOR);
+  private readonly fb = inject(FormBuilder);
+  readonly utils = inject(UtilsService);
+  popup = new PaystackPop();
+  readonly selected = signal<PublicBookingCheckoutOption>('PAY_NOW');
+  readonly status = signal<PublicBookingPaymentStatus | null>(null);
+  readonly preview = signal<HealthCheckRewardPreview | null>(null);
+  readonly statusLoading = signal(true);
+  readonly rewardsLoading = signal(true);
+  readonly rewardsError = signal(false);
+  readonly refreshing = signal(false);
+  readonly pending = signal(false);
+  readonly applying = signal(false);
+  readonly releasing = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly pointsError = signal<string | null>(null);
+  readonly checkoutUrl = signal<string | null>(null);
+  readonly payLater = signal(false);
+  readonly copyFeedback = signal('');
+  readonly pointsForm = this.fb.nonNullable.group({
+    points: [1, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
+  });
+  readonly busy = computed(() => this.pending() || this.applying() || this.releasing());
+  readonly options = [
+    { value: 'PAY_NOW' as const, label: 'Pay now', description: 'Pay securely with Paystack.' },
+    {
+      value: 'PAYMENT_LINK' as const,
+      label: 'Payment link',
+      description: 'Open or share a secure hosted checkout link.',
+    },
+    {
+      value: 'PAY_LATER' as const,
+      label: 'Pay later',
+      description: 'Keep this booking awaiting payment and return later.',
+    },
+  ];
+  ngOnInit() {
+    this.refresh();
+    this.loadRewards();
+  }
+  select(option: PublicBookingCheckoutOption) {
+    if (!this.busy()) {
+      this.selected.set(option);
+      this.error.set(null);
+    }
+  }
+  activePoints() {
+    return this.status()?.pointsReserved ?? this.preview()?.activeRedemption?.pointsReserved ?? 0;
+  }
+  redemptionStatus() {
+    return this.status()?.redemptionStatus ?? this.preview()?.activeRedemption?.status ?? null;
+  }
+  bookingTotal() {
+    return this.status()?.bookingTotal ?? this.preview()?.bookingOutstandingAmount ?? null;
+  }
+  pointsAmount() {
+    return this.status()?.pointsAmount ?? this.preview()?.activeRedemption?.pointsAmount ?? '0.00';
+  }
+  remainingAmount() {
+    return (
+      this.status()?.remainingExternalAmount ??
+      this.preview()?.activeRedemption?.remainingExternalAmount ??
+      this.preview()?.bookingOutstandingAmount ??
+      null
+    );
+  }
+  paymentCurrency() {
+    return this.status()?.currency ?? this.preview()?.currency ?? null;
+  }
+  isZero(amount: string | null | undefined) {
+    return amount != null && /^0+(?:\.0+)?$/.test(amount);
+  }
+  actionLabel() {
+    if (this.selected() === 'PAY_NOW') {
+      const remaining = this.remainingAmount();
+      return this.activePoints() > 0 && remaining
+        ? `Pay ${this.utils.formatMoney(remaining, this.paymentCurrency())}`
+        : 'Pay securely';
+    }
+    return this.selected() === 'PAYMENT_LINK' ? 'Get payment link' : 'Pay later';
+  }
+  pendingLabel() {
+    return this.selected() === 'PAY_NOW'
+      ? 'Preparing secure payment…'
+      : this.selected() === 'PAYMENT_LINK'
+        ? 'Creating payment link…'
+        : 'Saving booking…';
+  }
+  useMaximum() {
+    const max = this.preview()?.maximumRedeemablePoints;
+    if (max) this.pointsForm.controls.points.setValue(max);
+  }
+  applyPoints() {
+    const rewards = this.preview();
+    const points = this.pointsForm.controls.points.value;
+    if (!rewards || this.pointsForm.invalid || this.busy()) return;
+    if (points > rewards.maximumRedeemablePoints || points > rewards.availablePoints) {
+      this.pointsError.set(
+        `Enter no more than ${Math.min(rewards.maximumRedeemablePoints, rewards.availablePoints)} points.`,
+      );
+      return;
+    }
+    this.applying.set(true);
+    this.pointsError.set(null);
+    this.api.applyMyHealthCheckRewards(this.reference, points).subscribe({
+      next: (result) => {
+        this.applying.set(false);
+        if (!result.requiresExternalPayment || this.isZero(result.remainingExternalAmount)) {
+          this.error.set(null);
+        }
+        this.refreshAll();
+      },
+      error: (e: HttpErrorResponse) => {
+        this.applying.set(false);
+        this.pointsError.set(this.rewardMutationError(e));
+      },
+    });
+  }
+  releasePoints() {
+    if (this.busy() || this.redemptionStatus() !== 'RESERVED') return;
+    this.releasing.set(true);
+    this.pointsError.set(null);
+    this.api.releaseMyHealthCheckRewards(this.reference).subscribe({
+      next: () => {
+        this.releasing.set(false);
+        this.refreshAll();
+      },
+      error: (e: HttpErrorResponse) => {
+        this.releasing.set(false);
+        this.pointsError.set(
+          e.status === 409
+            ? "These points can't be changed while a payment is in progress."
+            : 'We could not remove the reserved points. Try again.',
+        );
+      },
+    });
+  }
+  loadRewards() {
+    if (!this.reference) return;
+    this.rewardsLoading.set(true);
+    this.rewardsError.set(false);
+    this.api.previewMyHealthCheckRewards(this.reference).subscribe({
+      next: (value) => {
+        this.preview.set(value);
+        this.rewardsLoading.set(false);
+      },
+      error: () => {
+        this.rewardsLoading.set(false);
+        this.rewardsError.set(true);
+      },
+    });
+  }
+  initiate() {
+    if (
+      !this.reference ||
+      this.busy() ||
+      this.status()?.fundingStatus === 'SETTLED' ||
+      this.isZero(this.remainingAmount())
+    )
+      return;
+    this.pending.set(true);
+    this.error.set(null);
+    this.checkoutUrl.set(null);
+    this.payLater.set(false);
+    const option = this.selected();
+    if (this.redemptionStatus() === 'RESERVED') {
+      this.api.getMyHealthCheckPayment(this.reference).subscribe({
+        next: (latest) => {
+          this.applyStatus(latest);
+          if (latest.fundingStatus === 'SETTLED' || this.isZero(latest.remainingExternalAmount)) {
+            this.pending.set(false);
+            return;
+          }
+          this.startPayment(option);
+        },
+        error: () => {
+          this.pending.set(false);
+          this.fail('We could not refresh payment details. Try again.');
+        },
+      });
+    } else this.startPayment(option);
+  }
+  private startPayment(option: PublicBookingCheckoutOption) {
+    const paymentEmail = option === 'PAY_LATER' ? {} : this.paymentContact?.request();
+    if (paymentEmail === null) {
+      this.pending.set(false);
+      return;
+    }
+    const initialization = paymentEmail
+      ? this.api.initiateMyHealthCheckPayment(this.reference, option, paymentEmail)
+      : this.api.initiateMyHealthCheckPayment(this.reference, option);
+    initialization.subscribe({
+      next: (result) => {
+        this.pending.set(false);
+        if (result.bookingReference !== this.reference || result.checkoutOption !== option)
+          return this.fail('We could not start payment. Try again.');
+        if (option === 'PAY_LATER') {
+          this.payLater.set(true);
+          this.refreshAll();
+          return;
+        }
+        if (option === 'PAYMENT_LINK') {
+          const url = safePaystackCheckoutUrl(result.checkoutUrl);
+          if (!url) return this.fail('We could not create a secure payment link. Try again.');
+          this.checkoutUrl.set(url);
+          this.refreshAll();
+          return;
+        }
+        if (!result.accessCode) return this.fail('We could not start payment. Try again.');
+        this.popup.resumeTransaction(result.accessCode, {
+          onSuccess: () => this.verify(),
+          onError: () =>
+            this.fail(
+              'Payment was not completed. Your reward points remain reserved and you can try again.',
+            ),
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.pending.set(false);
+        this.fail(
+          error.status === 400 && error.error?.message === 'A valid payment email is required to continue'
+            ? error.error.message
+            : 'We could not start payment. Try again.',
+        );
+      },
+    });
+  }
+  verify() {
+    if (this.refreshing()) return;
+    this.refreshing.set(true);
+    this.error.set(null);
+    this.api.verifyMyHealthCheckPayment(this.reference).subscribe({
+      next: (s) => {
+        this.applyStatus(s);
+        this.refreshing.set(false);
+        this.loadRewards();
+      },
+      error: () => {
+        this.refreshing.set(false);
+        this.fail('We could not verify the payment yet. Refresh or try again.');
+      },
+    });
+  }
+  refresh() {
+    if (!this.reference || this.refreshing()) return;
+    this.refreshing.set(true);
+    this.error.set(null);
+    this.api.getMyHealthCheckPayment(this.reference).subscribe({
+      next: (s) => {
+        this.applyStatus(s);
+        this.statusLoading.set(false);
+        this.refreshing.set(false);
+      },
+      error: () => {
+        this.statusLoading.set(false);
+        this.refreshing.set(false);
+        this.fail('We could not load payment status. Try again.');
+      },
+    });
+  }
+  refreshAll() {
+    this.refresh();
+    this.loadRewards();
+  }
+  private applyStatus(s: PublicBookingPaymentStatus) {
+    this.status.set(s);
+    if (s.fundingStatus === 'SETTLED') this.statusChanged.emit(s);
+  }
+  private fail(message: string) {
+    this.error.set(message);
+  }
+  private rewardMutationError(e: HttpErrorResponse) {
+    if (e.status === 409)
+      return 'These points could not be applied. Check your available points and payment status, then try again.';
+    if (e.status === 404) return 'This Health Check is no longer available for reward redemption.';
+    return 'We could not apply your reward points. Try again.';
+  }
+  openPaymentPage() {
+    const url = safePaystackCheckoutUrl(this.checkoutUrl());
+    if (url) this.navigateExternal(url);
+  }
+  async copyLink() {
+    const url = this.checkoutUrl();
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      this.copyFeedback.set('Payment link copied.');
+    } catch {
+      this.copyFeedback.set('Copy was unavailable. Select and copy the link manually.');
+    }
+  }
+  matchingCopy(status: string) {
+    return status === 'SCHEDULED'
+      ? 'Your appointment is scheduled.'
+      : "Your selected provider has received your request. We'll update you when they respond.";
+  }
 }

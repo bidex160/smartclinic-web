@@ -7,7 +7,7 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
 
 @Component({
   selector: 'app-new-health-record-sharing-page', imports: [ReactiveFormsModule, RouterLink], changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8"><a routerLink="/me/health-records/sharing" class="font-bold text-brand-700 underline">← Manage sharing</a><h1 class="mt-5 text-3xl font-bold">Share health records</h1><p class="mt-2 text-slate-600">Give an eligible provider read-only access to finalized Clinical Records. This does not share Care Chat, Care Requests, appointments, editing rights, attachment uploads, or payment information.</p>
+  template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8"><a routerLink="/me/health-records/sharing" class="font-bold text-brand-700 underline">← Manage sharing</a><h1 class="mt-5 text-3xl font-bold">Share health records</h1><p class="mt-2 text-slate-600">Give a connected provider read-only access to finalized Clinical Records. Only providers with an active connection appear here.</p><a routerLink="/me/providers/connect" [queryParams]="{ returnUrl: '/me/health-records/sharing/new' }" class="mt-3 inline-block font-bold text-brand-700 underline">Connect with another provider</a>
   @if (recordsLoading()) { <p role="status" class="mt-8 rounded-2xl border p-6">Loading your health records…</p> }
   @else if (recordsError()) { <div role="alert" class="mt-8 rounded-2xl bg-red-50 p-6">We couldn't prepare sharing. <button type="button" (click)="loadRecords()" class="font-bold underline">Try again</button></div> }
   @else { <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-6 rounded-2xl border bg-white p-6">

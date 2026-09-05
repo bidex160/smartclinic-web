@@ -278,6 +278,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'health-records/access-requests',
+        title: 'Health Record Access Requests | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/health-record-access-requests-page.component').then((c) => c.HealthRecordAccessRequestsPageComponent),
+      },
+      {
         path: 'health-records/:reference',
         title: 'Clinical Record | SmartClinic',
         canActivate: [authenticatedUserGuard],
@@ -457,6 +463,12 @@ export const routes: Routes = [
           import('./features/provider/provider-care-services-page.component').then(
             (component) => component.ProviderCareServicesPageComponent,
           ),
+      },
+      {
+        path: 'health-record-access',
+        title: 'Health Record Access Requests | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-health-record-access-page.component').then((c) => c.ProviderHealthRecordAccessPageComponent),
       },
       {
         path: 'shared-health-records',

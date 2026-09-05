@@ -14,7 +14,7 @@ export class PatientProviderConnectionsApiService {
  convert(ref:string){return this.http.post<PatientProviderConnection>(`${this.me(ref)}/convert-to-new-registration`,{consentAcknowledged:true});}
  cancel(ref:string){return this.http.post<PatientProviderConnection>(`${this.me(ref)}/cancel`,null);}
  funding(ref:string){return this.http.get<PatientProviderConnectionFundingResponse>(`${this.me(ref)}/funding`);}
- initializeFunding(ref:string){return this.http.post<PatientProviderConnectionFundingAttempt>(`${this.me(ref)}/funding/initialize`,null);}
+ initializeFunding(ref:string,request?:import('../models/payment-email.model').PaymentEmailRequest){return this.http.post<PatientProviderConnectionFundingAttempt>(`${this.me(ref)}/funding/initialize`,request??null);}
  verifyFunding(ref:string){return this.http.post<PatientProviderConnectionFundingResponse>(`${this.me(ref)}/funding/verify-latest`,null);}
  getConfiguration(){return this.http.get<PatientProviderConnectionConfiguration>(`${this.base}/provider/patient-connections/configuration`);}
  updateConfiguration(body:UpdatePatientProviderConnectionConfiguration){return this.http.put<PatientProviderConnectionConfiguration>(`${this.base}/provider/patient-connections/configuration`,body);}

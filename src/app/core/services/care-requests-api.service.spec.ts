@@ -12,10 +12,10 @@ describe('CareRequestsApiService funding', () => {
     api.getFunding('SC-CARE/A').subscribe();
     let request = http.expectOne('http://api.test/api/v1/me/care-requests/SC-CARE%2FA/funding');
     expect(request.request.method).toBe('GET'); request.flush({});
-    api.initializeFunding('SC-CARE/A').subscribe();
+    api.initializeFunding('SC-CARE/A', { paymentEmail: 'ada@example.com' }).subscribe();
     request = http.expectOne('http://api.test/api/v1/me/care-requests/SC-CARE%2FA/funding/initialize');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toBeNull();
+    expect(request.request.body).toEqual({ paymentEmail: 'ada@example.com' });
     expect(request.request.body).not.toEqual(expect.objectContaining({ amountMinor: expect.anything(), currency: expect.anything() }));
     request.flush({});
     api.verifyLatestFunding('SC-CARE/A').subscribe();

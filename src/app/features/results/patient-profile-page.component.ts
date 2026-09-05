@@ -26,7 +26,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
         </div>
         <div>
           <dt class="text-sm font-semibold text-slate-600">Email</dt>
-          <dd class="mt-1 font-bold">{{ p.user.email }}</dd>
+          <dd class="mt-1 font-bold">{{ p.user.email ?? 'Not provided' }}</dd>
         </div>
         <div>
           <dt class="text-sm font-semibold text-slate-600">Phone</dt>

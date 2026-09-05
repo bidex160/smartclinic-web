@@ -49,9 +49,9 @@ describe('PatientProviderConnectionsApiService', () => {
     );
     expect(r.request.body).toEqual({ consentAcknowledged: true });
     r.flush({});
-    api.initializeFunding('SC-PPC-1').subscribe();
+    api.initializeFunding('SC-PPC-1', { paymentEmail: 'ada@example.com' }).subscribe();
     r = http.expectOne('/api/v1/me/patient-provider-connections/SC-PPC-1/funding/initialize');
-    expect(r.request.body).toBeNull();
+    expect(r.request.body).toEqual({ paymentEmail: 'ada@example.com' });
     r.flush({});
     api.verifyFunding('SC-PPC-1').subscribe();
     http

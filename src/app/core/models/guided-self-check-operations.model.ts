@@ -169,7 +169,7 @@ export interface ContactWorkItemRow {
   startedAt: string | null;
 }
 export interface ContactWorkItemDetail extends ContactWorkItemRow {
-  patient: { reference: string; displayName: string; phone: string | null; email: string };
+  patient: { reference: string; displayName: string; phone: string | null; email: string | null };
   outcome: ContactWorkItemOutcome | null;
   operationalNote: string | null;
   completedAt: string | null;

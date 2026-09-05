@@ -16,7 +16,8 @@
           [class.bg-brand-50]="currentStep() === index + 1"
           [attr.aria-current]="currentStep() === index + 1 ? 'step' : null"
         >
-          <span class="block text-xs">{{ index + 1 }}</span><strong>{{ label }}</strong>
+          <span class="block text-xs">{{ index + 1 }}</span
+          ><strong>{{ label }}</strong>
         </li>
       }
     </ol>
@@ -27,53 +28,177 @@
   } @else if (catalogueError()) {
     <div role="alert" class="mt-6 rounded-xl bg-red-50 p-5">
       <p>Health Check options are unavailable.</p>
-      <button type="button" (click)="loadCatalogue()" class="mt-2 font-bold underline">Try again</button>
+      <button type="button" (click)="loadCatalogue()" class="mt-2 font-bold underline">
+        Try again
+      </button>
     </div>
   } @else {
     <section id="booking-step-content" tabindex="-1" class="mt-6 scroll-mt-4 outline-none">
       @switch (currentStep()) {
         @case (1) {
-          <form [formGroup]="form" (ngSubmit)="discover(1)" class="rounded-2xl border bg-white p-5 sm:p-6">
+          <form
+            [formGroup]="form"
+            (ngSubmit)="discover(1)"
+            class="rounded-2xl border bg-white p-5 sm:p-6"
+          >
             <h2 class="text-2xl font-bold">Appointment</h2>
-            <p class="mt-2 text-slate-600">Tell us when and where you would like your Health Check.</p>
+            <p class="mt-2 text-slate-600">
+              Tell us when and where you would like your Health Check.
+            </p>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
-              <label class="font-bold">Health Check
-                <select formControlName="packageCode" (change)="packageChanged()" class="mt-2 min-h-12 w-full rounded-xl border p-3">
+              <label class="font-bold"
+                >Health Check
+                <select
+                  formControlName="packageCode"
+                  (change)="packageChanged()"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                >
                   <option value="">Select a Health Check</option>
-                  @for (item of packages(); track item.code) { <option [value]="item.code">{{ item.name }}</option> }
+                  @for (item of packages(); track item.code) {
+                    <option [value]="item.code">{{ item.name }}</option>
+                  }
                 </select>
               </label>
-              <label class="font-bold">How would you like your check?
-                <select formControlName="fulfilmentModeCode" (change)="fulfilmentChanged()" class="mt-2 min-h-12 w-full rounded-xl border p-3">
+              <label class="font-bold"
+                >How would you like your check?
+                <select
+                  formControlName="fulfilmentModeCode"
+                  (change)="fulfilmentChanged()"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                >
                   <option value="">Select an option</option>
-                  @for (item of modes(); track item.code) { <option [value]="item.code">{{ item.name }}</option> }
+                  @for (item of modes(); track item.code) {
+                    <option [value]="item.code">{{ item.name }}</option>
+                  }
                 </select>
               </label>
-              <label class="font-bold">Preferred date<input type="date" formControlName="preferredDate" (change)="contextChanged()" class="mt-2 min-h-12 w-full rounded-xl border p-3" /></label>
-              <label class="font-bold">Preferred time<input type="time" formControlName="preferredTime" (change)="contextChanged()" class="mt-2 min-h-12 w-full rounded-xl border p-3" /></label>
+              <label class="font-bold"
+                >Preferred date<input
+                  type="date"
+                  formControlName="preferredDate"
+                  (change)="contextChanged()"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
+              /></label>
+              <label class="font-bold"
+                >Preferred time<input
+                  type="time"
+                  formControlName="preferredTime"
+                  (change)="contextChanged()"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
+              /></label>
             </div>
             <div formGroupName="address" class="mt-6 grid gap-5 sm:grid-cols-2">
-              <label class="font-bold">State
-                <select formControlName="stateOrRegion" (change)="stateChanged($any($event.target).value)" class="mt-2 min-h-12 w-full rounded-xl border p-3">
+              <label class="font-bold"
+                >State
+                <select
+                  formControlName="stateOrRegion"
+                  (change)="stateChanged($any($event.target).value)"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                >
                   <option value="">Select state</option>
-                  @for (state of states(); track state.isoCode) { <option [value]="state.name">{{ state.name }}</option> }
+                  @for (state of states(); track state.isoCode) {
+                    <option [value]="state.name">{{ state.name }}</option>
+                  }
                 </select>
               </label>
-              <label class="font-bold">City / Area
-                <select formControlName="city" (change)="contextChanged()" class="mt-2 min-h-12 w-full rounded-xl border p-3 disabled:bg-slate-100">
+              <label class="font-bold"
+                >City / Area
+                <select
+                  formControlName="city"
+                  (change)="contextChanged()"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3 disabled:bg-slate-100"
+                >
                   <option value="">Select city / area</option>
-                  @for (city of cities(); track city.name) { <option [value]="city.name">{{ city.name }}</option> }
+                  @for (city of cities(); track city.name) {
+                    <option [value]="city.name">{{ city.name }}</option>
+                  }
                 </select>
               </label>
               @if (isHomeVisit()) {
-                <label class="font-bold">Street address<input formControlName="addressLine1" (input)="contextChanged()" placeholder="12 Ring Road" class="mt-2 min-h-12 w-full rounded-xl border p-3" /></label>
-                <label class="font-bold">Address line 2 / landmark <span class="font-normal">(optional)</span><input formControlName="addressLine2" (input)="contextChanged()" placeholder="Opposite Central Pharmacy" class="mt-2 min-h-12 w-full rounded-xl border p-3" /></label>
-                <label class="font-bold">Postal code <span class="font-normal">(optional)</span><input formControlName="postalCode" (input)="contextChanged()" class="mt-2 min-h-12 w-full rounded-xl border p-3" /></label>
+                <label class="font-bold"
+                  >Street address<input
+                    formControlName="addressLine1"
+                    (input)="contextChanged()"
+                    placeholder="12 Ring Road"
+                    class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                /></label>
+                <label class="font-bold"
+                  >Address line 2 / landmark <span class="font-normal">(optional)</span
+                  ><input
+                    formControlName="addressLine2"
+                    (input)="contextChanged()"
+                    placeholder="Opposite Central Pharmacy"
+                    class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                /></label>
+                <label class="font-bold"
+                  >Postal code <span class="font-normal">(optional)</span
+                  ><input
+                    formControlName="postalCode"
+                    (input)="contextChanged()"
+                    class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                /></label>
               }
             </div>
-            <button type="submit" [disabled]="form.invalid || discovering()" class="mt-6 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50">{{ discovering() ? 'Finding providers…' : 'Find providers' }}</button>
-            @if (discoveryError()) { <p tabindex="-1" role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ discoveryError() }}</p> }
-            @if (discovered() && !offerings().length) { <div class="mt-4 rounded-xl bg-amber-50 p-4"><h3 class="font-bold">No providers available</h3><p class="mt-1">Try another date, time or area.</p></div> }
+            <button
+              type="submit"
+              [disabled]="form.invalid || discovering()"
+              class="mt-6 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
+            >
+              {{ discovering() ? 'Finding providers…' : 'Find providers' }}
+            </button>
+            @if (discoveryError()) {
+              <p tabindex="-1" role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
+                {{ discoveryError() }}
+              </p>
+            }
+          @if (discovered() && !offerings().length) {
+  <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
+    <h3 class="font-bold text-slate-900">
+      No providers available yet
+    </h3>
+
+    <p class="mt-1 text-slate-700">
+      We couldn't find a provider for your selected Health Check,
+      appointment and area.
+    </p>
+
+    <p class="mt-3 text-sm text-slate-600">
+      Know a hospital, clinic or diagnostic centre that could provide this service?
+      Invite them to join SmartClinic Network.
+    </p>
+
+    <!-- Reward incentive -->
+    <div class="mt-4 rounded-lg border border-purple-200 bg-white/70 p-3">
+      <div class="flex items-start gap-3">
+        <div
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-lg"
+          aria-hidden="true"
+        >
+          🎁
+        </div>
+
+        <div>
+          <p class="text-sm font-bold text-slate-900">
+            Earn rewards for growing the network
+          </p>
+
+          <p class="mt-0.5 text-sm text-slate-600">
+            Invite a provider to SmartClinic Network. You may earn reward points
+            when an eligible provider successfully joins through your invitation.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="openProviderInvitation()"
+      class="mt-4 min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white"
+    >
+      Invite a provider
+    </button>
+  </div>
+}
           </form>
         }
         @case (2) {
@@ -81,38 +206,125 @@
             <h2 class="text-2xl font-bold">Choose a provider</h2>
             <div class="mt-5 grid gap-4">
               @for (offering of offerings(); track offeringKey(offering)) {
-                <button type="button" (click)="selectOffering(offering)" class="rounded-xl border p-5 text-left focus:ring-4 focus:ring-brand-200" [class.ring-2]="selectedOffering() === offering">
+                <button
+                  type="button"
+                  (click)="selectOffering(offering)"
+                  class="rounded-xl border p-5 text-left focus:ring-4 focus:ring-brand-200"
+                  [class.ring-2]="selectedOffering() === offering"
+                >
                   <strong class="text-lg">{{ offering.providerName }}</strong>
-                  <span class="mt-2 block">From {{ money(offering.basePackagePriceMinor, offering.currency) }}</span>
-                  <span class="mt-1 block text-sm text-slate-600">{{ offering.fulfilmentMode.name }} · Fulfilment fee {{ money(offering.fulfilmentMode.fulfilmentFeeMinor, offering.currency) }}</span>
+                  <span class="mt-2 block"
+                    >From {{ money(offering.basePackagePriceMinor, offering.currency) }}</span
+                  >
+                  <span class="mt-1 block text-sm text-slate-600"
+                    >{{ offering.fulfilmentMode.name }} · Fulfilment fee
+                    {{ money(offering.fulfilmentMode.fulfilmentFeeMinor, offering.currency) }}</span
+                  >
                 </button>
               }
             </div>
-            <div class="mt-5 flex items-center justify-between gap-3"><button type="button" (click)="discover(page() - 1)" [disabled]="page() <= 1">Previous page</button><span>Page {{ page() }} of {{ totalPages() || 1 }}</span><button type="button" (click)="discover(page() + 1)" [disabled]="page() >= totalPages()">Next page</button></div>
-            <div class="mt-6 flex flex-wrap justify-between gap-3"><button type="button" (click)="backTo(1)" class="min-h-12 rounded-xl border px-5 font-bold">Back to Appointment</button><button type="button" (click)="continueToCustomise()" [disabled]="!selectedOffering()" class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50">Continue</button></div>
+            <div class="mt-5 flex items-center justify-between gap-3">
+              <button type="button" (click)="discover(page() - 1)" [disabled]="page() <= 1">
+                Previous page</button
+              ><span>Page {{ page() }} of {{ totalPages() || 1 }}</span
+              ><button
+                type="button"
+                (click)="discover(page() + 1)"
+                [disabled]="page() >= totalPages()"
+              >
+                Next page
+              </button>
+            </div>
+            <div class="mt-6 flex flex-wrap justify-between gap-3">
+              <button
+                type="button"
+                (click)="backTo(1)"
+                class="min-h-12 rounded-xl border px-5 font-bold"
+              >
+                Back to Appointment</button
+              ><button
+                type="button"
+                (click)="continueToCustomise()"
+                [disabled]="!selectedOffering()"
+                class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
+              >
+                Continue
+              </button>
+            </div>
           </section>
         }
         @case (3) {
           @if (selectedOffering(); as offering) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
               <h2 class="text-2xl font-bold">Customise</h2>
-              <p class="mt-2 text-slate-600">Review the provider details and choose any optional add-ons.</p>
+              <p class="mt-2 text-slate-600">
+                Review the provider details and choose any optional add-ons.
+              </p>
               @if (offering.fulfilmentMode.code === 'PROVIDER_LOCATION') {
-                <fieldset class="mt-5"><legend class="font-bold">Where will you attend?</legend>
+                <fieldset class="mt-5">
+                  <legend class="font-bold">Where will you attend?</legend>
                   @for (location of offering.locations; track location.reference) {
-                    <label class="mt-3 flex cursor-pointer gap-3 rounded-xl border p-4"><input type="radio" name="provider-location" [checked]="selectedLocation()?.reference === location.reference" (change)="selectLocation(location)" /><span><strong>{{ location.name }}</strong><span class="block text-sm">{{ location.addressLine1 }}, {{ location.city }}, {{ location.stateOrRegion }}</span></span></label>
+                    <label class="mt-3 flex cursor-pointer gap-3 rounded-xl border p-4"
+                      ><input
+                        type="radio"
+                        name="provider-location"
+                        [checked]="selectedLocation()?.reference === location.reference"
+                        (change)="selectLocation(location)"
+                      /><span
+                        ><strong>{{ location.name }}</strong
+                        ><span class="block text-sm"
+                          >{{ location.addressLine1 }}, {{ location.city }},
+                          {{ location.stateOrRegion }}</span
+                        ></span
+                      ></label
+                    >
                   }
                 </fieldset>
               }
               @if (offering.addons.length) {
-                <fieldset class="mt-6"><legend class="font-bold">Optional add-ons</legend>
+                <fieldset class="mt-6">
+                  <legend class="font-bold">Optional add-ons</legend>
                   @for (addon of offering.addons; track addon.code) {
-                    <label class="mt-3 flex cursor-pointer justify-between gap-4 rounded-xl border p-4"><span><input type="checkbox" class="mr-3" [checked]="addonSelected(addon.code)" (change)="toggleAddon(addon.code)" /><strong>{{ addon.name }}</strong></span><span>{{ money(addon.priceMinor, addon.currency) }}</span></label>
+                    <label
+                      class="mt-3 flex cursor-pointer justify-between gap-4 rounded-xl border p-4"
+                      ><span
+                        ><input
+                          type="checkbox"
+                          class="mr-3"
+                          [checked]="addonSelected(addon.code)"
+                          (change)="toggleAddon(addon.code)"
+                        /><strong>{{ addon.name }}</strong></span
+                      ><span>{{ money(addon.priceMinor, addon.currency) }}</span></label
+                    >
                   }
                 </fieldset>
-              } @else { <p class="mt-5 text-slate-600">No optional add-ons are available.</p> }
-              @if (quoteError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ quoteError() }}</p> }
-              <div class="mt-6 flex flex-wrap justify-between gap-3"><button type="button" (click)="backTo(2)" class="min-h-12 rounded-xl border px-5 font-bold">Back to Provider</button><button type="button" (click)="reviewBooking()" [disabled]="quoting() || (offering.fulfilmentMode.code === 'PROVIDER_LOCATION' && !selectedLocation())" class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50">{{ quoting() ? 'Confirming price…' : 'Review booking' }}</button></div>
+              } @else {
+                <p class="mt-5 text-slate-600">No optional add-ons are available.</p>
+              }
+              @if (quoteError()) {
+                <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
+                  {{ quoteError() }}
+                </p>
+              }
+              <div class="mt-6 flex flex-wrap justify-between gap-3">
+                <button
+                  type="button"
+                  (click)="backTo(2)"
+                  class="min-h-12 rounded-xl border px-5 font-bold"
+                >
+                  Back to Provider</button
+                ><button
+                  type="button"
+                  (click)="reviewBooking()"
+                  [disabled]="
+                    quoting() ||
+                    (offering.fulfilmentMode.code === 'PROVIDER_LOCATION' && !selectedLocation())
+                  "
+                  class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
+                >
+                  {{ quoting() ? 'Confirming price…' : 'Review booking' }}
+                </button>
+              </div>
             </section>
           }
         }
@@ -122,19 +334,94 @@
               <h2 class="text-2xl font-bold">Review & Pay</h2>
               <p class="mt-2 text-slate-600">Price confirmed for this booking.</p>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2">
-                <div><dt class="text-sm text-slate-600">Health Check</dt><dd class="font-bold">{{ confirmed.package.name }}</dd></div>
-                <div><dt class="text-sm text-slate-600">Provider</dt><dd class="font-bold">{{ confirmed.provider.name }}</dd></div>
-                <div><dt class="text-sm text-slate-600">How you’ll attend</dt><dd class="font-bold">{{ confirmed.fulfilmentMode.name }}</dd></div>
-                <div><dt class="text-sm text-slate-600">Preferred appointment</dt><dd class="font-bold">{{ form.controls.preferredDate.value }} at {{ form.controls.preferredTime.value }}</dd></div>
-                @if (confirmed.fulfilmentMode.code === 'PROVIDER_LOCATION' && confirmed.providerLocation; as location) { <div class="sm:col-span-2"><dt class="text-sm text-slate-600">Provider location</dt><dd class="font-bold">{{ location.name }}, {{ location.addressLine1 }}, {{ location.city }}</dd></div> }
-                @if (confirmed.fulfilmentMode.code === 'HOME_VISIT') { <div class="sm:col-span-2"><dt class="text-sm text-slate-600">Home visit address</dt><dd class="font-bold">{{ form.controls.address.controls.addressLine1.value }}, {{ form.controls.address.controls.city.value }}, {{ form.controls.address.controls.stateOrRegion.value }}</dd></div> }
+                <div>
+                  <dt class="text-sm text-slate-600">Health Check</dt>
+                  <dd class="font-bold">{{ confirmed.package.name }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm text-slate-600">Provider</dt>
+                  <dd class="font-bold">{{ confirmed.provider.name }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm text-slate-600">How you’ll attend</dt>
+                  <dd class="font-bold">{{ confirmed.fulfilmentMode.name }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm text-slate-600">Preferred appointment</dt>
+                  <dd class="font-bold">
+                    {{ form.controls.preferredDate.value }} at
+                    {{ form.controls.preferredTime.value }}
+                  </dd>
+                </div>
+                @if (
+                  confirmed.fulfilmentMode.code === 'PROVIDER_LOCATION' &&
+                    confirmed.providerLocation;
+                  as location
+                ) {
+                  <div class="sm:col-span-2">
+                    <dt class="text-sm text-slate-600">Provider location</dt>
+                    <dd class="font-bold">
+                      {{ location.name }}, {{ location.addressLine1 }}, {{ location.city }}
+                    </dd>
+                  </div>
+                }
+                @if (confirmed.fulfilmentMode.code === 'HOME_VISIT') {
+                  <div class="sm:col-span-2">
+                    <dt class="text-sm text-slate-600">Home visit address</dt>
+                    <dd class="font-bold">
+                      {{ form.controls.address.controls.addressLine1.value }},
+                      {{ form.controls.address.controls.city.value }},
+                      {{ form.controls.address.controls.stateOrRegion.value }}
+                    </dd>
+                  </div>
+                }
               </dl>
-              @if (confirmed.includedContents.length) { <h3 class="mt-5 font-bold">Included contents</h3><ul class="mt-2 list-disc pl-5">@for (item of confirmed.includedContents; track item.code) { <li>{{ item.name }}</li> }</ul> }
-              @if (confirmed.selectedAddons.length) { <h3 class="mt-5 font-bold">Selected add-ons</h3><ul class="mt-2 list-disc pl-5">@for (item of confirmed.selectedAddons; track item.code) { <li>{{ item.name }}</li> }</ul> }
-              <ng-container [ngTemplateOutlet]="breakdown" [ngTemplateOutletContext]="{ $implicit: confirmed }"></ng-container>
-              @if (!created()) { <div class="mt-6 flex flex-wrap justify-between gap-3"><button type="button" (click)="backTo(3)" class="min-h-12 rounded-xl border px-5 font-bold">Back to Customise</button><button type="button" (click)="createBooking()" [disabled]="creating()" class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50">{{ creating() ? 'Preparing payment…' : 'Continue to payment' }}</button></div> }
-              @if (createError()) { <p role="alert" class="mt-4 text-red-800">{{ createError() }}</p> }
-              @if (created(); as booking) { <div id="booking-payment" tabindex="-1" class="mt-6 scroll-mt-4 outline-none"><app-patient-payment-panel [reference]="booking.bookingReference" /></div> }
+              @if (confirmed.includedContents.length) {
+                <h3 class="mt-5 font-bold">Included contents</h3>
+                <ul class="mt-2 list-disc pl-5">
+                  @for (item of confirmed.includedContents; track item.code) {
+                    <li>{{ item.name }}</li>
+                  }
+                </ul>
+              }
+              @if (confirmed.selectedAddons.length) {
+                <h3 class="mt-5 font-bold">Selected add-ons</h3>
+                <ul class="mt-2 list-disc pl-5">
+                  @for (item of confirmed.selectedAddons; track item.code) {
+                    <li>{{ item.name }}</li>
+                  }
+                </ul>
+              }
+              <ng-container
+                [ngTemplateOutlet]="breakdown"
+                [ngTemplateOutletContext]="{ $implicit: confirmed }"
+              ></ng-container>
+              @if (!created()) {
+                <div class="mt-6 flex flex-wrap justify-between gap-3">
+                  <button
+                    type="button"
+                    (click)="backTo(3)"
+                    class="min-h-12 rounded-xl border px-5 font-bold"
+                  >
+                    Back to Customise</button
+                  ><button
+                    type="button"
+                    (click)="createBooking()"
+                    [disabled]="creating()"
+                    class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
+                  >
+                    {{ creating() ? 'Preparing payment…' : 'Continue to payment' }}
+                  </button>
+                </div>
+              }
+              @if (createError()) {
+                <p role="alert" class="mt-4 text-red-800">{{ createError() }}</p>
+              }
+              @if (created(); as booking) {
+                <div id="booking-payment" tabindex="-1" class="mt-6 scroll-mt-4 outline-none">
+                  <app-patient-payment-panel [reference]="booking.bookingReference" />
+                </div>
+              }
             </section>
           }
         }
@@ -142,5 +429,240 @@
     </section>
   }
 
-  <ng-template #breakdown let-item><section class="mt-5 rounded-xl bg-brand-50 p-5"><h3 class="font-bold">Price summary</h3><dl class="mt-3 grid gap-2"><div class="flex justify-between"><dt>Health Check</dt><dd>{{ money(item.pricing.basePackagePriceMinor, item.pricing.currency) }}</dd></div><div class="flex justify-between"><dt>Add-ons</dt><dd>{{ money(item.pricing.clinicalAddonsTotalMinor, item.pricing.currency) }}</dd></div><div class="flex justify-between"><dt>Fulfilment fee</dt><dd>{{ money(item.pricing.fulfilmentFeeMinor, item.pricing.currency) }}</dd></div><div class="flex justify-between border-t pt-3 text-xl font-bold"><dt>Total</dt><dd>{{ money(item.pricing.totalMinor, item.pricing.currency) }}</dd></div></dl></section></ng-template>
+  @if (showProviderInvitation()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      (click)="closeProviderInvitation()"
+    >
+      <div
+        class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold">Invite a provider</h2>
+
+            <p class="mt-1 text-slate-600">
+              Invite a hospital, clinic or diagnostic centre to join SmartClinic Network.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="closeProviderInvitation()"
+            class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            aria-label="Close provider invitation"
+          >
+            ✕
+          </button>
+        </div>
+
+        @if (providerInvitationContext(); as context) {
+          <div class="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+            <div class="grid gap-2 sm:grid-cols-2">
+              <div>
+                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Health Check
+                </span>
+
+                <strong class="mt-1 block">
+                  {{ context.packageCode }}
+                </strong>
+              </div>
+
+              <div>
+                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Location
+                </span>
+
+                <strong class="mt-1 block">
+                  {{ context.city }}, {{ context.stateOrRegion }}
+                </strong>
+              </div>
+
+              <div>
+                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Fulfilment
+                </span>
+
+                <strong class="mt-1 block">
+                  {{ context.fulfilmentModeCode }}
+                </strong>
+              </div>
+
+              <div>
+                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Preferred appointment
+                </span>
+
+                <strong class="mt-1 block">
+                  {{ context.preferredDate }}
+                  at
+                  {{ context.preferredTime }}
+                </strong>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (providerInvitationSuccess(); as invitation) {
+          <div role="status" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
+            <h3 class="font-bold">Invitation submitted</h3>
+
+            <p class="mt-1 text-sm">
+              Thanks. We'll use the provider details you supplied to help grow the SmartClinic
+              Network in your area.
+            </p>
+
+            <p class="mt-2 text-xs text-green-800">
+              Invitation reference: {{ invitation.reference }}
+            </p>
+
+            <button
+              type="button"
+              (click)="closeProviderInvitation()"
+              class="mt-4 min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white"
+            >
+              Done
+            </button>
+          </div>
+        } @else {
+          <form
+            [formGroup]="providerInviteForm"
+            (ngSubmit)="submitProviderInvitation()"
+            class="mt-5"
+          >
+          <div class="rounded-xl border border-purple-200 bg-purple-50 p-4">
+  <p class="text-sm font-semibold text-slate-900">
+    🎁 Your invitation can earn rewards
+  </p>
+
+  <p class="mt-1 text-sm text-slate-600">
+    If an eligible provider successfully joins SmartClinic Network through
+    your invitation, you may qualify for reward points.
+  </p>
+</div>
+            <div class="grid gap-5">
+              <label class="font-bold">
+                Provider or organisation name
+
+                <input
+                  type="text"
+                  formControlName="organisationName"
+                  placeholder="e.g. Eket General Hospital"
+                  autocomplete="organization"
+                  class="mt-2 min-h-12 w-full rounded-xl border p-3 font-normal"
+                />
+
+                @if (
+                  providerInviteForm.controls.organisationName.touched &&
+                  providerInviteForm.controls.organisationName.invalid
+                ) {
+                  <span class="mt-1 block text-sm font-normal text-red-700">
+                    Provider or organisation name is required.
+                  </span>
+                }
+              </label>
+
+              <div class="grid gap-5 sm:grid-cols-2">
+                <label class="font-bold">
+                  Email
+                  <span class="font-normal text-slate-500">(optional)</span>
+
+                  <input
+                    type="email"
+                    formControlName="email"
+                    placeholder="e.g. contact@hospital.com"
+                    autocomplete="email"
+                    class="mt-2 min-h-12 w-full rounded-xl border p-3 font-normal"
+                  />
+
+                  @if (
+                    providerInviteForm.controls.email.touched &&
+                    providerInviteForm.controls.email.hasError('email')
+                  ) {
+                    <span class="mt-1 block text-sm font-normal text-red-700">
+                      Enter a valid email address.
+                    </span>
+                  }
+                </label>
+
+                <label class="font-bold">
+                  Phone number
+                  <span class="font-normal text-slate-500">(optional)</span>
+
+                  <input
+                    type="tel"
+                    formControlName="phone"
+                    placeholder="e.g. +234 803 123 4567"
+                    autocomplete="tel"
+                    class="mt-2 min-h-12 w-full rounded-xl border p-3 font-normal"
+                  />
+                </label>
+              </div>
+
+              <p class="-mt-2 text-sm text-slate-600">
+                Provide at least an email address or phone number so we can contact the provider.
+              </p>
+
+              @if (providerInvitationContactError()) {
+                <p role="alert" class="rounded-xl bg-red-50 p-4 text-sm text-red-900">
+                  {{ providerInvitationContactError() }}
+                </p>
+              }
+
+              @if (providerInvitationError()) {
+                <p role="alert" class="rounded-xl bg-red-50 p-4 text-sm text-red-900">
+                  {{ providerInvitationError() }}
+                </p>
+              }
+            </div>
+
+            <div class="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                (click)="closeProviderInvitation()"
+                [disabled]="submittingProviderInvitation()"
+                class="min-h-11 rounded-xl border bg-white px-5 font-bold disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                [disabled]="submittingProviderInvitation()"
+                class="min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white disabled:opacity-50"
+              >
+                {{ submittingProviderInvitation() ? 'Sending invitation…' : 'Send invitation' }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  }
+
+  <ng-template #breakdown let-item
+    ><section class="mt-5 rounded-xl bg-brand-50 p-5">
+      <h3 class="font-bold">Price summary</h3>
+      <dl class="mt-3 grid gap-2">
+        <div class="flex justify-between">
+          <dt>Health Check</dt>
+          <dd>{{ money(item.pricing.basePackagePriceMinor, item.pricing.currency) }}</dd>
+        </div>
+        <div class="flex justify-between">
+          <dt>Add-ons</dt>
+          <dd>{{ money(item.pricing.clinicalAddonsTotalMinor, item.pricing.currency) }}</dd>
+        </div>
+        <div class="flex justify-between">
+          <dt>Fulfilment fee</dt>
+          <dd>{{ money(item.pricing.fulfilmentFeeMinor, item.pricing.currency) }}</dd>
+        </div>
+        <div class="flex justify-between border-t pt-3 text-xl font-bold">
+          <dt>Total</dt>
+          <dd>{{ money(item.pricing.totalMinor, item.pricing.currency) }}</dd>
+        </div>
+      </dl>
+    </section></ng-template
+  >
 </main>

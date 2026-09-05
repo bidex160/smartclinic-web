@@ -31,10 +31,10 @@ export class CareRequestsApiService {
       `${this.base}/me/care-requests/${encodeURIComponent(reference)}/funding`,
     );
   }
-  initializeFunding(reference: string): Observable<CareRequestFunding> {
+  initializeFunding(reference: string, request?: import('../models/payment-email.model').PaymentEmailRequest): Observable<CareRequestFunding> {
     return this.http.post<CareRequestFunding>(
       `${this.base}/me/care-requests/${encodeURIComponent(reference)}/funding/initialize`,
-      null,
+      request ?? null,
     );
   }
   verifyLatestFunding(reference: string): Observable<CareRequestFunding> {

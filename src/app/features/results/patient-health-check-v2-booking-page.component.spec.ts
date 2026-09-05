@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
+import { ProviderRecruitmentInvitationResponse } from '../../core/models/provider-recruitment-invitation.model';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
+import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
 import { PatientHealthCheckV2BookingPageComponent } from './patient-health-check-v2-booking-page.component';
 
 describe('PatientHealthCheckV2BookingPageComponent', () => {
@@ -84,6 +86,117 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     fixture.detectChanges();
     expect(component.currentStep()).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('No providers available');
+    expect(fixture.nativeElement.textContent).toContain('Invite a provider');
+  });
+
+  it('shows the invite action only after a completed zero-provider discovery and opens the modal', async () => {
+    const { component, fixture } = await setup({ offerings: [] });
+    expect(fixture.nativeElement.textContent).not.toContain('Invite a provider');
+    setAppointment(component, 'PROVIDER_LOCATION');
+    component.discover(1);
+    fixture.detectChanges();
+    const button = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (item: HTMLButtonElement) => item.textContent?.trim() === 'Invite a provider',
+    ) as HTMLButtonElement;
+    expect(button).toBeDefined();
+    button.click();
+    fixture.detectChanges();
+    expect(component.showProviderInvitation()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Provider or organisation name');
+  });
+
+  it('requires an organisation and either email or phone', async () => {
+    const { component } = await setup({ offerings: [] });
+    setAppointment(component, 'PROVIDER_LOCATION');
+    component.openProviderInvitation();
+    component.submitProviderInvitation();
+    expect(component.providerInviteForm.controls.organisationName.invalid).toBe(true);
+    component.providerInviteForm.controls.organisationName.setValue('Eket General Hospital');
+    component.submitProviderInvitation();
+    expect(component.providerInvitationContactError()).toContain(
+      'either an email address or phone',
+    );
+  });
+
+  it.each([
+    ['email', 'contact@example.com'],
+    ['phone', '+234 803 123 4567'],
+  ] as const)('submits with %s only and maps booking context exactly', async (field, contact) => {
+    const { component, invitationApi } = await setup({ offerings: [] });
+    component.form.patchValue({
+      packageCode: 'COMPLETE',
+      fulfilmentModeCode: 'PROVIDER_LOCATION',
+      preferredDate: '2026-09-04',
+      preferredTime: '21:37',
+      address: {
+        countryCode: 'NG',
+        stateOrRegion: 'Akwa Ibom',
+        city: 'Eket',
+      },
+    });
+    component.openProviderInvitation();
+    component.providerInviteForm.patchValue({
+      organisationName: '  Eket General Hospital  ',
+      [field]: `  ${contact}  `,
+    });
+    component.submitProviderInvitation();
+    expect(invitationApi.create).toHaveBeenCalledWith({
+      organisationName: 'Eket General Hospital',
+      [field]: contact,
+      source: 'HEALTH_CHECK_NO_PROVIDER',
+      packageCode: 'COMPLETE',
+      fulfilmentModeCode: 'PROVIDER_LOCATION',
+      preferredDate: '2026-09-04',
+      preferredTime: '21:37',
+      countryCode: 'NG',
+      stateOrRegion: 'Akwa Ibom',
+      city: 'Eket',
+    });
+    const request = invitationApi.create.mock.calls[0]![0] as Record<string, unknown>;
+    expect(request).not.toHaveProperty(field === 'email' ? 'phone' : 'email');
+    expect(component.providerInvitationSuccess()?.reference).toBe('SCPI-ABCDEF123456');
+    expect(component.currentStep()).toBe(1);
+  });
+
+  it('keeps the modal open and shows a safe API error', async () => {
+    const { component, fixture } = await setup({
+      offerings: [],
+      invitationResult: throwError(() => ({
+        status: 409,
+        error: { message: 'Invitation already submitted.' },
+      })),
+    });
+    setAppointment(component, 'PROVIDER_LOCATION');
+    component.openProviderInvitation();
+    component.providerInviteForm.patchValue({
+      organisationName: 'Eket General Hospital',
+      email: 'contact@example.com',
+    });
+    component.submitProviderInvitation();
+    fixture.detectChanges();
+    expect(component.showProviderInvitation()).toBe(true);
+    expect(component.providerInvitationSuccess()).toBeNull();
+    expect(component.providerInvitationError()).toBe('Invitation already submitted.');
+    expect(fixture.nativeElement.textContent).toContain('Invitation already submitted.');
+  });
+
+  it('prevents duplicate invitation submissions while the request is pending', async () => {
+    const pending = new Subject<ProviderRecruitmentInvitationResponse>();
+    const { component, invitationApi } = await setup({ offerings: [], invitationResult: pending });
+    setAppointment(component, 'PROVIDER_LOCATION');
+    component.openProviderInvitation();
+    component.providerInviteForm.patchValue({
+      organisationName: 'Eket General Hospital',
+      phone: '+234 803 123 4567',
+    });
+    component.submitProviderInvitation();
+    component.submitProviderInvitation();
+    expect(invitationApi.create).toHaveBeenCalledTimes(1);
+    expect(component.submittingProviderInvitation()).toBe(true);
+    pending.next(invitationResponse);
+    pending.complete();
+    expect(component.submittingProviderInvitation()).toBe(false);
+    expect(component.providerInvitationSuccess()).toEqual(invitationResponse);
   });
 
   it('moves from Provider to Customise and supports back navigation with selections', async () => {
@@ -243,6 +356,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
       offerings?: readonly (typeof providerOffering | typeof homeOffering)[];
       quote?: typeof providerQuote | typeof homeQuote;
       quoteError?: boolean;
+      invitationResult?: Observable<ProviderRecruitmentInvitationResponse>;
     } = {},
   ) {
     const selectedQuote = options.quote ?? providerQuote;
@@ -270,25 +384,35 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
         throwError(() => new Error('not loaded in unit test')),
       ),
     };
+    const invitationApi = {
+      create: vi.fn((_request: unknown) => options.invitationResult ?? of(invitationResponse)),
+    };
     await TestBed.configureTestingModule({
       imports: [PatientHealthCheckV2BookingPageComponent],
       providers: [
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: packageApi },
         { provide: HealthCheckResultsApiService, useValue: bookingApi },
+        { provide: ProviderRecruitmentInvitationsApiService, useValue: invitationApi },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientHealthCheckV2BookingPageComponent);
     fixture.detectChanges();
-    return { component: fixture.componentInstance, packageApi, bookingApi, fixture };
+    return { component: fixture.componentInstance, packageApi, bookingApi, invitationApi, fixture };
   }
 });
 
 const catalogue = {
-  code: 'ESSENTIAL', name: 'Essential Health Check', description: 'Core checks', benefits: [],
-  estimatedDurationMinutes: 30, isActive: true,
+  code: 'ESSENTIAL',
+  name: 'Essential Health Check',
+  description: 'Core checks',
+  benefits: [],
+  estimatedDurationMinutes: 30,
+  isActive: true,
   includedContents: [{ code: 'BP', name: 'Blood pressure', category: 'VITALS', description: null }],
-  optionalAddons: [], fromPriceMinor: 800000, currency: 'NGN',
+  optionalAddons: [],
+  fromPriceMinor: 800000,
+  currency: 'NGN',
   fulfilmentModes: [
     { code: 'PROVIDER_LOCATION', name: 'Provider location' },
     { code: 'HOME_VISIT', name: 'Home visit' },
@@ -296,11 +420,37 @@ const catalogue = {
 };
 
 const providerOffering = {
-  providerReference: 'SCPR-SAFE', providerName: 'Prime Clinic', packageCode: 'ESSENTIAL',
-  basePackagePriceMinor: 800000, currency: 'NGN',
-  fulfilmentMode: { code: 'PROVIDER_LOCATION' as const, name: 'Provider location', fulfilmentFeeMinor: 0 },
-  locations: [{ reference: 'SC-LOC-SAFE', name: 'Main Clinic', addressLine1: '1 Clinic Road', addressLine2: null, city: 'Ikeja', stateOrRegion: 'Lagos', postalCode: null, countryCode: 'NG' }],
-  addons: [{ code: 'ADDON_A', name: 'Configured add-on', category: 'LAB', priceMinor: 100000, currency: 'NGN' }],
+  providerReference: 'SCPR-SAFE',
+  providerName: 'Prime Clinic',
+  packageCode: 'ESSENTIAL',
+  basePackagePriceMinor: 800000,
+  currency: 'NGN',
+  fulfilmentMode: {
+    code: 'PROVIDER_LOCATION' as const,
+    name: 'Provider location',
+    fulfilmentFeeMinor: 0,
+  },
+  locations: [
+    {
+      reference: 'SC-LOC-SAFE',
+      name: 'Main Clinic',
+      addressLine1: '1 Clinic Road',
+      addressLine2: null,
+      city: 'Ikeja',
+      stateOrRegion: 'Lagos',
+      postalCode: null,
+      countryCode: 'NG',
+    },
+  ],
+  addons: [
+    {
+      code: 'ADDON_A',
+      name: 'Configured add-on',
+      category: 'LAB',
+      priceMinor: 100000,
+      currency: 'NGN',
+    },
+  ],
 };
 
 const homeOffering = {
@@ -310,13 +460,21 @@ const homeOffering = {
 };
 
 const providerQuote = {
-  configurationReference: 'SC-HCQ-SAFE', expiresAt: '2026-09-10T10:00:00Z',
+  configurationReference: 'SC-HCQ-SAFE',
+  expiresAt: '2026-09-10T10:00:00Z',
   package: { code: 'ESSENTIAL', name: 'Essential Health Check' },
-  provider: { reference: 'SCPR-SAFE', name: 'Prime Clinic' }, providerLocation: providerOffering.locations[0],
+  provider: { reference: 'SCPR-SAFE', name: 'Prime Clinic' },
+  providerLocation: providerOffering.locations[0],
   fulfilmentMode: { code: 'PROVIDER_LOCATION', name: 'Provider location' },
   includedContents: [{ code: 'BP', name: 'Blood pressure', category: 'VITALS' }],
   selectedAddons: [{ code: 'ADDON_A', name: 'Configured add-on', amountMinor: 100000 }],
-  pricing: { currency: 'NGN', basePackagePriceMinor: 800000, clinicalAddonsTotalMinor: 100000, fulfilmentFeeMinor: 0, totalMinor: 900000 },
+  pricing: {
+    currency: 'NGN',
+    basePackagePriceMinor: 800000,
+    clinicalAddonsTotalMinor: 100000,
+    fulfilmentFeeMinor: 0,
+    totalMinor: 900000,
+  },
 };
 
 const homeQuote = {
@@ -324,4 +482,24 @@ const homeQuote = {
   providerLocation: null,
   fulfilmentMode: { code: 'HOME_VISIT', name: 'Home visit' },
   pricing: { ...providerQuote.pricing, fulfilmentFeeMinor: 200000, totalMinor: 1100000 },
+};
+
+const invitationResponse: ProviderRecruitmentInvitationResponse = {
+  reference: 'SCPI-ABCDEF123456',
+  organisationName: 'Eket General Hospital',
+  email: 'contact@example.com',
+  phone: null,
+  source: 'HEALTH_CHECK_NO_PROVIDER',
+  status: 'PENDING',
+  context: {
+    packageCode: 'COMPLETE',
+    serviceCode: null,
+    fulfilmentModeCode: 'PROVIDER_LOCATION',
+    preferredDate: '2026-09-04',
+    preferredTime: '21:37',
+    countryCode: 'NG',
+    stateOrRegion: 'Akwa Ibom',
+    city: 'Eket',
+  },
+  createdAt: '2026-09-04T21:38:00.000Z',
 };

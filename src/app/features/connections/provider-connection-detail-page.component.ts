@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
@@ -9,9 +9,10 @@ import {
 } from '../../core/models/patient-provider-connection.model';
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 import { formatMinor } from '../provider/care-money';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 @Component({
   selector: 'app-provider-connection-detail-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/me/providers" class="font-bold text-brand-700 underline">← My Providers</a>
@@ -28,6 +29,9 @@ import { formatMinor } from '../provider/care-money';
         <h1 class="mt-2 text-3xl font-bold">{{ c.provider.displayName }}</h1>
         <p class="mt-2 text-lg font-bold">{{ label(c.status) }}</p>
       </header>
+      @if (returnUrl) {
+        <a [routerLink]="returnUrl" class="mt-4 inline-flex font-bold text-brand-700 underline">Return to access requests</a>
+      }
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
@@ -84,6 +88,7 @@ import { formatMinor } from '../provider/care-money';
               }}
             </p>
           } @else {
+            <app-payment-contact-email />
             <button
               type="button"
               (click)="pay()"
@@ -151,8 +156,11 @@ import { formatMinor } from '../provider/care-money';
   </main>`,
 })
 export class ProviderConnectionDetailPageComponent {
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   private readonly api = inject(PatientProviderConnectionsApiService);
-  readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
+  private readonly route = inject(ActivatedRoute);
+  readonly reference = this.route.snapshot.paramMap.get('reference') ?? '';
+  readonly returnUrl = this.safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly connection = signal<PatientProviderConnection | null>(null);
   readonly funding = signal<PatientProviderConnectionFundingResponse | null>(null);
   readonly loading = signal(true);
@@ -168,6 +176,9 @@ export class ProviderConnectionDetailPageComponent {
   popup = new PaystackPop();
   constructor() {
     this.load();
+  }
+  private safeReturnUrl(value: string | null) {
+    return value?.startsWith('/me/') && !value.startsWith('//') ? value : null;
   }
   load() {
     this.loading.set(true);
@@ -192,14 +203,18 @@ export class ProviderConnectionDetailPageComponent {
       });
   }
   pay() {
+    const paymentEmail = this.paymentContact?.request();
+    if (paymentEmail === null) return;
     const pending = [...(this.funding()?.fundings ?? [])]
       .reverse()
       .find((item) => item.fundingStatus === 'PENDING');
     if (!pending || this.paying()) return;
     this.paying.set(true);
     this.error.set('');
-    this.api
-      .initializeFunding(this.reference)
+    const initialization = paymentEmail
+      ? this.api.initializeFunding(this.reference, paymentEmail)
+      : this.api.initializeFunding(this.reference);
+    initialization
       .pipe(finalize(() => this.paying.set(false)))
       .subscribe({
         next: (r) => {
@@ -212,7 +227,13 @@ export class ProviderConnectionDetailPageComponent {
             onError: () => this.error.set('Payment was not completed. You can safely retry.'),
           });
         },
-        error: () => this.error.set('Unable to start secure payment.'),
+        error: (error) =>
+          this.error.set(
+            error?.status === 400 &&
+              error?.error?.message === 'A valid payment email is required to continue'
+              ? error.error.message
+              : 'Unable to start secure payment.',
+          ),
       });
   }
   verify() {

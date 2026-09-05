@@ -12,6 +12,7 @@ import {
   CreateSelfHealthCheckRequest,
 } from '../models/patient-health-check-history.model';
 import { PublicBookingResponse } from '../models/public-booking.model';
+import { PaymentEmailRequest } from '../models/payment-email.model';
 import {
   PublicBookingCheckoutOption,
   PublicBookingPaymentInitiationResult,
@@ -59,10 +60,11 @@ export class HealthCheckResultsApiService {
   initiateMyHealthCheckPayment(
     reference: string,
     option: PublicBookingCheckoutOption,
+    request?: PaymentEmailRequest,
   ): Observable<PublicBookingPaymentInitiationResult> {
     return this.http.post<PublicBookingPaymentInitiationResult>(
       `${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/payment`,
-      { option },
+      { option, ...(request ?? {}) },
     );
   }
 
