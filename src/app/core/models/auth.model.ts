@@ -13,6 +13,19 @@ export interface LoginRequest {
   readonly identifier: string;
   readonly password: string;
 }
+export interface ForgotPasswordRequest {
+  readonly email: string;
+}
+export interface ForgotPasswordResponse {
+  readonly message: string;
+}
+export interface ResetPasswordRequest {
+  readonly token: string;
+  readonly password: string;
+}
+export interface ResetPasswordResponse {
+  readonly message: string;
+}
 
 export interface LoginResponse {
   readonly accessToken: string;

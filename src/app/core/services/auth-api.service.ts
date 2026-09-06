@@ -3,7 +3,16 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../config/api-config.token';
-import { CurrentUser, LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
+import {
+  CurrentUser,
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+} from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
@@ -18,6 +27,18 @@ export class AuthApiService {
 
   register(request: RegisterRequest): Observable<CurrentUser> {
     return this.http.post<CurrentUser>(`${this.apiConfig.baseUrl}/auth/register`, request);
+  }
+  forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(
+      `${this.apiConfig.baseUrl}/auth/forgot-password`,
+      request,
+    );
+  }
+  resetPassword(request: ResetPasswordRequest): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(
+      `${this.apiConfig.baseUrl}/auth/reset-password`,
+      request,
+    );
   }
 
   refresh(): Observable<LoginResponse> {

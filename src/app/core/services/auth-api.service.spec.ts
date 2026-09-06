@@ -60,6 +60,22 @@ describe('AuthApiService', () => {
       http.verify();
     },
   );
+  it('posts forgot-password with the email only', () => {
+    const { api, http } = setup();
+    api.forgotPassword({ email: 'ada@example.test' }).subscribe();
+    const request = http.expectOne('http://api.example.test/api/v1/auth/forgot-password');
+    expect(request.request.body).toEqual({ email: 'ada@example.test' });
+    request.flush({
+      message: 'If an account exists for that email, password reset instructions have been sent.',
+    });
+  });
+  it('posts reset-password with token and password only', () => {
+    const { api, http } = setup();
+    api.resetPassword({ token: 'opaque', password: 'new-password' }).subscribe();
+    const request = http.expectOne('http://api.example.test/api/v1/auth/reset-password');
+    expect(request.request.body).toEqual({ token: 'opaque', password: 'new-password' });
+    request.flush({ message: 'Password reset successfully' });
+  });
 
   function setup() {
     TestBed.configureTestingModule({

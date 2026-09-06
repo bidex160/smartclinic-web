@@ -110,6 +110,12 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
               }
             </button>
           </div>
+          <a
+            routerLink="/forgot-password"
+            [queryParams]="registrationQueryParams"
+            class="mt-2 inline-block text-sm font-bold text-brand-700 underline"
+            >Forgot password?</a
+          >
 
           @if (form.controls.password.touched && form.controls.password.invalid) {
             <p class="mt-2 text-sm text-red-700">Password is required.</p>

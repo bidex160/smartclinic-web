@@ -88,6 +88,22 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'forgot-password',
+    title: 'Forgot password | SmartClinic',
+    loadComponent: () =>
+      import('./features/auth/forgot-password-page.component').then(
+        (c) => c.ForgotPasswordPageComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    title: 'Reset password | SmartClinic',
+    loadComponent: () =>
+      import('./features/auth/reset-password-page.component').then(
+        (c) => c.ResetPasswordPageComponent,
+      ),
+  },
+  {
     path: 'me',
     component: PatientLayoutComponent,
     children: [
@@ -191,7 +207,10 @@ export const routes: Routes = [
         path: 'family',
         title: 'Family & Dependants | SmartClinic',
         canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/results/family-dependants-page.component').then((c) => c.FamilyDependantsPageComponent),
+        loadComponent: () =>
+          import('./features/results/family-dependants-page.component').then(
+            (c) => c.FamilyDependantsPageComponent,
+          ),
       },
       {
         path: 'health-records',
@@ -287,7 +306,10 @@ export const routes: Routes = [
         path: 'health-records/access-requests',
         title: 'Health Record Access Requests | SmartClinic',
         canActivate: [authenticatedUserGuard],
-        loadComponent: () => import('./features/care/health-record-access-requests-page.component').then((c) => c.HealthRecordAccessRequestsPageComponent),
+        loadComponent: () =>
+          import('./features/care/health-record-access-requests-page.component').then(
+            (c) => c.HealthRecordAccessRequestsPageComponent,
+          ),
       },
       {
         path: 'health-records/:reference',
@@ -474,13 +496,19 @@ export const routes: Routes = [
         path: 'health-record-access',
         title: 'Health Record Access Requests | SmartClinic',
         canActivate: [providerGuard],
-        loadComponent: () => import('./features/provider/provider-health-record-access-page.component').then((c) => c.ProviderHealthRecordAccessPageComponent),
+        loadComponent: () =>
+          import('./features/provider/provider-health-record-access-page.component').then(
+            (c) => c.ProviderHealthRecordAccessPageComponent,
+          ),
       },
       {
         path: 'shared-health-passports/:patientReference',
         title: 'Shared Health Passport | SmartClinic',
         canActivate: [providerGuard],
-        loadComponent: () => import('./features/provider/provider-shared-health-passport-page.component').then((c) => c.ProviderSharedHealthPassportPageComponent),
+        loadComponent: () =>
+          import('./features/provider/provider-shared-health-passport-page.component').then(
+            (c) => c.ProviderSharedHealthPassportPageComponent,
+          ),
       },
       {
         path: 'shared-health-records',
