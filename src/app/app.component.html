@@ -13,6 +13,10 @@
   <main id="main-content" tabindex="-1">
     <router-outlet />
   </main>
+
+   @if (patientPortalRoute()) {
+    <app-smartclinic-companion />
+  }
 } @else {
   <div class="flex min-h-screen flex-col bg-[#f7faf9] text-ink">
     <!-- =====================================================

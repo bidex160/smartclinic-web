@@ -1,0 +1,135 @@
+<aside
+  class="guide"
+  [class.guide--large]="preferences().largeText"
+  [class.guide--still]="preferences().reducedMotion"
+  aria-label="SmartClinic guide"
+>
+  @if (open()) {
+    <section class="guide__panel" role="dialog" aria-modal="false" aria-labelledby="guide-title">
+      <header class="guide__header">
+        <div class="guide__identity">
+          <span class="guide__face" aria-hidden="true">{{ character().emoji }}</span>
+          <div>
+            <p class="guide__eyebrow">SMARTCLINIC GUIDE</p>
+            <h2 id="guide-title">{{ character().name }} can help</h2>
+          </div>
+        </div>
+        <button type="button" class="guide__icon-button" (click)="toggle()" aria-label="Close guide">×</button>
+      </header>
+
+      <div class="guide__body">
+        @if (settingsOpen()) {
+          <div class="guide__intro">
+            <p class="guide__message">
+              Choose a friendly guide. You can change this later. The guide explains the app; it does not replace a doctor or nurse.
+            </p>
+            <fieldset>
+              <legend>Choose your guide</legend>
+              <div class="guide__characters">
+                @for (item of characters; track item.id) {
+                  <button
+                    type="button"
+                    class="guide__character"
+                    [class.is-selected]="preferences().character === item.id"
+                    [attr.aria-pressed]="preferences().character === item.id"
+                    (click)="chooseCharacter(item.id)"
+                  >
+                    <span aria-hidden="true">{{ item.emoji }}</span><strong>{{ item.name }}</strong>
+                  </button>
+                }
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Choose language</legend>
+              <div class="guide__language-row">
+                <button type="button" [class.is-selected]="language() === 'en'" (click)="chooseLanguage('en')">English</button>
+                <button type="button" [class.is-selected]="language() === 'pcm'" (click)="chooseLanguage('pcm')">Nigerian Pidgin</button>
+              </div>
+            </fieldset>
+            <div class="guide__intro-actions">
+              <button type="button" class="guide__primary" (click)="finishIntroduction()">Use this guide</button>
+              <button type="button" class="guide__link" (click)="skipIntroduction()">Not now</button>
+            </div>
+          </div>
+        } @else {
+          <p class="guide__message" aria-live="polite">{{ welcome() }}</p>
+
+          @if (answer(); as currentAnswer) {
+            <div class="guide__answer" aria-live="polite">
+              <strong>{{ currentAnswer.title }}</strong>
+              <p>{{ currentAnswer.body }}</p>
+              @if (currentAnswer.route) {
+                <a
+                  [routerLink]="actionRoute(currentAnswer.route)"
+                  [queryParams]="actionQueryParams(currentAnswer.route)"
+                >{{ currentAnswer.action }} <span aria-hidden="true">→</span></a>
+              }
+            </div>
+          }
+
+          <div class="guide__quick-actions" aria-label="Things the guide can explain">
+            <button type="button" (click)="explain('stay-well')">Stay Well</button>
+            <button type="button" (click)="explain('find-care')">Find Care</button>
+            <button type="button" (click)="explain('hospital')">My Hospital</button>
+            <button type="button" (click)="explain('appointments')">Appointments</button>
+            <button type="button" (click)="explain('passport')">Health Passport</button>
+            <button type="button" (click)="explain('network')">Points &amp; referrals</button>
+          </div>
+
+          <form class="guide__ask" (ngSubmit)="ask()">
+            <label for="guide-question">{{ language() === 'pcm' ? 'Ask your question' : 'Ask a question' }}</label>
+            <div>
+              <input
+                id="guide-question"
+                name="guide-question"
+                [ngModel]="query()"
+                (ngModelChange)="query.set($event)"
+                placeholder="e.g. How do I find a doctor?"
+                autocomplete="off"
+              />
+              <button type="submit" [disabled]="!query().trim()">Ask</button>
+            </div>
+          </form>
+
+          <div class="guide__tools">
+            <button type="button" (click)="explainThisPage()">Show me this page</button>
+            @if (supportsSpeech) {
+              <button type="button" (click)="speaking() ? stopSpeaking() : readAloud()">
+                {{ speaking() ? 'Stop reading' : 'Read aloud' }}
+              </button>
+            }
+            @if (supportsVoiceInput) {
+              <button type="button" (click)="startListening()" [disabled]="listening()">
+                {{ listening() ? 'Listening…' : 'Ask by voice' }}
+              </button>
+            }
+          </div>
+
+          <details class="guide__settings">
+            <summary>Guide settings</summary>
+            <div>
+              <button type="button" (click)="chooseLanguage(language() === 'en' ? 'pcm' : 'en')">
+                Language: {{ language() === 'en' ? 'English' : 'Nigerian Pidgin' }}
+              </button>
+              <button type="button" (click)="toggleLargeText()" [attr.aria-pressed]="preferences().largeText">Larger text</button>
+              <button type="button" (click)="toggleReducedMotion()" [attr.aria-pressed]="preferences().reducedMotion">Reduce movement</button>
+              <button type="button" (click)="settingsOpen.set(true)">Change guide</button>
+            </div>
+          </details>
+          <p class="guide__safety">For medical emergencies, contact your local emergency service or go to the nearest emergency department.</p>
+        }
+      </div>
+    </section>
+  }
+
+  <button
+    type="button"
+    class="guide__launcher"
+    [attr.aria-expanded]="open()"
+    aria-label="Open SmartClinic guide"
+    (click)="toggle()"
+  >
+    <span class="guide__launcher-face" aria-hidden="true">{{ character().emoji }}</span>
+    <span>Need help?</span>
+  </button>
+</aside>

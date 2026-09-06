@@ -3,10 +3,11 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { AuthStateService } from './core/services/auth-state.service';
 import { AuthSessionService } from './core/services/auth-session.service';
 import { filter } from 'rxjs';
+import { SmartClinicCompanionComponent } from "./shared/components/smartclinic-companion/smartclinic-companion.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -27,6 +28,8 @@ export class AppComponent {
   readonly mySmartClinicRoute = computed(() =>
     this.authState.isPatient() ? '/me/dashboard' : '/login',
   );
+
+   readonly patientPortalRoute = computed(() => this.currentUrl().startsWith('/me'));
 
   constructor() {
     this.router.events

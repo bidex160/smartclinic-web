@@ -1,0 +1,47 @@
+:host { position: relative; z-index: 60; }
+.guide { position: fixed; right: 1rem; bottom: 1rem; z-index: 60; display: grid; justify-items: end; gap: .75rem; font-size: 1rem; }
+.guide--large { font-size: 1.125rem; }
+.guide__panel { width: min(25rem, calc(100vw - 2rem)); max-height: min(43rem, calc(100dvh - 6rem)); overflow: auto; border: 1px solid #b9ddd3; border-radius: 1.5rem; background: #fff; box-shadow: 0 24px 70px rgb(16 56 47 / .24); }
+.guide__header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: 1rem; color: #fff; background: linear-gradient(135deg, #166553, #4c1d95); }
+.guide__identity { display: flex; align-items: center; gap: .75rem; }
+.guide__face, .guide__launcher-face { display: grid; place-items: center; background: #fff; border-radius: 999px; }
+.guide__face { width: 3.25rem; height: 3.25rem; font-size: 1.8rem; }
+.guide__eyebrow { margin: 0 0 .15rem; font-size: .68em; font-weight: 800; letter-spacing: .13em; }
+.guide h2 { margin: 0; font-size: 1.18em; line-height: 1.2; }
+.guide__icon-button { width: 2.75rem; height: 2.75rem; border: 0; border-radius: 999px; color: #fff; background: rgb(255 255 255 / .14); font-size: 1.7rem; cursor: pointer; }
+.guide__body { padding: 1rem; }
+.guide__message { margin: 0; padding: .85rem 1rem; border-radius: 1rem 1rem 1rem .25rem; background: #eef9f5; color: #17342f; line-height: 1.55; }
+.guide fieldset { margin: 1rem 0 0; padding: 0; border: 0; }
+.guide legend, .guide__ask label { display: block; margin-bottom: .5rem; font-weight: 800; color: #17342f; }
+.guide__characters { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.guide__character { min-height: 5.2rem; display: grid; place-items: center; gap: .15rem; border: 1px solid #cbd5e1; border-radius: 1rem; background: #fff; color: #334155; cursor: pointer; }
+.guide__character span { font-size: 1.8rem; }
+.guide__character.is-selected, .guide__language-row .is-selected { border-color: #5b21b6; background: #f3efff; box-shadow: 0 0 0 2px #ddd0ff; color: #42168b; }
+.guide__language-row, .guide__intro-actions, .guide__tools { display: flex; flex-wrap: wrap; gap: .5rem; }
+.guide__language-row button, .guide__tools button, .guide__settings button { min-height: 2.75rem; border: 1px solid #cbd5e1; border-radius: .75rem; padding: .5rem .75rem; background: #fff; color: #334155; font-weight: 700; cursor: pointer; }
+.guide__intro-actions { align-items: center; margin-top: 1rem; }
+.guide__primary { min-height: 3rem; border: 0; border-radius: .8rem; padding: .65rem 1rem; color: #fff; background: #166553; font-weight: 800; cursor: pointer; }
+.guide__link { min-height: 2.75rem; border: 0; background: transparent; color: #475569; text-decoration: underline; cursor: pointer; }
+.guide__answer { margin-top: .75rem; padding: 1rem; border: 1px solid #ddd0ff; border-radius: 1rem; background: #faf8ff; color: #312e45; }
+.guide__answer p { margin: .35rem 0 .6rem; line-height: 1.55; }
+.guide__answer a { font-weight: 800; color: #5b21b6; }
+.guide__quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .8rem; }
+.guide__quick-actions button { min-height: 2.75rem; border: 1px solid #b9ddd3; border-radius: .75rem; background: #fff; color: #145948; font-weight: 750; cursor: pointer; }
+.guide__ask { margin-top: 1rem; }
+.guide__ask > div { display: flex; gap: .4rem; }
+.guide__ask input { min-width: 0; min-height: 3rem; flex: 1; border: 1px solid #94a3b8; border-radius: .8rem; padding: .6rem .75rem; }
+.guide__ask button { min-height: 3rem; border: 0; border-radius: .8rem; padding: .6rem .85rem; background: #5b21b6; color: #fff; font-weight: 800; }
+.guide__ask button:disabled { opacity: .5; }
+.guide__tools { margin-top: .75rem; }
+.guide__settings { margin-top: .85rem; border-top: 1px solid #e2e8f0; padding-top: .75rem; }
+.guide__settings summary { font-weight: 800; color: #475569; cursor: pointer; }
+.guide__settings > div { display: grid; gap: .4rem; margin-top: .65rem; }
+.guide__settings button[aria-pressed='true'] { border-color: #166553; background: #eef9f5; color: #145948; }
+.guide__safety { margin: .9rem 0 0; font-size: .78em; line-height: 1.45; color: #64748b; }
+.guide__launcher { display: flex; align-items: center; gap: .6rem; min-height: 3.75rem; border: 0; border-radius: 999px; padding: .4rem 1rem .4rem .4rem; color: #fff; background: #4c1d95; box-shadow: 0 12px 35px rgb(76 29 149 / .3); font-weight: 850; cursor: pointer; }
+.guide__launcher-face { width: 2.9rem; height: 2.9rem; font-size: 1.55rem; animation: guide-bob 2.4s ease-in-out infinite; }
+.guide--still .guide__launcher-face { animation: none; }
+.guide button:focus-visible, .guide input:focus-visible, .guide a:focus-visible, .guide summary:focus-visible { outline: 3px solid #f7c948; outline-offset: 2px; }
+@keyframes guide-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-4px) rotate(2deg); } }
+@media (max-width: 420px) { .guide { right: .6rem; bottom: .6rem; } .guide__panel { width: calc(100vw - 1.2rem); } }
+@media (prefers-reduced-motion: reduce) { .guide__launcher-face { animation: none; } }
