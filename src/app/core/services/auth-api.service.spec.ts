@@ -14,6 +14,9 @@ describe('AuthApiService', () => {
         familyName: 'Okafor',
         email: 'ada@example.test',
         phone: '+2348000000000',
+        countryCode: 'NG',
+        stateOrRegion: 'Lagos',
+        city: 'Ikeja',
         password: 'secure-password',
       })
       .subscribe();
@@ -24,6 +27,9 @@ describe('AuthApiService', () => {
       familyName: 'Okafor',
       email: 'ada@example.test',
       phone: '+2348000000000',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
       password: 'secure-password',
     });
     expect(request.request.body).not.toEqual(

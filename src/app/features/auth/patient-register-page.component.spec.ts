@@ -26,6 +26,9 @@ describe('PatientRegisterPageComponent', () => {
       familyName: ' Okafor ',
       email: 'ADA@EXAMPLE.TEST',
       phone: '+2348000000000',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
       password: 'secure-password',
     });
     fixture.componentInstance.register();
@@ -35,6 +38,9 @@ describe('PatientRegisterPageComponent', () => {
       familyName: 'Okafor',
       email: 'ada@example.test',
       phone: '+2348000000000',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
       password: 'secure-password',
     });
     expect(TestBed.inject(AuthStateService).authenticated()).toBe(false);
@@ -60,6 +66,9 @@ describe('PatientRegisterPageComponent', () => {
       familyName: 'Okafor',
       email: 'ada@example.test',
       phone: '',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
       password: 'secure-password',
     });
     component.register();

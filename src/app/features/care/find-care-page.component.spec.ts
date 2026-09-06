@@ -5,6 +5,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { FindCarePageComponent } from './find-care-page.component';
+import { DependantsApiService } from '../../core/services/dependants-api.service';
 describe('FindCarePageComponent', () => {
   const services = [
     {
@@ -37,7 +38,10 @@ describe('FindCarePageComponent', () => {
       },
     ],
   };
-  async function setup(authenticated = true) {
+  async function setup(
+    authenticated = true,
+    dependants: readonly { patientReference: string; displayName: string }[] = [],
+  ) {
     const find = {
       getServices: vi.fn(() => of(services)),
       getProviders: vi.fn(() =>
@@ -75,6 +79,10 @@ describe('FindCarePageComponent', () => {
         provideRouter([]),
         { provide: FindCareApiService, useValue: find },
         { provide: CareRequestsApiService, useValue: care },
+        {
+          provide: DependantsApiService,
+          useValue: { getDependants: vi.fn(() => of({ items: dependants })) },
+        },
         {
           provide: AuthStateService,
           useValue: { authenticated: () => authenticated, isPatient: () => authenticated },
@@ -127,6 +135,25 @@ describe('FindCarePageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Virtual care');
     expect(fixture.nativeElement.textContent).not.toContain('Requested location');
     expect(fixture.nativeElement.textContent).not.toContain('FastTrack</option>');
+  });
+  it('includes the selected dependant reference without adding dependant identity fields', async () => {
+    const { fixture, care } = await setup(true, [
+      { patientReference: 'SCP-CHILD', displayName: 'Aisha Okafor' },
+    ]);
+    const c = fixture.componentInstance;
+    c.selectParticipant({
+      kind: 'DEPENDANT',
+      patientReference: 'SCP-CHILD',
+      displayName: 'Aisha Okafor',
+    });
+    c.form.patchValue({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL' });
+    c.submit();
+    expect(care.create).toHaveBeenCalledWith(
+      expect.objectContaining({ participantPatientReference: 'SCP-CHILD' }),
+    );
+    expect(care.create).not.toHaveBeenCalledWith(
+      expect.objectContaining({ patientId: expect.anything(), email: expect.anything() }),
+    );
   });
   it('submits no provider field for no preference', async () => {
     const { fixture, care } = await setup();

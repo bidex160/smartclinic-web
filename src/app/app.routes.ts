@@ -188,6 +188,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'family',
+        title: 'Family & Dependants | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/results/family-dependants-page.component').then((c) => c.FamilyDependantsPageComponent),
+      },
+      {
         path: 'health-records',
         title: 'Health Records | SmartClinic',
         canActivate: [authenticatedUserGuard],

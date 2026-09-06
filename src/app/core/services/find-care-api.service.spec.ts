@@ -55,6 +55,14 @@ describe('Find Care API services', () => {
     expect(request.request.params.get('deliveryMode')).toBe('VIRTUAL');
     request.flush({ items: [], page: 1, limit: 50, total: 0, totalPages: 0 });
   });
+  it('serializes provider-name FastTrack filtering', () => {
+    find.getProviders({ q: 'Primed', fastTrackOnly: true, limit: 50 }).subscribe();
+    const request = http.expectOne((r) => r.url.endsWith('/public/find-care/providers'));
+    expect(request.request.params.get('q')).toBe('Primed');
+    expect(request.request.params.get('fastTrackOnly')).toBe('true');
+    expect(request.request.params.has('search')).toBe(false);
+    request.flush({ items: [], page: 1, limit: 50, total: 0, totalPages: 0 });
+  });
   it('submits only the Care Request contract with providerReference', () => {
     const body = {
       serviceCode: 'DENTAL',
@@ -80,11 +88,12 @@ describe('Find Care API services', () => {
     expect(create.request.body).toEqual(body);
     expect(create.request.body.feeMinor).toBeUndefined();
     create.flush({});
-    fast.initializePayment('SC-FT-ABCDEF0123456789', { paymentEmail: 'ada@example.com' }).subscribe();
-    const initialize = http
-      .expectOne(
-        'http://api.test/api/v1/me/fasttrack-requests/SC-FT-ABCDEF0123456789/funding/initialize',
-      );
+    fast
+      .initializePayment('SC-FT-ABCDEF0123456789', { paymentEmail: 'ada@example.com' })
+      .subscribe();
+    const initialize = http.expectOne(
+      'http://api.test/api/v1/me/fasttrack-requests/SC-FT-ABCDEF0123456789/funding/initialize',
+    );
     expect(initialize.request.body).toEqual({ paymentEmail: 'ada@example.com' });
     initialize.flush({});
     fast.verifyPayment('SC-FT-ABCDEF0123456789').subscribe();

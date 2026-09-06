@@ -39,6 +39,10 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <dd>{{ deliveryModeLabel(r.deliveryMode) }}</dd>
             </div>
             <div>
+              <dt class="text-sm text-slate-500">Patient</dt>
+              <dd class="font-semibold">{{ r.participant?.displayName ?? 'You' }}</dd>
+            </div>
+            <div>
               <dt class="text-sm text-slate-500">Service price</dt>
               <dd class="font-semibold">
                 {{
@@ -351,37 +355,35 @@ export class CareDetailPageComponent {
     const initialization = paymentEmail
       ? this.api.initializeFunding(this.reference, paymentEmail)
       : this.api.initializeFunding(this.reference);
-    initialization
-      .pipe(finalize(() => this.paymentPending.set(false)))
-      .subscribe({
-        next: (initialized) => {
-          this.funding.set(initialized);
-          if (
-            initialized.fundingStatus === 'PAID' ||
-            initialized.fundingStatus === 'SATISFIED_FREE'
-          ) {
-            this.refreshAfterPayment();
-            return;
-          }
-          if (!initialized.accessCode) {
-            this.paymentError.set(
-              'Secure payment could not be started. Refresh the payment status and try again.',
-            );
-            return;
-          }
-          this.popup.resumeTransaction(initialized.accessCode, {
-            onSuccess: () => this.verifyPayment(),
-            onError: () => {
-              this.paymentError.set('Payment was not completed. You can safely try again.');
-              this.loadFunding(true);
-            },
-          });
-        },
-        error: (error) => {
-          this.paymentError.set(this.paymentFailureMessage(error));
-          this.loadFunding(true);
-        },
-      });
+    initialization.pipe(finalize(() => this.paymentPending.set(false))).subscribe({
+      next: (initialized) => {
+        this.funding.set(initialized);
+        if (
+          initialized.fundingStatus === 'PAID' ||
+          initialized.fundingStatus === 'SATISFIED_FREE'
+        ) {
+          this.refreshAfterPayment();
+          return;
+        }
+        if (!initialized.accessCode) {
+          this.paymentError.set(
+            'Secure payment could not be started. Refresh the payment status and try again.',
+          );
+          return;
+        }
+        this.popup.resumeTransaction(initialized.accessCode, {
+          onSuccess: () => this.verifyPayment(),
+          onError: () => {
+            this.paymentError.set('Payment was not completed. You can safely try again.');
+            this.loadFunding(true);
+          },
+        });
+      },
+      error: (error) => {
+        this.paymentError.set(this.paymentFailureMessage(error));
+        this.loadFunding(true);
+      },
+    });
   }
   verifyPayment(): void {
     if (this.paymentPending()) return;

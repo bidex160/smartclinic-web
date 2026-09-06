@@ -53,6 +53,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           <thead class="bg-slate-50">
             <tr>
               <th class="p-4">Service</th>
+              <th class="p-4">Participant</th>
               <th class="p-4">Provider</th>
               <th class="p-4">Delivery</th>
               <th class="p-4">Location</th>
@@ -66,6 +67,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             @for (item of items(); track item.reference) {
               <tr class="border-t">
                 <td class="p-4 font-semibold">{{ item.service.name }}</td>
+                <td class="p-4">{{ item.participant?.displayName ?? 'You' }}</td>
                 <td class="p-4">
                   {{
                     item.assignedProvider?.displayName ||

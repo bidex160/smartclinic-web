@@ -12,11 +12,13 @@ import {
   HealthCheckProviderOffering,
 } from '../../core/models/health-check-package.model';
 import { PublicBookingResponse } from '../../core/models/public-booking.model';
+import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 import { ProviderRecruitmentInvitationResponse } from '../../core/models/provider-recruitment-invitation.model';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
+import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { formatEarningMoney } from '../provider/provider-earning-presentation';
 import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
 
@@ -36,6 +38,7 @@ export class PatientHealthCheckV2BookingPageComponent {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly locations = inject(LocationDataService);
   private readonly providerInvitations = inject(ProviderRecruitmentInvitationsApiService);
+  private readonly dependantsApi = inject(DependantsApiService);
 
   readonly steps = ['Appointment', 'Provider', 'Customise', 'Review & Pay'] as const;
   readonly currentStep = signal<BookingStep>(1);
@@ -57,6 +60,10 @@ export class PatientHealthCheckV2BookingPageComponent {
   readonly creating = signal(false);
   readonly createError = signal('');
   readonly created = signal<PublicBookingResponse | null>(null);
+  readonly dependants = signal<readonly Dependant[]>([]);
+  readonly dependantsLoading = signal(true);
+  readonly dependantsError = signal(false);
+  readonly participant = signal<HealthCheckParticipantSelection>({ kind: 'SELF' });
   readonly states = signal<readonly IState[]>([]);
   readonly cities = signal<readonly ICity[]>([]);
   readonly money = formatEarningMoney;
@@ -113,7 +120,14 @@ export class PatientHealthCheckV2BookingPageComponent {
   constructor() {
     this.states.set(this.locations.getStates('NG'));
     this.loadCatalogue();
+    this.loadDependants();
   }
+
+  loadDependants(): void { this.dependantsLoading.set(true); this.dependantsError.set(false); this.dependantsApi.getDependants().pipe(finalize(() => this.dependantsLoading.set(false))).subscribe({ next: result => this.dependants.set(result.items), error: () => this.dependantsError.set(true) }); }
+  selectParticipant(value: string): void { const selected = this.dependants().find(item => item.patientReference === value); this.participant.set(selected ? { kind: 'DEPENDANT', patientReference: selected.patientReference, displayName: selected.displayName } : { kind: 'SELF' }); this.contextChanged(); }
+  participantName(): string { const selected=this.participant(); return selected.kind==='SELF'?'You':selected.displayName; }
+  participantSelected(reference:string):boolean { const selected=this.participant(); return selected.kind==='DEPENDANT'&&selected.patientReference===reference; }
+  private participantRequest(): { participantPatientReference: string } | Record<string, never> { const selected=this.participant(); return selected.kind==='DEPENDANT'?{participantPatientReference:selected.patientReference}:{}; }
 
   readonly modes = () => {
     const selected = this.packages().find(
@@ -279,6 +293,7 @@ export class PatientHealthCheckV2BookingPageComponent {
     this.quoteError.set('');
     this.api
       .getConfigurationQuote({
+        ...this.participantRequest(),
         packageCode: offering.packageCode,
         providerReference: offering.providerReference,
         ...(offering.fulfilmentMode.code === 'PROVIDER_LOCATION' && location
@@ -317,6 +332,7 @@ export class PatientHealthCheckV2BookingPageComponent {
     this.createError.set('');
     this.bookings
       .createMyHealthCheck({
+        ...this.participantRequest(),
         configurationReference: confirmed.configurationReference,
         preferredDate: value.preferredDate,
         preferredTimeWindowStart: value.preferredTime,

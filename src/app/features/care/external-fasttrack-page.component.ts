@@ -1,15 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-} from '@angular/core';
-import {
-  FormBuilder,
-  FormControl,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -17,6 +7,8 @@ import { PublicFindCareProvider } from '../../core/models/find-care.model';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
+import { DependantsApiService } from '../../core/services/dependants-api.service';
+import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 
 @Component({
   selector: 'app-external-fasttrack-page',
@@ -24,25 +16,17 @@ import { LocationDataService } from '../../core/services/location-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
-      <a
-        routerLink="/me/fasttrack"
-        class="font-bold text-brand-700 underline"
-      >
+      <a routerLink="/me/fasttrack" class="font-bold text-brand-700 underline">
         ← FastTrack requests
       </a>
 
-      <p class="mt-6 text-sm font-bold uppercase text-brand-600">
-        Existing appointment
-      </p>
+      <p class="mt-6 text-sm font-bold uppercase text-brand-600">Existing appointment</p>
 
-      <h1 class="mt-2 text-3xl font-bold">
-        Request FastTrack
-      </h1>
+      <h1 class="mt-2 text-3xl font-bold">Request FastTrack</h1>
 
       <p class="mt-3 text-slate-600">
-        Ask a participating provider to verify your existing appointment for
-        priority handling and a shorter expected waiting time. Clinical urgency
-        and medical triage always take priority.
+        Ask a participating provider to verify your existing appointment for priority handling and a
+        shorter expected waiting time. Clinical urgency and medical triage always take priority.
       </p>
 
       <form
@@ -56,20 +40,15 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- ====================================================== -->
 
         <fieldset>
-          <legend class="text-lg font-bold">
-            Find your provider
-          </legend>
+          <legend class="text-lg font-bold">Find your provider</legend>
 
           <p class="mt-1 text-sm text-slate-600">
-            Search for the hospital, clinic, laboratory, pharmacy or other
-            provider where you already have an appointment.
+            Search for the hospital, clinic, laboratory, pharmacy or other provider where you
+            already have an appointment.
           </p>
 
           <div class="mt-4">
-            <label
-              for="provider-search"
-              class="block font-semibold"
-            >
+            <label for="provider-search" class="block font-semibold">
               Hospital or provider name
             </label>
 
@@ -88,11 +67,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
                 [disabled]="providerLoading()"
                 class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {{
-                  providerLoading()
-                    ? 'Searching…'
-                    : 'Search'
-                }}
+                {{ providerLoading() ? 'Searching…' : 'Search' }}
               </button>
             </div>
 
@@ -100,6 +75,48 @@ import { LocationDataService } from '../../core/services/location-data.service';
               You don't need to know the provider's state or city.
             </p>
           </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="text-lg font-bold">Who is this FastTrack request for?</legend>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <label class="flex cursor-pointer items-center gap-3 rounded-xl border p-3">
+              <input
+                type="radio"
+                name="participant"
+                [checked]="participant().kind === 'SELF'"
+                (change)="selectParticipant({ kind: 'SELF' })"
+              />
+              <span>Myself</span>
+            </label>
+            @for (dependant of dependants(); track dependant.patientReference) {
+              <label class="flex cursor-pointer items-center gap-3 rounded-xl border p-3">
+                <input
+                  type="radio"
+                  name="participant"
+                  [checked]="isDependantSelected(dependant.patientReference)"
+                  (change)="
+                    selectParticipant({
+                      kind: 'DEPENDANT',
+                      patientReference: dependant.patientReference,
+                      displayName: dependant.displayName,
+                    })
+                  "
+                />
+                <span>{{ dependant.displayName }}</span>
+              </label>
+            }
+          </div>
+          <a
+            routerLink="/me/family"
+            class="mt-2 inline-block text-sm font-semibold text-brand-700 underline"
+            >Add a dependant</a
+          >
+          @if (dependantsError()) {
+            <p class="mt-2 text-sm text-slate-600">
+              Dependants could not be loaded. You can still submit for yourself.
+            </p>
+          }
         </fieldset>
 
         <!-- ====================================================== -->
@@ -113,9 +130,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
             class="flex w-full items-center justify-between gap-4 text-left font-bold"
             [attr.aria-expanded]="showLocationFilters()"
           >
-            <span>
-              Can't find the provider? Filter by location
-            </span>
+            <span> Can't find the provider? Filter by location </span>
 
             <span aria-hidden="true">
               {{ showLocationFilters() ? '−' : '+' }}
@@ -134,9 +149,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
                   (change)="countryChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border bg-white px-3"
                 >
-                  <option value="">
-                    All countries
-                  </option>
+                  <option value="">All countries</option>
 
                   @for (country of countries; track country.isoCode) {
                     <option [value]="country.isoCode">
@@ -157,9 +170,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
                   [disabled]="!form.controls.countryCode.value"
                   class="mt-2 min-h-12 w-full rounded-xl border bg-white px-3 disabled:bg-slate-100"
                 >
-                  <option value="">
-                    All states
-                  </option>
+                  <option value="">All states</option>
 
                   @for (state of states(); track state.isoCode) {
                     <option [value]="state.isoCode">
@@ -179,9 +190,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
                   [disabled]="!form.controls.stateOrRegion.value"
                   class="mt-2 min-h-12 w-full rounded-xl border bg-white px-3 disabled:bg-slate-100"
                 >
-                  <option value="">
-                    All cities
-                  </option>
+                  <option value="">All cities</option>
 
                   @for (city of cities(); track city.name) {
                     <option [value]="city.name">
@@ -218,12 +227,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- ====================================================== -->
 
         @if (providerLoading()) {
-          <p
-            role="status"
-            class="rounded-xl bg-slate-50 p-4 text-slate-600"
-          >
-            Finding providers…
-          </p>
+          <p role="status" class="rounded-xl bg-slate-50 p-4 text-slate-600">Finding providers…</p>
         }
 
         <!-- ====================================================== -->
@@ -235,9 +239,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
             <section>
               <div class="flex items-end justify-between gap-4">
                 <div>
-                  <h2 class="font-bold">
-                    Search results
-                  </h2>
+                  <h2 class="font-bold">Search results</h2>
 
                   <p class="mt-1 text-sm text-slate-600">
                     Select the provider where you already have an appointment.
@@ -251,71 +253,43 @@ import { LocationDataService } from '../../core/services/location-data.service';
               </div>
 
               <div class="mt-4 grid gap-3">
-                @for (
-                  provider of providers();
-                  track provider.providerReference
-                ) {
+                @for (provider of providers(); track provider.providerReference) {
                   <button
                     type="button"
                     (click)="selectProvider(provider)"
                     class="rounded-2xl border p-4 text-left transition hover:border-brand-500 hover:bg-brand-50"
                     [class.border-brand-700]="
-                      form.controls.providerReference.value ===
-                      provider.providerReference
+                      form.controls.providerReference.value === provider.providerReference
                     "
                     [class.bg-brand-50]="
-                      form.controls.providerReference.value ===
-                      provider.providerReference
+                      form.controls.providerReference.value === provider.providerReference
                     "
                   >
-                    <div
-                      class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"
-                    >
+                    <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                       <div>
                         <strong class="text-base">
                           {{ provider.displayName }}
                         </strong>
 
                         <p class="mt-1 text-sm text-slate-600">
-                          {{
-                            provider.providerType.replaceAll(
-                              '_',
-                              ' '
-                            )
-                          }}
+                          {{ provider.providerType.replaceAll('_', ' ') }}
                         </p>
 
                         @if (provider.location) {
                           <p class="mt-2 text-sm text-slate-600">
-                            {{
-                              providerLocation(provider)
-                            }}
+                            {{ providerLocation(provider) }}
                           </p>
                         }
                       </div>
 
-                      @if (supportsFastTrack(provider)) {
-                        <span
-                          class="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800"
-                        >
-                          FastTrack available
-                        </span>
-                      } @else {
-                        <span
-                          class="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"
-                        >
-                          FastTrack unavailable
-                        </span>
-                      }
+                      <span
+                        class="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800"
+                        >FastTrack available</span
+                      >
                     </div>
 
-                    @if (
-                      form.controls.providerReference.value ===
-                      provider.providerReference
-                    ) {
-                      <p class="mt-3 text-sm font-bold text-brand-700">
-                        ✓ Selected
-                      </p>
+                    @if (form.controls.providerReference.value === provider.providerReference) {
+                      <p class="mt-3 text-sm font-bold text-brand-700">✓ Selected</p>
                     }
                   </button>
                 }
@@ -323,13 +297,11 @@ import { LocationDataService } from '../../core/services/location-data.service';
             </section>
           } @else {
             <section class="rounded-2xl border bg-slate-50 p-5">
-              <h2 class="font-bold">
-                Provider not found
-              </h2>
+              <h2 class="font-bold">Provider not found</h2>
 
               <p class="mt-2 text-sm text-slate-600">
-                We couldn't find a matching provider. Check the name or use
-                the location filters to narrow your search.
+                We couldn't find a matching provider. Check the name or use the location filters to
+                narrow your search.
               </p>
 
               <div class="mt-4 flex flex-wrap gap-3">
@@ -361,12 +333,8 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- ====================================================== -->
 
         @if (selectedProvider(); as provider) {
-          <section
-            class="rounded-2xl border border-brand-200 bg-brand-50 p-5"
-          >
-            <p
-              class="text-xs font-bold uppercase tracking-wide text-brand-700"
-            >
+          <section class="rounded-2xl border border-brand-200 bg-brand-50 p-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-brand-700">
               Selected provider
             </p>
 
@@ -379,13 +347,6 @@ import { LocationDataService } from '../../core/services/location-data.service';
                 {{ providerLocation(provider) }}
               </p>
             }
-
-            @if (!supportsFastTrack(provider)) {
-              <p class="mt-4 rounded-xl bg-white p-4 text-sm text-slate-700">
-                This provider is on SmartClinic, but FastTrack is not currently
-                available for its services.
-              </p>
-            }
           </section>
         }
 
@@ -393,7 +354,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- SERVICE -->
         <!-- ====================================================== -->
 
-        @if (selectedProvider() && supportsFastTrack(selectedProvider()!)) {
+        @if (selectedProvider()) {
           <label class="font-semibold">
             Service
 
@@ -401,28 +362,18 @@ import { LocationDataService } from '../../core/services/location-data.service';
               formControlName="serviceCode"
               class="mt-2 min-h-12 w-full rounded-xl border px-3"
             >
-              <option value="">
-                Select service
-              </option>
+              <option value="">Select service</option>
 
               @for (service of fastServices(); track service.code) {
                 <option [value]="service.code">
                   {{ service.name }}
                   · FastTrack
-                  {{
-                    money(
-                      service.fastTrackFeeMinor,
-                      service.fastTrackCurrency
-                    )
-                  }}
+                  {{ money(service.fastTrackFeeMinor, service.fastTrackCurrency) }}
                 </option>
               }
             </select>
 
-            @if (
-              form.controls.serviceCode.invalid &&
-              form.controls.serviceCode.touched
-            ) {
+            @if (form.controls.serviceCode.invalid && form.controls.serviceCode.touched) {
               <p class="mt-2 text-sm font-semibold text-red-700">
                 Select the service for your existing appointment.
               </p>
@@ -434,18 +385,12 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- APPOINTMENT DETAILS -->
         <!-- ====================================================== -->
 
-        @if (
-          selectedProvider() &&
-          supportsFastTrack(selectedProvider()!)
-        ) {
+        @if (selectedProvider()) {
           <fieldset>
-            <legend class="text-lg font-bold">
-              Existing appointment details
-            </legend>
+            <legend class="text-lg font-bold">Existing appointment details</legend>
 
             <p class="mt-1 text-sm text-slate-600">
-              Enter the details from the appointment you already have with this
-              provider.
+              Enter the details from the appointment you already have with this provider.
             </p>
 
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -478,8 +423,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
                 />
 
                 @if (
-                  form.controls.appointmentDate.invalid &&
-                  form.controls.appointmentDate.touched
+                  form.controls.appointmentDate.invalid && form.controls.appointmentDate.touched
                 ) {
                   <p class="mt-2 text-sm font-semibold text-red-700">
                     Select your appointment date.
@@ -489,9 +433,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
 
               <label class="font-semibold">
                 Appointment time
-                <span class="font-normal text-slate-500">
-                  (optional)
-                </span>
+                <span class="font-normal text-slate-500"> (optional) </span>
 
                 <input
                   type="time"
@@ -502,9 +444,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
 
               <label class="font-semibold">
                 Department
-                <span class="font-normal text-slate-500">
-                  (optional)
-                </span>
+                <span class="font-normal text-slate-500"> (optional) </span>
 
                 <input
                   formControlName="department"
@@ -515,9 +455,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
 
               <label class="font-semibold">
                 Doctor name
-                <span class="font-normal text-slate-500">
-                  (optional)
-                </span>
+                <span class="font-normal text-slate-500"> (optional) </span>
 
                 <input
                   formControlName="doctorName"
@@ -528,9 +466,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
 
               <label class="font-semibold sm:col-span-2">
                 Notes
-                <span class="font-normal text-slate-500">
-                  (optional)
-                </span>
+                <span class="font-normal text-slate-500"> (optional) </span>
 
                 <textarea
                   formControlName="notes"
@@ -549,10 +485,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- ====================================================== -->
 
         @if (error()) {
-          <p
-            role="alert"
-            class="rounded-xl bg-red-50 p-4 text-red-800"
-          >
+          <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-800">
             {{ error() }}
           </p>
         }
@@ -561,19 +494,14 @@ import { LocationDataService } from '../../core/services/location-data.service';
         <!-- SUBMIT -->
         <!-- ====================================================== -->
 
-        @if (
-          selectedProvider() &&
-          supportsFastTrack(selectedProvider()!)
-        ) {
+        @if (selectedProvider()) {
           <button
             type="submit"
             [disabled]="submitting()"
             class="min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {{
-              submitting()
-                ? 'Submitting FastTrack request…'
-                : 'Submit for provider verification'
+              submitting() ? 'Submitting FastTrack request…' : 'Submit for provider verification'
             }}
           </button>
         }
@@ -586,17 +514,16 @@ export class ExternalFastTrackPageComponent {
   private readonly find = inject(FindCareApiService);
   private readonly fast = inject(FastTrackApiService);
   private readonly location = inject(LocationDataService);
+  private readonly dependantsApi = inject(DependantsApiService);
   private readonly router = inject(Router);
 
   readonly countries = this.location.getCountries();
 
-  readonly states = signal<
-    ReturnType<LocationDataService['getStates']>
-  >(this.location.getStates('NG'));
+  readonly states = signal<ReturnType<LocationDataService['getStates']>>(
+    this.location.getStates('NG'),
+  );
 
-  readonly cities = signal<
-    ReturnType<LocationDataService['getCities']>
-  >([]);
+  readonly cities = signal<ReturnType<LocationDataService['getCities']>>([]);
 
   /**
    * This control contains the ISO state code required by
@@ -609,9 +536,7 @@ export class ExternalFastTrackPageComponent {
     nonNullable: true,
   });
 
-  readonly providers = signal<
-    readonly PublicFindCareProvider[]
-  >([]);
+  readonly providers = signal<readonly PublicFindCareProvider[]>([]);
 
   readonly providerLoading = signal(false);
   readonly hasSearched = signal(false);
@@ -619,6 +544,10 @@ export class ExternalFastTrackPageComponent {
 
   readonly error = signal<string | null>(null);
   readonly submitting = signal(false);
+  readonly dependants = signal<readonly Dependant[]>([]);
+  readonly dependantsLoading = signal(true);
+  readonly dependantsError = signal(false);
+  readonly participant = signal<HealthCheckParticipantSelection>({ kind: 'SELF' });
 
   readonly form = this.fb.nonNullable.group({
     /**
@@ -626,12 +555,9 @@ export class ExternalFastTrackPageComponent {
      *
      * Geography is deliberately OPTIONAL for FastTrack discovery.
      */
-    providerSearch: [
-      '',
-      [Validators.maxLength(160)],
-    ],
+    providerSearch: ['', [Validators.maxLength(160)]],
 
-    countryCode: ['NG'],
+    countryCode: [''],
 
     stateOrRegion: [''],
 
@@ -640,68 +566,64 @@ export class ExternalFastTrackPageComponent {
     /**
      * Actual FastTrack request controls.
      */
-    providerReference: [
-      '',
-      Validators.required,
-    ],
+    providerReference: ['', Validators.required],
 
-    serviceCode: [
-      '',
-      Validators.required,
-    ],
+    serviceCode: ['', Validators.required],
 
-    externalAppointmentReference: [
-      '',
-      [
-        Validators.required,
-        Validators.maxLength(160),
-      ],
-    ],
+    externalAppointmentReference: ['', [Validators.required, Validators.maxLength(160)]],
 
-    appointmentDate: [
-      '',
-      Validators.required,
-    ],
+    appointmentDate: ['', Validators.required],
 
     appointmentTime: [''],
 
-    department: [
-      '',
-      [Validators.maxLength(160)],
-    ],
+    department: ['', [Validators.maxLength(160)]],
 
-    doctorName: [
-      '',
-      [Validators.maxLength(160)],
-    ],
+    doctorName: ['', [Validators.maxLength(160)]],
 
-    notes: [
-      '',
-      [Validators.maxLength(4000)],
-    ],
+    notes: ['', [Validators.maxLength(4000)]],
   });
 
   readonly selectedProvider = () =>
     this.providers().find(
-      (provider) =>
-        provider.providerReference ===
-        this.form.controls.providerReference.value,
+      (provider) => provider.providerReference === this.form.controls.providerReference.value,
     );
 
   readonly fastServices = () =>
-    this.selectedProvider()?.services.filter(
-      (service) => service.supportsFastTrack,
-    ) ?? [];
+    this.selectedProvider()?.services.filter((service) => service.supportsFastTrack) ?? [];
+
+  constructor() {
+    this.dependantsApi.getDependants().subscribe({
+      next: (response) => this.dependants.set(response.items),
+      error: () => {
+        this.dependantsError.set(true);
+        this.dependantsLoading.set(false);
+      },
+      complete: () => this.dependantsLoading.set(false),
+    });
+  }
+
+  selectParticipant(selection: HealthCheckParticipantSelection): void {
+    this.participant.set(selection);
+  }
+
+  isDependantSelected(patientReference: string): boolean {
+    const selected = this.participant();
+    return selected.kind === 'DEPENDANT' && selected.patientReference === patientReference;
+  }
+
+  participantRequest(): { participantPatientReference?: string } {
+    const selected = this.participant();
+    return selected.kind === 'DEPENDANT'
+      ? { participantPatientReference: selected.patientReference }
+      : {};
+  }
 
   toggleLocationFilters(): void {
-    this.showLocationFilters.update(
-      (current) => !current,
-    );
+    this.showLocationFilters.update((current) => !current);
   }
 
   countryChanged(): void {
-    const countryCode =
-      this.form.controls.countryCode.value;
+    const countryCode = this.form.controls.countryCode.value;
 
     this.fastTrackStateCode.setValue('', {
       emitEvent: false,
@@ -714,11 +636,7 @@ export class ExternalFastTrackPageComponent {
       serviceCode: '',
     });
 
-    this.states.set(
-      countryCode
-        ? this.location.getStates(countryCode)
-        : [],
-    );
+    this.states.set(countryCode ? this.location.getStates(countryCode) : []);
 
     this.cities.set([]);
 
@@ -727,21 +645,14 @@ export class ExternalFastTrackPageComponent {
   }
 
   stateChanged(): void {
-    const stateCode =
-      this.fastTrackStateCode.value;
+    const stateCode = this.fastTrackStateCode.value;
 
-    const countryCode =
-      this.form.controls.countryCode.value;
+    const countryCode = this.form.controls.countryCode.value;
 
-    const selectedState =
-      this.states().find(
-        (state) =>
-          state.isoCode === stateCode,
-      );
+    const selectedState = this.states().find((state) => state.isoCode === stateCode);
 
     this.form.patchValue({
-      stateOrRegion:
-        selectedState?.name ?? '',
+      stateOrRegion: selectedState?.name ?? '',
       city: '',
       providerReference: '',
       serviceCode: '',
@@ -749,10 +660,7 @@ export class ExternalFastTrackPageComponent {
 
     this.cities.set(
       countryCode && selectedState
-        ? this.location.getCities(
-            countryCode,
-            selectedState.isoCode,
-          )
+        ? this.location.getCities(countryCode, selectedState.isoCode)
         : [],
     );
 
@@ -785,35 +693,23 @@ export class ExternalFastTrackPageComponent {
       return;
     }
 
-    const value =
-      this.form.getRawValue();
+    const value = this.form.getRawValue();
 
-    const search =
-      value.providerSearch.trim();
+    const search = value.providerSearch.trim();
 
-    const countryCode =
-      value.countryCode.trim();
+    const countryCode = value.countryCode.trim();
 
-    const stateOrRegion =
-      value.stateOrRegion.trim();
+    const stateOrRegion = value.stateOrRegion.trim();
 
-    const city =
-      value.city.trim();
+    const city = value.city.trim();
 
     /**
      * We need at least a provider name OR some geography.
      *
      * This prevents an accidental unfiltered provider-directory request.
      */
-    if (
-      !search &&
-      !countryCode &&
-      !stateOrRegion &&
-      !city
-    ) {
-      this.error.set(
-        'Enter a hospital or provider name, or use the location filters.',
-      );
+    if (!search && !countryCode && !stateOrRegion && !city) {
+      this.error.set('Enter a hospital or provider name, or use the location filters.');
 
       return;
     }
@@ -830,27 +726,18 @@ export class ExternalFastTrackPageComponent {
      */
     this.find
       .getProviders({
-       ...(search ? { q: search } : {}),
+        ...(search ? { q: search } : {}),
+        fastTrackOnly: true,
 
-        ...(countryCode
-          ? { countryCode }
-          : {}),
+        ...(countryCode ? { countryCode } : {}),
 
-        ...(stateOrRegion
-          ? { stateOrRegion }
-          : {}),
+        ...(stateOrRegion ? { stateOrRegion } : {}),
 
-        ...(city
-          ? { city }
-          : {}),
+        ...(city ? { city } : {}),
 
         limit: 50,
       })
-      .pipe(
-        finalize(() =>
-          this.providerLoading.set(false),
-        ),
-      )
+      .pipe(finalize(() => this.providerLoading.set(false)))
       .subscribe({
         next: (response) => {
           /**
@@ -860,9 +747,7 @@ export class ExternalFastTrackPageComponent {
            * Showing them allows the UI to explain that the
            * provider exists but FastTrack isn't available.
            */
-          this.providers.set(
-            response.items,
-          );
+          this.providers.set(response.items);
 
           this.form.patchValue({
             providerReference: '',
@@ -880,12 +765,9 @@ export class ExternalFastTrackPageComponent {
       });
   }
 
-  selectProvider(
-    provider: PublicFindCareProvider,
-  ): void {
+  selectProvider(provider: PublicFindCareProvider): void {
     this.form.patchValue({
-      providerReference:
-        provider.providerReference,
+      providerReference: provider.providerReference,
 
       serviceCode: '',
     });
@@ -893,61 +775,31 @@ export class ExternalFastTrackPageComponent {
     this.error.set(null);
   }
 
-  supportsFastTrack(
-    provider: PublicFindCareProvider,
-  ): boolean {
-    return provider.services.some(
-      (service) =>
-        service.supportsFastTrack,
-    );
-  }
-
-  providerLocation(
-    provider: PublicFindCareProvider,
-  ): string {
+  providerLocation(provider: PublicFindCareProvider): string {
     if (!provider.location) {
       return 'Location unavailable';
     }
 
-    return [
-      provider.location.city,
-      provider.location.stateOrRegion,
-      provider.location.countryCode,
-    ]
+    return [provider.location.city, provider.location.stateOrRegion, provider.location.countryCode]
       .filter(Boolean)
       .join(', ');
   }
 
-  money(
-    minor: number | null,
-    currency: string | null,
-  ): string {
-    if (
-      minor == null ||
-      !currency
-    ) {
+  money(minor: number | null, currency: string | null): string {
+    if (minor == null || !currency) {
       return 'fee unavailable';
     }
 
     const digits =
-      new Intl.NumberFormat(
-        'en-NG',
-        {
-          style: 'currency',
-          currency,
-        },
-      ).resolvedOptions()
-        .maximumFractionDigits ?? 2;
-
-    return new Intl.NumberFormat(
-      'en-NG',
-      {
+      new Intl.NumberFormat('en-NG', {
         style: 'currency',
         currency,
-      },
-    ).format(
-      minor / 10 ** digits,
-    );
+      }).resolvedOptions().maximumFractionDigits ?? 2;
+
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency,
+    }).format(minor / 10 ** digits);
   }
 
   submit(): void {
@@ -955,90 +807,65 @@ export class ExternalFastTrackPageComponent {
      * Explicitly check the selected provider before relying
      * on the rest of the form.
      */
-    const provider =
-      this.selectedProvider();
+    const provider = this.selectedProvider();
 
-    if (
-      !provider ||
-      !this.supportsFastTrack(provider)
-    ) {
+    if (!provider) {
       this.form.controls.providerReference.markAsTouched();
 
-      this.error.set(
-        'Select a provider that currently supports FastTrack.',
-      );
+      this.error.set('Select a FastTrack provider.');
 
       return;
     }
 
-    if (
-      this.form.invalid ||
-      this.submitting()
-    ) {
+    if (this.form.invalid || this.submitting()) {
       this.form.markAllAsTouched();
 
       return;
     }
 
-    const value =
-      this.form.getRawValue();
+    const value = this.form.getRawValue();
 
     this.submitting.set(true);
     this.error.set(null);
 
     this.fast
       .createExternal({
-        providerReference:
-          value.providerReference,
+        providerReference: value.providerReference,
 
-        serviceCode:
-          value.serviceCode,
+        serviceCode: value.serviceCode,
 
-        externalAppointmentReference:
-          value.externalAppointmentReference.trim(),
+        externalAppointmentReference: value.externalAppointmentReference.trim(),
 
-        appointmentDate:
-          value.appointmentDate,
+        appointmentDate: value.appointmentDate,
 
         ...(value.appointmentTime
           ? {
-              appointmentTime:
-                value.appointmentTime,
+              appointmentTime: value.appointmentTime,
             }
           : {}),
 
         ...(value.department.trim()
           ? {
-              department:
-                value.department.trim(),
+              department: value.department.trim(),
             }
           : {}),
 
         ...(value.doctorName.trim()
           ? {
-              doctorName:
-                value.doctorName.trim(),
+              doctorName: value.doctorName.trim(),
             }
           : {}),
 
         ...(value.notes.trim()
           ? {
-              notes:
-                value.notes.trim(),
+              notes: value.notes.trim(),
             }
           : {}),
+        ...this.participantRequest(),
       })
-      .pipe(
-        finalize(() =>
-          this.submitting.set(false),
-        ),
-      )
+      .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
-        next: (response) =>
-          void this.router.navigate([
-            '/me/fasttrack',
-            response.reference,
-          ]),
+        next: (response) => void this.router.navigate(['/me/fasttrack', response.reference]),
 
         error: () =>
           this.error.set(

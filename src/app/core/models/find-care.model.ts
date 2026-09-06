@@ -98,11 +98,13 @@ export interface PublicFindCareProviderPage {
   readonly totalPages: number;
 }
 export interface FindCareProviderFilters {
+  readonly q?: string;
   readonly serviceCode?: string;
   readonly countryCode?: string;
   readonly stateOrRegion?: string;
   readonly city?: string;
   readonly deliveryMode?: CareDeliveryMode;
+  readonly fastTrackOnly?: boolean;
   readonly page?: number;
   readonly limit?: number;
 }
@@ -131,6 +133,7 @@ export interface CreateCareRequest {
   readonly preferredTime?: string;
   readonly contactMethod: CareRequestContactMethod;
   readonly notes?: string;
+  readonly participantPatientReference?: string;
 }
 export interface CareRequestProviderSummary {
   readonly providerReference: string;
@@ -165,6 +168,7 @@ export interface CareRequest {
   readonly funding: CareRequestFundingSummary | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly participant?: FastTrackParticipant | null;
   readonly appointment: CareRequestAppointmentSummary | null;
 }
 export type CareRequestFundingStatus = 'PENDING' | 'PAID' | 'SATISFIED_FREE';
@@ -234,6 +238,7 @@ export interface CareChatDetail {
   canSendMessages: boolean;
   unreadCount: number;
   participant: CareChatParticipant;
+  subject?: FastTrackParticipant | null;
   appointment: CareChatAppointmentSummary | null;
   createdAt: string;
   updatedAt: string;
@@ -289,6 +294,13 @@ export interface CreateExternalFastTrack {
   readonly department?: string;
   readonly doctorName?: string;
   readonly notes?: string;
+  readonly participantPatientReference?: string;
+}
+export interface FastTrackParticipant {
+  readonly patientReference: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly displayName: string;
 }
 export interface FastTrackRequest {
   readonly reference: string;
@@ -299,6 +311,7 @@ export interface FastTrackRequest {
     readonly displayName: string;
     readonly providerType: string;
   };
+  readonly participant?: FastTrackParticipant | null;
   readonly service: { readonly code: string; readonly name: string };
   readonly careRequestReference: string | null;
   readonly externalAppointment: {

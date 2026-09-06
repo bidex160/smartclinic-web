@@ -53,7 +53,7 @@ export interface PublicBookingResponse {
   readonly status: string;
   readonly healthCheckPackage: { readonly code: string; readonly name: string };
   readonly fulfilmentMode: { readonly code: string; readonly name: string };
-  readonly participant: { readonly givenName: string; readonly familyName: string };
+  readonly participant: { readonly patientReference?: string; readonly firstName?: string; readonly lastName?: string; readonly displayName?: string; readonly givenName?: string; readonly familyName?: string };
   readonly quotedAmount: string | null;
   readonly quotedCurrency: string | null;
   readonly preferredDate: string | null;

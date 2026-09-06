@@ -150,7 +150,7 @@
               <tr class="border-t align-top">
                 <td class="p-4">{{ utilsService.formatDate(item.createdAt) }}</td>
                 <td class="p-4 font-mono font-bold">{{ item.bookingReference }}</td>
-                <td class="p-4 font-semibold">{{ item.healthCheckPackage.name }}</td>
+                <td class="p-4 font-semibold">{{ item.healthCheckPackage.name }}<br><small>For {{ item.participant.displayName }}</small></td>
                 <td class="p-4">
                   <strong>Requested appointment</strong><br />{{
                     utilsService.formatAppointment(

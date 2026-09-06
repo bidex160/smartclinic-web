@@ -199,6 +199,7 @@ function item(
 ): PatientHealthCheckHistoryItem {
   return {
     bookingReference,
+    participant: { patientReference: 'SCP-AB12-CD34', firstName: 'Aisha', lastName: 'Okafor', displayName: 'Aisha Okafor' },
     bookingStatus: 'PENDING_PROVIDER_MATCH',
     healthCheckPackage: { code: 'ESSENTIAL', name: 'Essential' },
     fulfilmentMode: { code: 'HOME_VISIT', name: 'Home visit' },

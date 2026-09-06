@@ -45,6 +45,7 @@ import { UtilsService } from '../../core/services/utils.service';
               <th class="p-4">Reference</th>
               <th class="p-4">Provider</th>
               <th class="p-4">Service</th>
+              <th class="p-4">Participant</th>
               <th class="p-4">Appointment</th>
               <th class="p-4">Status</th>
               <th class="p-4">Action</th>
@@ -56,6 +57,7 @@ import { UtilsService } from '../../core/services/utils.service';
                 <td class="p-4 font-semibold">{{ item.reference }}</td>
                 <td class="p-4">{{ item.provider.displayName }}</td>
                 <td class="p-4">{{ item.service.name }}</td>
+                <td class="p-4">{{ item.participant?.displayName ?? 'For you' }}</td>
                 <td class="p-4">
                   {{
                     item.externalAppointment

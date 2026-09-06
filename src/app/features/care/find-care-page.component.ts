@@ -15,6 +15,8 @@ import { CareRequestIntentService } from '../../core/services/care-request-inten
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
+import { DependantsApiService } from '../../core/services/dependants-api.service';
+import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 
 @Component({
   selector: 'app-find-care-page',
@@ -48,6 +50,10 @@ import { LocationDataService } from '../../core/services/location-data.service';
           <div>
             <dt class="text-sm text-slate-600">Care type</dt>
             <dd>{{ deliveryModeLabel(request.deliveryMode) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-slate-600">Care for</dt>
+            <dd>{{ request.participant?.displayName ?? 'You' }}</dd>
           </div>
           <div>
             <dt class="text-sm text-slate-600">Service price</dt>
@@ -115,6 +121,47 @@ import { LocationDataService } from '../../core/services/location-data.service';
             @if (selectedDescription()) {
               <p class="mt-3 text-sm text-slate-600">{{ selectedDescription() }}</p>
             }
+          }
+        </fieldset>
+        <fieldset class="rounded-3xl border bg-white p-6">
+          <legend class="px-2 text-xl font-bold">Who is this care request for?</legend>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
+              ><input
+                type="radio"
+                name="care-participant"
+                [checked]="participant().kind === 'SELF'"
+                (change)="selectParticipant({ kind: 'SELF' })"
+              />
+              <span>Myself</span></label
+            >
+            @for (dependant of dependants(); track dependant.patientReference) {
+              <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
+                ><input
+                  type="radio"
+                  name="care-participant"
+                  [checked]="isDependantSelected(dependant.patientReference)"
+                  (change)="
+                    selectParticipant({
+                      kind: 'DEPENDANT',
+                      patientReference: dependant.patientReference,
+                      displayName: dependant.displayName,
+                    })
+                  "
+                />
+                <span>{{ dependant.displayName }}</span></label
+              >
+            }
+          </div>
+          <a
+            routerLink="/me/family"
+            class="mt-2 inline-block text-sm font-semibold text-brand-700 underline"
+            >Add a dependant</a
+          >
+          @if (dependantsError()) {
+            <p class="mt-2 text-sm text-slate-600">
+              Dependants could not be loaded. You can still request care for yourself.
+            </p>
           }
         </fieldset>
         <fieldset class="rounded-3xl border bg-white p-6">
@@ -310,6 +357,7 @@ export class FindCarePageComponent {
   private readonly intent = inject(CareRequestIntentService);
   private readonly router = inject(Router);
   private readonly locations = inject(LocationDataService);
+  private readonly dependantsApi = inject(DependantsApiService);
   readonly countries = this.locations.getCountries();
   readonly states = signal<ReturnType<LocationDataService['getStates']>>([]);
   readonly cities = signal<ReturnType<LocationDataService['getCities']>>([]);
@@ -326,6 +374,9 @@ export class FindCarePageComponent {
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<CareRequest | null>(null);
+  readonly dependants = signal<readonly Dependant[]>([]);
+  readonly dependantsError = signal(false);
+  readonly participant = signal<HealthCheckParticipantSelection>({ kind: 'SELF' });
   readonly form = this.fb.nonNullable.group({
     countryCode: ['NG'],
     stateOrRegion: [''],
@@ -375,6 +426,12 @@ export class FindCarePageComponent {
   constructor() {
     this.states.set(this.locations.getStates('NG'));
     this.loadServices();
+    this.dependantsApi
+      .getDependants()
+      .subscribe({
+        next: (v) => this.dependants.set(v.items),
+        error: () => this.dependantsError.set(true),
+      });
     const saved = this.intent.take();
     if (saved) {
       this.form.patchValue(saved);
@@ -391,6 +448,17 @@ export class FindCarePageComponent {
       }
       this.discoverProviders();
     }
+  }
+  selectParticipant(selection: HealthCheckParticipantSelection) {
+    this.participant.set(selection);
+  }
+  isDependantSelected(reference: string) {
+    const p = this.participant();
+    return p.kind === 'DEPENDANT' && p.patientReference === reference;
+  }
+  participantRequest(): { participantPatientReference?: string } {
+    const p = this.participant();
+    return p.kind === 'DEPENDANT' ? { participantPatientReference: p.patientReference } : {};
   }
   loadServices() {
     this.servicesLoading.set(true);
@@ -536,6 +604,7 @@ export class FindCarePageComponent {
       ...(v.preferredTime ? { preferredTime: v.preferredTime } : {}),
       contactMethod: v.contactMethod,
       ...(v.notes.trim() ? { notes: v.notes.trim() } : {}),
+      ...this.participantRequest(),
     };
   }
   submit() {

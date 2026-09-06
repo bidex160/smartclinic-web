@@ -270,7 +270,7 @@ export class PatientLayoutComponent implements OnInit {
           { label: 'Referrals & Rewards', route: '/me/referrals', exact: true },
         ],
       },
-      { label: 'Account', items: [{ label: 'Profile', route: '/me/profile', exact: true }] },
+      { label: 'Account', items: [{ label: 'Family & Dependants', route: '/me/family', exact: true }, { label: 'Profile', route: '/me/profile', exact: true }] },
     ];
 
     if (this.canReviewSelfChecks()) {

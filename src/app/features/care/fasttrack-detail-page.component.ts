@@ -34,6 +34,10 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             <dd class="font-semibold">{{ r.provider.displayName }}</dd>
           </div>
           <div>
+            <dt class="text-sm text-slate-500">Patient</dt>
+            <dd class="font-semibold">{{ r.participant?.displayName ?? 'You' }}</dd>
+          </div>
+          <div>
             <dt class="text-sm text-slate-500">Source</dt>
             <dd>
               {{
@@ -161,28 +165,26 @@ export class FastTrackDetailPageComponent {
     const initialization = paymentEmail
       ? this.api.initializePayment(this.reference, paymentEmail)
       : this.api.initializePayment(this.reference);
-    initialization
-      .pipe(finalize(() => this.paying.set(false)))
-      .subscribe({
-        next: (p) => {
-          this.payment.set(p);
-          if (!p.accessCode) {
-            this.error.set('We could not start secure payment. Try again.');
-            return;
-          }
-          this.popup.resumeTransaction(p.accessCode, {
-            onSuccess: () => this.verify(),
-            onError: () => this.error.set('Payment was not completed. You can safely try again.'),
-          });
-        },
-        error: (error) =>
-          this.error.set(
-            error?.status === 400 &&
-              error?.error?.message === 'A valid payment email is required to continue'
-              ? error.error.message
-              : 'We could not start secure payment. Try again.',
-          ),
-      });
+    initialization.pipe(finalize(() => this.paying.set(false))).subscribe({
+      next: (p) => {
+        this.payment.set(p);
+        if (!p.accessCode) {
+          this.error.set('We could not start secure payment. Try again.');
+          return;
+        }
+        this.popup.resumeTransaction(p.accessCode, {
+          onSuccess: () => this.verify(),
+          onError: () => this.error.set('Payment was not completed. You can safely try again.'),
+        });
+      },
+      error: (error) =>
+        this.error.set(
+          error?.status === 400 &&
+            error?.error?.message === 'A valid payment email is required to continue'
+            ? error.error.message
+            : 'We could not start secure payment. Try again.',
+        ),
+    });
   }
   verify() {
     if (this.paying()) return;
@@ -221,8 +223,9 @@ export class FastTrackDetailPageComponent {
     return 'Not started';
   }
   money(minor: number, currency: string) {
-    const digits = new Intl.NumberFormat('en-NG', { style: 'currency', currency }).resolvedOptions()
-      .maximumFractionDigits ?? 2;
+    const digits =
+      new Intl.NumberFormat('en-NG', { style: 'currency', currency }).resolvedOptions()
+        .maximumFractionDigits ?? 2;
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency }).format(
       minor / 10 ** digits,
     );

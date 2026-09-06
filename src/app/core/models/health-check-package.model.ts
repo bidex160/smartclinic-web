@@ -30,6 +30,7 @@ export interface HealthCheckCataloguePackage {
 }
 
 export interface HealthCheckConfigurationQuoteRequest {
+  readonly participantPatientReference?: string;
   readonly packageCode: string;
   readonly providerReference: string;
   readonly providerLocationReference?: string;

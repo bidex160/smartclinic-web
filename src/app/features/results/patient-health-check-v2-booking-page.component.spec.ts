@@ -5,6 +5,7 @@ import { ProviderRecruitmentInvitationResponse } from '../../core/models/provide
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
+import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { PatientHealthCheckV2BookingPageComponent } from './patient-health-check-v2-booking-page.component';
 
 describe('PatientHealthCheckV2BookingPageComponent', () => {
@@ -252,6 +253,17 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(text).toContain('₦9,000');
   });
 
+  it('preserves a dependant through quote, review, and booking using only the public patient reference', async () => {
+    const { component, packageApi, bookingApi, fixture } = await setup();
+    component.selectParticipant('SCP-AB12-CD34');
+    enterCustomise(component, providerOffering); component.selectLocation(providerOffering.locations[0]); component.reviewBooking(); fixture.detectChanges();
+    expect(packageApi.getConfigurationQuote.mock.calls[0][0]).toEqual(expect.objectContaining({ participantPatientReference: 'SCP-AB12-CD34' }));
+    expect(fixture.nativeElement.textContent).toContain('Aisha Okafor');
+    component.createBooking();
+    const payload = bookingApi.createMyHealthCheck.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload['participantPatientReference']).toBe('SCP-AB12-CD34'); expect(payload['participantPatientId']).toBeUndefined(); expect(payload['email']).toBeUndefined(); expect(payload['phone']).toBeUndefined();
+  });
+
   it('keeps quote failures on Customise with patient-safe copy', async () => {
     const { component, fixture } = await setup({ quoteError: true });
     enterCustomise(component, providerOffering);
@@ -283,6 +295,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     component.createBooking();
     const payload = bookingApi.createMyHealthCheck.mock.calls[0]![0] as Record<string, unknown>;
     expect(payload['visitAddress']).toBeUndefined();
+    expect(payload['participantPatientReference']).toBeUndefined();
     expect(payload['configurationReference']).toBe('SC-HCQ-SAFE');
     fixture.detectChanges();
     expect(component.currentStep()).toBe(4);
@@ -377,7 +390,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     };
     const bookingApi = {
       createMyHealthCheck: vi.fn((_request: unknown) =>
-        of({ bookingReference: 'SC-BOOKING', commercialConfiguration: selectedQuote }),
+        of({ bookingReference: 'SC-BOOKING', participant: { patientReference: 'SCP-SELF', firstName: 'Ada', lastName: 'Okafor', displayName: 'Ada Okafor' }, commercialConfiguration: selectedQuote }),
       ),
       getMyHealthCheckPayment: vi.fn(() => throwError(() => new Error('not loaded in unit test'))),
       previewMyHealthCheckRewards: vi.fn(() =>
@@ -394,6 +407,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
         { provide: HealthCheckPackagesApiService, useValue: packageApi },
         { provide: HealthCheckResultsApiService, useValue: bookingApi },
         { provide: ProviderRecruitmentInvitationsApiService, useValue: invitationApi },
+        { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [{ patientReference: 'SCP-AB12-CD34', firstName: 'Aisha', lastName: 'Okafor', displayName: 'Aisha Okafor', dateOfBirth: '2015-06-12', countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Ikeja', relationship: { type: 'MOTHER', role: 'GUARDIAN', isPrimary: true } }] }) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientHealthCheckV2BookingPageComponent);

@@ -1,0 +1,7 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { API_CONFIG } from '../config/api-config.token';
+import { DependantsApiService } from './dependants-api.service';
+
+describe('DependantsApiService',()=>{let api:DependantsApiService,http:HttpTestingController;beforeEach(()=>{TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),{provide:API_CONFIG,useValue:{baseUrl:'/api/v1'}}]});api=TestBed.inject(DependantsApiService);http=TestBed.inject(HttpTestingController);});afterEach(()=>http.verify());it('uses only the confirmed dependant routes and create DTO',()=>{api.getDependants().subscribe();expect(http.expectOne('/api/v1/me/dependants').request.method).toBe('GET');api.getDependant('SCP-AB12-CD34').subscribe();expect(http.expectOne('/api/v1/me/dependants/SCP-AB12-CD34').request.method).toBe('GET');const body={firstName:'Aisha',lastName:'Okafor',dateOfBirth:'2015-06-12',relationshipType:'MOTHER' as const,countryCode:'NG',stateOrRegion:'Lagos',city:'Ikeja'};api.createDependant(body).subscribe();const request=http.expectOne('/api/v1/me/dependants');expect(request.request.method).toBe('POST');expect(request.request.body).toEqual(body);expect(JSON.stringify(request.request.body)).not.toMatch(/email|phone|password/);request.flush({});});});

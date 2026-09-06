@@ -140,7 +140,7 @@ describe('PatientLayoutComponent', () => {
           ['Referrals & Rewards', '/me/referrals'],
         ],
       },
-      { label: 'Account', links: [['Profile', '/me/profile']] },
+      { label: 'Account', links: [['Family & Dependants', '/me/family'], ['Profile', '/me/profile']] },
     ]);
   });
 

@@ -68,6 +68,10 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
             <h2 class="text-xl font-bold">Health Check</h2>
             <dl class="mt-3 space-y-3">
               <div>
+                <dt class="text-sm text-slate-600">Patient</dt>
+                <dd class="font-bold">{{ d.participant.displayName }}</dd>
+              </div>
+              <div>
                 <dt class="text-sm text-slate-600">Fulfilment</dt>
                 <dd class="font-bold">{{ d.fulfilmentMode.name }}</dd>
               </div>

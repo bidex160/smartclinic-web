@@ -15,6 +15,7 @@ export type PatientPortalCategory =
   'AWAITING_PAYMENT' | 'UPCOMING_ACTIVE' | 'COMPLETED_HISTORY' | 'NEEDS_ATTENTION' | 'CLOSED';
 
 export interface PatientHealthCheckHistoryItem {
+  readonly participant: { readonly patientReference: string; readonly firstName: string; readonly lastName: string; readonly displayName: string };
   readonly bookingReference: string;
   readonly bookingStatus: PatientBookingStatus;
   readonly createdAt: string;
@@ -56,6 +57,7 @@ export interface PatientPortalProfile {
 }
 
 export interface CreateSelfHealthCheckRequest {
+  readonly participantPatientReference?: string;
   readonly configurationReference?: string;
   readonly healthCheckPackageId?: string;
   readonly fulfilmentModeId?: string;
