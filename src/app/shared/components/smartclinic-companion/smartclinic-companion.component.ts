@@ -11,6 +11,7 @@ interface GuidePreferences {
   language: GuideLanguage;
   largeText: boolean;
   reducedMotion: boolean;
+  autoSpeak: boolean;
   introduced: boolean;
 }
 
@@ -27,6 +28,7 @@ const DEFAULT_PREFERENCES: GuidePreferences = {
   language: 'en',
   largeText: false,
   reducedMotion: false,
+  autoSpeak: true,
   introduced: false,
 };
 
@@ -85,6 +87,7 @@ export class SmartClinicCompanionComponent {
   finishIntroduction(): void {
     this.updatePreferences({ introduced: true });
     this.settingsOpen.set(false);
+    if (this.preferences().autoSpeak) this.readAloud();
   }
 
   skipIntroduction(): void {
@@ -109,59 +112,64 @@ export class SmartClinicCompanionComponent {
     this.updatePreferences({ reducedMotion: !this.preferences().reducedMotion });
   }
 
+  toggleAutoSpeak(): void {
+    this.updatePreferences({ autoSpeak: !this.preferences().autoSpeak });
+  }
+
   explain(topic: 'stay-well' | 'find-care' | 'hospital' | 'appointments' | 'passport' | 'network'): void {
     const pcm = this.language() === 'pcm';
     const answers: Record<typeof topic, GuideAnswer> = {
       'stay-well': {
         title: 'Stay Well',
         body: pcm
-          ? 'Use am check and understand your health before sickness start. You fit do guided self-check or book health check.'
-          : 'Use Stay Well to check and understand your health before you feel unwell. Start a guided self-check or book a health check.',
+          ? 'Stay Well help you check your health before sickness start. First, tap Explore Stay Well. Choose Guided Self-Check if you wan answer simple questions yourself, or choose Health Check if you want provider check you. Follow the questions one by one. If any answer worry you, use Find Care talk to provider.'
+          : 'Stay Well helps you understand your health before illness starts. First, tap Explore Stay Well. Choose Guided Self-Check to answer simple questions yourself, or choose Health Check to book a provider. Follow each question one at a time. If a result concerns you, use Find Care to speak with a provider.',
         route: '/me/health-journey',
         action: pcm ? 'Start am' : 'Explore Stay Well',
       },
       'find-care': {
         title: 'Find Care',
         body: pcm
-          ? 'Tell SmartClinic wetin dey worry you. We go guide you to the kind care or provider wey fit help.'
-          : 'Tell SmartClinic what you need help with. We’ll guide you toward an appropriate service or provider.',
+          ? 'Find Care help you when something dey worry you. First, tap Find Care. Tell us the problem with simple words. Choose the kind service and how you want receive care. Check the provider, price and time before you confirm. If na emergency, call emergency service or go hospital now.'
+          : 'Find Care helps when something is worrying you. First, tap Find Care and describe the problem in simple words. Choose the service and how you want to receive care. Check the provider, price, and time before confirming. For an emergency, contact emergency services or go to the nearest emergency department.',
         route: '/me/request-care',
         action: pcm ? 'Find care' : 'Find Care',
       },
       hospital: {
         title: pcm ? 'My Hospital' : 'My Hospital',
         body: pcm
-          ? 'Connect the hospital wey you dey use. You fit link your hospital number, see supported services and manage the relationship.'
-          : 'Connect a hospital you use. You can link your hospital number, see supported services, and manage the relationship.',
+          ? 'My Hospital connect you to hospital wey you dey use. Tap Connect Hospital, search the hospital, then choose whether you be new or existing patient. If you don register before, enter your hospital number and complete identity check. After connection, you fit see supported bills, appointments, receipts and records.'
+          : 'My Hospital connects you to a hospital you use. Tap Connect My Hospital, search for the hospital, and choose whether you are a new or existing patient. Existing patients enter their hospital number and complete identity verification. After connection, supported bills, appointments, receipts, and records can appear here.',
         route: '/me/providers/connect',
         action: pcm ? 'Connect hospital' : 'Connect My Hospital',
       },
       appointments: {
         title: pcm ? 'Why book appointment?' : 'Why book an appointment?',
         body: pcm
-          ? 'Booking helps the provider prepare for you, keeps your visit record together and shows you wetin to do next.'
-          : 'Booking helps the provider prepare for you, keeps your visit organised, and gives you a clear next step.',
+          ? 'Appointment help provider prepare before you reach. Choose the care you need, provider, date and time. Check the price, then confirm. SmartClinic go show your next step and keep the appointment information together.'
+          : 'An appointment helps the provider prepare before you arrive. Choose the care you need, provider, date, and time. Review the price, then confirm. SmartClinic shows your next step and keeps the appointment information together.',
         route: '/me/request-care',
         action: pcm ? 'Book care' : 'Book Care',
       },
       passport: {
         title: 'Health Passport',
         body: pcm
-          ? 'Na one place to see the health information wey SmartClinic don make available to you. Na you control who you share am with.'
-          : 'It is one place to see health information SmartClinic has made available to you. You control whom you share it with.',
+          ? 'Health Passport na one place for health information wey SmartClinic make available to you. Open am see your available checks, results and care information. If hospital or provider need record, na you choose wetin to share and how long dem fit see am.'
+          : 'Health Passport is one place for health information SmartClinic has made available to you. Open it to see available checks, results, and care information. When a hospital or provider needs a record, you choose what to share and how long access should last.',
         route: '/me/health-passport',
         action: pcm ? 'Open passport' : 'Open Health Passport',
       },
       network: {
         title: pcm ? 'Build the Network' : 'Build the Network',
         body: pcm
-          ? 'Share your personal link help people join. Points show verified impact; dem no be payment for unverified sign-ups.'
-          : 'Share your personal link to help people join. Points recognise verified impact; they are not awarded for unverified sign-ups.',
+          ? 'Build the Network mean say you help another person or provider join healthcare community. Open My Impact, copy your personal link, then share am. Follow up help the person finish and activate. Pending points dey wait for confirmation; verified points count for your level and leaderboard.'
+          : 'Build the Network means helping another person or provider join the healthcare community. Open My Impact, copy your personal link, and share it. Follow up so the person completes and activates their account. Pending points await confirmation; verified points count toward your level and leaderboard.',
         route: '/me/impact',
         action: pcm ? 'See my impact' : 'View My Impact',
       },
     };
     this.answer.set(answers[topic]);
+    this.speakAnswerAutomatically();
   }
 
   explainThisPage(): void {
@@ -179,6 +187,7 @@ export class SmartClinicCompanionComponent {
           ? 'This na SmartClinic front door. Choose Stay Well, Find Care, or My Hospital. I fit explain any one.'
           : 'This is the SmartClinic front door. Choose Stay Well, Find Care, or My Hospital. I can explain any option.',
     });
+    this.speakAnswerAutomatically();
   }
 
   actionRoute(route: string): string {
@@ -200,6 +209,7 @@ export class SmartClinicCompanionComponent {
             ? 'This guide no be emergency service. Call your local emergency number or go the nearest emergency department now.'
             : 'This guide is not an emergency service. Call your local emergency number or go to the nearest emergency department now.',
       });
+      this.speakAnswerAutomatically();
     } else if (/(well|check|test|healthy)/i.test(value)) this.explain('stay-well');
     else if (/(doctor|care|sick|symptom|help)/i.test(value)) this.explain('find-care');
     else if (/(hospital|record|bill|wallet)/i.test(value)) this.explain('hospital');
@@ -214,6 +224,7 @@ export class SmartClinicCompanionComponent {
             ? 'I fit explain Stay Well, Find Care, My Hospital, appointment, Health Passport, or network points. Choose one below.'
             : 'I can explain Stay Well, Find Care, My Hospital, appointments, Health Passport, or network points. Choose one below.',
       });
+      this.speakAnswerAutomatically();
     }
     this.query.set('');
   }
@@ -224,7 +235,9 @@ export class SmartClinicCompanionComponent {
     const response = this.answer();
     const utterance = new SpeechSynthesisUtterance(response ? `${response.title}. ${response.body}` : this.welcome());
     utterance.lang = this.language() === 'pcm' ? 'en-NG' : 'en-GB';
-    utterance.rate = 0.86;
+    utterance.rate = 0.98;
+    const preferredVoice = this.preferredVoice();
+    if (preferredVoice) utterance.voice = preferredVoice;
     utterance.onend = () => this.speaking.set(false);
     utterance.onerror = () => this.speaking.set(false);
     this.speaking.set(true);
@@ -265,6 +278,24 @@ export class SmartClinicCompanionComponent {
     const next = { ...this.preferences(), ...patch };
     this.preferences.set(next);
     if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+
+  private speakAnswerAutomatically(): void {
+    if (this.preferences().autoSpeak) this.readAloud();
+  }
+
+  private preferredVoice(): SpeechSynthesisVoice | null {
+    if (!this.supportsSpeech) return null;
+    const languagePrefix = this.language() === 'pcm' ? 'en-NG' : 'en';
+    const voices = window.speechSynthesis.getVoices();
+    const preferredNames = /natural|neural|premium|enhanced|google|microsoft|siri/i;
+    return (
+      voices.find((voice) => voice.lang === languagePrefix && preferredNames.test(voice.name)) ??
+      voices.find((voice) => voice.lang.startsWith(languagePrefix) && preferredNames.test(voice.name)) ??
+      voices.find((voice) => voice.lang === languagePrefix) ??
+      voices.find((voice) => voice.lang.startsWith('en')) ??
+      null
+    );
   }
 
   private loadPreferences(): GuidePreferences {

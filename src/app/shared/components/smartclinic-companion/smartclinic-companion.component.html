@@ -54,6 +54,13 @@
         } @else {
           <p class="guide__message" aria-live="polite">{{ welcome() }}</p>
 
+          @if (supportsSpeech) {
+            <button type="button" class="guide__hear" (click)="speaking() ? stopSpeaking() : readAloud()">
+              <span aria-hidden="true">🔊</span>
+              {{ speaking() ? 'Stop voice' : language() === 'pcm' ? 'Hear wetin I talk' : 'Hear this explanation' }}
+            </button>
+          }
+
           @if (answer(); as currentAnswer) {
             <div class="guide__answer" aria-live="polite">
               <strong>{{ currentAnswer.title }}</strong>
@@ -93,11 +100,6 @@
 
           <div class="guide__tools">
             <button type="button" (click)="explainThisPage()">Show me this page</button>
-            @if (supportsSpeech) {
-              <button type="button" (click)="speaking() ? stopSpeaking() : readAloud()">
-                {{ speaking() ? 'Stop reading' : 'Read aloud' }}
-              </button>
-            }
             @if (supportsVoiceInput) {
               <button type="button" (click)="startListening()" [disabled]="listening()">
                 {{ listening() ? 'Listening…' : 'Ask by voice' }}
@@ -113,6 +115,7 @@
               </button>
               <button type="button" (click)="toggleLargeText()" [attr.aria-pressed]="preferences().largeText">Larger text</button>
               <button type="button" (click)="toggleReducedMotion()" [attr.aria-pressed]="preferences().reducedMotion">Reduce movement</button>
+              <button type="button" (click)="toggleAutoSpeak()" [attr.aria-pressed]="preferences().autoSpeak">Speak explanations automatically</button>
               <button type="button" (click)="settingsOpen.set(true)">Change guide</button>
             </div>
           </details>

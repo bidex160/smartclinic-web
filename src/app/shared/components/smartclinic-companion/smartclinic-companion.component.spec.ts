@@ -31,6 +31,18 @@ describe('SmartClinicCompanionComponent', () => {
     expect(link.getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Frequest-care');
   });
 
+  it('keeps the voice control prominent and enables automatic speech by default', () => {
+    const fixture = TestBed.createComponent(SmartClinicCompanionComponent);
+    const component = fixture.componentInstance;
+    component.finishIntroduction();
+    fixture.detectChanges();
+
+    expect(component.preferences().autoSpeak).toBe(true);
+    if (component.supportsSpeech) {
+      expect(fixture.nativeElement.querySelector('.guide__hear')).not.toBeNull();
+    }
+  });
+
   it('does not attempt to answer urgent symptoms as routine guidance', () => {
     const fixture = TestBed.createComponent(SmartClinicCompanionComponent);
     const component = fixture.componentInstance;

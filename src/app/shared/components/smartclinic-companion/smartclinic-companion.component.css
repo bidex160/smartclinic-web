@@ -23,6 +23,8 @@
 .guide__primary { min-height: 3rem; border: 0; border-radius: .8rem; padding: .65rem 1rem; color: #fff; background: #166553; font-weight: 800; cursor: pointer; }
 .guide__link { min-height: 2.75rem; border: 0; background: transparent; color: #475569; text-decoration: underline; cursor: pointer; }
 .guide__answer { margin-top: .75rem; padding: 1rem; border: 1px solid #ddd0ff; border-radius: 1rem; background: #faf8ff; color: #312e45; }
+.guide__hear { width: 100%; min-height: 3.5rem; display: flex; align-items: center; justify-content: center; gap: .6rem; margin-top: .7rem; border: 0; border-radius: 1rem; padding: .7rem 1rem; color: #fff; background: #166553; font-size: 1em; font-weight: 850; cursor: pointer; }
+.guide__hear span { font-size: 1.35em; }
 .guide__answer p { margin: .35rem 0 .6rem; line-height: 1.55; }
 .guide__answer a { font-weight: 800; color: #5b21b6; }
 .guide__quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .8rem; }
