@@ -22,6 +22,7 @@ export const routes: Routes = [
   },
   {
     path: 'join',
+    data: { preload: true },
     title: 'Choose a Smart Health Check | SmartClinic',
     loadComponent: () =>
       import('./features/join/join.component').then((component) => component.JoinComponent),
@@ -73,6 +74,7 @@ export const routes: Routes = [
   },
   {
     path: 'register',
+   data: { preload: true },
     title: 'Create a patient account | SmartClinic',
     loadComponent: () =>
       import('./features/auth/patient-register-page.component').then(
@@ -81,6 +83,7 @@ export const routes: Routes = [
   },
   {
     path: 'login',
+     data: { preload: true },
     title: 'Sign in to My SmartClinic | SmartClinic',
     loadComponent: () =>
       import('./features/auth/login-page.component').then(
@@ -89,6 +92,7 @@ export const routes: Routes = [
   },
   {
     path: 'forgot-password',
+     data: { preload: true },
     title: 'Forgot password | SmartClinic',
     loadComponent: () =>
       import('./features/auth/forgot-password-page.component').then(
@@ -97,6 +101,7 @@ export const routes: Routes = [
   },
   {
     path: 'reset-password',
+     data: { preload: true },
     title: 'Reset password | SmartClinic',
     loadComponent: () =>
       import('./features/auth/reset-password-page.component').then(
@@ -456,6 +461,7 @@ export const routes: Routes = [
   },
   {
     path: 'health-results/:token',
+     data: { preload: true },
     title: 'Smart Health Check result | SmartClinic',
     loadComponent: () =>
       import('./features/results/guest-health-check-result-page.component').then(
@@ -464,6 +470,7 @@ export const routes: Routes = [
   },
   {
     path: 'provider/register',
+     data: { preload: true },
     title: 'Provider application | SmartClinic',
     loadComponent: () =>
       import('./features/provider/provider-register-page.component').then(
@@ -1064,6 +1071,7 @@ export const routes: Routes = [
 
   {
     path: '**',
+     data: { preload: true },
     title: 'Page not found | SmartClinic',
     loadComponent: () =>
       import('./features/not-found/not-found-page.component').then(
