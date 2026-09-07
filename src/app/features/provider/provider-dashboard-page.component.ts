@@ -9,7 +9,10 @@ import { ProviderOffersApiService } from '../../core/services/provider-offers-ap
 import { ProviderDashboardApiService } from '../../core/services/provider-dashboard-api.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { UtilsService } from '../../core/services/utils.service';
-
+import {
+  ProviderReferralSummary,
+  ProviderReferralsApiService,
+} from '../../core/services/provider-referrals-api.service';
 @Component({
   selector: 'app-provider-dashboard-page',
   imports: [RouterLink],
@@ -20,6 +23,7 @@ export class ProviderDashboardPageComponent {
   private readonly offersApi = inject(ProviderOffersApiService);
   private readonly dashboardApi = inject(ProviderDashboardApiService);
   private readonly profileApi = inject(ProviderOnboardingApiService);
+  private readonly referralsApi = inject(ProviderReferralsApiService);
   readonly utils = inject(UtilsService);
   readonly profileLoading = signal(true);
   readonly profileError = signal<string | null>(null);
@@ -34,9 +38,32 @@ export class ProviderDashboardPageComponent {
     () => this.profile()?.onboardingStatus === 'APPROVED' && this.profile()?.status === 'ACTIVE',
   );
 
+  readonly referralSummary = signal<ProviderReferralSummary | null>(null);
+readonly referralLoading = signal(false);
+ inviteOpen = signal(false);
+readonly copiedLink = signal<string | null>(null);
+
   constructor() {
     this.load();
   }
+
+  loadReferrals(): void {
+  this.referralLoading.set(true);
+
+  this.referralsApi
+    .getSummary()
+    .pipe(finalize(() => this.referralLoading.set(false)))
+    .subscribe({
+      next: (summary) => {
+        console.log(summary)
+        this.referralSummary.set(summary)
+      },
+      error: (er) => {
+        console.log(er)
+        this.referralSummary.set(null)
+      },
+    });
+}
 
   load(): void {
     this.profileLoading.set(true);
@@ -50,6 +77,7 @@ export class ProviderDashboardPageComponent {
           if (profile.onboardingStatus === 'APPROVED' && profile.status === 'ACTIVE') {
             this.loadSummary();
             this.loadOfferPreview();
+            this.loadReferrals()
           }
         },
         error: (error: HttpErrorResponse) =>
@@ -82,4 +110,38 @@ export class ProviderDashboardPageComponent {
   referralTargetLabel(target: string): string {
     return ({ PATIENT: 'Patients', CLINIC: 'Clinics', LABORATORY: 'Laboratories', PHARMACY: 'Pharmacies' } as Record<string, string>)[target] ?? target;
   }
+
+  referralUrl(path: string): string {
+  return new URL(path, window.location.origin).toString();
+}
+
+async copyReferralLink(path: string): Promise<void> {
+  const url = this.referralUrl(path);
+
+  await navigator.clipboard.writeText(url);
+
+  this.copiedLink.set(url);
+
+  setTimeout(() => {
+    if (this.copiedLink() === url) {
+      this.copiedLink.set(null);
+    }
+  }, 2000);
+}
+
+async shareReferralLink(path: string, label: string): Promise<void> {
+  const url = this.referralUrl(path);
+
+  if (navigator.share) {
+    await navigator.share({
+      title: 'Join SmartClinic',
+      text: `Join SmartClinic as ${label}.`,
+      url,
+    });
+
+    return;
+  }
+
+  await this.copyReferralLink(path);
+}
 }
