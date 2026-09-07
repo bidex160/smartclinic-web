@@ -3,6 +3,7 @@ export type ProviderOnboardingStatus = 'DRAFT' | 'INVITED' | 'SUBMITTED' | 'APPR
 export type ProviderType =
   | 'INDIVIDUAL'
   | 'CLINIC'
+  | 'HOSPITAL'
   | 'DIAGNOSTIC_CENTRE'
   | 'PHARMACY'
   | 'OTHER';

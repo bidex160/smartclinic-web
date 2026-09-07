@@ -311,7 +311,13 @@ export class MyImpactPageComponent {
   readonly copyFeedback = signal('');
   readonly inviteFeedback = signal('');
   readonly canShare = typeof navigator.share === 'function';
-  readonly targets: ReferralTargetType[] = ['PATIENT', 'CLINIC', 'LABORATORY', 'PHARMACY'];
+  readonly targets: ReferralTargetType[] = [
+    'PATIENT',
+    'INDIVIDUAL',
+    'CLINIC',
+    'LABORATORY',
+    'PHARMACY',
+  ];
   readonly providerRewards = [
     { label: 'Registered', points: '+2' },
     { label: 'Verified', points: '+4' },
@@ -354,6 +360,7 @@ export class MyImpactPageComponent {
         CLINIC: 'Clinics',
         LABORATORY: 'Laboratories',
         PHARMACY: 'Pharmacies',
+        INDIVIDUAL: 'Individual health professionals',
       } as const
     )[target];
   }
@@ -364,6 +371,7 @@ export class MyImpactPageComponent {
         CLINIC: 'Clinic',
         LABORATORY: 'Laboratory',
         PHARMACY: 'Pharmacy',
+        INDIVIDUAL: 'Individual health professionals',
       } as const
     )[target];
   }

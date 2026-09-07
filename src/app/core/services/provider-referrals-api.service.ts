@@ -12,6 +12,7 @@ export interface ProviderReferralSummary {
     HOSPITAL: string;
     LABORATORY: string;
     PHARMACY: string;
+    INDIVIDUAL: string;
   };
 
   availablePoints: number;
@@ -24,8 +25,6 @@ export class ProviderReferralsApiService {
   private readonly base = `${inject(API_CONFIG).baseUrl}/provider`;
 
   getSummary(): Observable<ProviderReferralSummary> {
-    return this.http.get<ProviderReferralSummary>(
-      this.base + '/referrals',
-    );
+    return this.http.get<ProviderReferralSummary>(this.base + '/referrals');
   }
 }

@@ -39,31 +39,31 @@ export class ProviderDashboardPageComponent {
   );
 
   readonly referralSummary = signal<ProviderReferralSummary | null>(null);
-readonly referralLoading = signal(false);
- inviteOpen = signal(false);
-readonly copiedLink = signal<string | null>(null);
+  readonly referralLoading = signal(false);
+  inviteOpen = signal(false);
+  readonly copiedLink = signal<string | null>(null);
 
   constructor() {
     this.load();
   }
 
   loadReferrals(): void {
-  this.referralLoading.set(true);
+    this.referralLoading.set(true);
 
-  this.referralsApi
-    .getSummary()
-    .pipe(finalize(() => this.referralLoading.set(false)))
-    .subscribe({
-      next: (summary) => {
-        console.log(summary)
-        this.referralSummary.set(summary)
-      },
-      error: (er) => {
-        console.log(er)
-        this.referralSummary.set(null)
-      },
-    });
-}
+    this.referralsApi
+      .getSummary()
+      .pipe(finalize(() => this.referralLoading.set(false)))
+      .subscribe({
+        next: (summary) => {
+          console.log(summary);
+          this.referralSummary.set(summary);
+        },
+        error: (er) => {
+          console.log(er);
+          this.referralSummary.set(null);
+        },
+      });
+  }
 
   load(): void {
     this.profileLoading.set(true);
@@ -77,7 +77,7 @@ readonly copiedLink = signal<string | null>(null);
           if (profile.onboardingStatus === 'APPROVED' && profile.status === 'ACTIVE') {
             this.loadSummary();
             this.loadOfferPreview();
-            this.loadReferrals()
+            this.loadReferrals();
           }
         },
         error: (error: HttpErrorResponse) =>
@@ -92,56 +92,72 @@ readonly copiedLink = signal<string | null>(null);
   loadSummary(): void {
     this.summaryLoading.set(true);
     this.summaryError.set(null);
-    this.dashboardApi.getSummary().pipe(finalize(() => this.summaryLoading.set(false))).subscribe({
-      next: (summary) => this.summary.set(summary),
-      error: () => this.summaryError.set('We could not load your operational summary.'),
-    });
+    this.dashboardApi
+      .getSummary()
+      .pipe(finalize(() => this.summaryLoading.set(false)))
+      .subscribe({
+        next: (summary) => this.summary.set(summary),
+        error: () => this.summaryError.set('We could not load your operational summary.'),
+      });
   }
 
   loadOfferPreview(): void {
     this.offersLoading.set(true);
     this.offersError.set(null);
-    this.offersApi.getOffers('OFFERED').pipe(finalize(() => this.offersLoading.set(false))).subscribe({
-      next: (offers) => this.offerPreview.set(offers.slice(0, 5)),
-      error: () => this.offersError.set('We could not load your latest offers.'),
-    });
+    this.offersApi
+      .getOffers('OFFERED')
+      .pipe(finalize(() => this.offersLoading.set(false)))
+      .subscribe({
+        next: (offers) => this.offerPreview.set(offers.slice(0, 5)),
+        error: () => this.offersError.set('We could not load your latest offers.'),
+      });
   }
 
   referralTargetLabel(target: string): string {
-    return ({ PATIENT: 'Patients', CLINIC: 'Clinics', LABORATORY: 'Laboratories', PHARMACY: 'Pharmacies' } as Record<string, string>)[target] ?? target;
+    return (
+      (
+        {
+          PATIENT: 'Patients',
+          INDIVIDUAL: 'Individual health professionals',
+          CLINIC: 'Clinics',
+          LABORATORY: 'Laboratories',
+          PHARMACY: 'Pharmacies',
+        } as Record<string, string>
+      )[target] ?? target
+    );
   }
 
   referralUrl(path: string): string {
-  return new URL(path, window.location.origin).toString();
-}
-
-async copyReferralLink(path: string): Promise<void> {
-  const url = this.referralUrl(path);
-
-  await navigator.clipboard.writeText(url);
-
-  this.copiedLink.set(url);
-
-  setTimeout(() => {
-    if (this.copiedLink() === url) {
-      this.copiedLink.set(null);
-    }
-  }, 2000);
-}
-
-async shareReferralLink(path: string, label: string): Promise<void> {
-  const url = this.referralUrl(path);
-
-  if (navigator.share) {
-    await navigator.share({
-      title: 'Join SmartClinic',
-      text: `Join SmartClinic as ${label}.`,
-      url,
-    });
-
-    return;
+    return new URL(path, window.location.origin).toString();
   }
 
-  await this.copyReferralLink(path);
-}
+  async copyReferralLink(path: string): Promise<void> {
+    const url = this.referralUrl(path);
+
+    await navigator.clipboard.writeText(url);
+
+    this.copiedLink.set(url);
+
+    setTimeout(() => {
+      if (this.copiedLink() === url) {
+        this.copiedLink.set(null);
+      }
+    }, 2000);
+  }
+
+  async shareReferralLink(path: string, label: string): Promise<void> {
+    const url = this.referralUrl(path);
+
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Join SmartClinic',
+        text: `Join SmartClinic as ${label}.`,
+        url,
+      });
+
+      return;
+    }
+
+    await this.copyReferralLink(path);
+  }
 }

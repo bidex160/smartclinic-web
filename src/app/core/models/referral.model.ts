@@ -1,4 +1,7 @@
-export type ReferralTargetType = 'PATIENT' | 'CLINIC' | 'LABORATORY' | 'PHARMACY';
+export type ReferralTargetType = 'PATIENT' | 'CLINIC' | 'LABORATORY' | 'PHARMACY' | 'INDIVIDUAL';
+export type ReferralCountMap = Record<Exclude<ReferralTargetType, 'INDIVIDUAL'>, number> & {
+  readonly INDIVIDUAL?: number;
+};
 export type ReferralStatus = 'REGISTERED' | 'QUALIFIED' | 'REJECTED' | 'CANCELLED';
 export interface ReferralProgress {
   readonly qualified: number;
@@ -22,11 +25,13 @@ export interface MultiLevelReferralProgress {
   readonly highestLevelAchieved: number;
   readonly requirements: ReferralLevelRequirement[];
   readonly highestConfiguredLevelReached: boolean;
-  readonly qualifiedCounts: Record<ReferralTargetType, number>;
+  readonly qualifiedCounts: ReferralCountMap;
 }
 export interface ReferralSummary {
   readonly referralCode: string;
-  readonly links: Record<ReferralTargetType, string>;
+  readonly links: Record<Exclude<ReferralTargetType, 'INDIVIDUAL'>, string> & {
+    readonly INDIVIDUAL?: string;
+  };
   readonly availablePoints: number;
   readonly reservedPoints: number;
   readonly withdrawalReservedPoints: number;
@@ -44,6 +49,7 @@ export interface ReferralSummary {
     readonly clinics: ReferralProgress;
     readonly laboratories: ReferralProgress;
     readonly pharmacies: ReferralProgress;
+    readonly individuals?: ReferralProgress;
   };
   readonly completed: boolean;
   readonly registeredDirectReferrals: number;
@@ -82,13 +88,15 @@ export interface ReferralImpact {
     readonly lifetimeRedeemedPoints: number;
   };
   readonly levelProgress: MultiLevelReferralProgress;
-  readonly qualifiedCounts: Record<ReferralTargetType, number>;
+  readonly qualifiedCounts: ReferralCountMap;
   readonly summary: {
     readonly registeredReferrals: number;
     readonly qualifiedReferrals: number;
     readonly pendingReferrals: number;
   };
-  readonly inviteLinks: Record<ReferralTargetType, string>;
+  readonly inviteLinks: Record<Exclude<ReferralTargetType, 'INDIVIDUAL'>, string> & {
+    readonly INDIVIDUAL?: string;
+  };
   readonly leaderboard: { readonly optedIn: boolean; readonly position: number | null };
 }
 
