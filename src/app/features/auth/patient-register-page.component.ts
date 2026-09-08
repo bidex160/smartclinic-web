@@ -191,13 +191,14 @@ export class PatientRegisterPageComponent {
 
         error: (error: HttpErrorResponse) => {
           this.error.set(
-            this.referralCode && error.status === 400
+            error.message || 
+            (this.referralCode && error.status === 400
               ? 'This referral link is no longer valid. Ask the person who invited you for a new link.'
               : error.status === 409
                 ? 'An account already exists with this email or phone number. Sign in instead.'
                 : error.status === 0
                   ? 'SmartClinic could not be reached. Check your connection and try again.'
-                  : 'We could not create your account. Check the form and try again.',
+                  : 'We could not create your account. Check the form and try again.'),
           );
         },
       });

@@ -292,14 +292,15 @@ export class ProviderRegisterPageComponent {
           error: HttpErrorResponse,
         ) => {
           this.error.set(
-            error.status === 409
+            error.message || 
+            (error.status === 409
               ? 'A SmartClinic account or provider identity already exists for these details. Contact SmartClinic operations if you need help.'
               : error.status === 0
                 ? 'SmartClinic could not be reached. Check your connection and try again.'
                 : this.referralCode &&
                     error.status === 400
                   ? 'The referral information is no longer valid. Ask the person who invited you for a new SmartClinic referral link.'
-                  : 'Review your provider details and try again.',
+                  : 'Review your provider details and try again.'),
           );
 
           queueMicrotask(() => {
