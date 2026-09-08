@@ -190,8 +190,9 @@ export class PatientRegisterPageComponent {
         },
 
         error: (error: HttpErrorResponse) => {
+           const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
           this.error.set(
-            error.message || 
+            message || 
             (this.referralCode && error.status === 400
               ? 'This referral link is no longer valid. Ask the person who invited you for a new link.'
               : error.status === 409

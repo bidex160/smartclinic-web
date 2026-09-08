@@ -291,8 +291,9 @@ export class ProviderRegisterPageComponent {
         error: (
           error: HttpErrorResponse,
         ) => {
+           const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
           this.error.set(
-            error.message || 
+            message || 
             (error.status === 409
               ? 'A SmartClinic account or provider identity already exists for these details. Contact SmartClinic operations if you need help.'
               : error.status === 0
