@@ -9,9 +9,32 @@
   </div>
 </header>
 
+
+
 <main
-  class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14"
+  class="min-h-screen bg-gradient-to-br from-brand-50/70 via-white to-slate-50
+         px-5 py-8 sm:px-8 lg:py-10"
 >
+  <div
+    class="mx-auto grid max-w-7xl items-start gap-8
+           lg:grid-cols-[.9fr_1.1fr]"
+  >
+    <div class="lg:sticky lg:top-8">
+     <app-auth-visual-panel
+  eyebrow="SmartClinic Provider Network"
+  title="Join the network connecting patients to trusted care."
+  description="Build your provider profile, publish approved services and become discoverable to patients looking for care."
+/>
+    </div>
+
+    <section
+      class="auth-form-enter rounded-[2rem] border border-slate-200
+             bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]
+             sm:p-8 lg:p-10"
+    >
+    <!-- <main
+  class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14"
+> -->
   <p
     class="text-sm font-bold uppercase tracking-[0.14em] text-brand-600"
   >
@@ -347,6 +370,7 @@
         >
           Use 6–128 characters.
         </p>
+        
       </div>
 
       <!-- Professional reference -->
@@ -616,4 +640,8 @@
       </p>
     </form>
   }
-</main>
+<!-- </main> -->
+    </section>
+    </div>
+
+  </main>

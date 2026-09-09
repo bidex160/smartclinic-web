@@ -29,6 +29,7 @@ import { ProviderOnboardingProfile } from '../../core/models/provider-onboarding
 import { ReferralTargetType } from '../../core/models/referral.model';
 import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
+import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
 
 @Component({
   selector: 'app-provider-register-page',
@@ -36,7 +37,8 @@ import { ProviderOnboardingApiService } from '../../core/services/provider-onboa
   imports: [
     ReactiveFormsModule,
     RouterLink,
-  ],
+    AuthVisualPanelComponent
+],
   templateUrl: './provider-register-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -510,4 +512,45 @@ private referralTargetForProviderType(
 
     this.loadRegisterCountry('NG');
   }
+
+  get passwordStrength(): {
+  level: number;
+  label: string;
+} {
+  const password = this.form.controls.password.value;
+
+  if (!password) {
+    return {
+      level: 0,
+      label: '',
+    };
+  }
+
+  let score = 0;
+
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 2) {
+    return {
+      level: 1,
+      label: 'Weak',
+    };
+  }
+
+  if (score <= 4) {
+    return {
+      level: 2,
+      label: 'Good',
+    };
+  }
+
+  return {
+    level: 3,
+    label: 'Strong',
+  };
+}
 }

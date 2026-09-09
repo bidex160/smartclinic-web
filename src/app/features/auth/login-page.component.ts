@@ -6,30 +6,68 @@ import { finalize } from 'rxjs';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
-
+import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-panel.component';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AuthVisualPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="mx-auto max-w-md px-5 py-12 sm:px-8">
-      <div class="text-center">
-        <p class="text-sm font-bold uppercase tracking-wider text-brand-600">SmartClinic</p>
+   
 
-        <h1 class="mt-2 text-3xl font-bold text-brand-900">Sign in</h1>
+    <main
+  class="min-h-[calc(100vh-4rem)] bg-gradient-to-br
+         from-brand-50/70 via-white to-slate-50 px-5 py-8
+         sm:px-8 lg:py-10"
+>
+  <div
+    class="mx-auto grid max-w-6xl items-stretch gap-8
+           lg:grid-cols-[1.08fr_.92fr]"
+  >
+    <app-auth-visual-panel
+      eyebrow="Your SmartClinic"
+      title="Your health journey continues here."
+      description="Sign in to manage Health Checks, care requests, providers, prescriptions and your SmartClinic health journey."
+    />
 
-        <p class="mt-3 text-slate-600">
-          Access your SmartClinic account, Health Checks, provider workspace, or operations portal.
-        </p>
-      </div>
+    <section
+      class="auth-form-enter flex items-center"
+    >
+      <div
+        class="w-full rounded-[2rem] border border-slate-200
+               bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]
+               sm:p-9 lg:p-10"
+      >
+        <div>
+          <div
+            class="inline-flex items-center gap-2 rounded-full
+                   bg-brand-50 px-3 py-1.5 text-sm font-bold text-brand-700"
+          >
+            <span class="h-2 w-2 rounded-full bg-brand-500"></span>
+            SmartClinic secure access
+          </div>
 
-      @if (errorMessage) {
-        <div role="alert" class="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
-          {{ errorMessage }}
+          <h1 class="mt-5 text-3xl font-bold text-brand-900">
+            Welcome back
+          </h1>
+
+          <p class="mt-3 leading-7 text-slate-600">
+            Sign in with the email address or phone number linked
+            to your SmartClinic account.
+          </p>
         </div>
-      }
 
+        @if (errorMessage) {
+          <div
+            role="alert"
+            class="mt-6 rounded-xl border border-red-200 bg-red-50
+                   p-4 text-red-900"
+          >
+            {{ errorMessage }}
+          </div>
+        }
+
+      
       <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-5" novalidate>
         <div>
           <label for="identifier" class="font-bold"> Email or phone number </label>
@@ -122,49 +160,37 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
           }
         </div>
 
-        <button
-          type="submit"
-          [disabled]="form.invalid || authState.loading()"
-          class="min-h-12 rounded-xl bg-brand-600 px-5 py-3 font-bold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {{ authState.loading() ? 'Signing in…' : 'Sign in' }}
-        </button>
+      <button
+  type="submit"
+  [disabled]="form.invalid || authState.loading()"
+  class="group relative min-h-12 overflow-hidden rounded-xl
+         bg-brand-600 px-5 py-3 font-bold text-white
+         shadow-lg shadow-brand-600/20
+         transition duration-200
+         hover:-translate-y-0.5 hover:bg-brand-700
+         hover:shadow-xl hover:shadow-brand-600/25
+         active:translate-y-0
+         focus:outline-none focus:ring-4 focus:ring-brand-200
+         disabled:cursor-not-allowed disabled:opacity-60
+         disabled:hover:translate-y-0"
+>
+  <span class="relative z-10">
+    {{ authState.loading() ? 'Signing in…' : 'Sign in' }}
+  </span>
+
+  <span
+    class="absolute inset-y-0 -left-24 w-20 rotate-12
+           bg-white/20 blur-xl transition-all duration-700
+           group-hover:left-[120%]"
+  ></span>
+</button>
       </form>
 
-      <section class="mt-8 border-t border-slate-200 pt-6" aria-labelledby="create-account-heading">
-        <h2 id="create-account-heading" class="text-center text-sm font-bold text-slate-800">
-          New to SmartClinic?
-        </h2>
 
-        <div class="mt-4 grid gap-3">
-          <a
-            routerLink="/register"
-            [queryParams]="registrationQueryParams"
-            class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-600 px-4 py-3 text-center font-bold text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-4 focus:ring-brand-200"
-          >
-            Create a patient account
-          </a>
-
-          <a
-            routerLink="/provider/register"
-            class="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200"
-          >
-            Register as a healthcare provider
-          </a>
-        </div>
-
-        <p class="mt-4 text-center text-sm text-slate-500">
-          Clinic, laboratory and pharmacy registrations continue through the healthcare provider
-          application.
-        </p>
-      </section>
-
-      <div class="mt-8 text-center">
-        <a routerLink="/" class="text-sm font-bold text-brand-700 underline underline-offset-4">
-          Back to SmartClinic
-        </a>
       </div>
-    </main>
+    </section>
+  </div>
+</main>
   `,
 })
 export class LoginPageComponent {
