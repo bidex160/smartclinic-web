@@ -5,10 +5,16 @@ import { PaymentContactEmailComponent } from './payment-contact-email.component'
 
 describe('PaymentContactEmailComponent', () => {
   it('omits paymentEmail when the account already has an email', async () => {
-    const user = { id: 'user', email: 'account@example.com', displayName: 'Ada', roles: ['USER'], status: 'ACTIVE' };
+    const user = {
+      id: 'user',
+      email: 'account@example.com',
+      displayName: 'Ada',
+      roles: ['USER'],
+      status: 'ACTIVE',
+    };
     const { component, fixture } = await setup(user);
-    expect(fixture.nativeElement.querySelector('input')).toBeNull();
-    expect(component.request()).toBeUndefined();
+    expect(fixture.nativeElement.querySelector('input[type="email"]')).toBeNull();
+    expect(component.request()).toEqual({ paymentProvider: 'PAYSTACK' });
   });
 
   it('requires, validates, and normalizes payment email for a null-email account', async () => {
@@ -19,7 +25,10 @@ describe('PaymentContactEmailComponent', () => {
     component.control.setValue('not-an-email');
     expect(component.request()).toBeNull();
     component.control.setValue('  ADA@Example.COM  ');
-    expect(component.request()).toEqual({ paymentEmail: 'ada@example.com' });
+    expect(component.request()).toEqual({
+      paymentEmail: 'ada@example.com',
+      paymentProvider: 'PAYSTACK',
+    });
     expect(user.email).toBeNull();
   });
 

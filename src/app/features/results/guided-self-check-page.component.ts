@@ -476,7 +476,14 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
   }
   loadFunding() {
     this.api.funding(this.reference).subscribe({
-      next: (v) => this.funding.set(v),
+      next: (v) => {
+        console.log(v)
+        this.funding.set(v)
+        if(v.fundingStatus === 'PAYMENT_PENDING' || v.fundingStatus === 'IN_PROGRESS' || 'VERIFYING' ){
+          this.verify()
+        }
+
+      },
       error: () => this.actionError.set('We could not load payment status. Please try again.'),
     });
   }
@@ -489,30 +496,35 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
     const initialization = paymentEmail
       ? this.api.initializeFunding(this.reference, paymentEmail)
       : this.api.initializeFunding(this.reference);
-    initialization
-      .pipe(finalize(() => this.busy.set(false)))
-      .subscribe({
-        next: (v) => {
-          this.funding.set(v);
-          if (v.paid) {
-            this.load();
-            return;
-          }
-          if (v.accessCode)
-            this.popup.resumeTransaction(v.accessCode, {
-              onSuccess: () => this.verify(),
-              onError: () => this.actionError.set('Payment was not completed. You can try again.'),
-            });
-          else this.actionError.set('Secure payment could not be opened. Please try again.');
-        },
-        error: (error) =>
-          this.actionError.set(
-            error?.status === 400 &&
-              error?.error?.message === 'A valid payment email is required to continue'
-              ? error.error.message
-              : 'We could not start payment. Please try again.',
-          ),
-      });
+    initialization.pipe(finalize(() => this.busy.set(false))).subscribe({
+      next: (v) => {
+        this.funding.set(v);
+        if (v.provider === 'OPAY' && v.checkoutUrl) {
+          // setTimeout(()=>{
+
+          // },40)
+          window.location.assign(v.checkoutUrl);
+          return;
+        }
+        if (v.paid) {
+          this.load();
+          return;
+        }
+        if (v.accessCode)
+          this.popup.resumeTransaction(v.accessCode, {
+            onSuccess: () => this.verify(),
+            onError: () => this.actionError.set('Payment was not completed. You can try again.'),
+          });
+        else this.actionError.set('Secure payment could not be opened. Please try again.');
+      },
+      error: (error) =>
+        this.actionError.set(
+          error?.status === 400 &&
+            error?.error?.message === 'A valid payment email is required to continue'
+            ? error.error.message
+            : 'We could not start payment. Please try again.',
+        ),
+    });
   }
   verify() {
     if (this.busy()) return;

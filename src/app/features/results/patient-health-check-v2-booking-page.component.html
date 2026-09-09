@@ -442,7 +442,7 @@
               @if (created(); as booking) {
                 <div class="mt-6 rounded-xl bg-green-50 p-4"><strong>Health Check for</strong><p>{{ booking.participant.displayName || ((booking.participant.firstName || booking.participant.givenName) + ' ' + (booking.participant.lastName || booking.participant.familyName)) }}</p></div>
                 <div id="booking-payment" tabindex="-1" class="mt-6 scroll-mt-4 outline-none">
-                  <app-patient-payment-panel [reference]="booking.bookingReference" />
+                  <app-patient-payment-panel [reference]="booking.bookingReference" [reloadVerify]="true" />
                 </div>
               }
             </section>

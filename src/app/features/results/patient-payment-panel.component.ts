@@ -275,6 +275,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
 export class PatientPaymentPanelComponent implements OnInit {
   @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   @Input({ required: true }) reference = '';
+  @Input() set reloadVerify(v: any){
+    console.log(v)
+  } ;
   @Output() readonly statusChanged = new EventEmitter<PublicBookingPaymentStatus>();
   private readonly api = inject(HealthCheckResultsApiService);
   private readonly navigateExternal = inject(EXTERNAL_NAVIGATOR);
@@ -471,6 +474,11 @@ export class PatientPaymentPanelComponent implements OnInit {
     initialization.subscribe({
       next: (result) => {
         this.pending.set(false);
+        console.log(result)
+        if (result.provider === 'OPAY' && result.checkoutUrl) {
+          window.location.assign(result.checkoutUrl);
+          return;
+        }
         if (result.bookingReference !== this.reference || result.checkoutOption !== option)
           return this.fail('We could not start payment. Try again.');
         if (option === 'PAY_LATER') {
@@ -497,7 +505,8 @@ export class PatientPaymentPanelComponent implements OnInit {
       error: (error: HttpErrorResponse) => {
         this.pending.set(false);
         this.fail(
-          error.status === 400 && error.error?.message === 'A valid payment email is required to continue'
+          error.status === 400 &&
+            error.error?.message === 'A valid payment email is required to continue'
             ? error.error.message
             : 'We could not start payment. Try again.',
         );
@@ -538,6 +547,7 @@ export class PatientPaymentPanelComponent implements OnInit {
     });
   }
   refreshAll() {
+    this.verify()
     this.refresh();
     this.loadRewards();
   }

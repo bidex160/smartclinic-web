@@ -204,6 +204,7 @@ export interface FulfillmentDispensingSummary {
   readonly completedAt: string | null;
 }
 export interface PharmacyFundingResponse {
+  readonly provider?: import('./payment-email.model').PaymentProvider;
   readonly quoteReference: string;
   readonly fundingRequired: boolean;
   readonly amountMinor: number;

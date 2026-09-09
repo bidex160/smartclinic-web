@@ -1,4 +1,4 @@
-export type GuidedSelfCheckFundingStatus = 'UNPAID' | 'PAYMENT_PENDING' | 'PAID' | 'SATISFIED_FREE';
+export type GuidedSelfCheckFundingStatus = 'UNPAID' | 'PAYMENT_PENDING' | 'PAID' | 'SATISFIED_FREE' | 'IN_PROGRESS';
 export type GuidedSelfCheckWorkflowStatus =
   'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
 export type GuidedSelfCheckClassificationStatus =
@@ -62,6 +62,7 @@ export interface GuidedSelfCheckFunding {
   paid: boolean;
   attemptStatus: string | null;
   checkoutUrl: string | null;
+  provider?: import('./payment-email.model').PaymentProvider;
   accessCode: string | null;
 }
 // export interface GuidedSelfCheckOption {

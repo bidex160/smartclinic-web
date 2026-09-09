@@ -267,12 +267,10 @@ export class PrescriptionDetailPageComponent {
   }
   changePharmacy(ref: string) {
     if (confirm('Cancel this selection and choose another pharmacy?'))
-      this.api
-        .cancelPatientFulfillment(ref)
-        .subscribe({
-          next: () => this.fulfillment.set(null),
-          error: () => this.error.set('The pharmacy selection could not be changed.'),
-        });
+      this.api.cancelPatientFulfillment(ref).subscribe({
+        next: () => this.fulfillment.set(null),
+        error: () => this.error.set('The pharmacy selection could not be changed.'),
+      });
   }
   acceptQuote(ref: string) {
     this.pending.set(true);
@@ -301,6 +299,10 @@ export class PrescriptionDetailPageComponent {
           : this.api.initializeFunding(ref);
         initialization.subscribe({
           next: (init) => {
+            if (init.provider === 'OPAY' && init.checkoutUrl) {
+              window.location.assign(init.checkoutUrl);
+              return;
+            }
             if (init.fundingStatus === 'SATISFIED_FREE') {
               this.refreshFulfillment();
               this.pending.set(false);

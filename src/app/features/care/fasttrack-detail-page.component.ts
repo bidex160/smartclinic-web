@@ -195,6 +195,10 @@ export class FastTrackDetailPageComponent {
       .subscribe({
         next: (p) => {
           this.payment.set(p);
+          if (p.provider === 'OPAY' && p.checkoutUrl) {
+            window.location.assign(p.checkoutUrl);
+            return;
+          }
           this.api.get(this.reference).subscribe({ next: (r) => this.request.set(r) });
         },
         error: () => this.error.set('We could not confirm the payment yet. Refresh or try again.'),

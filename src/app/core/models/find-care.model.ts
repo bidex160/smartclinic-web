@@ -177,6 +177,7 @@ export interface CareRequestFundingSummary {
   readonly satisfied: boolean;
 }
 export interface CareRequestFunding {
+  readonly provider?: import('./payment-email.model').PaymentProvider;
   readonly careRequestReference: string;
   readonly fundingRequired: boolean;
   readonly amountMinor: number | null;
@@ -339,6 +340,7 @@ export interface FastTrackRequestPage {
   readonly totalPages: number;
 }
 export interface FastTrackPaymentStatus {
+  readonly provider?: import('./payment-email.model').PaymentProvider;
   readonly fastTrackReference: string;
   readonly fastTrackStatus: FastTrackStatus;
   readonly feeMinor: number;

@@ -357,6 +357,10 @@ export class CareDetailPageComponent {
       : this.api.initializeFunding(this.reference);
     initialization.pipe(finalize(() => this.paymentPending.set(false))).subscribe({
       next: (initialized) => {
+        if (initialized.provider === 'OPAY' && initialized.checkoutUrl) {
+          window.location.assign(initialized.checkoutUrl);
+          return;
+        }
         this.funding.set(initialized);
         if (
           initialized.fundingStatus === 'PAID' ||

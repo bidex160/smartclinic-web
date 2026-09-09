@@ -92,6 +92,7 @@ export interface PublicBookingFundingResult {
 }
 
 export interface PublicBookingPaymentInitiationResult {
+  readonly provider?: import('./payment-email.model').PaymentProvider;
   readonly bookingReference: string;
   readonly fundingStatus: PublicBookingFundingStatus;
   readonly checkoutOption: PublicBookingCheckoutOption;

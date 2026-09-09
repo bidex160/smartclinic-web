@@ -78,6 +78,7 @@ export interface UpdatePatientProviderConnectionConfiguration {
   readonly existingPatientLinkCurrency: string | null;
 }
 export interface PatientProviderConnectionFundingAttempt {
+  readonly provider?: import('./payment-email.model').PaymentProvider;
   readonly connectionReference: string;
   readonly purpose: PatientProviderConnectionFundingPurpose;
   readonly amountMinor: number;

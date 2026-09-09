@@ -30,7 +30,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         <p class="mt-2 text-lg font-bold">{{ label(c.status) }}</p>
       </header>
       @if (returnUrl) {
-        <a [routerLink]="returnUrl" class="mt-4 inline-flex font-bold text-brand-700 underline">Return to access requests</a>
+        <a [routerLink]="returnUrl" class="mt-4 inline-flex font-bold text-brand-700 underline"
+          >Return to access requests</a
+        >
       }
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <dl class="grid gap-5 sm:grid-cols-2">
@@ -193,9 +195,13 @@ export class ProviderConnectionDetailPageComponent {
           this.connection.set(r.connection);
           this.funding.set(r.funding);
           this.api.directory(r.connection.provider.displayName, 1, 100).subscribe({
-            next: (page) => this.conversionSupported.set(
-              page.items.find((provider) => provider.providerReference === r.connection.provider.providerReference)?.newPatientRegistration.enabled ?? false,
-            ),
+            next: (page) =>
+              this.conversionSupported.set(
+                page.items.find(
+                  (provider) =>
+                    provider.providerReference === r.connection.provider.providerReference,
+                )?.newPatientRegistration.enabled ?? false,
+              ),
             error: () => this.conversionSupported.set(false),
           });
         },
@@ -214,27 +220,29 @@ export class ProviderConnectionDetailPageComponent {
     const initialization = paymentEmail
       ? this.api.initializeFunding(this.reference, paymentEmail)
       : this.api.initializeFunding(this.reference);
-    initialization
-      .pipe(finalize(() => this.paying.set(false)))
-      .subscribe({
-        next: (r) => {
-          if (!r.accessCode) {
-            this.error.set('Unable to start secure payment.');
-            return;
-          }
-          this.popup.resumeTransaction(r.accessCode, {
-            onSuccess: () => this.verify(),
-            onError: () => this.error.set('Payment was not completed. You can safely retry.'),
-          });
-        },
-        error: (error) =>
-          this.error.set(
-            error?.status === 400 &&
-              error?.error?.message === 'A valid payment email is required to continue'
-              ? error.error.message
-              : 'Unable to start secure payment.',
-          ),
-      });
+    initialization.pipe(finalize(() => this.paying.set(false))).subscribe({
+      next: (r) => {
+        if (r.provider === 'OPAY' && r.checkoutUrl) {
+          window.location.assign(r.checkoutUrl);
+          return;
+        }
+        if (!r.accessCode) {
+          this.error.set('Unable to start secure payment.');
+          return;
+        }
+        this.popup.resumeTransaction(r.accessCode, {
+          onSuccess: () => this.verify(),
+          onError: () => this.error.set('Payment was not completed. You can safely retry.'),
+        });
+      },
+      error: (error) =>
+        this.error.set(
+          error?.status === 400 &&
+            error?.error?.message === 'A valid payment email is required to continue'
+            ? error.error.message
+            : 'Unable to start secure payment.',
+        ),
+    });
   }
   verify() {
     this.paying.set(true);

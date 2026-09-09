@@ -212,6 +212,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
 export class PatientHealthCheckDetailPageComponent {
   private readonly api = inject(HealthCheckResultsApiService);
   private readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
+  private readonly ref = inject(ActivatedRoute).snapshot.queryParamMap.get('reference') ?? '';
   readonly utils = inject(UtilsService);
   readonly detail = signal<PatientHealthCheckDetail | null>(null);
   readonly loading = signal(true);
@@ -227,6 +228,15 @@ export class PatientHealthCheckDetailPageComponent {
       .getMyHealthCheck(this.reference)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({ next: (detail) => this.detail.set(detail), error: () => this.error.set(true) });
+
+      if(this.ref){
+        this.api.verifyMyHealthCheckPayment(this.reference)
+        .subscribe((res)=>{
+          if(res.fundingStatus === 'SETTLED' && this.detail()?.fundingStatus !== 'SETTLED' && this.detail()){
+            this.load()
+          }
+        })
+      }
   }
   paymentChanged(): void {
     this.load();
