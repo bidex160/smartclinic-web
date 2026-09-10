@@ -35,7 +35,7 @@ export interface LoginResponse {
 export interface RegisterRequest {
   readonly givenName: string;
   readonly familyName: string;
-  readonly email: string;
+  readonly email?: string;
   readonly phone?: string;
   readonly password: string;
   readonly countryCode: string;

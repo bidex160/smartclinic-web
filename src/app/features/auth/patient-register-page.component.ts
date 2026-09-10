@@ -144,8 +144,12 @@ export class PatientRegisterPageComponent {
       this.form.markAllAsTouched();
       return;
     }
-
     const value = this.form.getRawValue();
+
+    if(!value.email.trim().toLowerCase() && !value.phone.trim()){
+      this.error.set('Either email or phone number is required')
+     return
+    }
 
     this.pending.set(true);
 
@@ -154,7 +158,9 @@ export class PatientRegisterPageComponent {
         givenName: value.givenName.trim(),
         familyName: value.familyName.trim(),
 
-        email: value.email.trim().toLowerCase(),
+        ...(value.email.trim().toLowerCase() && {
+          email: value.email.trim().toLowerCase(),
+        }),
 
         ...(value.phone.trim() && {
           phone: value.phone.trim(),
