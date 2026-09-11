@@ -52,6 +52,7 @@ input,
 textarea,
 select {
   outline: none !important;
+  min-height: 40px !important;
 }
 
 input::placeholder,

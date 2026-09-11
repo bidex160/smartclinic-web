@@ -6,10 +6,11 @@ import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { formatMinor } from '../provider/care-money';
+import { CommunityLeaderboardComponent } from '../join/components/community-leaderboard/community-leaderboard.component';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink],
+  imports: [RouterLink, CommunityLeaderboardComponent],
   templateUrl: './home-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
