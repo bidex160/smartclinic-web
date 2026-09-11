@@ -240,9 +240,12 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.invalidateQuote();
           if (result.items.length) this.goToStep(2);
         },
-        error: () => {
+        error: (error) => {
+                     const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
+
           if (request !== this.discoveryRequest) return;
           this.discoveryError.set(
+            message ||
             'Available providers could not be loaded. Review your appointment and location, then try again.',
           );
           this.focusCurrentStep();
@@ -314,10 +317,13 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.quote.set(result);
           this.goToStep(4);
         },
-        error: () => {
+        error: (error) => {
+                     const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
+
           if (request !== this.quoteRequest) return;
           this.quote.set(null);
           this.quoteError.set(
+            message ||
             'This option is no longer available. Review your provider, location or add-ons and try again.',
           );
           this.focusCurrentStep();
@@ -362,8 +368,11 @@ export class PatientHealthCheckV2BookingPageComponent {
               payment.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
         },
-        error: () => {
+        error: (error) => {
+                     const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
+
           this.createError.set(
+            error ||
             'This option is no longer available. Return to Customise and confirm your choices again.',
           );
           this.invalidateQuote();

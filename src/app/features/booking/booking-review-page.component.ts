@@ -52,7 +52,9 @@ export class BookingReviewPageComponent {
           void this.router.navigate(['/book/confirmation', confirmation.bookingReference]);
         },
         error: (error: HttpErrorResponse) => {
-          this.submissionError.set(this.getSubmissionError(error));
+                     const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
+
+          this.submissionError.set(message || this.getSubmissionError(error));
           queueMicrotask(() =>
             this.host.nativeElement.querySelector<HTMLElement>('#submission-error')?.focus(),
           );

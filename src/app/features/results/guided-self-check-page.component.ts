@@ -477,12 +477,15 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
   loadFunding() {
     this.api.funding(this.reference).subscribe({
       next: (v) => {
-        console.log(v)
-        this.funding.set(v)
-        if(v.fundingStatus === 'PAYMENT_PENDING' || v.fundingStatus === 'IN_PROGRESS' || 'VERIFYING' ){
-          this.verify()
+        console.log(v);
+        this.funding.set(v);
+        if (
+          v.fundingStatus === 'PAYMENT_PENDING' ||
+          v.fundingStatus === 'IN_PROGRESS' ||
+          'VERIFYING'
+        ) {
+          this.verify();
         }
-
       },
       error: () => this.actionError.set('We could not load payment status. Please try again.'),
     });
@@ -539,7 +542,12 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
           if (v.paid) this.load();
           else this.actionError.set('Payment is not confirmed yet. Please check again shortly.');
         },
-        error: () => this.actionError.set('We could not verify payment yet. Please try again.'),
+        error: (error) => {
+          const message = Array.isArray(error.error?.message)
+            ? error.error?.message.join(', ')
+            : error.error?.message;
+          this.actionError.set('We could not verify payment yet. Please try again.');
+        },
       });
   }
   start() {
@@ -553,8 +561,13 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
           this.questionnaire.set(q);
           this.setIndex(0);
         },
-        error: () =>
-          this.actionError.set('The questionnaire could not be started. Please try again.'),
+        error: (error) => {
+          const message = Array.isArray(error.error?.message)
+            ? error.error?.message.join(', ')
+            : error.error?.message;
+
+          this.actionError.set('The questionnaire could not be started. Please try again.');
+        },
       });
   }
   loadQuestionnaire() {
@@ -638,10 +651,15 @@ export class GuidedSelfCheckPageComponent implements OnDestroy {
           if (last) this.finish();
           else this.setIndex(Math.min(this.index() + 1, this.questions().length - 1));
         },
-        error: () =>
+        error: (error) => {
+          const message = Array.isArray(error.error?.message)
+            ? error.error?.message.join(', ')
+            : error.error?.message;
+
           this.actionError.set(
             'Your answer could not be saved. It is still shown here so you can try again.',
-          ),
+          );
+        },
       });
   }
   finish() {
