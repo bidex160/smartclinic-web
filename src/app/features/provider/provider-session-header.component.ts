@@ -608,22 +608,38 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         lg:hidden
       "
     >
-      <summary
-        class="
-          flex min-h-12 cursor-pointer
-          items-center
-          px-5 py-3
-          font-bold
-          text-brand-800
-          hover:bg-brand-50
-          focus:outline-none
-          focus:ring-1
-          focus:ring-inset
-          focus:ring-brand-200
-        "
-      >
-        Provider navigation
-      </summary>
+     <summary
+  class="
+    justify-end
+    flex min-h-12 cursor-pointer
+    items-center
+    gap-2
+    px-5 py-3
+    font-bold
+    text-brand-800
+    hover:bg-brand-50
+    focus:outline-none
+    focus:ring-1
+    focus:ring-inset
+    focus:ring-brand-200
+  "
+>
+Menu
+  <svg
+    class="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
+    />
+  </svg>
+
+</summary>
 
       <div class="border-t border-slate-100 px-4 py-4">
         <nav

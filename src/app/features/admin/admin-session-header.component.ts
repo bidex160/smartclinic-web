@@ -1,4 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -47,7 +51,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           />
 
           <span>
-            <span class="block text-[15px] font-bold text-white">SmartClinic Network</span>
+            <span class="block text-[15px] font-bold text-white">
+              SmartClinic Network
+            </span>
 
             <span
               class="
@@ -64,7 +70,10 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </div>
 
       <!-- Navigation -->
-      <nav aria-label="SmartClinic operations" class="flex-1 overflow-y-auto px-4 py-6">
+      <nav
+        aria-label="SmartClinic operations"
+        class="flex-1 overflow-y-auto px-4 py-6"
+      >
         <div class="grid gap-1">
           <!-- Dashboard -->
           <a
@@ -140,60 +149,179 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Provider Assignments
           </a>
+
           <a
             routerLink="/admin/referrals"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Referrals</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Referrals
+          </a>
+
           <a
             routerLink="/admin/reward-withdrawals"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Reward Withdrawals</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Reward Withdrawals
+          </a>
+
           <a
             routerLink="/admin/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Care Services</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Care Services
+          </a>
+
           <a
             routerLink="/admin/guided-self-check"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Self-Check Operations</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Self-Check Operations
+          </a>
 
+          <!-- COMMERCIAL -->
           <p
-            class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300"
+            class="
+              mb-2 mt-7
+              px-4
+              text-[11px] font-bold uppercase
+              tracking-[0.16em]
+              text-brand-300
+            "
           >
             Commercial
           </p>
+
           <a
             routerLink="/admin/provider-earnings"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Revenue</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Revenue
+          </a>
+
           <a
             routerLink="/admin/provider-payouts"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Payouts</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Payouts
+          </a>
+
           <a
             routerLink="/admin/provider-payout-accounts"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Payout Accounts</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Payout Accounts
+          </a>
+
           <a
             routerLink="/admin/commission-settings"
             routerLinkActive="!bg-brand-700 !text-white"
-            class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-            >Commission Settings</a
+            class="
+              flex min-h-11 items-center
+              rounded-xl
+              px-4 py-3
+              text-sm font-semibold
+              text-brand-100
+              transition
+              hover:bg-brand-800
+              hover:text-white
+              focus:outline-none
+              focus:ring-1 ml-2
+              focus:ring-brand-700
+            "
           >
+            Commission Settings
+          </a>
 
           <!-- PROVIDERS -->
           <p
@@ -227,24 +355,59 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Providers
           </a>
+
           @if (authState.currentUser()?.roles?.includes('ADMIN')) {
             <p
-              class="mb-2 mt-7 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-300"
+              class="
+                mb-2 mt-7
+                px-4
+                text-[11px] font-bold uppercase
+                tracking-[0.16em]
+                text-brand-300
+              "
             >
               Health Checks
             </p>
+
             <a
               routerLink="/admin/health-checks/packages"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-              >Packages</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-1 ml-2
+                focus:ring-brand-700
+              "
             >
+              Packages
+            </a>
+
             <a
               routerLink="/admin/health-checks/clinical-contents"
               routerLinkActive="!bg-brand-700 !text-white"
-              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
-              >Clinical Contents</a
+              class="
+                flex min-h-11 items-center
+                rounded-xl
+                px-4 py-3
+                text-sm font-semibold
+                text-brand-100
+                transition
+                hover:bg-brand-800
+                hover:text-white
+                focus:outline-none
+                focus:ring-1 ml-2
+                focus:ring-brand-700
+              "
             >
+              Clinical Contents
+            </a>
           }
         </div>
       </nav>
@@ -257,7 +420,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               {{ user.displayName }}
             </p>
 
-            <p class="mt-1 text-xs font-medium text-brand-300">Admin / Operations</p>
+            <p class="mt-1 text-xs font-medium text-brand-300">
+              Admin / Operations
+            </p>
           </div>
         }
 
@@ -330,7 +495,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
 
           <span>
-            <span class="block font-bold text-brand-900"> SmartClinic </span>
+            <span class="block font-bold text-brand-900">
+              SmartClinic
+            </span>
 
             <span
               class="
@@ -351,7 +518,9 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               {{ user.displayName }}
             </p>
 
-            <p class="text-xs text-slate-500">Admin / Operations</p>
+            <p class="text-xs text-slate-500">
+              Admin / Operations
+            </p>
           </div>
         }
       </div>
@@ -361,6 +530,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
          MOBILE NAV
     ========================================================== -->
     <details
+      #mobileMenu
       class="
         border-b border-slate-200
         bg-white
@@ -385,11 +555,15 @@ import { AuthStateService } from '../../core/services/auth-state.service';
       </summary>
 
       <div class="border-t border-slate-100 px-4 py-4">
-        <nav aria-label="Mobile SmartClinic operations" class="grid gap-1">
+        <nav
+          aria-label="Mobile SmartClinic operations"
+          class="grid gap-1"
+        >
           <a
             routerLink="/admin/dashboard"
             routerLinkActive="bg-brand-100 text-brand-900"
             [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeMobileMenu(mobileMenu)"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -416,6 +590,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/admin/matching-queue"
             routerLinkActive="bg-brand-100 text-brand-900"
+            (click)="closeMobileMenu(mobileMenu)"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -431,6 +606,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/admin/provider-assignments"
             routerLinkActive="bg-brand-100 text-brand-900"
+            (click)="closeMobileMenu(mobileMenu)"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -442,58 +618,145 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Provider Assignments
           </a>
+
           <a
             routerLink="/admin/referrals"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Referrals</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Referrals
+          </a>
+
           <a
             routerLink="/admin/reward-withdrawals"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Reward Withdrawals</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Reward Withdrawals
+          </a>
+
           <a
             routerLink="/admin/care-services"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Care Services</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Care Services
+          </a>
+
           <a
             routerLink="/admin/guided-self-check"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Self-Check Operations</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Self-Check Operations
+          </a>
 
-          <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+          <p
+            class="
+              mt-5 px-3
+              text-xs font-bold uppercase
+              tracking-wider
+              text-slate-400
+            "
+          >
             Commercial
           </p>
+
           <a
             routerLink="/admin/provider-earnings"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Revenue</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Revenue
+          </a>
+
           <a
             routerLink="/admin/provider-payouts"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Payouts</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Payouts
+          </a>
+
           <a
             routerLink="/admin/provider-payout-accounts"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Payout Accounts</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Payout Accounts
+          </a>
+
           <a
             routerLink="/admin/commission-settings"
             routerLinkActive="bg-brand-100 text-brand-900"
-            class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-            >Commission Settings</a
+            (click)="closeMobileMenu(mobileMenu)"
+            class="
+              min-h-11 rounded-lg
+              px-3 py-3
+              font-semibold
+              text-slate-700
+              hover:bg-brand-50
+              hover:text-brand-900
+            "
           >
+            Commission Settings
+          </a>
 
           <p
             class="
@@ -509,6 +772,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           <a
             routerLink="/admin/providers"
             routerLinkActive="bg-brand-100 text-brand-900"
+            (click)="closeMobileMenu(mobileMenu)"
             class="
               min-h-11 rounded-lg
               px-3 py-3
@@ -520,29 +784,57 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Providers
           </a>
+
           @if (authState.currentUser()?.roles?.includes('ADMIN')) {
-            <p class="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+            <p
+              class="
+                mt-5 px-3
+                text-xs font-bold uppercase
+                tracking-wider
+                text-slate-400
+              "
+            >
               Health Checks
             </p>
+
             <a
               routerLink="/admin/health-checks/packages"
               routerLinkActive="bg-brand-100 text-brand-900"
-              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-              >Packages</a
+              (click)="closeMobileMenu(mobileMenu)"
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Packages
+            </a>
+
             <a
               routerLink="/admin/health-checks/clinical-contents"
               routerLinkActive="bg-brand-100 text-brand-900"
-              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
-              >Clinical Contents</a
+              (click)="closeMobileMenu(mobileMenu)"
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
             >
+              Clinical Contents
+            </a>
           }
 
           <div class="my-3 border-t border-slate-200"></div>
 
           <button
             type="button"
-            (click)="logout()"
+            (click)="logout(); closeMobileMenu(mobileMenu)"
             [disabled]="authState.loading()"
             class="
               min-h-11 rounded-lg
@@ -570,6 +862,10 @@ export class AdminSessionHeaderComponent {
   private readonly authSession = inject(AuthSessionService);
 
   readonly authState = inject(AuthStateService);
+
+  closeMobileMenu(menu: HTMLDetailsElement): void {
+    menu.open = false;
+  }
 
   logout(): void {
     if (this.authState.loading()) {

@@ -281,8 +281,11 @@ export class ProviderHealthRecordAccessPageComponent {
             requestedExpiresAt: '',
           });
         },
-        error: () =>
-          this.error.set('The access request could not be sent. Review the details and try again.'),
+        error: (error) =>{
+           const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
+          this.error.set(message ||'The access request could not be sent. Review the details and try again.')
+
+        }
       });
   }
   scope(r: ClinicalRecordAccessRequest) {
