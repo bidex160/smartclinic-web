@@ -58,7 +58,11 @@
       aria-labelledby="readiness-heading"
       class="mt-6 rounded-2xl border border-brand-100 bg-white p-6"
     >
-      <h2 id="readiness-heading" class="text-xl font-bold text-brand-900">Review readiness</h2>
+      <h2 id="readiness-heading" class="text-xl font-bold text-brand-900">Health Check readiness</h2>
+      <p class="mt-2 text-slate-600">
+        These settings affect your eligibility to provide Health Checks. They do not prevent you
+        from submitting your provider profile for account approval.
+      </p>
       <dl class="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
           <dt>Profile complete</dt>
@@ -79,7 +83,7 @@
       </dl>
       @if (current.readiness.blockers.length) {
         <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
-          <h3 class="font-bold">Complete the following before submitting:</h3>
+          <h3 class="font-bold">Health Check setup items</h3>
           <ul class="mt-2 list-disc pl-5">
             @for (blocker of current.readiness.blockers; track blocker) {
               <li>{{ blockerLabel(blocker) }}</li>
@@ -246,7 +250,8 @@
           </h2>
           <p class="mt-2">
             SmartClinic operations will review the saved provider identity. Submission does not
-            activate the provider.
+            activate the provider. Find Care and Health Check services can be configured separately
+            based on what you choose to offer.
           </p>
           <div class="mt-4 flex gap-3">
             <button

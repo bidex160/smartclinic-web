@@ -163,8 +163,7 @@ if (p.countryCode && p.stateOrRegion) {
       current &&
       this.profileEditable(current) &&
       !this.form.invalid &&
-      !this.mutating() &&
-      current.readiness.blockers.length === 0
+      !this.mutating()
     )
       this.confirmingSubmit.set(true);
     else this.form.markAllAsTouched();
@@ -211,20 +210,21 @@ profileEditable(profile: ProviderOnboardingProfile): boolean {
   );
 }
 
-canSubmitForReview(profile: ProviderOnboardingProfile): boolean {
-  return (
-    this.profileEditable(profile) &&
-    profile.readiness.blockers.length === 0
-  );
-}
+  canSubmitForReview(profile: ProviderOnboardingProfile): boolean {
+    return (
+      this.profileEditable(profile) &&
+      !this.form.invalid &&
+      !this.mutating()
+    );
+  }
   blockerLabel(blocker: ProviderOnboardingBlocker): string {
     const labels: Record<ProviderOnboardingBlocker, string> = {
       PROFILE_INCOMPLETE: 'Complete your provider profile',
-      NO_ACTIVE_CAPABILITY: 'Add at least one active service',
+      NO_ACTIVE_CAPABILITY: 'Add at least one active Health Check service',
       PROVIDER_LOCATION_WITHOUT_LOCATION:
-        'Add an active location and link it to each provider-location service',
-      HOME_VISIT_WITHOUT_SERVICE_AREA: 'Add an active service area for each Home Visit service',
-      NO_WEEKLY_AVAILABILITY: 'Add weekly availability',
+        'Configure a location for your in-person Health Check service',
+      HOME_VISIT_WITHOUT_SERVICE_AREA: 'Configure Home Visit coverage for your Health Check services',
+      NO_WEEKLY_AVAILABILITY: 'Add weekly availability for your Health Check services',
     };
     return labels[blocker];
   }

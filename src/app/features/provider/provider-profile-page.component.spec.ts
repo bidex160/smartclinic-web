@@ -29,25 +29,35 @@ describe('ProviderProfilePageComponent', () => {
     expect(component.form.disabled).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Operational status: ACTIVE');
   });
-  it('renders backend readiness blockers and hides submission until ready', async () => {
-    const base = profile('REJECTED');
+  it('renders Health Check blockers without preventing account submission', async () => {
+    const base = profile('DRAFT');
     const value = {
       ...base,
       readiness: {
         ...base.readiness,
         hasActiveCapability: false,
+        providerLocationReady: false,
         hasAvailability: false,
-        blockers: ['NO_ACTIVE_CAPABILITY', 'NO_WEEKLY_AVAILABILITY'] as const,
+        blockers: [
+          'NO_ACTIVE_CAPABILITY',
+          'PROVIDER_LOCATION_WITHOUT_LOCATION',
+          'NO_WEEKLY_AVAILABILITY',
+          'HOME_VISIT_WITHOUT_SERVICE_AREA',
+        ] as const,
       },
     };
     const { fixture, component, api } = await setup(value);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Add at least one active service');
-    expect(fixture.nativeElement.textContent).toContain('Add weekly availability');
-    expect(fixture.nativeElement.textContent).not.toContain('Submit for review');
+    expect(fixture.nativeElement.textContent).toContain('Health Check readiness');
+    expect(fixture.nativeElement.textContent).toContain('Add at least one active Health Check service');
+    expect(fixture.nativeElement.textContent).toContain('Configure a location for your in-person Health Check service');
+    expect(fixture.nativeElement.textContent).toContain('Add weekly availability for your Health Check services');
+    expect(fixture.nativeElement.textContent).toContain('Configure Home Visit coverage for your Health Check services');
+    expect(component.canSubmitForReview(value)).toBe(true);
     component.requestSubmit();
+    expect(component.confirmingSubmit()).toBe(true);
     component.submit();
-    expect(api.submit).not.toHaveBeenCalled();
+    expect(api.submit).toHaveBeenCalledOnce();
   });
   it('keeps submitted configuration read-only and prevents duplicate submission', async () => {
     const { fixture, component, api } = await setup(profile('SUBMITTED'));
@@ -133,7 +143,7 @@ describe('ProviderProfilePageComponent', () => {
   }
 });
 function profile(
-  onboardingStatus: 'REJECTED' | 'SUBMITTED' | 'APPROVED',
+  onboardingStatus: 'DRAFT' | 'REJECTED' | 'SUBMITTED' | 'APPROVED',
 ): import('../../core/models/provider-onboarding.model').ProviderOnboardingProfile {
   return {
     displayName: 'Ada Clinic',
