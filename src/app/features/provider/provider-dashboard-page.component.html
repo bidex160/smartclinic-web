@@ -15,24 +15,228 @@
     </div>
   }
   @if (profile(); as current) {
-    @if (!operational()) {
+   @if (!operational()) {
+  @switch (current.onboardingStatus) {
+
+    @case ('DRAFT') {
       <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6">
-        <h2 class="text-xl font-bold text-amber-950">Complete your provider setup</h2>
-        <p class="mt-2">
-          Onboarding: <strong>{{ current.onboardingStatus }}</strong> · Operational status:
-          <strong>{{ current.status }}</strong>
-        </p>
-        <p class="mt-2 text-amber-950">
-          Configure your profile and submit it for SmartClinic review. A provider account does not
-          become operational automatically.
-        </p>
-        <a
-          routerLink="/provider/profile"
-          class="mt-4 inline-flex min-h-11 items-center rounded-lg bg-brand-700 px-5 font-bold text-white"
-          >Continue provider setup</a
-        >
+        <div class="flex items-start gap-4">
+          <div
+            class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800"
+            aria-hidden="true"
+          >
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+          </div>
+
+          <div class="min-w-0">
+            <p class="text-sm font-bold uppercase tracking-wide text-amber-800">
+              Setup in progress
+            </p>
+
+            <h2 class="mt-1 text-xl font-bold text-amber-950">
+              Complete and submit your provider profile
+            </h2>
+
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-amber-950">
+              Complete your provider information and submit your profile for
+              SmartClinic review. You won't be available to patients until your
+              provider account has been approved.
+            </p>
+
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <a
+                routerLink="/provider/profile"
+                class="inline-flex min-h-11 items-center justify-center rounded-lg
+                       bg-brand-700 px-5 font-bold text-white
+                       hover:bg-brand-800 focus-visible:outline
+                       focus-visible:outline-2 focus-visible:outline-offset-2
+                       focus-visible:outline-brand-700"
+              >
+                Continue setup
+              </a>
+
+              <span class="text-sm font-medium text-amber-900">
+                Not yet submitted for review
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
-    } @else {
+    }
+
+    @case ('SUBMITTED') {
+      <section class="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700"
+            aria-hidden="true"
+          >
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+          </div>
+
+          <div class="min-w-0">
+            <p class="text-sm font-bold uppercase tracking-wide text-blue-700">
+              Under review
+            </p>
+
+            <h2 class="mt-1 text-xl font-bold text-blue-950">
+              Your provider profile has been submitted
+            </h2>
+
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-blue-950">
+              SmartClinic is reviewing your provider profile. We'll notify you
+              when your account has been approved or if any changes are required.
+            </p>
+
+            <a
+              routerLink="/provider/profile"
+              class="mt-4 inline-flex min-h-11 items-center justify-center
+                     rounded-lg border border-blue-300 bg-white px-5
+                     font-bold text-blue-800 hover:bg-blue-50"
+            >
+              View submitted profile
+            </a>
+          </div>
+        </div>
+      </section>
+    }
+
+    @case ('REJECTED') {
+      <section class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6">
+        <div class="flex items-start gap-4">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-wide text-red-700">
+              Action required
+            </p>
+
+            <h2 class="mt-1 text-xl font-bold text-red-950">
+              Your provider profile needs attention
+            </h2>
+
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-red-900">
+              Review the feedback on your provider profile, make the required
+              changes, and submit it again for review.
+            </p>
+
+            <a
+              routerLink="/provider/profile"
+              class="mt-4 inline-flex min-h-11 items-center justify-center
+                     rounded-lg bg-brand-700 px-5 font-bold text-white"
+            >
+              Review profile
+            </a>
+          </div>
+        </div>
+      </section>
+    }
+
+  }
+} @else {
+      @if (!findCareLoading() && findCareLoaded() && !findCareError() && activeFindCareServiceCount() === 0) {
+        <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6" aria-labelledby="start-care-heading">
+          <h2 id="start-care-heading" class="text-xl font-bold text-brand-900">Start offering care</h2>
+          <p class="mt-2 text-slate-700">
+            Your provider account is approved. Choose the consultations and specialist services
+            patients can request from you.
+          </p>
+          <a routerLink="/provider/care-services" class="mt-4 inline-flex min-h-11 items-center rounded-lg bg-brand-700 px-5 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            Set up Find Care services
+          </a>
+        </section>
+      }
+      <section class="mt-8" aria-labelledby="primary-actions-heading">
+        <h2 id="primary-actions-heading" class="text-xl font-bold text-brand-900">Quick access</h2>
+      <div
+  class="
+    grid grid-cols-3 gap-2
+    sm:grid-cols-3 sm:gap-3
+    lg:grid-cols-3
+  "
+>
+  @for (action of primaryActions; track action.title) {
+    <a
+      [routerLink]="action.route"
+      [fragment]="action.fragment"
+      class="
+        group flex min-w-0 flex-col items-center
+        rounded-xl border border-slate-200 bg-white
+        px-2 py-3 text-center
+        transition
+        hover:border-brand-300 hover:shadow-sm
+        focus-visible:outline focus-visible:outline-2
+        focus-visible:outline-offset-2 focus-visible:outline-brand-700
+
+        sm:items-start sm:p-4 sm:text-left
+      "
+    >
+      <span
+        class="
+          flex size-8 shrink-0 items-center justify-center
+          rounded-lg bg-brand-50 text-brand-700
+          sm:size-9
+        "
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="size-4 fill-none stroke-current sm:size-[18px]"
+          stroke-width="1.8"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M5 12h14M12 5v14"
+          />
+        </svg>
+      </span>
+
+      <span
+        class="
+          mt-2 line-clamp-2 text-xs font-bold leading-4 text-brand-900
+          sm:mt-3 sm:text-base sm:leading-5
+        "
+      >
+        {{ action.title }}
+      </span>
+
+      <!-- Desktop/tablet only -->
+      <span class="mt-1 hidden text-sm leading-5 text-slate-600 sm:block">
+        {{ action.helper }}
+      </span>
+
+      @if (actionStatus(action, current); as status) {
+        <span
+          class="
+            mt-1 line-clamp-1 text-[10px] font-semibold leading-3
+            text-brand-700
+            sm:mt-2 sm:text-sm sm:leading-5
+          "
+        >
+          {{ status }}
+        </span>
+      }
+    </a>
+  }
+</div>
+      </section>
       <section class="mt-8" aria-labelledby="provider-summary-heading">
         <h2 id="provider-summary-heading" class="text-xl font-bold text-brand-900">Your work</h2>
         @if (summaryLoading()) {

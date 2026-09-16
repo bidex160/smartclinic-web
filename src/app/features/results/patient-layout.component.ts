@@ -14,10 +14,11 @@ import { filter } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-self-check-operations-api.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
 
 @Component({
   selector: 'app-patient-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent],
   template: `
     <aside
       class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-brand-900 p-5 text-white lg:flex"
@@ -70,6 +71,9 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
       >
         Sign out
       </button>
+      <div class="mt-3 w-fit rounded-xl bg-white">
+        <app-notification-bell />
+      </div>
     </aside>
 
     <header class="border-b bg-white px-5 py-4 lg:hidden">
@@ -78,6 +82,8 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
           SmartClinic · Patient Portal
         </a>
 
+        <div class="flex items-center gap-2">
+        <app-notification-bell />
         <button
           type="button"
           (click)="menuOpen.set(!menuOpen())"
@@ -87,6 +93,7 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
         >
           Menu
         </button>
+        </div>
       </div>
 
       @if (menuOpen()) {
@@ -108,6 +115,8 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
           >
             Sign out
           </button>
+
+          <a routerLink="/me/notifications" (click)="menuOpen.set(false)" class="rounded-lg px-3 py-3 font-bold text-brand-800">Notifications</a>
         </nav>
       }
     </header>

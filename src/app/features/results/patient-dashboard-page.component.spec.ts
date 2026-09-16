@@ -226,19 +226,26 @@ describe('PatientDashboardPageComponent', () => {
     },
   );
 
-  it('keeps compact Stay Well, Find Care and My Hospital actions on established routes', async () => {
+  it('renders compact mobile-aligned quick access actions on established web routes', async () => {
     const { fixture } = await setup();
-    const nav = fixture.nativeElement.querySelector('[aria-label="Primary patient actions"]');
+    const nav = fixture.nativeElement.querySelector('[aria-labelledby="quick-access-heading"]');
     expect(
       [...nav.querySelectorAll('a')].map((a: HTMLAnchorElement) => [
         a.textContent.trim(),
         a.getAttribute('href'),
       ]),
     ).toEqual([
-      ['Stay Well', '/me/health-journey'],
-      ['Find Care', '/me/request-care'],
-      ['My Hospital', '/me/providers/connect'],
+      ['Book a checkup', '/me/health-journey'],
+      ['Get a consultation', '/me/request-care'],
+      ['Get medication', '/me/request-care'],
+      ['Get a lab test', '/me/request-care'],
+      ['View health records', '/me/health-passport'],
     ]);
+    expect(nav.textContent).toContain('Pay bills');
+    expect(nav.textContent).toContain('Coming soon');
+    expect(nav.querySelector('button')?.getAttribute('routerlink')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/me/providers/connect"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/me/care"]')).not.toBeNull();
   });
 
   it('keeps configured WhatsApp help above the mobile patient navigation', async () => {

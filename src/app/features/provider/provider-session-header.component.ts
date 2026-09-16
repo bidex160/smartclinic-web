@@ -13,12 +13,14 @@ import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
 
 @Component({
   selector: 'app-provider-session-header',
   imports: [
     RouterLink,
     RouterLinkActive,
+    NotificationBellComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -520,6 +522,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         >
           {{ authState.loading() ? 'Signing out…' : 'Sign out' }}
         </button>
+        <div class="mt-3 w-fit rounded-xl bg-white"><app-notification-bell /></div>
+        <a routerLink="/provider/notifications" class="mt-3 block rounded-xl px-4 py-2 text-sm font-bold text-brand-100 hover:bg-brand-800">Notifications</a>
       </div>
     </aside>
 
@@ -583,7 +587,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           </span>
         </a>
 
-        @if (authState.currentUser(); as user) {
+          <app-notification-bell />
+          @if (authState.currentUser(); as user) {
           <div class="text-right">
             <p class="max-w-32 truncate text-sm font-bold text-slate-900">
               {{ user.displayName }}

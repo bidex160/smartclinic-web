@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
   CareDeliveryMode,
@@ -358,6 +358,7 @@ export class FindCarePageComponent {
   private readonly router = inject(Router);
   private readonly locations = inject(LocationDataService);
   private readonly dependantsApi = inject(DependantsApiService);
+  private readonly route = inject(ActivatedRoute);
   readonly countries = this.locations.getCountries();
   readonly states = signal<ReturnType<LocationDataService['getStates']>>([]);
   readonly cities = signal<ReturnType<LocationDataService['getCities']>>([]);
@@ -369,6 +370,10 @@ export class FindCarePageComponent {
   readonly discoveryProviders = signal<readonly PublicFindCareProvider[]>([]);
   readonly servicesLoading = signal(true);
   readonly servicesError = signal(false);
+  readonly requestedServiceCode = signal<string | null>(null);
+  readonly servicesLoaded = signal(false);
+  private draftRestored = false;
+  private draftDiscoveryStarted = false;
   readonly providersLoading = signal(false);
   readonly providersError = signal(false);
   readonly submitting = signal(false);
@@ -424,6 +429,11 @@ export class FindCarePageComponent {
     ];
   };
   constructor() {
+    this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
+    this.route.queryParamMap.subscribe((params) => {
+      this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
+      this.applyRequestedServiceCode();
+    });
     this.states.set(this.locations.getStates('NG'));
     this.loadServices();
     this.dependantsApi
@@ -446,7 +456,7 @@ export class FindCarePageComponent {
           this.cities.set(this.locations.getCities(saved.countryCode, state.isoCode));
         }
       }
-      this.discoverProviders();
+      this.draftRestored = true;
     }
   }
   selectParticipant(selection: HealthCheckParticipantSelection) {
@@ -466,7 +476,37 @@ export class FindCarePageComponent {
     this.api
       .getServices()
       .pipe(finalize(() => this.servicesLoading.set(false)))
-      .subscribe({ next: (v) => this.services.set(v), error: () => this.servicesError.set(true) });
+      .subscribe({
+        next: (v) => {
+          this.services.set(v);
+          this.servicesLoaded.set(true);
+          this.applyRequestedServiceCode();
+          if (this.draftRestored && !this.requestedServiceIsValid() && !this.draftDiscoveryStarted) {
+            this.draftDiscoveryStarted = true;
+            this.discoverProviders();
+          }
+        },
+        error: () => this.servicesError.set(true),
+      });
+  }
+
+  private readRequestedServiceCode(value: string | null): string | null {
+    const normalized = value?.trim() ?? '';
+    return normalized || null;
+  }
+
+  private applyRequestedServiceCode(): void {
+    if (!this.servicesLoaded()) return;
+    const requested = this.requestedServiceCode();
+    if (!requested || !this.services().some((service) => service.code === requested)) return;
+    if (this.form.controls.serviceCode.value === requested) return;
+    this.form.controls.serviceCode.setValue(requested);
+    this.serviceChanged();
+  }
+
+  private requestedServiceIsValid(): boolean {
+    const requested = this.requestedServiceCode();
+    return !!requested && this.services().some((service) => service.code === requested);
   }
   countryChanged(countryCode: string) {
     this.form.controls.countryCode.setValue(countryCode, { emitEvent: false });

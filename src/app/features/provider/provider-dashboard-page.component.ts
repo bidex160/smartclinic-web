@@ -13,6 +13,16 @@ import {
   ProviderReferralSummary,
   ProviderReferralsApiService,
 } from '../../core/services/provider-referrals-api.service';
+import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
+import { ProviderCareServiceOffering } from '../../core/models/find-care.model';
+
+type PrimaryAction = {
+  readonly title: string;
+  readonly helper: string;
+  readonly route: string;
+  readonly fragment?: string;
+  readonly status?: 'findCare' | 'healthChecks' | 'availability' | 'locations';
+};
 @Component({
   selector: 'app-provider-dashboard-page',
   imports: [RouterLink],
@@ -24,6 +34,7 @@ export class ProviderDashboardPageComponent {
   private readonly dashboardApi = inject(ProviderDashboardApiService);
   private readonly profileApi = inject(ProviderOnboardingApiService);
   private readonly referralsApi = inject(ProviderReferralsApiService);
+  private readonly careServicesApi = inject(ProviderCareServicesApiService);
   readonly utils = inject(UtilsService);
   readonly profileLoading = signal(true);
   readonly profileError = signal<string | null>(null);
@@ -42,6 +53,21 @@ export class ProviderDashboardPageComponent {
   readonly referralLoading = signal(false);
   inviteOpen = signal(false);
   readonly copiedLink = signal<string | null>(null);
+  readonly findCareOfferings = signal<readonly ProviderCareServiceOffering[]>([]);
+  readonly findCareLoading = signal(false);
+  readonly findCareLoaded = signal(false);
+  readonly findCareError = signal(false);
+  readonly activeFindCareServiceCount = computed(
+    () => this.findCareOfferings().filter((offering) => offering.isActive).length,
+  );
+  readonly primaryActions: readonly PrimaryAction[] = [
+    { title: 'Find Care Services', helper: 'Set the consultations and specialist services patients can request from you.', route: '/provider/care-services', status: 'findCare' },
+    { title: 'Health Check Services', helper: 'Configure the Health Check services you offer.', route: '/provider/profile', fragment: 'configuration', status: 'healthChecks' },
+    { title: 'Availability', helper: "Set when you're available for appointments and services.", route: '/provider/profile', fragment: 'availability', status: 'availability' },
+    { title: 'Locations', helper: 'Manage locations for in-person Health Check services.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
+    { title: 'Care Requests', helper: 'Review incoming patient care requests.', route: '/provider/care-requests' },
+    { title: 'Appointments', helper: 'View and manage your appointments.', route: '/provider/care-appointments' },
+  ];
 
   constructor() {
     this.load();
@@ -75,6 +101,7 @@ export class ProviderDashboardPageComponent {
         next: (profile) => {
           this.profile.set(profile);
           if (profile.onboardingStatus === 'APPROVED' && profile.status === 'ACTIVE') {
+            this.loadFindCareOfferings();
             this.loadSummary();
             this.loadOfferPreview();
             this.loadReferrals();
@@ -87,6 +114,50 @@ export class ProviderDashboardPageComponent {
               : 'Your provider dashboard is unavailable right now.',
           ),
       });
+  }
+
+  loadFindCareOfferings(): void {
+    this.findCareLoading.set(true);
+    this.findCareLoaded.set(false);
+    this.findCareError.set(false);
+    this.careServicesApi
+      .getOfferings()
+      .pipe(finalize(() => {
+        this.findCareLoading.set(false);
+        this.findCareLoaded.set(true);
+      }))
+      .subscribe({
+        next: (offerings) => this.findCareOfferings.set(offerings),
+        error: () => {
+          this.findCareOfferings.set([]);
+          this.findCareError.set(true);
+        },
+      });
+  }
+
+  actionStatus(action: PrimaryAction, profile: ProviderOnboardingProfile): string | null {
+    switch (action.status) {
+      case 'findCare': {
+        if (this.findCareLoading()) return null;
+        if (this.findCareError()) return 'Status unavailable';
+        const count = this.activeFindCareServiceCount();
+        return count === 0 ? 'Not configured' : `${count} active service${count === 1 ? '' : 's'}`;
+      }
+      case 'healthChecks': {
+        const count = profile.activeCapabilityCount;
+        return count === 0 ? 'Not configured' : `${count} active service${count === 1 ? '' : 's'}`;
+      }
+      case 'availability': {
+        const count = profile.availabilityCount;
+        return count === 0 ? 'Not configured' : `${count} schedule${count === 1 ? '' : 's'}`;
+      }
+      case 'locations': {
+        const count = profile.activeLocationCount;
+        return count === 0 ? 'Not configured' : `${count} active location${count === 1 ? '' : 's'}`;
+      }
+      default:
+        return null;
+    }
   }
 
   loadSummary(): void {

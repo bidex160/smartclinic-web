@@ -130,6 +130,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        title: 'Notifications | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/notifications/notifications-page.component').then((c) => c.NotificationsPageComponent),
+      },
+      {
         path: 'request-care',
         title: 'Find Care | SmartClinic',
         loadComponent: () =>
@@ -605,6 +611,12 @@ export const routes: Routes = [
           import('./features/provider/provider-dashboard-page.component').then(
             (component) => component.ProviderDashboardPageComponent,
           ),
+      },
+      {
+        path: 'notifications',
+        title: 'Notifications | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/notifications/notifications-page.component').then((c) => c.NotificationsPageComponent),
       },
       {
         path: 'profile',

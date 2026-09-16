@@ -8,6 +8,7 @@ import { ProviderOnboardingApiService } from '../../core/services/provider-onboa
 import { offer } from './provider-offers-page.component.spec';
 import { ProviderDashboardPageComponent } from './provider-dashboard-page.component';
 import { ProviderReferralsApiService } from '../../core/services/provider-referrals-api.service';
+import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
 
 describe('ProviderDashboardPageComponent', () => {
   it('maps all five authoritative metrics and uses a separate offer preview', async () => {
@@ -60,6 +61,32 @@ describe('ProviderDashboardPageComponent', () => {
     expect(summaryApi.getSummary).not.toHaveBeenCalled();
     expect(offersApi.getOffers).not.toHaveBeenCalled();
   });
+
+  it('shows primary actions and the Find Care setup callout when no active offerings exist', async () => {
+    const { fixture, careServicesApi } = await setup();
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(careServicesApi.getOfferings).toHaveBeenCalledOnce();
+    expect(text).toContain('Primary actions');
+    expect(text).toContain('Start offering care');
+    expect(text).toContain('Set up Find Care services');
+    expect(text).toContain('Health Check Services');
+    expect(text).toContain('Care Requests');
+    expect(text).toContain('Appointments');
+    expect(fixture.nativeElement.querySelector('a[href="/provider/care-services"]')).toBeTruthy();
+  });
+
+  it('counts only active Find Care offerings and suppresses the first-time callout', async () => {
+    const { fixture } = await setup('APPROVED', 'ACTIVE', undefined, false, [
+      { isActive: true },
+      { isActive: true },
+      { isActive: false },
+    ]);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).not.toContain('Start offering care');
+    expect(text).toContain('2 active services');
+  });
 });
 
 async function setup(
@@ -85,11 +112,13 @@ async function setup(
     },
   },
   failSummary = false,
+  findCareOfferings: readonly { isActive: boolean }[] = [],
 ) {
   const summaryApi = {
     getSummary: vi.fn(() => (failSummary ? throwError(() => new Error('raw')) : of(summary))),
   };
   const offersApi = { getOffers: vi.fn(() => of([offer()])) };
+  const careServicesApi = { getOfferings: vi.fn(() => of(findCareOfferings as never)) };
   await TestBed.configureTestingModule({
     imports: [ProviderDashboardPageComponent],
     providers: [
@@ -97,6 +126,7 @@ async function setup(
       { provide: AuthSessionService, useValue: { logout: () => of(true) } },
       { provide: ProviderDashboardApiService, useValue: summaryApi },
       { provide: ProviderOffersApiService, useValue: offersApi },
+      { provide: ProviderCareServicesApiService, useValue: careServicesApi },
       {
         provide: ProviderOnboardingApiService,
         useValue: { getProfile: () => of({ displayName: 'Provider', status, onboardingStatus }) },
@@ -108,5 +138,5 @@ async function setup(
     ],
   }).compileComponents();
   const fixture = TestBed.createComponent(ProviderDashboardPageComponent);
-  return { fixture, component: fixture.componentInstance, summaryApi, offersApi };
+  return { fixture, component: fixture.componentInstance, summaryApi, offersApi, careServicesApi };
 }

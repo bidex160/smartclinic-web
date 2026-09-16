@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
+import { Observable, of, Subject } from 'rxjs';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
@@ -41,9 +41,11 @@ describe('FindCarePageComponent', () => {
   async function setup(
     authenticated = true,
     dependants: readonly { patientReference: string; displayName: string }[] = [],
+    serviceCode: string | null = null,
+    serviceResponse: Observable<typeof services> = of(services),
   ) {
     const find = {
-      getServices: vi.fn(() => of(services)),
+      getServices: vi.fn(() => serviceResponse),
       getProviders: vi.fn(() =>
         of({ items: [provider], page: 1, limit: 50, total: 1, totalPages: 1 }),
       ),
@@ -77,6 +79,13 @@ describe('FindCarePageComponent', () => {
       imports: [FindCarePageComponent],
       providers: [
         provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: convertToParamMap(serviceCode ? { serviceCode } : {}) },
+            queryParamMap: of(convertToParamMap(serviceCode ? { serviceCode } : {})),
+          },
+        },
         { provide: FindCareApiService, useValue: find },
         { provide: CareRequestsApiService, useValue: care },
         {
@@ -93,6 +102,28 @@ describe('FindCarePageComponent', () => {
     fixture.detectChanges();
     return { fixture, find, care, router: TestBed.inject(Router) };
   }
+  it('preselects a valid serviceCode only after catalogue validation and reuses serviceChanged', async () => {
+    const { fixture, find } = await setup(true, [], 'DENTAL');
+    const c = fixture.componentInstance;
+    expect(c.form.controls.serviceCode.value).toBe('DENTAL');
+    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', limit: 50 });
+  });
+
+  it('ignores an invalid serviceCode and leaves normal service selection available', async () => {
+    const { fixture, find } = await setup(true, [], 'DOES_NOT_EXIST');
+    expect(fixture.componentInstance.form.controls.serviceCode.value).toBe('');
+    expect(find.getProviders).not.toHaveBeenCalled();
+  });
+
+  it('does not select a deep-linked service before the catalogue responds', async () => {
+    const pending = new Subject<typeof services>();
+    const { fixture } = await setup(true, [], 'DENTAL', pending.asObservable());
+    expect(fixture.componentInstance.form.controls.serviceCode.value).toBe('');
+    pending.next(services);
+    pending.complete();
+    expect(fixture.componentInstance.form.controls.serviceCode.value).toBe('DENTAL');
+  });
+
   it('discovers delivery modes without geography, then discovers and submits VIRTUAL without it', async () => {
     const { fixture, find, care } = await setup();
     const c = fixture.componentInstance;
