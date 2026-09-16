@@ -195,81 +195,124 @@ import { formatMinor } from './care-money';
             Enter an explicit appointment interval. SmartClinic will check provider eligibility and
             overlapping appointments.
           </p>
-          <form [formGroup]="scheduleForm" (ngSubmit)="schedule()" class="mt-5 grid gap-4">
-            <label class="font-bold"
-              >Appointment date<input
-                type="date"
-                formControlName="scheduledDate"
-                [min]="minimumDate"
-                class="mt-2 min-h-12 w-full rounded-xl border px-3"
-            /></label>
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="font-bold"
-                >Start time<input
-                  type="time"
-                  formControlName="scheduledTimeFrom"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3" /></label
-              ><label class="font-bold"
-                >End time<input
-                  type="time"
-                  formControlName="scheduledTimeTo"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
-              /></label>
-            </div>
-            @if (request()?.deliveryMode === 'IN_PERSON') {
-              <label class="font-bold"
-                >Provider location<select
-                  formControlName="providerLocationReference"
-                  class="mt-2 min-h-12 w-full rounded-xl border px-3"
-                >
-                  <option value="">No specific provider location</option>
-                  @for (location of locations(); track location.locationReference) {
-                    <option [value]="location.locationReference">
-                      {{ location.name }} · {{ location.city }}, {{ location.state }}
-                    </option>
-                  }
-                </select></label
-              >
-            }
-            <label class="font-bold"
-              >Timezone<input
-                formControlName="timezone"
-                readonly
-                class="mt-2 min-h-12 w-full rounded-xl border bg-slate-50 px-3"
-              /><span class="mt-1 block text-sm font-normal text-slate-500"
-                >IANA timezone used for the appointment.</span
-              ></label
-            ><label class="font-bold"
-              >Notes (optional)<textarea
-                formControlName="notes"
-                maxlength="2000"
-                rows="3"
-                placeholder="Optional operational appointment note"
-                class="mt-2 w-full rounded-xl border p-3"
-              ></textarea>
-            </label>
-            @if (scheduleError()) {
-              <p role="alert" class="rounded-xl bg-red-50 p-3 text-red-800">
-                {{ scheduleError() }}
-              </p>
-            }
-            <div class="flex justify-end gap-3">
-              <button
-                type="button"
-                (click)="scheduleOpen.set(false)"
-                [disabled]="pending()"
-                class="rounded-xl border px-4 py-3 font-bold"
-              >
-                Cancel</button
-              ><button
-                type="submit"
-                [disabled]="pending()"
-                class="rounded-xl bg-brand-700 px-4 py-3 font-bold text-white disabled:opacity-50"
-              >
-                {{ pending() ? 'Scheduling…' : 'Schedule appointment' }}
-              </button>
-            </div>
-          </form>
+       <form
+  [formGroup]="scheduleForm"
+  (ngSubmit)="schedule()"
+  class="mt-5 grid gap-4"
+>
+  <!-- Appointment date -->
+  <label class="font-bold">
+    Appointment date <span class="text-red-600">*</span>
+
+    <input
+      type="date"
+      formControlName="scheduledDate"
+      [min]="minimumDate"
+      required
+      class="mt-2 min-h-12 w-full rounded-xl border px-3"
+    />
+  </label>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <!-- Start time -->
+    <label class="font-bold">
+      Start time <span class="text-red-600">*</span>
+
+      <input
+        type="time"
+        formControlName="scheduledTimeFrom"
+        required
+        class="mt-2 min-h-12 w-full rounded-xl border px-3"
+      />
+    </label>
+
+    <!-- End time -->
+    <label class="font-bold">
+      End time <span class="text-red-600">*</span>
+
+      <input
+        type="time"
+        formControlName="scheduledTimeTo"
+        required
+        class="mt-2 min-h-12 w-full rounded-xl border px-3"
+      />
+    </label>
+  </div>
+
+  @if (request()?.deliveryMode === 'IN_PERSON') {
+    <label class="font-bold">
+      Provider location
+
+      <select
+        formControlName="providerLocationReference"
+        class="mt-2 min-h-12 w-full rounded-xl border px-3"
+      >
+        <option value="">No specific provider location</option>
+
+        @for (location of locations(); track location.locationReference) {
+          <option [value]="location.locationReference">
+            {{ location.name }} · {{ location.city }}, {{ location.state }}
+          </option>
+        }
+      </select>
+    </label>
+  }
+
+  <!-- Timezone -->
+  <label class="font-bold">
+    Timezone <span class="text-red-600">*</span>
+
+    <input
+      formControlName="timezone"
+      readonly
+      required
+      class="mt-2 min-h-12 w-full rounded-xl border bg-slate-50 px-3"
+    />
+
+    <span class="mt-1 block text-sm font-normal text-slate-500">
+      IANA timezone used for the appointment.
+    </span>
+  </label>
+
+  <!-- Notes -->
+  <label class="font-bold">
+    Notes <span class="font-normal text-slate-500">(optional)</span>
+
+    <textarea
+      formControlName="notes"
+      maxlength="2000"
+      rows="3"
+      placeholder="Optional operational appointment note"
+      class="mt-2 w-full rounded-xl border p-3"
+    ></textarea>
+  </label>
+
+  @if (scheduleError()) {
+    <p role="alert" class="rounded-xl bg-red-50 p-3 text-red-800">
+      {{ scheduleError() }}
+    </p>
+  }
+
+  <div class="flex justify-end gap-3">
+    <button
+      type="button"
+      (click)="scheduleOpen.set(false)"
+      [disabled]="pending()"
+      class="rounded-xl border px-4 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="scheduleForm.invalid || pending()"
+      class="rounded-xl bg-brand-700 px-4 py-3 font-bold text-white transition
+             disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {{ pending() ? 'Scheduling…' : 'Schedule appointment' }}
+    </button>
+  </div>
+</form>
         </section>
       </div>
     }
@@ -536,27 +579,71 @@ export class ProviderCareRequestDetailPageComponent {
     return 'Awaiting payment';
   }
 
-  openSchedule(request: CareRequest): void {
-    this.scheduleError.set(null);
+openSchedule(request: CareRequest): void {
+  this.scheduleError.set(null);
 
-    const now = this.localNow();
+  const now = this.localNow();
+  const minimumStart = this.addMinutesToLocalTime(5);
 
-    const preferredDate = request.preferredDate ?? '';
-    const preferredTime = request.preferredTime ?? '';
+  const preferredDate = request.preferredDate ?? '';
+  const preferredTime = request.preferredTime ?? '';
 
-    const preferredIsFuture =
-      !!preferredDate &&
-      (preferredDate > now.date || (preferredDate === now.date && preferredTime > now.time));
+  let scheduledDate: string;
+  let scheduledTimeFrom: string;
 
-    this.scheduleForm.reset({
-      scheduledDate: preferredIsFuture ? preferredDate : '',
-      scheduledTimeFrom: preferredIsFuture ? preferredTime : '',
-      scheduledTimeTo: '',
-      providerLocationReference: '',
-      timezone: this.timezone,
-      notes: '',
-    });
+  const preferredIsFuture =
+    !!preferredDate &&
+    !!preferredTime &&
+    (
+      preferredDate > now.date ||
+      (preferredDate === now.date && preferredTime > now.time)
+    );
 
-    this.scheduleOpen.set(true);
+  if (preferredIsFuture) {
+    // Patient's requested appointment is still valid.
+    scheduledDate = preferredDate;
+    scheduledTimeFrom = preferredTime;
+  } else {
+    // Patient's requested time has passed.
+    // Start from 5 minutes after the provider opens the scheduler.
+    scheduledDate = minimumStart.date;
+    scheduledTimeFrom = minimumStart.time;
   }
+
+  this.scheduleForm.reset({
+    scheduledDate,
+    scheduledTimeFrom,
+    scheduledTimeTo: '',
+    providerLocationReference: '',
+    timezone: this.timezone,
+    notes: '',
+  });
+
+  this.scheduleOpen.set(true);
+}
+
+private addMinutesToLocalTime(minutes: number): {
+  date: string;
+  time: string;
+} {
+  const future = new Date(Date.now() + minutes * 60_000);
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: this.timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(future);
+
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((x) => x.type === type)?.value ?? '';
+
+  return {
+    date: `${part('year')}-${part('month')}-${part('day')}`,
+    time: `${part('hour')}:${part('minute')}`,
+  };
+}
 }

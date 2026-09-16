@@ -95,15 +95,21 @@ interface DashboardNextStep {
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.4-7-10.2A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7 2.8C19 16.6 12 21 12 21Z"/><path stroke-linecap="round" d="M12 11v4m-2-2h4"/></svg></span>
               <span>Book a checkup</span>
             </a>
-            <a routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+            <a routerLink="/me/request-care"
+             [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION' }"
+              class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 3v-3.5a2.5 2.5 0 0 1-2-2.5v-5.5Z"/></svg></span>
               <span>Get a consultation</span>
             </a>
-            <a routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+            <a 
+             [queryParams]="{ serviceCode: 'BASIC_MEDICATIONS' }"
+            routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 4h8v3H8zM6 7h12v13H6zM9 11h6m-6 4h4"/></svg></span>
               <span>Get medication</span>
             </a>
-            <a routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+            <a routerLink="/me/request-care" 
+            [queryParams]="{ serviceCode: 'LAB_REQUEST' }"
+            class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 3-5 9h6l-2 9 8-11h-6l3-7H9Z"/></svg></span>
               <span>Get a lab test</span>
             </a>

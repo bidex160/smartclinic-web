@@ -129,6 +129,9 @@ if (p.countryCode && p.stateOrRegion) {
             this.form.disable();
             this.profileStateCode.disable({ emitEvent: false });
           }
+         this.form.controls['stateOrRegion'].enable()
+         this.profileStateCode.enable()
+         this.form.controls['city'].enable()
         },
         error: (e) => this.handle(e),
       });
@@ -146,6 +149,22 @@ if (p.countryCode && p.stateOrRegion) {
     const v = this.form.getRawValue();
     this.run(
       this.api.updateProfile({
+        displayName: v.displayName.trim(),
+        phone: v.phone.trim(),
+        professionalReference: v.professionalReference.trim() || undefined,
+        providerType: v.providerType,
+        countryCode: v.countryCode.trim().toUpperCase(),
+        stateOrRegion: v.stateOrRegion.trim(),
+        city: v.city.trim(),
+      }),
+      'Provider profile saved.',
+    );
+  }
+
+  saveProfileLocation(){
+     const v = this.form.getRawValue();
+    this.run(
+      this.api.updateProfileStateCity({
         displayName: v.displayName.trim(),
         phone: v.phone.trim(),
         professionalReference: v.professionalReference.trim() || undefined,
@@ -188,6 +207,8 @@ if (p.countryCode && p.stateOrRegion) {
       next: (p) => {
         this.profile.set(p);
         if (!this.profileEditable(p)) this.form.disable();
+        this.form.controls['stateOrRegion'].enable()
+         this.form.controls['city'].enable()
         this.confirmingSubmit.set(false);
         this.statusMessage.set(message);
       },

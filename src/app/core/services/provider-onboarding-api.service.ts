@@ -44,6 +44,14 @@ export class ProviderOnboardingApiService {
     });
   }
 
+   updateProfileStateCity(request: UpdateProviderProfileRequest): Observable<ProviderOnboardingProfile> {
+    return this.http.patch<ProviderOnboardingProfile>(`${this.baseUrl}/provider/profile/state-city`, request, {
+      context: this.mutationContext,
+    });
+  }
+
+
+
   submit(): Observable<ProviderOnboardingProfile> {
     return this.http.post<ProviderOnboardingProfile>(
       `${this.baseUrl}/provider/onboarding/submit`,

@@ -4,6 +4,7 @@ import { AuthStateService } from './core/services/auth-state.service';
 import { AuthSessionService } from './core/services/auth-session.service';
 import { filter } from 'rxjs';
 import { SmartClinicCompanionComponent } from "./shared/components/smartclinic-companion/smartclinic-companion.component";
+import { LocationDataService } from './core/services/location-data.service';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,8 @@ export class AppComponent {
   readonly authState = inject(AuthStateService);
   private readonly session = inject(AuthSessionService);
   private readonly router = inject(Router);
+  private readonly locationDataService = inject(LocationDataService);
+  
 
   readonly menuOpen = signal(false);
 
@@ -38,6 +41,7 @@ export class AppComponent {
         this.currentUrl.set(event.urlAfterRedirects);
         this.menuOpen.set(false);
       });
+    this.locationDataService.getStatesApi();
   }
 
   logout(): void {

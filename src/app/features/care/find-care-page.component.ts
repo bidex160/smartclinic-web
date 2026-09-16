@@ -387,7 +387,7 @@ export class FindCarePageComponent {
     stateOrRegion: [''],
     city: [''],
     serviceCode: ['', Validators.required],
-    deliveryMode: ['' as CareDeliveryMode | '', Validators.required],
+    deliveryMode: ['VIRTUAL' as CareDeliveryMode | '', Validators.required],
     preferredProviderReference: [''],
     preferredDate: [''],
     preferredTime: [''],
@@ -527,7 +527,7 @@ export class FindCarePageComponent {
     this.providers.set([]);
   }
   serviceChanged() {
-    this.form.patchValue({ deliveryMode: '', preferredProviderReference: '' });
+    this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredProviderReference: '' });
     this.discoveryProviders.set([]);
     this.providers.set([]);
     this.updateGeographyValidators();
@@ -559,7 +559,7 @@ export class FindCarePageComponent {
       .pipe(finalize(() => this.providersLoading.set(false)))
       .subscribe({
         next: (p) => {
-          if (!deliveryMode) {
+          // if (!deliveryMode) {
             this.discoveryProviders.set(p.items);
             const available = this.deliveryModes();
             if (
@@ -567,7 +567,7 @@ export class FindCarePageComponent {
               !available.includes(this.form.controls.deliveryMode.value)
             )
               this.form.controls.deliveryMode.setValue('');
-          }
+          // }
           this.providers.set(deliveryMode ? p.items : []);
         },
         error: () => {

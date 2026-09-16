@@ -202,7 +202,6 @@
         <select
           id="profile-city"
           formControlName="city"
-          [disabled]="!profileStateCode.value"
           class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3 disabled:cursor-not-allowed disabled:bg-slate-100"
         >
           <option value="">Select city</option>
@@ -214,6 +213,17 @@
           }
         </select>
       </div>
+      @if (current.onboardingStatus === 'APPROVED') {
+         <div class="flex flex-wrap gap-3 md:col-span-2">
+          <button
+            type="submit"
+            (click)="saveProfileLocation()"
+            class="min-h-11 rounded-lg border border-brand-700 px-5 font-bold text-brand-800"
+          >
+            Save profile
+          </button>
+        </div>
+      }
       @if (profileEditable(current)) {
         <div class="flex flex-wrap gap-3 md:col-span-2">
           <button
