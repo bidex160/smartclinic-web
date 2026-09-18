@@ -348,7 +348,7 @@
           @if (quote(); as confirmed) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
               <h2 class="text-2xl font-bold">Review & Pay</h2>
-              <p class="mt-2 text-slate-600">Price confirmed for this booking.</p>
+              <p class="mt-2 text-slate-600">Check the important details below. If they look right, continue to payment.</p>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
                   <dt class="text-sm text-slate-600">Participant</dt>
@@ -397,12 +397,14 @@
                 }
               </dl>
               @if (confirmed.includedContents.length) {
-                <h3 class="mt-5 font-bold">Included contents</h3>
+                <details class="mt-5 rounded-xl border border-slate-200 p-4">
+                  <summary class="cursor-pointer font-bold text-brand-800">What’s included?</summary>
                 <ul class="mt-2 list-disc pl-5">
                   @for (item of confirmed.includedContents; track item.code) {
                     <li>{{ item.name }}</li>
                   }
                 </ul>
+                </details>
               }
               @if (confirmed.selectedAddons.length) {
                 <h3 class="mt-5 font-bold">Selected add-ons</h3>
@@ -440,8 +442,33 @@
               @if (created(); as booking) {
                 <div class="mt-6 rounded-xl bg-green-50 p-4"><strong>Health Check for</strong><p>{{ booking.participant.displayName || ((booking.participant.firstName || booking.participant.givenName) + ' ' + (booking.participant.lastName || booking.participant.familyName)) }}</p></div>
                 <div id="booking-payment" tabindex="-1" class="mt-6 scroll-mt-4 outline-none">
-                  <app-patient-payment-panel [reference]="booking.bookingReference" [reloadVerify]="true" />
+                  <app-patient-payment-panel
+                    [reference]="booking.bookingReference"
+                    [reloadVerify]="true"
+                    (statusChanged)="paymentStatusChanged($event)"
+                  />
                 </div>
+                <section id="booking-success" tabindex="-1" class="mt-6 scroll-mt-4 rounded-2xl bg-brand-50 p-5 outline-none ring-1 ring-brand-100">
+                  <h3 class="text-xl font-bold text-brand-950">After payment</h3>
+                  <p class="mt-2 text-slate-700">
+                    We’ll keep this checkup in My Health so you can return to the booking and see what happens next.
+                  </p>
+                  <div class="mt-4 rounded-xl bg-white p-4 ring-1 ring-slate-200">
+                    <strong>Keep your health checks on track</strong>
+                    <p class="mt-1 text-sm text-slate-600">
+                      After this checkup is completed, SmartClinic can help you remember when it is time to check again.
+                      No automatic booking or charge will be made.
+                    </p>
+                  </div>
+                  <div class="mt-4 flex flex-wrap gap-3">
+                    <a routerLink="/me/health-checks" class="inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white">
+                      View My Checkups
+                    </a>
+                    <a routerLink="/me" class="inline-flex min-h-11 items-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-800">
+                      Back to Home
+                    </a>
+                  </div>
+                </section>
               }
             </section>
           }
