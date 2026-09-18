@@ -109,7 +109,7 @@ interface DashboardNextStep {
               <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">H</span>
               <span>Visit a Hospital</span>
             </a>
-            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'BASIC_MEDICATIONS' }" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/prescriptions" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">Rx</span>
               <span>Get Medicine</span>
             </a>
