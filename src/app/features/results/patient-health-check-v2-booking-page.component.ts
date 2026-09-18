@@ -255,7 +255,19 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.discovered.set(true);
           this.selectedOffering.set(null);
           this.invalidateQuote();
-          if (result.items.length) this.goToStep(2);
+          if (result.items.length === 1) {
+            const onlyOffering = result.items[0];
+            this.selectOffering(onlyOffering);
+            if (
+              onlyOffering.fulfilmentMode.code === 'PROVIDER_LOCATION' &&
+              onlyOffering.locations.length === 1
+            ) {
+              this.selectLocation(onlyOffering.locations[0]);
+            }
+            this.goToStep(3);
+          } else if (result.items.length > 1) {
+            this.goToStep(2);
+          }
         },
         error: (error) => {
                      const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
