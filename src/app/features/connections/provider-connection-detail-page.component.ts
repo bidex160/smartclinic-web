@@ -15,12 +15,12 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
   imports: [RouterLink, ReactiveFormsModule, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
-    <a routerLink="/me/providers" class="font-bold text-brand-700 underline">← My Hospitals</a>
+    <a routerLink="/me/providers" class="font-bold text-brand-700 underline">← My Providers</a>
     @if (loading()) {
-      <p role="status" class="mt-6 rounded-2xl border p-6">Loading hospital…</p>
+      <p role="status" class="mt-6 rounded-2xl border p-6">Loading Provider connection…</p>
     } @else if (error() && !connection()) {
       <div role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
-        This hospital connection is unavailable.
+        This Provider connection is unavailable.
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (connection(); as c) {
@@ -33,30 +33,6 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         <a [routerLink]="returnUrl" class="mt-4 inline-flex font-bold text-brand-700 underline"
           >Return to access requests</a
         >
-      }
-      @if (c.status === 'CONNECTED') {
-        <section class="mt-6 rounded-2xl bg-brand-50 p-6 ring-1 ring-brand-100">
-          <p class="text-sm font-bold uppercase tracking-wider text-brand-700">At this hospital</p>
-          <h2 class="mt-1 text-2xl font-bold text-brand-950">What would you like to do?</h2>
-          <div class="mt-4 grid gap-3 sm:grid-cols-2">
-            <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              Book an Appointment
-              <span class="mt-1 block text-sm font-normal text-slate-600">See available care and request a visit.</span>
-            </a>
-            <a routerLink="/me/health-records" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              My Hospital Records
-              <span class="mt-1 block text-sm font-normal text-slate-600">View health information available in SmartClinic.</span>
-            </a>
-            <div class="rounded-xl bg-slate-50 p-4 font-bold text-slate-600 ring-1 ring-slate-200">
-              Pay a Bill
-              <span class="mt-1 block text-sm font-normal">Available when a hospital bill is sent to SmartClinic.</span>
-            </div>
-            <a routerLink="/me" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              Back to Home
-              <span class="mt-1 block text-sm font-normal text-slate-600">See your other SmartClinic actions.</span>
-            </a>
-          </div>
-        </section>
       }
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <dl class="grid gap-5 sm:grid-cols-2">
@@ -79,7 +55,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           </div>
           @if (c.externalPatientReference) {
             <div>
-              <dt class="text-sm text-slate-500">Hospital Patient Number</dt>
+              <dt class="text-sm text-slate-500">Provider Patient Number</dt>
               <dd class="break-all font-bold">{{ c.externalPatientReference }}</dd>
             </div>
           }
@@ -128,16 +104,16 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
       </section>
       @if (c.status === 'SUBMITTED') {
         <section class="mt-6 rounded-2xl bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">Registration sent</h2>
-          <p class="mt-2">Your registration or record-linking request has been sent to the hospital.</p>
+          <h2 class="text-xl font-bold">Awaiting Provider action</h2>
+          <p class="mt-2">Your registration or linking request has been sent to the Provider.</p>
         </section>
       }
       @if (c.status === 'UNABLE_TO_VERIFY') {
         <section class="mt-6 rounded-2xl bg-amber-50 p-6">
           <h2 class="text-xl font-bold">We couldn't verify your existing patient record</h2>
-          <p class="mt-2">The hospital was unable to verify the information submitted.</p>
+          <p class="mt-2">The Provider was unable to verify the information submitted.</p>
           <label class="mt-4 grid gap-2 font-bold"
-            >Correct Hospital Patient Number<input
+            >Correct Provider Patient Number<input
               [formControl]="correctedReference"
               maxlength="160"
               placeholder="e.g. UCH/2026/001234"
@@ -172,7 +148,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           [disabled]="actioning()"
           class="mt-6 font-bold text-red-700 underline"
         >
-          Cancel request
+          Cancel connection request
         </button>
       }
       @if (error()) {
@@ -229,7 +205,7 @@ export class ProviderConnectionDetailPageComponent {
             error: () => this.conversionSupported.set(false),
           });
         },
-        error: () => this.error.set('Unable to load this hospital connection.'),
+        error: () => this.error.set('Unable to load this Provider connection.'),
       });
   }
   pay() {
@@ -305,7 +281,7 @@ export class ProviderConnectionDetailPageComponent {
       });
   }
   cancel() {
-    if (!confirm('Cancel this hospital connection request?') || this.actioning()) return;
+    if (!confirm('Cancel this Provider connection request?') || this.actioning()) return;
     this.actioning.set(true);
     this.api
       .cancel(this.reference)
