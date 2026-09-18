@@ -26,12 +26,26 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
     <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
       SmartClinic care network
     </p>
-    <h1 class="mt-2 text-4xl font-bold text-brand-950">{{ doctorJourney() ? 'See a Doctor' : 'Find Care' }}</h1>
+    <h1 class="mt-2 text-4xl font-bold text-brand-950">{{ doctorJourney() ? 'See a Doctor' : (testJourney() ? 'Get a Test' : 'Find Care') }}</h1>
     <p class="mt-3 max-w-2xl text-slate-600">
       {{ doctorJourney()
         ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.'
-        : 'Tell us what care you need and how you would like to receive it. SmartClinic uses current provider information to help coordinate your request.' }}
+        : (testJourney()
+          ? 'Choose the kind of test you need. If a doctor has already requested a test for you, SmartClinic should carry that request forward.'
+          : 'Tell us what care you need and how you would like to receive it. SmartClinic uses current provider information to help coordinate your request.') }}
     </p>
+    @if (testJourney()) {
+      <section class="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Test options">
+        <button type="button" (click)="chooseTestType('LAB_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">Lab Test</strong>
+          <span class="mt-1 block text-sm text-slate-600">Blood, urine and other laboratory tests.</span>
+        </button>
+        <button type="button" (click)="chooseTestType('IMAGING_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">X-ray or Scan</strong>
+          <span class="mt-1 block text-sm text-slate-600">X-ray, ultrasound, CT, MRI and other scans.</span>
+        </button>
+      </section>
+    }
     @if (doctorJourney()) {
       <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
         <button type="button" (click)="chooseDoctorMode('VIRTUAL')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
@@ -392,6 +406,7 @@ export class FindCarePageComponent {
   readonly servicesError = signal(false);
   readonly requestedServiceCode = signal<string | null>(null);
   readonly doctorJourney = signal(false);
+  readonly testJourney = signal(false);
   readonly servicesLoaded = signal(false);
   private draftRestored = false;
   private draftDiscoveryStarted = false;
@@ -451,9 +466,11 @@ export class FindCarePageComponent {
   };
   constructor() {
     this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor');
+    this.testJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'test');
     this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
     this.route.queryParamMap.subscribe((params) => {
       this.doctorJourney.set(params.get('journey') === 'doctor');
+      this.testJourney.set(params.get('journey') === 'test');
       this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
       this.applyRequestedServiceCode();
     });
@@ -482,6 +499,12 @@ export class FindCarePageComponent {
       this.draftRestored = true;
     }
   }
+  chooseTestType(serviceCode: 'LAB_REQUEST' | 'IMAGING_REQUEST') {
+    this.requestedServiceCode.set(serviceCode);
+    this.form.controls.serviceCode.setValue(serviceCode);
+    this.invalidateDiscovery();
+  }
+
   chooseDoctorMode(mode: 'VIRTUAL' | 'LATER') {
     if (mode === 'VIRTUAL') {
       this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredDate: '', preferredTime: '' });
