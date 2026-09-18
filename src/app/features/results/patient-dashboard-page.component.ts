@@ -97,7 +97,7 @@ interface DashboardNextStep {
             <p class="mt-1 text-sm text-slate-600">Choose what you want to do. We’ll guide you from there.</p>
           </div>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <a routerLink="/me/health-journey" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/book" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">♥</span>
               <span>Book a Checkup</span>
             </a>
