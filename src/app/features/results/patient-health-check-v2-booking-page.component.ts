@@ -40,7 +40,7 @@ export class PatientHealthCheckV2BookingPageComponent {
   private readonly providerInvitations = inject(ProviderRecruitmentInvitationsApiService);
   private readonly dependantsApi = inject(DependantsApiService);
 
-  readonly steps = ['Appointment', 'Provider', 'Customise', 'Review & Pay'] as const;
+  readonly steps = ['Your checkup', 'Provider', 'Options', 'Review & Pay'] as const;
   readonly currentStep = signal<BookingStep>(1);
   readonly packages = signal<readonly HealthCheckCataloguePackage[]>([]);
   readonly catalogueLoading = signal(true);
@@ -118,10 +118,27 @@ export class PatientHealthCheckV2BookingPageComponent {
     phone: ['', [Validators.maxLength(32)]],
   });
   constructor() {
-    console.log('xxx')
+    this.setSuggestedAppointment();
     this.states.set(this.locations.getStates('NG'));
     this.loadCatalogue();
     this.loadDependants();
+  }
+
+  private setSuggestedAppointment(): void {
+    const suggested = new Date();
+    suggested.setMinutes(suggested.getMinutes() + 90);
+    suggested.setMinutes(Math.ceil(suggested.getMinutes() / 30) * 30, 0, 0);
+    if (suggested.getHours() >= 18) {
+      suggested.setDate(suggested.getDate() + 1);
+      suggested.setHours(9, 0, 0, 0);
+    }
+    const yyyy = suggested.getFullYear();
+    const mm = String(suggested.getMonth() + 1).padStart(2, '0');
+    const dd = String(suggested.getDate()).padStart(2, '0');
+    const hh = String(suggested.getHours()).padStart(2, '0');
+    const min = String(suggested.getMinutes()).padStart(2, '0');
+    this.form.controls.preferredDate.setValue(`${yyyy}-${mm}-${dd}`);
+    this.form.controls.preferredTime.setValue(`${hh}:${min}`);
   }
 
   loadDependants(): void { this.dependantsLoading.set(true); this.dependantsError.set(false); this.dependantsApi.getDependants().pipe(finalize(() => this.dependantsLoading.set(false))).subscribe({ next: result => this.dependants.set(result.items), error: () => this.dependantsError.set(true) }); }
