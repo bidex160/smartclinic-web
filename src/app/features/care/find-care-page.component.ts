@@ -503,11 +503,11 @@ export class FindCarePageComponent {
     this.requestedServiceCode.set(serviceCode);
     if (this.servicesLoaded() && !this.services().some((service) => service.code === serviceCode)) {
       this.form.controls.serviceCode.setValue('');
-      this.invalidateDiscovery();
+      // this.invalidateDiscovery();
       return;
     }
     this.form.controls.serviceCode.setValue(serviceCode);
-    this.invalidateDiscovery();
+    // this.invalidateDiscovery();
   }
 
   chooseDoctorMode(mode: 'VIRTUAL' | 'LATER') {
@@ -577,7 +577,7 @@ export class FindCarePageComponent {
     this.serviceChanged();
   }
 
-  private requestedServiceIsValid(): boolean {
+   requestedServiceIsValid(): boolean {
     const requested = this.requestedServiceCode();
     return !!requested && this.services().some((service) => service.code === requested);
   }

@@ -11,7 +11,7 @@ import {
   HealthCheckProviderLocation,
   HealthCheckProviderOffering,
 } from '../../core/models/health-check-package.model';
-import { PublicBookingResponse } from '../../core/models/public-booking.model';
+import { PublicBookingPaymentStatus, PublicBookingResponse } from '../../core/models/public-booking.model';
 import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 import { ProviderRecruitmentInvitationResponse } from '../../core/models/provider-recruitment-invitation.model';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
