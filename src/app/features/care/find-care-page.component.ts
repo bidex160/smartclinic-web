@@ -501,6 +501,11 @@ export class FindCarePageComponent {
   }
   chooseTestType(serviceCode: 'LAB_REQUEST' | 'IMAGING_REQUEST') {
     this.requestedServiceCode.set(serviceCode);
+    if (this.servicesLoaded() && !this.services().some((service) => service.code === serviceCode)) {
+      this.form.controls.serviceCode.setValue('');
+      this.invalidateDiscovery();
+      return;
+    }
     this.form.controls.serviceCode.setValue(serviceCode);
     this.invalidateDiscovery();
   }
