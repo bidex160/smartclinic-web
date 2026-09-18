@@ -40,7 +40,7 @@ export class PatientHealthCheckV2BookingPageComponent {
   private readonly providerInvitations = inject(ProviderRecruitmentInvitationsApiService);
   private readonly dependantsApi = inject(DependantsApiService);
 
-  readonly steps = ['Your checkup', 'Provider', 'Options', 'Review & Pay'] as const;
+  readonly steps = ['Appointment', 'Provider', 'Customise', 'Review & Pay'] as const;
   readonly currentStep = signal<BookingStep>(1);
   readonly packages = signal<readonly HealthCheckCataloguePackage[]>([]);
   readonly catalogueLoading = signal(true);
@@ -118,27 +118,10 @@ export class PatientHealthCheckV2BookingPageComponent {
     phone: ['', [Validators.maxLength(32)]],
   });
   constructor() {
-    this.setSuggestedAppointment();
+    console.log('xxx')
     this.states.set(this.locations.getStates('NG'));
     this.loadCatalogue();
     this.loadDependants();
-  }
-
-  private setSuggestedAppointment(): void {
-    const suggested = new Date();
-    suggested.setMinutes(suggested.getMinutes() + 90);
-    suggested.setMinutes(Math.ceil(suggested.getMinutes() / 30) * 30, 0, 0);
-    if (suggested.getHours() >= 18) {
-      suggested.setDate(suggested.getDate() + 1);
-      suggested.setHours(9, 0, 0, 0);
-    }
-    const yyyy = suggested.getFullYear();
-    const mm = String(suggested.getMonth() + 1).padStart(2, '0');
-    const dd = String(suggested.getDate()).padStart(2, '0');
-    const hh = String(suggested.getHours()).padStart(2, '0');
-    const min = String(suggested.getMinutes()).padStart(2, '0');
-    this.form.controls.preferredDate.setValue(`${yyyy}-${mm}-${dd}`);
-    this.form.controls.preferredTime.setValue(`${hh}:${min}`);
   }
 
   loadDependants(): void { this.dependantsLoading.set(true); this.dependantsError.set(false); this.dependantsApi.getDependants().pipe(finalize(() => this.dependantsLoading.set(false))).subscribe({ next: result => this.dependants.set(result.items), error: () => this.dependantsError.set(true) }); }
@@ -255,19 +238,7 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.discovered.set(true);
           this.selectedOffering.set(null);
           this.invalidateQuote();
-          if (result.items.length === 1) {
-            const onlyOffering = result.items[0];
-            this.selectOffering(onlyOffering);
-            if (
-              onlyOffering.fulfilmentMode.code === 'PROVIDER_LOCATION' &&
-              onlyOffering.locations.length === 1
-            ) {
-              this.selectLocation(onlyOffering.locations[0]);
-            }
-            this.goToStep(3);
-          } else if (result.items.length > 1) {
-            this.goToStep(2);
-          }
+          if (result.items.length) this.goToStep(2);
         },
         error: (error) => {
                      const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
@@ -358,16 +329,6 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.focusCurrentStep();
         },
       });
-  }
-
-  paymentStatusChanged(payment: PublicBookingPaymentStatus): void {
-    if (payment.fundingStatus !== 'SETTLED') return;
-    queueMicrotask(() => {
-      const success = this.host.nativeElement.querySelector<HTMLElement>('#booking-success');
-      success?.focus();
-      if (typeof success?.scrollIntoView === 'function')
-        success.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
   }
 
   createBooking(): void {

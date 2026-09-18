@@ -1,9 +1,9 @@
 <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8">
-  <a routerLink="/me" class="font-bold text-brand-700">← Back to home</a>
+  <a routerLink="/me/health-journey" class="font-bold text-brand-700">← Health journey</a>
   <header class="mt-5">
-    <p class="font-bold uppercase tracking-wider text-brand-700">Book a Checkup</p>
-    <h1 class="mt-2 text-3xl font-bold">Choose your checkup</h1>
-    <p class="mt-2 text-slate-600">A few simple choices, then you can review and pay.</p>
+    <p class="font-bold uppercase tracking-wider text-brand-700">Book a Health Check</p>
+    <h1 class="mt-2 text-3xl font-bold">Book your Health Check</h1>
+    <p class="mt-2 text-slate-600">Choose an appointment, provider and any optional add-ons.</p>
   </header>
 
   <nav aria-label="Booking progress" class="mt-6 rounded-2xl border bg-white p-4">
@@ -41,14 +41,16 @@
             (ngSubmit)="discover(1)"
             class="rounded-2xl border bg-white p-5 sm:p-6"
           >
-            <h2 class="text-2xl font-bold">Your checkup</h2>
-            <p class="mt-2 text-slate-600">Choose who it is for, the checkup you want and where you want it done.</p>
+            <h2 class="text-2xl font-bold">Appointment</h2>
+            <p class="mt-2 text-slate-600">
+              Tell us when and where you would like your Health Check.
+            </p>
             <fieldset class="mt-5">
-              <legend class="font-bold">Who is this for?</legend>
+              <legend class="font-bold">Who is this Health Check for?</legend>
               <div class="mt-3 grid gap-3 sm:grid-cols-2">
                 <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
                   <input type="radio" name="health-check-participant" value="SELF" [checked]="participant().kind === 'SELF'" (change)="selectParticipant('SELF')" />
-                  <strong>Me</strong>
+                  <strong>Myself</strong>
                 </label>
                 @for (item of dependants(); track item.patientReference) {
                   <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
@@ -63,40 +65,40 @@
             </fieldset>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
               <label class="font-bold"
-                >Choose a checkup
+                >Health Check
                 <select
                   formControlName="packageCode"
                   (change)="packageChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 >
-                  <option value="">Choose a checkup</option>
+                  <option value="">Select a Health Check</option>
                   @for (item of packages(); track item.code) {
                     <option [value]="item.code">{{ item.name }}</option>
                   }
                 </select>
               </label>
               <label class="font-bold"
-                >Where should we do it?
+                >How would you like your check?
                 <select
                   formControlName="fulfilmentModeCode"
                   (change)="fulfilmentChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 >
-                  <option value="">Choose home or health centre</option>
+                  <option value="">Select an option</option>
                   @for (item of modes(); track item.code) {
                     <option [value]="item.code">{{ item.name }}</option>
                   }
                 </select>
               </label>
               <label class="font-bold"
-                >Suggested date<input
+                >Preferred date<input
                   type="date"
                   formControlName="preferredDate"
                   (change)="contextChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
               /></label>
               <label class="font-bold"
-                >Suggested time<input
+                >Preferred time<input
                   type="time"
                   formControlName="preferredTime"
                   (change)="contextChanged()"
@@ -160,7 +162,7 @@
               [disabled]="form.invalid || discovering()"
               class="mt-6 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
             >
-              {{ discovering() ? 'Checking availability…' : 'Continue' }}
+              {{ discovering() ? 'Finding providers…' : 'Find providers' }}
             </button>
             @if (discoveryError()) {
               <p tabindex="-1" role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
@@ -219,8 +221,7 @@
         }
         @case (2) {
           <section class="rounded-2xl border bg-white p-5 sm:p-6">
-            <h2 class="text-2xl font-bold">Choose where to get your checkup</h2>
-            <p class="mt-2 text-slate-600">We found more than one available option. Choose the one you prefer.</p>
+            <h2 class="text-2xl font-bold">Choose a provider</h2>
             <div class="mt-5 grid gap-4">
               @for (offering of offerings(); track offeringKey(offering)) {
                 <button
@@ -258,7 +259,7 @@
                 (click)="backTo(1)"
                 class="min-h-12 rounded-xl border px-5 font-bold"
               >
-                Back</button
+                Back to Appointment</button
               ><button
                 type="button"
                 (click)="continueToCustomise()"
@@ -273,8 +274,10 @@
         @case (3) {
           @if (selectedOffering(); as offering) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
-              <h2 class="text-2xl font-bold">Anything else?</h2>
-              <p class="mt-2 text-slate-600">Confirm where you will attend and add extras only if you want them.</p>
+              <h2 class="text-2xl font-bold">Customise</h2>
+              <p class="mt-2 text-slate-600">
+                Review the provider details and choose any optional add-ons.
+              </p>
               @if (offering.fulfilmentMode.code === 'PROVIDER_LOCATION') {
                 <fieldset class="mt-5">
                   <legend class="font-bold">Where will you attend?</legend>
@@ -298,8 +301,7 @@
               }
               @if (offering.addons.length) {
                 <fieldset class="mt-6">
-                  <legend class="font-bold">Want to add anything?</legend>
-                  <p class="mt-1 text-sm text-slate-600">Optional — you can continue without adding anything.</p>
+                  <legend class="font-bold">Optional add-ons</legend>
                   @for (addon of offering.addons; track addon.code) {
                     <label
                       class="mt-3 flex cursor-pointer justify-between gap-4 rounded-xl border p-4"
@@ -328,7 +330,7 @@
                   (click)="backTo(2)"
                   class="min-h-12 rounded-xl border px-5 font-bold"
                 >
-                  Back</button
+                  Back to Provider</button
                 ><button
                   type="button"
                   (click)="reviewBooking()"
@@ -338,7 +340,7 @@
                   "
                   class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
                 >
-                  {{ quoting() ? 'Confirming price…' : 'Review & Pay' }}
+                  {{ quoting() ? 'Confirming price…' : 'Review booking' }}
                 </button>
               </div>
             </section>
@@ -348,7 +350,7 @@
           @if (quote(); as confirmed) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
               <h2 class="text-2xl font-bold">Review & Pay</h2>
-              <p class="mt-2 text-slate-600">Check the important details below. If they look right, continue to payment.</p>
+              <p class="mt-2 text-slate-600">Price confirmed for this booking.</p>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
                   <dt class="text-sm text-slate-600">Participant</dt>
@@ -397,14 +399,12 @@
                 }
               </dl>
               @if (confirmed.includedContents.length) {
-                <details class="mt-5 rounded-xl border border-slate-200 p-4">
-                  <summary class="cursor-pointer font-bold text-brand-800">What’s included?</summary>
+                <h3 class="mt-5 font-bold">Included contents</h3>
                 <ul class="mt-2 list-disc pl-5">
                   @for (item of confirmed.includedContents; track item.code) {
                     <li>{{ item.name }}</li>
                   }
                 </ul>
-                </details>
               }
               @if (confirmed.selectedAddons.length) {
                 <h3 class="mt-5 font-bold">Selected add-ons</h3>
@@ -425,14 +425,14 @@
                     (click)="backTo(3)"
                     class="min-h-12 rounded-xl border px-5 font-bold"
                   >
-                    Back</button
+                    Back to Customise</button
                   ><button
                     type="button"
                     (click)="createBooking()"
                     [disabled]="creating()"
                     class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
                   >
-                    {{ creating() ? 'Preparing payment…' : 'Pay for Checkup' }}
+                    {{ creating() ? 'Preparing payment…' : 'Continue to payment' }}
                   </button>
                 </div>
               }
@@ -442,33 +442,8 @@
               @if (created(); as booking) {
                 <div class="mt-6 rounded-xl bg-green-50 p-4"><strong>Health Check for</strong><p>{{ booking.participant.displayName || ((booking.participant.firstName || booking.participant.givenName) + ' ' + (booking.participant.lastName || booking.participant.familyName)) }}</p></div>
                 <div id="booking-payment" tabindex="-1" class="mt-6 scroll-mt-4 outline-none">
-                  <app-patient-payment-panel
-                    [reference]="booking.bookingReference"
-                    [reloadVerify]="true"
-                    (statusChanged)="paymentStatusChanged($event)"
-                  />
+                  <app-patient-payment-panel [reference]="booking.bookingReference" [reloadVerify]="true" />
                 </div>
-                <section id="booking-success" tabindex="-1" class="mt-6 scroll-mt-4 rounded-2xl bg-brand-50 p-5 outline-none ring-1 ring-brand-100">
-                  <h3 class="text-xl font-bold text-brand-950">After payment</h3>
-                  <p class="mt-2 text-slate-700">
-                    We’ll keep this checkup in My Health so you can return to the booking and see what happens next.
-                  </p>
-                  <div class="mt-4 rounded-xl bg-white p-4 ring-1 ring-slate-200">
-                    <strong>Keep your health checks on track</strong>
-                    <p class="mt-1 text-sm text-slate-600">
-                      After this checkup is completed, SmartClinic can help you remember when it is time to check again.
-                      No automatic booking or charge will be made.
-                    </p>
-                  </div>
-                  <div class="mt-4 flex flex-wrap gap-3">
-                    <a routerLink="/me/health-checks" class="inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white">
-                      View My Checkups
-                    </a>
-                    <a routerLink="/me" class="inline-flex min-h-11 items-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-800">
-                      Back to Home
-                    </a>
-                  </div>
-                </section>
               }
             </section>
           }

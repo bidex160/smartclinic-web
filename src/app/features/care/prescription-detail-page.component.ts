@@ -16,7 +16,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
   imports: [RouterLink, ReactiveFormsModule, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-    <a routerLink="/me/prescriptions" class="font-bold text-brand-700 underline">← Get Medicine</a>
+    <a routerLink="/me/prescriptions" class="font-bold text-brand-700 underline">← Prescriptions</a>
     @if (loading()) {
       <p role="status" class="mt-6 rounded-2xl border p-6">Loading prescription…</p>
     } @else if (error() && !order()) {
@@ -26,7 +26,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
     } @else if (order(); as o) {
       <header class="mt-6">
         <p class="break-all text-sm font-bold text-brand-700">{{ o.reference }}</p>
-        <h1 class="mt-2 text-3xl font-bold">Get your medicines</h1>
+        <h1 class="mt-2 text-3xl font-bold">Prescription</h1>
         <p class="mt-2">
           {{ o.orderingProvider.displayName }} · {{ date(o.issuedAt) }} · {{ o.status }}
         </p>
@@ -78,14 +78,14 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
       </section>
       @if (fulfillment(); as f) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Your pharmacy</h2>
+          <h2 class="text-xl font-bold">Pharmacy fulfillment</h2>
           <p class="mt-2">
             <strong>{{ f.pharmacy.displayName }}</strong> · {{ f.pharmacy.serviceUnitName }}
           </p>
           <p class="mt-2">{{ status(f.status) }}</p>
           @if (f.quote; as q) {
             <div class="mt-5 border-t pt-5">
-              <h3 class="font-bold">Your medicine price</h3>
+              <h3 class="font-bold">Pharmacy quote</h3>
               @for (i of q.items; track i.prescriptionItem.sortOrder) {
                 <div class="mt-3 flex justify-between gap-4">
                   <span>{{ i.quotedMedicationLabel }} · {{ i.availability }}</span
@@ -113,7 +113,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   [disabled]="pending() || (hasUnavailable(q.items) && !acknowledge())"
                   class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
                 >
-                  Continue with this price
+                  Accept quote
                 </button>
               }
             </div>
@@ -136,7 +136,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           }
           @if (f.dispensing; as d) {
             <div class="mt-5">
-              <h3 class="font-bold">Medicine status</h3>
+              <h3 class="font-bold">Pickup progress</h3>
               <p class="mt-2">{{ dispensingLabel(d.status) }}</p>
             </div>
           }
@@ -152,14 +152,14 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
       } @else if (o.status === 'ISSUED') {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Choose where to get your medicines</h2>
+          <h2 class="text-xl font-bold">Choose a pharmacy</h2>
           <p class="mt-2 text-slate-600">
-            Choose an available pharmacy. You can change it before payment.
+            Search eligible pharmacy service units. Your care provider's recommendation is optional.
           </p>
           <form [formGroup]="searchForm" (ngSubmit)="search()" class="mt-4 flex gap-3">
             <input
               formControlName="q"
-              placeholder="Search pharmacy"
+              placeholder="Search by pharmacy or service unit"
               class="min-h-12 flex-1 rounded-xl border px-3"
             /><button class="rounded-xl border px-5 font-bold">Search</button>
           </form>
@@ -188,7 +188,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                     [disabled]="pending()"
                     class="mt-3 rounded-lg bg-brand-700 px-4 py-2 font-bold text-white"
                   >
-                    Choose this pharmacy
+                    Select pharmacy
                   </button>
                 </article>
               }
@@ -233,7 +233,7 @@ export class PrescriptionDetailPageComponent {
           if (o.fulfillment?.reference) {
             this.api.getPatientFulfillment(o.fulfillment.reference).subscribe({
               next: (f) => this.fulfillment.set(f),
-              error: () => this.error.set('Your pharmacy state could not be loaded.'),
+              error: () => this.error.set('Pharmacy fulfillment state could not be loaded.'),
             });
           } else {
             this.fulfillment.set(null);
@@ -371,7 +371,7 @@ export class PrescriptionDetailPageComponent {
           PROPOSED: 'Pharmacy recommended',
           SELECTED: 'Pharmacy selected',
           ACCEPTED: 'Pharmacy accepted your prescription',
-          CANCELLED: 'Your pharmacy cancelled',
+          CANCELLED: 'Pharmacy fulfillment cancelled',
         } as Record<string, string>
       )[s] || s
     );

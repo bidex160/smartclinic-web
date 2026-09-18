@@ -8,23 +8,9 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase text-brand-600">SmartClinic medicines</p>
-    <h1 class="mt-2 text-3xl font-bold">Get Medicine</h1>
-    <p class="mt-2 text-slate-600">Use a prescription already in SmartClinic, or choose another way to get started.</p>
-    <section class="mt-6 grid gap-3 sm:grid-cols-3">
-      <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'BASIC_MEDICATIONS' }" class="rounded-2xl bg-white p-5 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-        Find a Medicine
-        <span class="mt-1 block text-sm font-normal text-slate-600">Start a medicine request if you do not already have a SmartClinic prescription.</span>
-      </a>
-      <div class="rounded-2xl bg-slate-50 p-5 font-bold text-slate-600 ring-1 ring-slate-200">
-        Upload a Prescription
-        <span class="mt-1 block text-sm font-normal">Coming when prescription upload is connected.</span>
-      </div>
-      <div class="rounded-2xl bg-slate-50 p-5 font-bold text-slate-600 ring-1 ring-slate-200">
-        Refill Previous Medicine
-        <span class="mt-1 block text-sm font-normal">Available when a previous prescription is eligible for refill.</span>
-      </div>
-    </section>
+    <p class="text-sm font-bold uppercase text-brand-600">Patient portal</p>
+    <h1 class="mt-2 text-3xl font-bold">Prescriptions</h1>
+    <p class="mt-2 text-slate-600">Issued prescriptions from your General Care appointments.</p>
     @if (loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading prescriptions…</p>
     } @else if (error()) {
@@ -34,15 +20,10 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       </div>
     } @else if (!items().length) {
       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
-        <h2 class="text-xl font-bold">No SmartClinic prescriptions yet</h2>
-        <p class="mt-2 text-slate-600">If a doctor sends you a prescription through SmartClinic, it will appear here automatically.</p>
+        <h2 class="text-xl font-bold">No prescriptions yet.</h2>
       </section>
     } @else {
-      <section class="mt-8">
-        <h2 class="text-xl font-bold text-brand-950">Your prescriptions</h2>
-        <p class="mt-1 text-sm text-slate-600">Choose a prescription to get the medicines from an available pharmacy.</p>
-      </section>
-      <div class="mt-4 overflow-x-auto rounded-2xl border bg-white">
+      <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
         <table class="min-w-full divide-y">
           <thead>
             <tr>
@@ -73,7 +54,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                   <a
                     [routerLink]="['/me/prescriptions', o.reference]"
                     class="font-bold text-brand-700 underline"
-                    >Get medicines</a
+                    >View</a
                   >
                 </td>
               </tr>
