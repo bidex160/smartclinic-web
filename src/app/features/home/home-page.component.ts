@@ -37,6 +37,23 @@ export class HomePageComponent {
   readonly requestCareQueryParams = computed(() =>
     this.authState.isPatient() ? null : { returnUrl: '/me/request-care' },
   );
+  readonly doctorQueryParams = computed(() =>
+    this.authState.isPatient()
+      ? { serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }
+      : { returnUrl: '/me/request-care?serviceCode=EMERGENCY_CONSULTATION&journey=doctor' },
+  );
+  readonly medicineRoute = computed(() =>
+    this.authState.isPatient() ? '/me/prescriptions' : '/login',
+  );
+  readonly medicineQueryParams = computed(() =>
+    this.authState.isPatient() ? null : { returnUrl: '/me/prescriptions' },
+  );
+  readonly testRoute = computed(() =>
+    this.authState.isPatient() ? '/me/tests' : '/login',
+  );
+  readonly testQueryParams = computed(() =>
+    this.authState.isPatient() ? null : { returnUrl: '/me/tests' },
+  );
   readonly myHospitalRoute = computed(() =>
     this.authState.isPatient() ? '/me/providers/connect' : '/login',
   );
