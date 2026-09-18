@@ -360,6 +360,16 @@ export class PatientHealthCheckV2BookingPageComponent {
       });
   }
 
+  paymentStatusChanged(payment: PublicBookingPaymentStatus): void {
+    if (payment.fundingStatus !== 'SETTLED') return;
+    queueMicrotask(() => {
+      const success = this.host.nativeElement.querySelector<HTMLElement>('#booking-success');
+      success?.focus();
+      if (typeof success?.scrollIntoView === 'function')
+        success.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   createBooking(): void {
     const confirmed = this.quote();
     if (!confirmed?.configurationReference || this.creating()) return;
