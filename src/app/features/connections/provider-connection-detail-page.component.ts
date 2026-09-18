@@ -43,7 +43,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               Book an Appointment
               <span class="mt-1 block text-sm font-normal text-slate-600">See available care and request a visit.</span>
             </a>
-            <a routerLink="/me/records" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
+            <a routerLink="/me/health-records" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
               My Hospital Records
               <span class="mt-1 block text-sm font-normal text-slate-600">View health information available in SmartClinic.</span>
             </a>
