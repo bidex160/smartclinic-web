@@ -1,9 +1,9 @@
 <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8">
-  <a routerLink="/me/health-journey" class="font-bold text-brand-700">← Health journey</a>
+  <a routerLink="/me" class="font-bold text-brand-700">← Back to home</a>
   <header class="mt-5">
-    <p class="font-bold uppercase tracking-wider text-brand-700">Book a Health Check</p>
-    <h1 class="mt-2 text-3xl font-bold">Book your Health Check</h1>
-    <p class="mt-2 text-slate-600">Choose an appointment, provider and any optional add-ons.</p>
+    <p class="font-bold uppercase tracking-wider text-brand-700">Book a Checkup</p>
+    <h1 class="mt-2 text-3xl font-bold">Choose your checkup</h1>
+    <p class="mt-2 text-slate-600">A few simple choices, then you can review and pay.</p>
   </header>
 
   <nav aria-label="Booking progress" class="mt-6 rounded-2xl border bg-white p-4">
@@ -41,16 +41,14 @@
             (ngSubmit)="discover(1)"
             class="rounded-2xl border bg-white p-5 sm:p-6"
           >
-            <h2 class="text-2xl font-bold">Appointment</h2>
-            <p class="mt-2 text-slate-600">
-              Tell us when and where you would like your Health Check.
-            </p>
+            <h2 class="text-2xl font-bold">Your checkup</h2>
+            <p class="mt-2 text-slate-600">Choose who it is for, the checkup you want and where you want it done.</p>
             <fieldset class="mt-5">
-              <legend class="font-bold">Who is this Health Check for?</legend>
+              <legend class="font-bold">Who is this for?</legend>
               <div class="mt-3 grid gap-3 sm:grid-cols-2">
                 <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
                   <input type="radio" name="health-check-participant" value="SELF" [checked]="participant().kind === 'SELF'" (change)="selectParticipant('SELF')" />
-                  <strong>Myself</strong>
+                  <strong>Me</strong>
                 </label>
                 @for (item of dependants(); track item.patientReference) {
                   <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
@@ -65,40 +63,40 @@
             </fieldset>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
               <label class="font-bold"
-                >Health Check
+                >Choose a checkup
                 <select
                   formControlName="packageCode"
                   (change)="packageChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 >
-                  <option value="">Select a Health Check</option>
+                  <option value="">Choose a checkup</option>
                   @for (item of packages(); track item.code) {
                     <option [value]="item.code">{{ item.name }}</option>
                   }
                 </select>
               </label>
               <label class="font-bold"
-                >How would you like your check?
+                >Where should we do it?
                 <select
                   formControlName="fulfilmentModeCode"
                   (change)="fulfilmentChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 >
-                  <option value="">Select an option</option>
+                  <option value="">Choose home or health centre</option>
                   @for (item of modes(); track item.code) {
                     <option [value]="item.code">{{ item.name }}</option>
                   }
                 </select>
               </label>
               <label class="font-bold"
-                >Preferred date<input
+                >Suggested date<input
                   type="date"
                   formControlName="preferredDate"
                   (change)="contextChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
               /></label>
               <label class="font-bold"
-                >Preferred time<input
+                >Suggested time<input
                   type="time"
                   formControlName="preferredTime"
                   (change)="contextChanged()"
@@ -162,7 +160,7 @@
               [disabled]="form.invalid || discovering()"
               class="mt-6 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
             >
-              {{ discovering() ? 'Finding providers…' : 'Find providers' }}
+              {{ discovering() ? 'Checking availability…' : 'Continue' }}
             </button>
             @if (discoveryError()) {
               <p tabindex="-1" role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
@@ -259,7 +257,7 @@
                 (click)="backTo(1)"
                 class="min-h-12 rounded-xl border px-5 font-bold"
               >
-                Back to Appointment</button
+                Back</button
               ><button
                 type="button"
                 (click)="continueToCustomise()"
@@ -274,10 +272,8 @@
         @case (3) {
           @if (selectedOffering(); as offering) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
-              <h2 class="text-2xl font-bold">Customise</h2>
-              <p class="mt-2 text-slate-600">
-                Review the provider details and choose any optional add-ons.
-              </p>
+              <h2 class="text-2xl font-bold">Anything else?</h2>
+              <p class="mt-2 text-slate-600">Confirm where you will attend and add extras only if you want them.</p>
               @if (offering.fulfilmentMode.code === 'PROVIDER_LOCATION') {
                 <fieldset class="mt-5">
                   <legend class="font-bold">Where will you attend?</legend>
@@ -330,7 +326,7 @@
                   (click)="backTo(2)"
                   class="min-h-12 rounded-xl border px-5 font-bold"
                 >
-                  Back to Provider</button
+                  Back</button
                 ><button
                   type="button"
                   (click)="reviewBooking()"
@@ -340,7 +336,7 @@
                   "
                   class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
                 >
-                  {{ quoting() ? 'Confirming price…' : 'Review booking' }}
+                  {{ quoting() ? 'Confirming price…' : 'Review & Pay' }}
                 </button>
               </div>
             </section>
@@ -425,14 +421,14 @@
                     (click)="backTo(3)"
                     class="min-h-12 rounded-xl border px-5 font-bold"
                   >
-                    Back to Customise</button
+                    Back</button
                   ><button
                     type="button"
                     (click)="createBooking()"
                     [disabled]="creating()"
                     class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
                   >
-                    {{ creating() ? 'Preparing payment…' : 'Continue to payment' }}
+                    {{ creating() ? 'Preparing payment…' : 'Pay for Checkup' }}
                   </button>
                 </div>
               }
