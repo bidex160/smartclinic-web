@@ -26,14 +26,45 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
     <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
       SmartClinic care network
     </p>
-    <h1 class="mt-2 text-4xl font-bold text-brand-950">Find Care</h1>
+    <h1 class="mt-2 text-4xl font-bold text-brand-950">{{ doctorJourney() ? 'See a Doctor' : (testJourney() ? 'Get a Test' : 'Find Care') }}</h1>
     <p class="mt-3 max-w-2xl text-slate-600">
-      Tell us what care you need and how you would like to receive it. SmartClinic uses current
-      provider information to help coordinate your request.
+      {{ doctorJourney()
+        ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.'
+        : (testJourney()
+          ? 'Choose the kind of test you need. If a doctor has already requested a test for you, SmartClinic should carry that request forward.'
+          : 'Tell us what care you need and how you would like to receive it. SmartClinic uses current provider information to help coordinate your request.') }}
     </p>
+    @if (testJourney()) {
+      <section class="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Test options">
+        <button type="button" (click)="chooseTestType('LAB_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">Lab Test</strong>
+          <span class="mt-1 block text-sm text-slate-600">Blood, urine and other laboratory tests.</span>
+        </button>
+        <button type="button" (click)="chooseTestType('IMAGING_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">X-ray or Scan</strong>
+          <span class="mt-1 block text-sm text-slate-600">X-ray, ultrasound, CT, MRI and other scans.</span>
+        </button>
+      </section>
+    }
+    @if (doctorJourney()) {
+      <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
+        <button type="button" (click)="chooseDoctorMode('VIRTUAL')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">Talk to a Doctor Now</strong>
+          <span class="mt-1 block text-sm text-slate-600">Start with an available doctor online.</span>
+        </button>
+        <button type="button" (click)="chooseDoctorMode('LATER')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">Book for Later</strong>
+          <span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
+        </button>
+        <a routerLink="/me/providers" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+          <strong class="block text-lg text-brand-950">Visit a Hospital</strong>
+          <span class="mt-1 block text-sm text-slate-600">Choose a hospital for in-person care.</span>
+        </a>
+      </section>
+    }
     @if (success(); as request) {
       <section class="mt-8 rounded-3xl border border-green-200 bg-green-50 p-7">
-        <h2 class="text-2xl font-bold text-green-950">Care Request submitted</h2>
+        <h2 class="text-2xl font-bold text-green-950">Your request is in</h2>
         <dl class="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-600">Reference</dt>
@@ -84,7 +115,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           }
         </dl>
         <p class="mt-5 text-slate-700">
-          We’ll show the current provider-response or matching step in My Care.
+          SmartClinic will keep the next step here in My Care. You do not need to start again.
         </p>
         <a
           [routerLink]="['/me/care', request.reference]"
@@ -94,7 +125,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
       </section>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-7" novalidate>
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-3xl border bg-white p-6" [class.hidden]="doctorJourney() && requestedServiceIsValid()">
           <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
           @if (servicesLoading()) {
             <p role="status" class="mt-3">Loading care services…</p>
@@ -124,7 +155,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           }
         </fieldset>
         <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">Who is this care request for?</legend>
+          <legend class="px-2 text-xl font-bold">Who is this for?</legend>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
               ><input
@@ -133,7 +164,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
                 [checked]="participant().kind === 'SELF'"
                 (change)="selectParticipant({ kind: 'SELF' })"
               />
-              <span>Myself</span></label
+              <span>Me</span></label
             >
             @for (dependant of dependants(); track dependant.patientReference) {
               <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
@@ -156,7 +187,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           <a
             routerLink="/me/family"
             class="mt-2 inline-block text-sm font-semibold text-brand-700 underline"
-            >Add a dependant</a
+            >Add someone</a
           >
           @if (dependantsError()) {
             <p class="mt-2 text-sm text-slate-600">
@@ -164,7 +195,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-3xl border bg-white p-6" [class.hidden]="doctorJourney()">
           <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
           @if (deliveryModes().length) {
             <div class="mt-3 grid gap-3 sm:grid-cols-3">
@@ -236,7 +267,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </div>
           </fieldset>
         }
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-3xl border bg-white p-6" [class.hidden]="doctorJourney()">
           <legend class="px-2 text-xl font-bold">
             {{ requiresGeography() ? '4' : '3' }}. Preferred provider
           </legend>
@@ -290,8 +321,11 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         </fieldset>
         <fieldset class="rounded-3xl border bg-white p-6">
           <legend class="px-2 text-xl font-bold">
-            {{ requiresGeography() ? '5' : '4' }}. Optional request details
+            {{ doctorJourney() ? 'Anything else?' : (requiresGeography() ? '5. Optional request details' : '4. Optional request details') }}
           </legend>
+          @if (doctorJourney()) {
+            <p class="mt-2 text-sm text-slate-600">Optional — add a preferred time, contact method or a short note only if you want to.</p>
+          }
           <div class="mt-3 grid gap-5 sm:grid-cols-2">
             <label class="font-semibold"
               >Preferred date (optional)<input
@@ -371,6 +405,8 @@ export class FindCarePageComponent {
   readonly servicesLoading = signal(true);
   readonly servicesError = signal(false);
   readonly requestedServiceCode = signal<string | null>(null);
+  readonly doctorJourney = signal(false);
+  readonly testJourney = signal(false);
   readonly servicesLoaded = signal(false);
   private draftRestored = false;
   private draftDiscoveryStarted = false;
@@ -429,8 +465,12 @@ export class FindCarePageComponent {
     ];
   };
   constructor() {
+    this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor');
+    this.testJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'test');
     this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
     this.route.queryParamMap.subscribe((params) => {
+      this.doctorJourney.set(params.get('journey') === 'doctor');
+      this.testJourney.set(params.get('journey') === 'test');
       this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
       this.applyRequestedServiceCode();
     });
@@ -459,6 +499,39 @@ export class FindCarePageComponent {
       this.draftRestored = true;
     }
   }
+  chooseTestType(serviceCode: 'LAB_REQUEST' | 'IMAGING_REQUEST') {
+    this.requestedServiceCode.set(serviceCode);
+    if (this.servicesLoaded() && !this.services().some((service) => service.code === serviceCode)) {
+      this.form.controls.serviceCode.setValue('');
+      this.invalidateDiscovery();
+      return;
+    }
+    this.form.controls.serviceCode.setValue(serviceCode);
+    this.invalidateDiscovery();
+  }
+
+  chooseDoctorMode(mode: 'VIRTUAL' | 'LATER') {
+    if (mode === 'VIRTUAL') {
+      this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredDate: '', preferredTime: '' });
+      this.updateGeographyValidators();
+      this.discoverProviders();
+      return;
+    }
+    const suggested = new Date();
+    suggested.setDate(suggested.getDate() + 1);
+    suggested.setHours(9, 0, 0, 0);
+    const yyyy = suggested.getFullYear();
+    const mm = String(suggested.getMonth() + 1).padStart(2, '0');
+    const dd = String(suggested.getDate()).padStart(2, '0');
+    this.form.patchValue({
+      deliveryMode: 'VIRTUAL',
+      preferredDate: `${yyyy}-${mm}-${dd}`,
+      preferredTime: '09:00',
+    });
+    this.updateGeographyValidators();
+    this.discoverProviders();
+  }
+
   selectParticipant(selection: HealthCheckParticipantSelection) {
     this.participant.set(selection);
   }
