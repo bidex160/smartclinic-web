@@ -71,11 +71,11 @@ interface DashboardNextStep {
         </header>
 
         <section
-          class="mt-4 rounded-2xl bg-brand-900 p-5 text-white shadow-soft sm:p-6"
+          class="mt-4 rounded-2xl bg-brand-900 p-4 text-white shadow-soft sm:p-5"
           aria-labelledby="next-step-heading"
         >
           <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
-          <h2 id="next-step-heading" class="mt-1 text-2xl font-bold">
+          <h2 id="next-step-heading" class="mt-1 text-xl font-bold sm:text-2xl">
             {{ nextStep(value).title }}
           </h2>
           <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-50 sm:text-base">
@@ -83,7 +83,7 @@ interface DashboardNextStep {
           </p>
           <a
             [routerLink]="nextStep(value).route"
-            class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900 focus:ring-4 focus:ring-white/40"
+            class="mt-3 inline-flex min-h-10 items-center rounded-xl bg-white px-4 text-sm font-bold text-brand-900 focus:ring-4 focus:ring-white/40"
             >{{ nextStep(value).label }} <span class="ml-2" aria-hidden="true">→</span></a
           >
         </section>
@@ -113,7 +113,7 @@ interface DashboardNextStep {
               <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">Rx</span>
               <span>Get Medicine</span>
             </a>
-            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'LAB_REQUEST', journey: 'test' }" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/tests" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">T</span>
               <span>Get a Test</span>
             </a>
@@ -124,258 +124,85 @@ interface DashboardNextStep {
           </div>
         </nav>
 
-        <section class="mt-7 rounded-2xl bg-brand-50 p-5 ring-1 ring-brand-100" aria-labelledby="for-you-heading">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+        <section class="mt-7" aria-labelledby="your-care-heading">
+          <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-bold uppercase tracking-wider text-brand-700">For you today</p>
-              <h2 id="for-you-heading" class="mt-1 text-xl font-bold text-brand-950">{{ nextStep(value).title }}</h2>
-              <p class="mt-1 text-sm text-slate-700">{{ nextStep(value).message }}</p>
+              <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Your care</p>
+              <h2 id="your-care-heading" class="mt-1 text-xl font-bold text-brand-950">Everything connected.</h2>
             </div>
-            <a [routerLink]="nextStep(value).route" class="inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white focus:ring-4 focus:ring-brand-200">
-              {{ nextStep(value).label }} <span class="ml-2" aria-hidden="true">→</span>
+            <a routerLink="/me/care" class="text-sm font-bold text-brand-700">View care →</a>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <a routerLink="/me/providers" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+              <span class="text-xl" aria-hidden="true">🏥</span>
+              <p class="mt-2 text-sm font-bold text-brand-950">{{ value.setup.hasConnectedProvider ? 'Hospital connected' : value.setup.hasProviderConnection ? 'Connection in progress' : 'Choose a hospital' }}</p>
+            </a>
+            <a routerLink="/me/care" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+              <span class="text-xl" aria-hidden="true">♥</span>
+              <p class="mt-2 text-sm font-bold text-brand-950">{{ value.setup.hasCareRequest ? 'Care activity' : 'Start your care' }}</p>
+            </a>
+            <a routerLink="/me/health-passport" class="col-span-2 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100 sm:col-span-1">
+              <span class="text-xl" aria-hidden="true">▣</span>
+              <p class="mt-2 text-sm font-bold text-brand-950">Health Passport</p>
             </a>
           </div>
         </section>
 
-        <section class="mt-7" aria-labelledby="your-care-heading">
-          <div class="flex items-end justify-between gap-3">
-            <div>
-              <h2 id="your-care-heading" class="text-2xl font-bold text-brand-950">Your Care</h2>
-              <p class="mt-1 text-sm text-slate-600">Your current care connections and activity.</p>
-            </div>
-            <a routerLink="/me/care" class="font-bold text-brand-700 underline">View care</a>
-          </div>
-          <div class="mt-3 grid gap-3 md:grid-cols-2">
-            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
-              <h3 class="font-bold">Hospital connection</h3>
-              @if (value.setup.hasConnectedProvider) {
-                <p class="mt-1 text-sm text-slate-600">You have a connected healthcare provider.</p>
-                <a routerLink="/me/providers" class="mt-2 inline-block font-bold text-brand-700"
-                  >View My Hospitals →</a
-                >
-              } @else if (value.setup.hasProviderConnection) {
-                <p class="mt-1 text-sm text-slate-600">Your provider connection is in progress.</p>
-                <a routerLink="/me/providers" class="mt-2 inline-block font-bold text-brand-700"
-                  >View connection →</a
-                >
-              } @else {
-                <p class="mt-1 text-sm text-slate-600">No hospital connected yet.</p>
-                <a
-                  routerLink="/me/providers/connect"
-                  class="mt-2 inline-block font-bold text-brand-700"
-                  >Choose My Hospital →</a
-                >
-              }
-            </article>
-            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
-              <h3 class="font-bold">Care activity</h3>
-              @if (value.setup.hasCareRequest) {
-                <p class="mt-1 text-sm text-slate-600">You have care activity in My Care.</p>
-                <a routerLink="/me/care" class="mt-2 inline-block font-bold text-brand-700"
-                  >Open My Care →</a
-                >
-              } @else {
-                <p class="mt-1 text-sm text-slate-600">No care request yet.</p>
-                <a routerLink="/me/request-care" class="mt-2 inline-block font-bold text-brand-700"
-                  >Find Care →</a
-                >
-              }
-            </article>
-          </div>
-        </section>
-
-        <section class="mt-7" aria-labelledby="health-check-summary-heading">
-          <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 id="health-check-summary-heading" class="text-2xl font-bold text-brand-950">
-                Health Check summary
-              </h2>
-              <p class="mt-1 text-sm text-slate-600">Your preventive Health Check activity.</p>
-            </div>
-            <a routerLink="/me/health-checks" class="font-bold text-brand-700 underline"
-              >View all</a
-            >
-          </div>
-          @if (healthChecksLoading()) {
-            <p role="status" class="mt-3 rounded-xl bg-white p-4">Loading your Health Checks…</p>
-          } @else if (healthChecksError()) {
-            <p role="alert" class="mt-3 rounded-xl bg-red-50 p-4">
-              We couldn't load your Health Check summary.
-              <button type="button" (click)="loadHealthChecks()" class="font-bold underline">
-                Try again
-              </button>
-            </p>
-          } @else {
-            <div class="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
-              @for (item of healthCheckSummary(); track item.label) {
-                <article
-                  class="flex items-center justify-between gap-2 rounded-xl bg-white p-3 ring-1 ring-slate-200"
-                >
-                  <p class="text-sm font-semibold text-slate-600">{{ item.label }}</p>
-                  <p class="text-xl font-bold text-brand-900">{{ item.count }}</p>
-                </article>
-              }
-            </div>
+        <section class="mt-7 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-700 text-white shadow-soft" aria-labelledby="health-check-summary-heading">
+          <div class="p-5 sm:p-7">
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-100">Invest in yourself</p>
+            <h2 id="health-check-summary-heading" class="mt-2 max-w-2xl text-2xl font-bold sm:text-3xl">
+              Your health deserves a place on your priority list.
+            </h2>
             @if (healthChecks()?.items?.length === 0) {
-              <div
-                class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-50 p-4"
-              >
-                <p>You haven't completed a Health Check yet.</p>
-                <a routerLink="/me/health-journey" class="font-bold text-brand-700"
-                  >Explore Health Checks →</a
-                >
+              <p class="mt-3 max-w-2xl text-sm leading-6 text-brand-50 sm:text-base">
+                We spend on the things we use every day. A simple Health Check is an investment in the person who uses them all — you.
+              </p>
+              <a routerLink="/me/health-journey" class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900">
+                Check my health → 
+              </a>
+            } @else {
+              <p class="mt-2 text-sm text-brand-50">Your preventive Health Check activity at a glance.</p>
+              <div class="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                @for (item of healthCheckSummary(); track item.label) {
+                  <article class="flex items-center justify-between gap-2 rounded-xl bg-white/10 p-3 ring-1 ring-white/20">
+                    <p class="text-xs font-semibold text-brand-50">{{ item.label }}</p>
+                    <p class="text-xl font-bold">{{ item.count }}</p>
+                  </article>
+                }
               </div>
+              <a routerLink="/me/health-checks" class="mt-4 inline-block text-sm font-bold text-white underline">View Health Checks →</a>
             }
-          }
+          </div>
         </section>
 
-        <section
-          class="mt-7 rounded-2xl bg-white p-5 ring-1 ring-slate-200"
-          aria-labelledby="passport-heading"
-        >
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 id="passport-heading" class="text-2xl font-bold text-brand-950">
-                Smart Health Passport
-              </h2>
-              <p class="mt-1 text-sm text-slate-600">
-                A concise view of your recorded health journey.
-              </p>
+        <section class="mt-7 rounded-3xl border border-brand-100 bg-gradient-to-br from-white to-brand-50 p-5" aria-labelledby="passport-heading">
+          <div class="flex items-start gap-4">
+            <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-700 text-xl text-white" aria-hidden="true">▣</div>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Smart Health Passport</p>
+              <h2 id="passport-heading" class="mt-1 text-xl font-bold text-brand-950">Your health story, wherever you go.</h2>
+              <p class="mt-1 text-sm leading-6 text-slate-600">Records, results, prescriptions and care history in one place.</p>
+              <a routerLink="/me/health-passport" class="mt-3 inline-flex min-h-10 items-center font-bold text-brand-700">Open Health Passport →</a>
             </div>
-            <a
-              routerLink="/me/health-passport"
-              class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-              >Open Health Passport</a
-            >
           </div>
-          @if (passport(); as health) {
-            <div class="mt-4 grid gap-3 sm:grid-cols-3">
-              @if (health.currentNextAction; as action) {
-                <div>
-                  <p class="text-xs font-bold uppercase text-brand-700">Current action</p>
-                  <p class="mt-1 font-bold">{{ action.title }}</p>
-                </div>
-              }
-              @if (health.latestMeasurements[0]; as measurement) {
-                <div>
-                  <p class="text-xs font-bold uppercase text-brand-700">Latest measurement</p>
-                  <p class="mt-1 font-bold">{{ measurementLabel(measurement.type) }}</p>
-                  <p class="text-sm text-slate-600">
-                    {{ provenanceLabel(measurement.provenance) }}
-                  </p>
-                </div>
-              }
-              @if (health.recentActivity[0]; as activity) {
-                <div>
-                  <p class="text-xs font-bold uppercase text-brand-700">Latest activity</p>
-                  <p class="mt-1 font-bold">{{ activity.title }}</p>
-                </div>
-              }
-            </div>
-          }
         </section>
 
-        <section class="mt-7 rounded-2xl bg-brand-50 p-5" aria-labelledby="impact-heading">
-          <div class="flex flex-wrap items-start justify-between gap-4">
+        <section class="mt-7 rounded-3xl bg-brand-50 p-5 ring-1 ring-brand-100" aria-labelledby="impact-heading">
+          <div class="flex items-start justify-between gap-4">
             <div>
-              <h2 id="impact-heading" class="text-2xl font-bold text-brand-950">
-                Help someone access SmartClinic
-              </h2>
-              <p class="mt-1 max-w-2xl text-sm text-slate-600">
-                Invite people or participating healthcare organisations and track your verified
-                impact.
-              </p>
-            </div>
-            <a routerLink="/me/impact" class="font-bold text-brand-700 underline">View Impact</a>
-          </div>
-          @if (referralsLoading()) {
-            <p role="status" class="mt-4">Loading your impact…</p>
-          } @else if (referralsError()) {
-            <p role="alert" class="mt-4">
-              We couldn't load your referral progress.
-              <button type="button" (click)="loadReferrals()" class="font-bold underline">
-                Try again
-              </button>
-            </p>
-          } @else if (referrals(); as rewards) {
-            <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div>
-                <p class="text-xs text-slate-600">Available points</p>
-                <p class="text-xl font-bold">{{ rewards.balances.availablePoints }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-600">Reserved points</p>
-                <p class="text-xl font-bold">{{ rewards.balances.reservedPoints }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-600">Lifetime earned</p>
-                <p class="text-xl font-bold">{{ rewards.balances.lifetimeEarnedPoints }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-600">Verified referrals</p>
-                <p class="text-xl font-bold">{{ rewards.summary.qualifiedReferrals }}</p>
-              </div>
-              @if (rewards.leaderboard.optedIn) {
-                <div>
-                  <p class="text-xs text-slate-600">Leadership position</p>
-                  <p class="text-xl font-bold">
-                    {{ rewards.leaderboard.position === null ? 'Not ranked yet' : '#' + rewards.leaderboard.position }}
-                  </p>
-                </div>
+              <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Community impact</p>
+              <h2 id="impact-heading" class="mt-1 text-xl font-bold text-brand-950">Help someone access healthcare.</h2>
+              <p class="mt-1 text-sm leading-6 text-slate-600">Invite someone to SmartClinic and grow your verified impact.</p>
+              @if (referrals(); as rewards) {
+                <p class="mt-3 text-sm font-bold text-brand-950">
+                  {{ rewards.balances.availablePoints }} points
+                  @if (rewards.leaderboard.optedIn && rewards.leaderboard.position !== null) { · #{{ rewards.leaderboard.position }} }
+                </p>
               }
-              <div>
-                <p class="text-xs text-slate-600">Referral code</p>
-                <p class="break-all font-mono font-bold">{{ rewards.referralCode }}</p>
-              </div>
             </div>
-            @if (rewards.levelProgress.nextLevel; as next) {
-              <p class="mt-3 text-sm"><strong>Next achievement:</strong> {{ next.name }}</p>
-            }
-            <div class="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                (click)="copyReferralCode()"
-                class="min-h-11 rounded-xl bg-brand-700 px-4 font-bold text-white"
-              >
-                Copy referral code</button
-              ><button
-                type="button"
-                (click)="copyReferralLink()"
-                class="min-h-11 rounded-xl border border-brand-700 px-4 font-bold text-brand-800"
-              >
-                Copy invite link
-              </button>
-     @if (patientInviteUrl()) {
- <a
-  [href]="whatsappReferralShareUrl()"
-  target="_blank"
-  rel="noopener noreferrer"
-  class="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
->
-  <svg
-    class="h-5 w-5"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-  >
-    <path
-      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.198.297-.767.966-.94 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.009-.371-.011-.57-.011-.198 0-.52.074-.792.371-.272.297-1.04 1.016-1.04 2.479s1.065 2.875 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.693.625.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.99c-.003 5.45-4.437 9.889-9.885 9.889"
-    />
-  </svg>
-
-  <span>Share on WhatsApp</span>
-</a>
-}
-              <a
-                routerLink="/me/referrals"
-                class="inline-flex min-h-11 items-center px-2 font-bold text-brand-700 underline"
-                >Referral activity</a
-              >
-            </div>
-            <p aria-live="polite" class="mt-2 text-sm font-semibold text-brand-700">
-              {{ referralFeedback() }}
-            </p>
-          }
+            <a routerLink="/me/impact" class="shrink-0 text-sm font-bold text-brand-700">View →</a>
+          </div>
         </section>
 
         @if (value.dashboardMode === 'GETTING_STARTED') {
@@ -405,8 +232,8 @@ interface DashboardNextStep {
         @if (supportWhatsappUrl) {
           <a
             [href]="supportWhatsappUrl"
-            class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 rounded-full bg-[#128c7e] px-5 py-3 font-bold text-white shadow-lg focus:ring-4 focus:ring-emerald-200 lg:bottom-4"
-            >WhatsApp help</a
+            class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 grid size-12 place-items-center overflow-hidden rounded-full bg-[#128c7e] text-xs font-bold text-white shadow-lg focus:ring-4 focus:ring-emerald-200 lg:bottom-4"
+             aria-label="WhatsApp help" title="WhatsApp help">?</a
           >
         }
       }
