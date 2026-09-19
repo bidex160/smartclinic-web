@@ -27,10 +27,11 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           <button type="button" (click)="load()" class="font-bold underline">Try again</button>
         </div>
       } @else if (request(); as r) {
-        <header class="mt-6">
-          <p class="text-sm font-bold uppercase text-brand-600">Care Request {{ r.reference }}</p>
-          <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
-          <p class="mt-2 text-lg">{{ label(r.status) }}</p>
+        <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-violet-200">{{ r.deliveryMode === 'VIRTUAL' ? 'Talk to a Doctor' : 'Your care' }}</p>
+          <h1 class="mt-2 text-3xl font-black">{{ r.assignedProvider?.displayName || r.preferredProvider?.displayName || r.service.name }}</h1>
+          <p class="mt-2 text-violet-100">{{ r.service.name }} · {{ label(r.status) }}</p>
+          @if (r.service.price) { <p class="mt-4 text-xl font-black">{{ formatPrice(r.service.price.priceMinor, r.service.price.currency) }}</p> }
         </header>
         <section class="mt-7 rounded-2xl border bg-white p-6">
           <dl class="grid gap-5 sm:grid-cols-2">
@@ -101,7 +102,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             class="mt-6 rounded-2xl border bg-white p-6"
             aria-labelledby="care-payment-title"
           >
-            <h2 id="care-payment-title" class="text-xl font-bold">Payment</h2>
+            <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Next step</p>
+            <h2 id="care-payment-title" class="mt-1 text-2xl font-black text-brand-950">{{ r.deliveryMode === 'VIRTUAL' ? 'Confirm your consultation' : 'Payment' }}</h2>
             @if (fundingLoading()) {
               <p role="status" class="mt-3 text-slate-600">Loading payment status…</p>
             } @else if (funding(); as payment) {
@@ -137,7 +139,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   [disabled]="paymentPending()"
                   class="mt-4 min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60"
                 >
-                  {{ paymentPending() ? 'Preparing secure payment…' : 'Pay now' }}
+                  {{ paymentPending() ? 'Preparing secure payment…' : (r.deliveryMode === 'VIRTUAL' ? 'Pay & confirm consultation →' : 'Pay now') }}
                 </button>
               }
             } @else if (r.status === 'PROVIDER_ACCEPTED') {
@@ -158,7 +160,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         }
         @if (r.appointment; as a) {
           <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-            <h2 class="text-xl font-bold">Your appointment</h2>
+            <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Confirmed</p>
+            <h2 class="mt-1 text-2xl font-black text-brand-950">{{ a.deliveryMode === 'VIRTUAL' ? 'Your consultation' : 'Your appointment' }}</h2>
             <p class="mt-3 font-semibold">
               {{ deliveryModeLabel(a.deliveryMode) }} · {{ appointmentLabel(a.status) }}
             </p>
@@ -186,7 +189,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             <a
               [routerLink]="['/me/care/appointments', a.reference]"
               class="mt-4 inline-block font-bold text-brand-700 underline"
-              >View appointment</a
+              >{{ a.deliveryMode === 'VIRTUAL' ? 'Open consultation room →' : 'View appointment' }}</a
             >
           </section>
         }
