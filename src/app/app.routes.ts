@@ -260,6 +260,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'tests',
+        title: 'My Tests | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/care/patient-tests-page.component').then(
+            (c) => c.PatientTestsPageComponent,
+          ),
+      },
+      {
         path: 'prescriptions',
         title: 'Prescriptions | SmartClinic',
         canActivate: [authenticatedUserGuard],
