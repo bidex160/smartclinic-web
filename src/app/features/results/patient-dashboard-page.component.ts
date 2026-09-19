@@ -71,7 +71,7 @@ interface DashboardNextStep {
         </header>
 
         <section
-          class="mt-4 rounded-2xl bg-brand-900 p-4 text-white shadow-soft sm:p-5"
+          class="relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-violet-700 p-5 text-white shadow-[0_18px_42px_rgba(76,29,149,0.22)] sm:p-6"
           aria-labelledby="next-step-heading"
         >
           <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
@@ -97,29 +97,34 @@ interface DashboardNextStep {
             <p class="mt-1 text-sm text-slate-600">Choose what you want to do. We’ll guide you from there.</p>
           </div>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <a routerLink="/me/book" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">♥</span>
-              <span>Book a Checkup</span>
+            <a routerLink="/me/book" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(76,29,149,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(76,29,149,0.15)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-violet-200/30 blur-xl" aria-hidden="true"></span>
+              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-violet-600 text-xl text-white shadow-md shadow-violet-600/20" aria-hidden="true">♥</span>
+              <span class="relative flex w-full items-end justify-between gap-2"><span>Book a Checkup</span><span class="text-brand-500 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">✚</span>
-              <span>See a Doctor</span>
+            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(6,95,70,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(6,95,70,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-emerald-200/35 blur-xl" aria-hidden="true"></span>
+              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-emerald-600 text-xl text-white shadow-md shadow-emerald-600/20" aria-hidden="true">✚</span>
+              <span class="relative flex w-full items-end justify-between gap-2"><span>See a Doctor</span><span class="text-emerald-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/providers" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">H</span>
-              <span>Visit a Hospital</span>
+            <a routerLink="/me/providers" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(3,105,161,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(3,105,161,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-sky-200/35 blur-xl" aria-hidden="true"></span>
+              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-sky-600 text-sm font-black text-white shadow-md shadow-sky-600/20" aria-hidden="true">H</span>
+              <span class="relative flex w-full items-end justify-between gap-2"><span>Visit a Hospital</span><span class="text-sky-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/prescriptions" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">Rx</span>
-              <span>Get Medicine</span>
+            <a routerLink="/me/prescriptions" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(180,83,9,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(180,83,9,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-amber-200/35 blur-xl" aria-hidden="true"></span>
+              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-amber-500 text-sm font-black text-white shadow-md shadow-amber-500/20" aria-hidden="true">Rx</span>
+              <span class="relative flex w-full items-end justify-between gap-2"><span>Get Medicine</span><span class="text-amber-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/tests" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-white p-4 text-left font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">T</span>
-              <span>Get a Test</span>
+            <a routerLink="/me/tests" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(190,24,93,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(190,24,93,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-rose-200/35 blur-xl" aria-hidden="true"></span>
+              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-rose-500 text-sm font-black text-white shadow-md shadow-rose-500/20" aria-hidden="true">T</span>
+              <span class="relative flex w-full items-end justify-between gap-2"><span>Get a Test</span><span class="text-rose-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <button type="button" disabled aria-disabled="true" class="flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-2xl bg-slate-50 p-4 text-left font-bold text-slate-600 ring-1 ring-slate-200">
-              <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600" aria-hidden="true">₦</span>
-              <span>Pay a Bill<small class="mt-1 block text-[10px] font-medium text-slate-500">Coming soon</small></span>
+            <button type="button" disabled aria-disabled="true" class="relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 text-left font-bold text-slate-500 shadow-sm">
+              <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-200 text-lg text-slate-600" aria-hidden="true">₦</span>
+              <span>Pay a Bill<small class="mt-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Coming soon</small></span>
             </button>
           </div>
         </nav>
@@ -188,7 +193,7 @@ interface DashboardNextStep {
           </div>
         </section>
 
-        <section class="mt-7 rounded-3xl bg-brand-50 p-5 ring-1 ring-brand-100" aria-labelledby="impact-heading">
+        <section class="mt-7 rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50/80 via-white to-brand-50 p-5 shadow-[0_10px_28px_rgba(120,53,15,0.06)]" aria-labelledby="impact-heading">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Community impact</p>
