@@ -179,6 +179,34 @@ export class PatientHealthCheckV2BookingPageComponent {
       });
   }
 
+  packageLabel(p: HealthCheckCataloguePackage, index: number): string {
+    return ['Self Check', 'Basic Check', 'Essential Check', 'Complete Check'][index] ?? p.name;
+  }
+
+  packageSummary(p: HealthCheckCataloguePackage, index: number): string {
+    return p.description?.trim() || [
+      'A quick check of your key health numbers.',
+      'Routine screening for everyday health.',
+      'A broader health assessment with more checks.',
+      'Our most comprehensive routine health check.',
+    ][index] || 'A simple SmartClinic health check.';
+  }
+
+  fallbackPrice(index: number): number {
+    return [250000, 500000, 800000, 1600000][index] ?? 0;
+  }
+
+  selectPackageAndContinue(p: HealthCheckCataloguePackage): void {
+    this.form.controls.packageCode.setValue(p.code);
+    this.packageChanged();
+    const modes = this.modes();
+    if (modes.length === 1) {
+      this.form.controls.fulfilmentModeCode.setValue(modes[0].code);
+      this.fulfilmentChanged();
+    }
+    this.goToStep(2);
+  }
+
   packageChanged(): void {
     const mode = this.form.controls.fulfilmentModeCode;
     if (!this.modes().some((item) => item.code === mode.value)) mode.setValue('');
