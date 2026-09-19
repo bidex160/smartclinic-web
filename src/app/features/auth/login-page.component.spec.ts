@@ -125,6 +125,12 @@ describe('LoginPageComponent', () => {
     expect(link.getAttribute('href')).toContain('returnUrl=%2Fme%2Fhealth-journey');
     expect(link.getAttribute('href')).toContain('ref=SC-ABC123');
   });
+  it('makes account creation visible and explains automatic referral continuity', async () => {
+    const { fixture } = await setup(false, { referralCode: 'SC-ABC123' });
+    expect(fixture.nativeElement.textContent).toContain('New to SmartClinic?');
+    expect(fixture.nativeElement.textContent).toContain('Create my SmartClinic account');
+    expect(fixture.nativeElement.textContent).toContain('Your invitation will be carried');
+  });
   it('rejects an external returnUrl and uses the normal patient dashboard', async () => {
     const { component, router } = await setup(false, { returnUrl: '//example.com/phishing' });
     component.form.setValue({ identifier: 'patient@example.com', password: 'existing-password' });
