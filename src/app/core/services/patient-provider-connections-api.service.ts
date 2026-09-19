@@ -9,6 +9,7 @@ export class PatientProviderConnectionsApiService {
  listMine(page=1,limit=20){return this.http.get<PatientProviderConnectionPage<PatientProviderConnection>>(`${this.base}/me/patient-provider-connections`,{params:new HttpParams().set('page',page).set('limit',limit)});}
  getMine(ref:string){return this.http.get<PatientProviderConnection>(`${this.base}/me/patient-provider-connections/${encodeURIComponent(ref)}`);}\n companion(ref:string){return this.http.get<HospitalCompanionView>(`${this.me(ref)}/companion`);}
  settleWallet(ref:string){return this.http.post<HospitalWalletSettlementResponse>(`${this.me(ref)}/settlements/wallet`,null);}
+ servicePassToken(ref:string){return this.http.post<HospitalWalletSettlementResponse['servicePass']>(`${this.base}/me/patient-provider-connections/service-passes/${encodeURIComponent(ref)}/verification-token`,null);}
  startNew(body:StartNewPatientRegistrationRequest){return this.http.post<PatientProviderConnection>(`${this.base}/me/patient-provider-connections/new-registration`,body);}
  startExisting(body:StartExistingPatientLinkRequest){return this.http.post<PatientProviderConnection>(`${this.base}/me/patient-provider-connections/existing-link`,body);}
  resubmit(ref:string,externalPatientReference:string){return this.http.post<PatientProviderConnection>(`${this.me(ref)}/resubmit`,{externalPatientReference});}
