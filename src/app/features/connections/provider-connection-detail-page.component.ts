@@ -4,8 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
 import { finalize, forkJoin } from 'rxjs';
 import {
-  PatientProviderConnection,
-  PatientProviderConnectionFundingResponse,
+  HospitalCompanionView,\n  PatientProviderConnection,\n  PatientProviderConnectionFundingResponse,
 } from '../../core/models/patient-provider-connection.model';
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 import { formatMinor } from '../provider/care-money';
@@ -35,22 +34,42 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
       }
       @if (c.status === 'CONNECTED') {
         <section class="mt-6 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50/50 p-6 shadow-sm">
-          <p class="text-sm font-bold uppercase tracking-wider text-brand-600">At {{ c.provider.displayName }}</p>
-          <h2 class="mt-1 text-2xl font-black text-brand-950">What do you need here today?</h2>
-          <p class="mt-1 text-slate-600">Use SmartClinic for the hospital task you came to do.</p>
-          <div class="mt-4 grid gap-3 sm:grid-cols-2">
-            <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              👨🏾‍⚕️ See a Doctor
-              <span class="mt-1 block text-sm font-normal text-slate-600">Book care or request a consultation.</span>
-            </a>
-            <a routerLink="/me/health-records" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              📄 My Results & Records
-              <span class="mt-1 block text-sm font-normal text-slate-600">See hospital information available in SmartClinic.</span>
-            </a>
-            <a routerLink="/me/tests" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">🧪 Get a Test<span class="mt-1 block text-sm font-normal text-slate-600">View doctor-requested tests and results.</span></a>
-            <a routerLink="/me/prescriptions" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">💊 Get Medicine<span class="mt-1 block text-sm font-normal text-slate-600">Open prescriptions and medicine options.</span></a>
-            <div class="rounded-xl bg-slate-50 p-4 font-bold text-slate-600 ring-1 ring-slate-200">💳 Pay a Bill<span class="mt-1 block text-sm font-normal">Available when this hospital sends a bill to SmartClinic.</span></div>
-            <a routerLink="/me" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">⌂ SmartClinic Home<span class="mt-1 block text-sm font-normal text-slate-600">See all your healthcare actions.</span></a>
+          <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Today at {{ c.provider.displayName }}</p>
+          @if (companionLoading()) {
+            <p class="mt-3 text-slate-600">Checking what you need to do next…</p>
+          } @else if (companion(); as h) {
+            <div class="mt-3 rounded-2xl bg-brand-950 p-5 text-white">
+              <p class="text-xs font-bold uppercase tracking-[.15em] text-violet-200">Your next step</p>
+              <h2 class="mt-1 text-2xl font-black">{{ h.nextAction.title }}</h2>
+              @if (h.consolidatedPayment.itemCount > 0 && h.consolidatedPayment.amountMinor !== null && h.consolidatedPayment.currency) {
+                <p class="mt-2 text-violet-100">{{ h.consolidatedPayment.itemCount }} request{{ h.consolidatedPayment.itemCount === 1 ? '' : 's' }} · {{ money(h.consolidatedPayment.amountMinor, h.consolidatedPayment.currency) }}</p>
+                @if (!h.consolidatedPayment.available) { <p class="mt-2 text-sm text-violet-200">Open each request below to complete its current payment flow.</p> }
+              }
+            </div>
+            @if (h.requests.length) {
+              <div class="mt-5 grid gap-3">
+                @for (request of h.requests; track request.orderReference) {
+                  <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                    <div class="flex items-start justify-between gap-3">
+                      <div><p class="font-black text-brand-950">{{ requestTitle(request.type) }}</p><p class="mt-1 text-sm text-slate-600">{{ request.serviceUnit || 'Requested by your care team' }}</p></div>
+                      <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="request.resultReady ? 'bg-emerald-50 text-emerald-800' : request.paymentStatus === 'PAID' ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'">{{ request.resultReady ? 'Result ready' : request.paymentStatus === 'PAID' ? 'Paid ✓' : request.paymentStatus === 'NOT_PRICED' ? 'Being prepared' : 'Payment needed' }}</span>
+                    </div>
+                    @if (request.amountMinor !== null && request.currency) { <p class="mt-3 font-extrabold text-slate-900">{{ money(request.amountMinor, request.currency) }}</p> }
+                    @if (request.resultReady) { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">View result →</a> }
+                    @else if (request.type === 'PRESCRIPTION') { <a routerLink="/me/prescriptions" class="mt-3 inline-flex font-bold text-brand-700">Open prescription →</a> }
+                    @else { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">Open request →</a> }
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="mt-5 rounded-2xl bg-emerald-50 p-5"><p class="font-black text-emerald-900">Nothing waiting for you ✓</p><p class="mt-1 text-sm text-emerald-800">New requests from this hospital will appear here automatically.</p></div>
+            }
+          } @else {
+            <p class="mt-3 rounded-2xl bg-amber-50 p-4 text-amber-900">Your hospital companion is temporarily unavailable. Your hospital connection is still safe.</p>
+          }
+          <div class="mt-5 flex flex-wrap gap-3">
+            <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white px-4 py-3 font-bold text-brand-900 ring-1 ring-slate-200">Book care</a>
+            <a routerLink="/me/health-records" class="rounded-xl bg-white px-4 py-3 font-bold text-brand-900 ring-1 ring-slate-200">My hospital records</a>
           </div>
         </section>
       }
@@ -183,7 +202,7 @@ export class ProviderConnectionDetailPageComponent {
   readonly reference = this.route.snapshot.paramMap.get('reference') ?? '';
   readonly returnUrl = this.safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly connection = signal<PatientProviderConnection | null>(null);
-  readonly funding = signal<PatientProviderConnectionFundingResponse | null>(null);
+  readonly funding = signal<PatientProviderConnectionFundingResponse | null>(null);\n  readonly companion = signal<HospitalCompanionView | null>(null);\n  readonly companionLoading = signal(false);
   readonly loading = signal(true);
   readonly paying = signal(false);
   readonly actioning = signal(false);
@@ -227,7 +246,7 @@ export class ProviderConnectionDetailPageComponent {
         error: () => this.error.set('Unable to load this hospital connection.'),
       });
   }
-  pay() {
+  loadCompanion() {\n    this.companionLoading.set(true);\n    this.api.companion(this.reference).pipe(finalize(() => this.companionLoading.set(false))).subscribe({ next: value => this.companion.set(value), error: () => this.companion.set(null) });\n  }\n  requestTitle(type: string) { return type === 'LABORATORY' ? '🧪 Laboratory request' : type === 'IMAGING' ? '🩻 Imaging request' : type === 'PRESCRIPTION' ? '💊 Prescription' : type === 'PROCEDURE' ? '🏥 Procedure' : '↗ Referral'; }\n  pay() {
     const paymentEmail = this.paymentContact?.request();
     if (paymentEmail === null) return;
     const pending = [...(this.funding()?.fundings ?? [])]
