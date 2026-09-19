@@ -81,6 +81,17 @@ export class PharmacyFulfillmentApiService {
   getPatientOrder(ref: string) {
     return this.http.get<ClinicalOrder>(`${this.base}/me/clinical-orders/${this.enc(ref)}`);
   }
+  searchDiagnosticProviders(orderType: 'LABORATORY' | 'IMAGING', page = 1, limit = 50) {
+    return this.http.get<FulfillmentDirectoryPage>(`${this.base}/me/clinical-order-fulfillment-providers`, {
+      params: new HttpParams().set('orderType', orderType).set('page', page).set('limit', limit),
+    });
+  }
+  selectDiagnosticProvider(orderRef: string, providerServiceUnitReference: string) {
+    return this.http.post(
+      `${this.base}/me/clinical-orders/${this.enc(orderRef)}/select-fulfillment`,
+      { providerServiceUnitReference },
+    );
+  }
   searchPharmacies(query: {
     q?: string;
     country?: string;
