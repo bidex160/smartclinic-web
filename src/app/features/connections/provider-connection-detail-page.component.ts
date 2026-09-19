@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
 import { finalize, forkJoin } from 'rxjs';
 import {
-  HospitalCompanionView, HospitalWalletSettlementResponse,\n  PatientProviderConnection,\n  PatientProviderConnectionFundingResponse,
+  HospitalCompanionView, HospitalWalletSettlementResponse,  PatientProviderConnection,  PatientProviderConnectionFundingResponse,
 } from '../../core/models/patient-provider-connection.model';
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 import { formatMinor } from '../provider/care-money';
@@ -203,7 +203,8 @@ export class ProviderConnectionDetailPageComponent {
   readonly reference = this.route.snapshot.paramMap.get('reference') ?? '';
   readonly returnUrl = this.safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly connection = signal<PatientProviderConnection | null>(null);
-  readonly funding = signal<PatientProviderConnectionFundingResponse | null>(null);\n  readonly companion = signal<HospitalCompanionView | null>(null);\n  readonly companionLoading = signal(false);
+  readonly funding = signal<PatientProviderConnectionFundingResponse | null>(null);
+  readonly companion = signal<HospitalCompanionView | null>(null);  readonly companionLoading = signal(false);
   readonly settling = signal(false);
   readonly servicePass = signal<HospitalWalletSettlementResponse['servicePass'] | null>(null);
   readonly loading = signal(true);
@@ -249,9 +250,14 @@ export class ProviderConnectionDetailPageComponent {
         error: () => this.error.set('Unable to load this hospital connection.'),
       });
   }
-  loadCompanion() {\n    this.companionLoading.set(true);\n    this.api.companion(this.reference).pipe(finalize(() => this.companionLoading.set(false))).subscribe({ next: value => this.companion.set(value), error: () => this.companion.set(null) });\n  }\n  payAllWallet(){if(this.settling())return;this.settling.set(true);this.error.set('');this.api.settleWallet(this.reference).pipe(finalize(()=>this.settling.set(false))).subscribe({next:r=>{this.servicePass.set(r.servicePass);this.loadCompanion();},error:e=>this.error.set(e?.error?.message||'Unable to complete this wallet payment.')});}
+  loadCompanion() {
+       this.companionLoading.set(true);
+      this.api.companion(this.reference).pipe(finalize(() => this.companionLoading.set(false))).subscribe({ next: value => this.companion.set(value), error: () => this.companion.set(null) });
+     }
+    payAllWallet(){if(this.settling())return;this.settling.set(true);this.error.set('');this.api.settleWallet(this.reference).pipe(finalize(()=>this.settling.set(false))).subscribe({next:r=>{this.servicePass.set(r.servicePass);this.loadCompanion();},error:e=>this.error.set(e?.error?.message||'Unable to complete this wallet payment.')});}
   refreshPass(){const pass=this.servicePass();if(!pass)return;this.api.servicePassToken(pass.reference).subscribe({next:p=>this.servicePass.set(p),error:()=>this.error.set('Unable to refresh this Service Pass.')});}
-  requestTitle(type: string) { return type === 'LABORATORY' ? '🧪 Laboratory request' : type === 'IMAGING' ? '🩻 Imaging request' : type === 'PRESCRIPTION' ? '💊 Prescription' : type === 'PROCEDURE' ? '🏥 Procedure' : '↗ Referral'; }\n  pay() {
+  requestTitle(type: string) { return type === 'LABORATORY' ? '🧪 Laboratory request' : type === 'IMAGING' ? '🩻 Imaging request' : type === 'PRESCRIPTION' ? '💊 Prescription' : type === 'PROCEDURE' ? '🏥 Procedure' : '↗ Referral'; }
+ pay() {
     const paymentEmail = this.paymentContact?.request();
     if (paymentEmail === null) return;
     const pending = [...(this.funding()?.fundings ?? [])]

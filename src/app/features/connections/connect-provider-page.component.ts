@@ -15,7 +15,8 @@ import { formatMinor } from '../provider/care-money';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a [routerLink]="backUrl()" class="font-bold text-brand-700 underline">← Back</a>
-    <p class="mt-6 text-sm font-bold uppercase tracking-[.16em] text-brand-600">Connect a hospital</p>\n    <h1 class="mt-2 text-3xl font-black text-brand-950">
+    <p class="mt-6 text-sm font-bold uppercase tracking-[.16em] text-brand-600">Connect a hospital</p>
+       <h1 class="mt-2 text-3xl font-black text-brand-950">
       {{
         targeted() && selected() ? 'Connect with ' + selected()?.displayName : 'Choose a Hospital'
       }}
