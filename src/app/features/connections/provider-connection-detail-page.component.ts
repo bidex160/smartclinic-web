@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
 import { finalize, forkJoin } from 'rxjs';
 import {
-  HospitalCompanionView,\n  PatientProviderConnection,\n  PatientProviderConnectionFundingResponse,
+  HospitalCompanionView, HospitalWalletSettlementResponse,\n  PatientProviderConnection,\n  PatientProviderConnectionFundingResponse,
 } from '../../core/models/patient-provider-connection.model';
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 import { formatMinor } from '../provider/care-money';
@@ -43,9 +43,10 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <h2 class="mt-1 text-2xl font-black">{{ h.nextAction.title }}</h2>
               @if (h.consolidatedPayment.itemCount > 0 && h.consolidatedPayment.amountMinor !== null && h.consolidatedPayment.currency) {
                 <p class="mt-2 text-violet-100">{{ h.consolidatedPayment.itemCount }} request{{ h.consolidatedPayment.itemCount === 1 ? '' : 's' }} · {{ money(h.consolidatedPayment.amountMinor, h.consolidatedPayment.currency) }}</p>
-                @if (!h.consolidatedPayment.available) { <p class="mt-2 text-sm text-violet-200">Open each request below to complete its current payment flow.</p> }
+                @if (h.nextAction.kind === 'PAYMENT_REQUIRED') { <button type="button" (click)="payAllWallet()" [disabled]="settling()" class="mt-4 rounded-xl bg-white px-5 py-3 font-black text-brand-950">{{ settling() ? 'Confirming payment…' : 'Pay all from Wallet →' }}</button> }
               }
             </div>
+            @if (servicePass(); as pass) { <div class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Payment confirmed ✓</p><h3 class="mt-1 text-xl font-black text-emerald-950">SmartClinic Service Pass</h3><p class="mt-2 font-bold">{{ money(pass.amountMinor, pass.currency) }} · {{ c.provider.displayName }}</p><p class="mt-3 rounded-xl bg-white p-3 font-mono text-sm font-bold">{{ pass.reference }}</p><p class="mt-2 text-sm text-emerald-900">Show this pass at the hospital service point. Open it again whenever staff need to verify payment.</p><button type="button" (click)="refreshPass()" class="mt-3 font-bold text-emerald-900 underline">Refresh verification pass</button></div> }
             @if (h.requests.length) {
               <div class="mt-5 grid gap-3">
                 @for (request of h.requests; track request.orderReference) {
@@ -203,6 +204,8 @@ export class ProviderConnectionDetailPageComponent {
   readonly returnUrl = this.safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly connection = signal<PatientProviderConnection | null>(null);
   readonly funding = signal<PatientProviderConnectionFundingResponse | null>(null);\n  readonly companion = signal<HospitalCompanionView | null>(null);\n  readonly companionLoading = signal(false);
+  readonly settling = signal(false);
+  readonly servicePass = signal<HospitalWalletSettlementResponse['servicePass'] | null>(null);
   readonly loading = signal(true);
   readonly paying = signal(false);
   readonly actioning = signal(false);
@@ -246,7 +249,9 @@ export class ProviderConnectionDetailPageComponent {
         error: () => this.error.set('Unable to load this hospital connection.'),
       });
   }
-  loadCompanion() {\n    this.companionLoading.set(true);\n    this.api.companion(this.reference).pipe(finalize(() => this.companionLoading.set(false))).subscribe({ next: value => this.companion.set(value), error: () => this.companion.set(null) });\n  }\n  requestTitle(type: string) { return type === 'LABORATORY' ? '🧪 Laboratory request' : type === 'IMAGING' ? '🩻 Imaging request' : type === 'PRESCRIPTION' ? '💊 Prescription' : type === 'PROCEDURE' ? '🏥 Procedure' : '↗ Referral'; }\n  pay() {
+  loadCompanion() {\n    this.companionLoading.set(true);\n    this.api.companion(this.reference).pipe(finalize(() => this.companionLoading.set(false))).subscribe({ next: value => this.companion.set(value), error: () => this.companion.set(null) });\n  }\n  payAllWallet(){if(this.settling())return;this.settling.set(true);this.error.set('');this.api.settleWallet(this.reference).pipe(finalize(()=>this.settling.set(false))).subscribe({next:r=>{this.servicePass.set(r.servicePass);this.loadCompanion();},error:e=>this.error.set(e?.error?.message||'Unable to complete this wallet payment.')});}
+  refreshPass(){const pass=this.servicePass();if(!pass)return;this.api.servicePassToken(pass.reference).subscribe({next:p=>this.servicePass.set(p),error:()=>this.error.set('Unable to refresh this Service Pass.')});}
+  requestTitle(type: string) { return type === 'LABORATORY' ? '🧪 Laboratory request' : type === 'IMAGING' ? '🩻 Imaging request' : type === 'PRESCRIPTION' ? '💊 Prescription' : type === 'PROCEDURE' ? '🏥 Procedure' : '↗ Referral'; }\n  pay() {
     const paymentEmail = this.paymentContact?.request();
     if (paymentEmail === null) return;
     const pending = [...(this.funding()?.fundings ?? [])]
