@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -92,16 +93,34 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           <h2 class="mt-1 text-2xl font-black text-brand-950">Ready when it's time</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
             <p class="mt-2 text-slate-600">
-              Your secure consultation link is ready. You can join from this page when your appointment starts.
+              Your secure consultation link is ready. Join from here when your appointment starts.
             </p>
-            <a
-              [href]="url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-              >Join consultation →</a
-            >
-          } @else {
+            @if (isEmbeddableConsultation(url)) {
+              <div class="mt-5 overflow-hidden rounded-2xl bg-slate-950 shadow-lg ring-1 ring-violet-200">
+                <iframe
+                  [src]="trustedMeetingUrl(url)"
+                  title="SmartClinic video consultation"
+                  allow="camera; microphone; fullscreen; display-capture; autoplay"
+                  referrerpolicy="no-referrer"
+                  class="h-[70vh] min-h-[520px] w-full border-0"
+                ></iframe>
+              </div>
+              <a
+                [href]="url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-3 inline-flex min-h-11 items-center rounded-xl border border-brand-200 bg-white px-4 py-2 font-bold text-brand-800"
+                >Open video in a new window</a
+              >
+            } @else {
+              <a
+                [href]="url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+                >Join consultation →</a
+              >
+            }
             <div class="mt-4 rounded-2xl bg-white p-4 ring-1 ring-violet-100"><p class="font-bold text-brand-950">Your consultation is being prepared</p><p class="mt-1 text-sm text-slate-600">The Join consultation button will appear here as soon as your doctor confirms the meeting link.</p></div>
           }
         </section>
@@ -165,6 +184,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
 export class PatientCareAppointmentDetailPageComponent {
   private readonly api = inject(CareAppointmentsApiService);
   private readonly fb = inject(FormBuilder);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
   readonly appointment = signal<CareAppointment | null>(null);
@@ -234,6 +254,17 @@ export class PatientCareAppointmentDetailPageComponent {
         } as Record<string, string>
       )[s] ?? 'Check this page for the latest appointment status.'
     );
+  }
+  isEmbeddableConsultation(value: string) {
+    try {
+      const host = new URL(value).hostname.toLowerCase();
+      return host === 'meet.jit.si' || host.endsWith('.meet.jit.si');
+    } catch {
+      return false;
+    }
+  }
+  trustedMeetingUrl(value: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(value);
   }
   safeMeetingUrl(value: string | null) {
     if (!value) return null;
