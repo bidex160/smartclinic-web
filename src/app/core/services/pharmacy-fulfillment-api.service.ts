@@ -68,6 +68,11 @@ export class PharmacyFulfillmentApiService {
       params: new HttpParams().set('type', 'PRESCRIPTION').set('page', page).set('limit', limit),
     });
   }
+  listPatientOrdersForAppointment(appointment: string) {
+    return this.http.get<ClinicalOrderPage>(`${this.base}/me/clinical-orders`, {
+      params: new HttpParams().set('careAppointmentReference', appointment).set('limit', 100),
+    });
+  }
   getPatientOrder(ref: string) {
     return this.http.get<ClinicalOrder>(`${this.base}/me/clinical-orders/${this.enc(ref)}`);
   }
