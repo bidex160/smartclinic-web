@@ -62,6 +62,33 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         </a>
       </section>
     }
+    @if (doctorJourney() && requestedServiceIsValid() && !success()) {
+      <section class="mt-8 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50 p-6 shadow-sm">
+        <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Available online</p>
+        <h2 class="mt-1 text-2xl font-black text-brand-950">Choose your doctor</h2>
+        <p class="mt-2 text-sm text-slate-600">Choose who you would like to speak with. The price shown is the current virtual consultation price.</p>
+        @if (providersLoading()) {
+          <p class="mt-5 rounded-2xl bg-white p-5 text-slate-600">Finding available doctors…</p>
+        } @else if (providers().length) {
+          <div class="mt-5 grid gap-3 sm:grid-cols-2">
+            @for (p of providers(); track p.providerReference) {
+              <button type="button" (click)="chooseDoctor(p)" class="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md" [class.border-brand-600]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-2]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-brand-100]="form.controls.preferredProviderReference.value === p.providerReference">
+                <span class="flex items-start gap-4">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xl">👨🏾‍⚕️</span>
+                  <span class="min-w-0"><strong class="block text-lg text-brand-950">{{ p.displayName }}</strong><span class="mt-1 block text-sm text-slate-500">Available for virtual consultation</span>
+                  @if (doctorPrice(p); as price) { <span class="mt-3 block font-black text-brand-800">{{ formatPrice(price.priceMinor, price.currency) }}</span> }
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+        } @else if (providersError()) {
+          <p class="mt-5 rounded-2xl bg-red-50 p-4 text-red-800">Doctors are temporarily unavailable. Please try again.</p>
+        } @else {
+          <p class="mt-5 rounded-2xl bg-white p-5 text-slate-600">No online doctors are showing yet. You can try again shortly or visit a hospital.</p>
+        }
+      </section>
+    }
     @if (success(); as request) {
       <section class="mt-8 rounded-3xl border border-green-200 bg-green-50 p-7">
         <h2 class="text-2xl font-bold text-green-950">Your request is in</h2>
@@ -365,7 +392,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           [disabled]="submitting()"
           class="min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60"
         >
-          {{ submitting() ? 'Submitting request…' : 'Submit Care Request' }}
+          {{ submitting() ? 'Requesting consultation…' : (doctorJourney() ? 'Continue with this doctor →' : 'Submit Care Request') }}
         </button>
       </form>
       <aside class="mt-8 rounded-2xl border border-brand-100 bg-brand-50 p-5">
@@ -510,6 +537,12 @@ export class FindCarePageComponent {
     // this.invalidateDiscovery();
   }
 
+  chooseDoctor(p: PublicFindCareProvider) {
+    this.form.controls.preferredProviderReference.setValue(p.providerReference);
+  }
+  doctorPrice(p: PublicFindCareProvider) {
+    return p.services.find((s) => s.code === this.form.controls.serviceCode.value)?.deliveryOptions.find((o) => o.deliveryMode === 'VIRTUAL') ?? null;
+  }
   chooseDoctorMode(mode: 'VIRTUAL' | 'LATER') {
     if (mode === 'VIRTUAL') {
       this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredDate: '', preferredTime: '' });
