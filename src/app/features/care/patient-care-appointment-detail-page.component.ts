@@ -20,12 +20,11 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </p>
     } @else if (appointment(); as a) {
-      <header class="mt-6">
-        <p class="break-all text-sm font-bold uppercase text-brand-600">
-          {{ a.appointmentReference }}
-        </p>
-        <h1 class="mt-2 text-3xl font-bold">Your appointment</h1>
-        <p class="mt-2 text-lg">{{ label(a.status) }}</p>
+      <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
+        <p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">{{ a.deliveryMode === 'VIRTUAL' ? 'Talk to a Doctor' : 'Your appointment' }}</p>
+        <h1 class="mt-2 text-3xl font-black">{{ a.provider.displayName }}</h1>
+        <p class="mt-2 text-violet-100">{{ a.service.name }} · {{ label(a.status) }}</p>
+        <p class="mt-4 text-lg font-bold">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</p>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -88,21 +87,22 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(a.status) }}</p>
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
-        <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">Virtual consultation</h2>
+        <section class="mt-6 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50 p-6 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Your consultation room</p>
+          <h2 class="mt-1 text-2xl font-black text-brand-950">Ready when it's time</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
             <p class="mt-2 text-slate-600">
-              Join using the external link supplied by your provider.
+              Your secure consultation link is ready. You can join from this page when your appointment starts.
             </p>
             <a
               [href]="url"
               target="_blank"
               rel="noopener noreferrer"
               class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-              >Join virtual consultation</a
+              >Join consultation →</a
             >
           } @else {
-            <p class="mt-2 text-slate-600">Your provider has not added the meeting link yet.</p>
+            <div class="mt-4 rounded-2xl bg-white p-4 ring-1 ring-violet-100"><p class="font-bold text-brand-950">Your consultation is being prepared</p><p class="mt-1 text-sm text-slate-600">The Join consultation button will appear here as soon as your doctor confirms the meeting link.</p></div>
           }
         </section>
       }
