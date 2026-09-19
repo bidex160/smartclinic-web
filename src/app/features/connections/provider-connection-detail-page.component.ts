@@ -24,10 +24,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (connection(); as c) {
-      <header class="mt-6">
-        <p class="break-all text-sm font-bold text-brand-700">{{ c.reference }}</p>
-        <h1 class="mt-2 text-3xl font-bold">{{ c.provider.displayName }}</h1>
-        <p class="mt-2 text-lg font-bold">{{ label(c.status) }}</p>
+      <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
+        <div class="flex items-start gap-4"><div class="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/20">🏥</div><div><p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">Your hospital companion</p><h1 class="mt-1 text-3xl font-black">{{ c.provider.displayName }}</h1><p class="mt-2 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold">{{ label(c.status) }}{{ c.status === 'CONNECTED' ? ' ✓' : '' }}</p></div></div>
+        @if (c.externalPatientReference) { <p class="mt-5 text-sm text-violet-100">Hospital ID <strong class="text-white">{{ c.externalPatientReference }}</strong></p> }
       </header>
       @if (returnUrl) {
         <a [routerLink]="returnUrl" class="mt-4 inline-flex font-bold text-brand-700 underline"
@@ -35,30 +34,27 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         >
       }
       @if (c.status === 'CONNECTED') {
-        <section class="mt-6 rounded-2xl bg-brand-50 p-6 ring-1 ring-brand-100">
-          <p class="text-sm font-bold uppercase tracking-wider text-brand-700">At this hospital</p>
-          <h2 class="mt-1 text-2xl font-bold text-brand-950">What would you like to do?</h2>
+        <section class="mt-6 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50/50 p-6 shadow-sm">
+          <p class="text-sm font-bold uppercase tracking-wider text-brand-600">At {{ c.provider.displayName }}</p>
+          <h2 class="mt-1 text-2xl font-black text-brand-950">What do you need here today?</h2>
+          <p class="mt-1 text-slate-600">Use SmartClinic for the hospital task you came to do.</p>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              Book an Appointment
-              <span class="mt-1 block text-sm font-normal text-slate-600">See available care and request a visit.</span>
+              👨🏾‍⚕️ See a Doctor
+              <span class="mt-1 block text-sm font-normal text-slate-600">Book care or request a consultation.</span>
             </a>
             <a routerLink="/me/health-records" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              My Hospital Records
-              <span class="mt-1 block text-sm font-normal text-slate-600">View health information available in SmartClinic.</span>
+              📄 My Results & Records
+              <span class="mt-1 block text-sm font-normal text-slate-600">See hospital information available in SmartClinic.</span>
             </a>
-            <div class="rounded-xl bg-slate-50 p-4 font-bold text-slate-600 ring-1 ring-slate-200">
-              Pay a Bill
-              <span class="mt-1 block text-sm font-normal">Available when a hospital bill is sent to SmartClinic.</span>
-            </div>
-            <a routerLink="/me" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">
-              Back to Home
-              <span class="mt-1 block text-sm font-normal text-slate-600">See your other SmartClinic actions.</span>
-            </a>
+            <a routerLink="/me/tests" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">🧪 Get a Test<span class="mt-1 block text-sm font-normal text-slate-600">View doctor-requested tests and results.</span></a>
+            <a routerLink="/me/prescriptions" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">💊 Get Medicine<span class="mt-1 block text-sm font-normal text-slate-600">Open prescriptions and medicine options.</span></a>
+            <div class="rounded-xl bg-slate-50 p-4 font-bold text-slate-600 ring-1 ring-slate-200">💳 Pay a Bill<span class="mt-1 block text-sm font-normal">Available when this hospital sends a bill to SmartClinic.</span></div>
+            <a routerLink="/me" class="rounded-xl bg-white p-4 font-bold text-brand-900 ring-1 ring-slate-200 hover:ring-brand-300">⌂ SmartClinic Home<span class="mt-1 block text-sm font-normal text-slate-600">See all your healthcare actions.</span></a>
           </div>
         </section>
       }
-      <section class="mt-6 rounded-2xl border bg-white p-6">
+      <details class="mt-6 rounded-2xl border bg-white p-5"><summary class="cursor-pointer font-bold text-brand-800">Hospital connection details</summary><section class="mt-5">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-500">Provider</dt>
@@ -83,10 +79,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <dd class="break-all font-bold">{{ c.externalPatientReference }}</dd>
             </div>
           }
-        </dl>
-      </section>
+        </dl></section></details>
       <section class="mt-6 rounded-2xl border bg-white p-6">
-        <h2 class="text-xl font-bold">Funding</h2>
+        <h2 class="text-xl font-bold">Connection payment</h2>
         @if (funding(); as f) {
           <div class="mt-4 grid gap-3">
             @for (item of f.fundings; track item.purpose) {
