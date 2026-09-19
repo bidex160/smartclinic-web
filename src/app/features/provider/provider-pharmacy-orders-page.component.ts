@@ -9,9 +9,9 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
     <p class="text-sm font-bold uppercase text-brand-600">Provider operations</p>
-    <h1 class="mt-2 text-3xl font-bold">Pharmacy Orders</h1>
+    <h1 class="mt-2 text-3xl font-bold">Patient Orders</h1><p class="mt-2 text-slate-600">Prescriptions, laboratory tests and imaging requests assigned to your service units.</p>
     @if (loading()) {
-      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading pharmacy orders…</p>
+      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading patient orders…</p>
     } @else if (error()) {
       <div role="alert" class="mt-8 rounded-2xl bg-red-50 p-6">
         Orders could not be loaded.
@@ -19,7 +19,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       </div>
     } @else if (!items().length) {
       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
-        <h2 class="text-xl font-bold">No prescriptions have been assigned to this pharmacy yet.</h2>
+        <h2 class="text-xl font-bold">No patient orders have been assigned to your service units yet.</h2>
       </section>
     } @else {
       <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
@@ -30,9 +30,9 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 h of [
                   'Fulfillment',
                   'Patient',
-                  'Prescription',
+                  'Request',
                   'Ordering Provider',
-                  'Pharmacy unit',
+                  'Service unit',
                   'Status',
                   'Date',
                   'Action',
@@ -48,14 +48,14 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
               <tr>
                 <td class="break-all p-4 font-bold">{{ f.reference }}</td>
                 <td class="p-4">{{ f.patient.givenName }} {{ f.patient.familyName }}</td>
-                <td class="break-all p-4">{{ f.clinicalOrder.reference }}</td>
+                <td class="p-4"><strong>{{ f.clinicalOrder.type }}</strong><span class="block break-all text-xs text-slate-500">{{ f.clinicalOrder.reference }}</span></td>
                 <td class="p-4">{{ f.clinicalOrder.orderingProvider.displayName }}</td>
                 <td class="p-4">{{ f.fulfiller.serviceUnitName }}</td>
                 <td class="p-4">{{ f.status }}</td>
                 <td class="p-4">{{ date(f.createdAt) }}</td>
                 <td class="p-4">
                   <a
-                    [routerLink]="['/provider/pharmacy-orders', f.reference]"
+                    [routerLink]="f.clinicalOrder.type === 'PRESCRIPTION' ? ['/provider/pharmacy-orders', f.reference] : ['/provider/diagnostic-orders', f.reference]"
                     class="font-bold text-brand-700 underline"
                     >View</a
                   >
