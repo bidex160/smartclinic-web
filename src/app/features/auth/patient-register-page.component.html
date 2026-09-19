@@ -41,9 +41,16 @@
       <p class="text-sm font-bold uppercase tracking-[0.16em] text-brand-600">Patient account</p>
       <h1 class="mt-3 text-3xl font-bold text-brand-900">Create your SmartClinic account</h1>
       <p class="mt-3 leading-7 text-slate-600">
-        Create an account to manage your own Smart Health Checks. SmartClinic assigns your patient
-        identity securely.
+        One secure account for your appointments, Health Checks, tests, prescriptions and hospital connections.
       </p>
+      @if (hasReferral) {
+        <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+          <p class="text-sm font-bold text-brand-900">✦ You were invited to SmartClinic</p>
+          <p class="mt-1 text-sm leading-6 text-slate-600">
+            Your referral is already attached. Just create your account — there is no code to enter.
+          </p>
+        </div>
+      }
       @if (error()) {
         <div role="alert" class="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
           {{ error() }}
@@ -87,7 +94,7 @@
         </div>
      <div class="sm:col-span-2">
   <label for="register-email" class="block text-sm font-bold">
-    Email
+    Email <span class="font-normal text-slate-500">(optional if you use a phone number)</span>
   </label>
 
   <input
@@ -102,7 +109,7 @@
   />
 
   <p class="mt-2 text-sm text-slate-500">
-    We currently require an email address for payments and account recovery.
+    Add an email if you have one. You can create your account with a phone number instead.
   </p>
 
   @if (invalid('email')) {
@@ -113,7 +120,7 @@
 </div>
         <div class="sm:col-span-2">
           <label for="register-phone" class="block text-sm font-bold"
-            >Phone <span class="font-normal text-slate-500">(optional)</span></label
+            >Phone <span class="font-normal text-slate-500">(or use email above)</span></label
           >
           
          <input
