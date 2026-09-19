@@ -38,9 +38,15 @@ export class PatientRegisterPageComponent {
     this.route.snapshot.queryParamMap.get('returnUrl'),
   );
 
-  readonly loginQueryParams = this.returnUrl
-    ? { returnUrl: this.returnUrl }
-    : null;
+  readonly loginQueryParams =
+    this.returnUrl || this.referralCode
+      ? {
+          ...(this.returnUrl && { returnUrl: this.returnUrl }),
+          ...(this.referralCode && { ref: this.referralCode }),
+        }
+      : null;
+
+  readonly hasReferral = Boolean(this.referralCode);
 
   readonly pending = signal(false);
   readonly submitted = signal(false);
