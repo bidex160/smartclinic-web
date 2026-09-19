@@ -49,6 +49,7 @@ export interface ClinicalOrder {
   readonly cancelledAt: string | null;
   readonly cancellationReason: string | null;
   readonly prescription: PrescriptionDetail | null;
+  readonly diagnosticItems?: readonly { readonly name: string; readonly code: string | null; readonly instructions: string | null; readonly sortOrder: number }[];
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly fulfillment?: {
