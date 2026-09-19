@@ -125,6 +125,19 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           }
         </section>
       }
+      @if (a.deliveryMode === 'VIRTUAL' && a.status === 'COMPLETED') {
+        <section class="mt-6 rounded-[2rem] border border-emerald-100 bg-gradient-to-b from-white to-emerald-50 p-6 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-emerald-700">Consultation complete ✓</p>
+          <h2 class="mt-1 text-2xl font-black text-brand-950">Continue with your care</h2>
+          <p class="mt-2 text-slate-600">Anything your doctor has requested stays in SmartClinic. You do not need to start again.</p>
+          <div class="mt-5 grid gap-3 sm:grid-cols-2">
+            <a routerLink="/me/prescriptions" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">💊 My prescriptions <span class="block pt-1 text-sm font-normal text-slate-600">View medicine prescribed for you.</span></a>
+            <a routerLink="/me/tests" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">🧪 My tests <span class="block pt-1 text-sm font-normal text-slate-600">Continue any lab test or scan requested.</span></a>
+            <a routerLink="/me/providers" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">🏥 Visit a hospital <span class="block pt-1 text-sm font-normal text-slate-600">Continue in person if your doctor advised it.</span></a>
+            <a routerLink="/me/care" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">📅 Follow-up care <span class="block pt-1 text-sm font-normal text-slate-600">See your care and upcoming appointments.</span></a>
+          </div>
+        </section>
+      }
       @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
         <button
           type="button"
