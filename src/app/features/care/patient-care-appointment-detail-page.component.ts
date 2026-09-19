@@ -5,6 +5,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CareAppointment } from '../../core/models/find-care.model';
 import { CareAppointmentsApiService } from '../../core/services/care-appointments-api.service';
+import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { ClinicalOrder } from '../../core/models/pharmacy-fulfillment.model';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from './care-delivery-mode';
 @Component({
@@ -130,12 +132,19 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           <p class="text-xs font-bold uppercase tracking-[.16em] text-emerald-700">Consultation complete ✓</p>
           <h2 class="mt-1 text-2xl font-black text-brand-950">Continue with your care</h2>
           <p class="mt-2 text-slate-600">Anything your doctor has requested stays in SmartClinic. You do not need to start again.</p>
-          <div class="mt-5 grid gap-3 sm:grid-cols-2">
-            <a routerLink="/me/prescriptions" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">💊 My prescriptions <span class="block pt-1 text-sm font-normal text-slate-600">View medicine prescribed for you.</span></a>
-            <a routerLink="/me/tests" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">🧪 My tests <span class="block pt-1 text-sm font-normal text-slate-600">Continue any lab test or scan requested.</span></a>
-            <a routerLink="/me/providers" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">🏥 Visit a hospital <span class="block pt-1 text-sm font-normal text-slate-600">Continue in person if your doctor advised it.</span></a>
-            <a routerLink="/me/care" class="rounded-2xl border bg-white p-4 font-bold text-brand-900 shadow-sm">📅 Follow-up care <span class="block pt-1 text-sm font-normal text-slate-600">See your care and upcoming appointments.</span></a>
-          </div>
+          @if (ordersLoading()) { <p class="mt-5 rounded-2xl bg-white p-4 text-slate-600">Loading your doctor's next steps…</p> }
+          @else if (orders().length) {
+            <div class="mt-5 grid gap-3">
+              @for (o of orders(); track o.reference) {
+                <a [routerLink]="orderRoute(o)" class="rounded-2xl border bg-white p-5 shadow-sm hover:border-brand-300">
+                  <span class="font-bold text-brand-950">{{ orderIcon(o) }} {{ orderTitle(o) }}</span>
+                  <span class="mt-1 block text-sm text-slate-600">{{ orderDetail(o) }}</span>
+                  <span class="mt-3 block font-bold text-brand-700">{{ orderAction(o) }} →</span>
+                </a>
+              }
+            </div>
+          } @else { <p class="mt-5 rounded-2xl bg-white p-4 text-slate-600">There are no issued prescriptions or tests from this consultation yet. Any new doctor request will appear in SmartClinic.</p> }
+          <div class="mt-4 flex flex-wrap gap-4 text-sm font-semibold"><a routerLink="/me/providers" class="text-brand-700 underline">Visit a hospital</a><a routerLink="/me/care" class="text-brand-700 underline">My follow-up care</a></div>
         </section>
       }
       @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
@@ -196,6 +205,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
 })
 export class PatientCareAppointmentDetailPageComponent {
   private readonly api = inject(CareAppointmentsApiService);
+  private readonly ordersApi = inject(PharmacyFulfillmentApiService);
+  readonly orders = signal<readonly ClinicalOrder[]>([]);
+  readonly ordersLoading = signal(false);
   private readonly fb = inject(FormBuilder);
   private readonly sanitizer = inject(DomSanitizer);
   readonly utils = inject(UtilsService);
@@ -219,7 +231,10 @@ export class PatientCareAppointmentDetailPageComponent {
       .get(this.reference)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (a) => this.appointment.set(a),
+        next: (a) => {
+          this.appointment.set(a);
+          if (a.status === 'COMPLETED') this.loadOrders(a.appointmentReference);
+        },
         error: () => this.error.set('This appointment is unavailable.'),
       });
   }
@@ -268,6 +283,24 @@ export class PatientCareAppointmentDetailPageComponent {
       )[s] ?? 'Check this page for the latest appointment status.'
     );
   }
+  loadOrders(appointmentReference: string) {
+    this.ordersLoading.set(true);
+    this.ordersApi.listPatientOrdersForAppointment(appointmentReference).pipe(finalize(() => this.ordersLoading.set(false))).subscribe({
+      next: (page) => this.orders.set(page.items.filter((o) => o.status === 'ISSUED')),
+      error: () => this.orders.set([]),
+    });
+  }
+  orderRoute(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? '/me/prescriptions/' + o.reference : '/me/tests'; }
+  orderIcon(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? '💊' : o.type === 'IMAGING' ? '🩻' : '🧪'; }
+  orderTitle(o: ClinicalOrder): string {
+    if (o.type === 'PRESCRIPTION') return o.prescription?.items?.length === 1 ? o.prescription.items[0].medicationName : 'Prescription';
+    return o.diagnosticItems?.map((i) => i.name).join(', ') || (o.type === 'IMAGING' ? 'Scan or imaging' : 'Laboratory test');
+  }
+  orderDetail(o: ClinicalOrder): string {
+    if (o.type === 'PRESCRIPTION') return o.prescription?.items?.map((i) => i.medicationName).join(', ') || 'Medicine prescribed by your doctor';
+    return o.type === 'IMAGING' ? 'Imaging requested by your doctor' : 'Test requested by your doctor';
+  }
+  orderAction(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? 'Get medicine' : o.type === 'IMAGING' ? 'Book scan' : 'Complete test'; }
   isEmbeddableConsultation(value: string) {
     try {
       const host = new URL(value).hostname.toLowerCase();
