@@ -15,11 +15,12 @@ import { formatMinor } from '../provider/care-money';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a [routerLink]="backUrl()" class="font-bold text-brand-700 underline">← Back</a>
-    <h1 class="mt-5 text-3xl font-bold">
+    <p class="mt-6 text-sm font-bold uppercase tracking-[.16em] text-brand-600">Connect a hospital</p>\n    <h1 class="mt-2 text-3xl font-black text-brand-950">
       {{
         targeted() && selected() ? 'Connect with ' + selected()?.displayName : 'Choose a Hospital'
       }}
     </h1>
+    <p class="mt-2 text-slate-600">Choose a hospital and SmartClinic will guide you through the shortest way to connect your care.</p>
     @if (targeted() && loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Preparing this hospital…</p>
     } @else if (targeted() && targetError()) {
@@ -33,14 +34,14 @@ import { formatMinor } from '../provider/care-money';
         >
       </section>
     } @else if (!targeted() && !selected()) {
-      <section class="mt-8 rounded-2xl border bg-white p-6">
+      <section class="mt-7 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50/40 p-6 shadow-sm">
         <div class="flex gap-3">
           <label class="flex-1"
             ><span class="sr-only">Search hospitals</span
             ><input
               [formControl]="search"
               maxlength="120"
-              placeholder="Search hospitals by name"
+              placeholder="Search UCH, FMC Keffi, Gombe…"
               class="w-full rounded-xl border p-3" /></label
           ><button type="button" (click)="load(1)" class="rounded-xl border px-5 font-bold">
             Search
@@ -60,10 +61,9 @@ import { formatMinor } from '../provider/care-money';
         } @else {
           <div class="mt-5 grid gap-3">
             @for (p of providers(); track p.providerReference) {
-              <button type="button" (click)="choose(p)" class="rounded-xl border p-4 text-left">
-                <span class="block font-bold">{{ p.displayName }}</span
-                ><span class="block text-sm text-slate-600"
-                  >{{ p.providerType }} · {{ location(p) }}</span
+              <button type="button" (click)="choose(p)" class="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md">
+                <span class="flex items-center gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-xl">🏥</span><span class="block text-lg font-black text-brand-950">{{ p.displayName }}</span></span
+                ><span class="mt-2 block text-sm text-slate-600">{{ location(p) }}</span
                 >
                 @if (p.newPatientRegistration.enabled) {
                   <span class="mt-2 block"
@@ -110,12 +110,13 @@ import { formatMinor } from '../provider/care-money';
             </button>
           }
         </div>
+        <div class="rounded-2xl bg-violet-50 p-4"><p class="text-sm font-bold uppercase tracking-wider text-brand-600">Your hospital connection</p><p class="mt-1 text-sm text-slate-600">We only ask what is needed to connect you correctly.</p></div>
         <fieldset class="grid gap-3">
-          <legend class="font-bold">Have you been a patient at this hospital before?</legend>
+          <legend class="text-lg font-black text-brand-950">Have you been a patient here before?</legend>
           @if (p.newPatientRegistration.enabled) {
             <label class="rounded-xl border p-4"
               ><input type="radio" formControlName="path" value="NEW_PATIENT_REGISTRATION" />
-              <strong>No — register me</strong
+              <strong>No — connect me as a new patient</strong
               ><span class="block pl-6"
                 >Register me with this hospital ·
                 {{
@@ -127,7 +128,7 @@ import { formatMinor } from '../provider/care-money';
           @if (p.existingPatientLink.enabled) {
             <label class="rounded-xl border p-4"
               ><input type="radio" formControlName="path" value="EXISTING_PATIENT_LINK" />
-              <strong>Yes — connect my record</strong
+              <strong>Yes — connect my existing record</strong
               ><span class="block pl-6"
                 >Connect my existing hospital patient number ·
                 {{ money(p.existingPatientLink.feeMinor, p.existingPatientLink.currency) }}</span
@@ -160,7 +161,7 @@ import { formatMinor } from '../provider/care-money';
           [disabled]="saving()"
           class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
         >
-          {{ saving() ? 'Connecting…' : 'Continue' }}
+          {{ saving() ? 'Connecting…' : 'Connect to this hospital →' }}
         </button>
       </form>
     }
