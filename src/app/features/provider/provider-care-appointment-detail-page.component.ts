@@ -95,16 +95,16 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">Virtual consultation</h2>
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Consultation room</p><h2 class="mt-1 text-2xl font-black text-brand-950">Connect with your patient</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">An external meeting link is configured.</p>
+            <p class="mt-2 text-slate-600">The consultation channel is ready for you and the patient.</p>
             <div class="mt-4 flex flex-wrap gap-3">
               <a
                 [href]="url"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-                >Open meeting</a
+                >Join consultation →</a
               ><button
                 type="button"
                 (click)="openMeetingLink()"
@@ -121,13 +121,13 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
               </button>
             </div>
           } @else {
-            <p class="mt-2 text-slate-600">No meeting link added yet.</p>
+            <p class="mt-2 text-slate-600">Choose a secure consultation channel. You can use Google Meet or SmartClinic Video.</p>
             <button
               type="button"
               (click)="openMeetingLink()"
               class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
             >
-              Add meeting link
+              Set up consultation
             </button>
           }
         </section>
@@ -232,10 +232,10 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
           class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
           <h2 id="meeting-link-title" class="text-xl font-bold">
-            {{ appointment()?.meetingUrl ? 'Replace' : 'Add' }} meeting link
+            {{ appointment()?.meetingUrl ? 'Change consultation channel' : 'Set up consultation' }}
           </h2>
           <p class="mt-2 text-slate-600">
-            Use an HTTPS link from your approved external meeting service.
+            Paste a secure Google Meet link or a SmartClinic Video (Jitsi) room link. The patient will simply see “Join consultation”.
           </p>
           <form [formGroup]="meetingForm" (ngSubmit)="saveMeetingLink()" class="mt-5">
             <label for="meeting-url" class="font-bold">Meeting link</label
@@ -243,7 +243,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
               id="meeting-url"
               type="url"
               formControlName="meetingUrl"
-              placeholder="e.g. https://meet.google.com/..."
+              placeholder="https://meet.google.com/... or https://meet.jit.si/..."
               class="mt-2 min-h-12 w-full rounded-xl border px-3"
             />
             @if (meetingError()) {
@@ -262,7 +262,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
                 [disabled]="pending() || meetingForm.invalid"
                 class="rounded-xl bg-brand-700 px-4 py-3 font-bold text-white disabled:opacity-50"
               >
-                {{ pending() ? 'Saving…' : 'Save meeting link' }}
+                {{ pending() ? 'Saving…' : 'Save consultation channel' }}
               </button>
             </div>
           </form>
