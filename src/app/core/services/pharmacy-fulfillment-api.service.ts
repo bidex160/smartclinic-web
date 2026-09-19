@@ -86,6 +86,20 @@ export class PharmacyFulfillmentApiService {
       params: new HttpParams().set('orderType', orderType).set('page', page).set('limit', limit),
     });
   }
+  getPatientOrderFulfillment(orderRef: string) {
+    return this.http.get<ProviderOrderFulfillment | null>(
+      `${this.base}/me/clinical-orders/${this.enc(orderRef)}/fulfillment`,
+    );
+  }
+  getPatientDiagnosticFulfillment(fulfillmentRef: string) {
+    return this.http.get<any>(`${this.base}/me/diagnostic-order-fulfillments/${this.enc(fulfillmentRef)}`);
+  }
+  acceptDiagnosticQuote(quoteRef: string) {
+    return this.http.post<any>(`${this.base}/me/diagnostic-quotes/${this.enc(quoteRef)}/accept`, null);
+  }
+  initializeDiagnosticFunding(quoteRef: string) {
+    return this.http.post<any>(`${this.base}/me/diagnostic-quotes/${this.enc(quoteRef)}/funding/initialize`, {});
+  }
   selectDiagnosticProvider(orderRef: string, providerServiceUnitReference: string) {
     return this.http.post(
       `${this.base}/me/clinical-orders/${this.enc(orderRef)}/select-fulfillment`,
