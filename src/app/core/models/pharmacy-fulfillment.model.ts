@@ -76,7 +76,7 @@ export interface FulfillmentDirectoryItem {
   readonly providerType: string;
   readonly providerServiceUnitReference: string;
   readonly unitName: string;
-  readonly capabilityType: 'PHARMACY';
+  readonly capabilityType: 'PHARMACY' | 'LABORATORY' | 'RADIOLOGY';
   readonly location: {
     readonly city: string;
     readonly stateOrRegion: string;
