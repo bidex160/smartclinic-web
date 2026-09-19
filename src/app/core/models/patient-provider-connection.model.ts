@@ -108,3 +108,38 @@ export interface ProviderConnectionDecisionRequest {
   readonly externalPatientReference?: string;
   readonly reason?: string;
 }
+
+export interface HospitalCompanionRequest {
+  readonly orderReference: string;
+  readonly type: 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE';
+  readonly issuedAt: string | null;
+  readonly clinicalNote: string | null;
+  readonly fulfillmentReference: string | null;
+  readonly serviceUnit: string | null;
+  readonly amountMinor: number | null;
+  readonly currency: string | null;
+  readonly paymentStatus: string;
+  readonly serviceStatus: string;
+  readonly resultReady: boolean;
+}
+export interface HospitalCompanionView {
+  readonly provider: { readonly reference: string; readonly displayName: string };
+  readonly connection: {
+    readonly reference: string;
+    readonly externalPatientReference: string | null;
+    readonly connectedAt: string | null;
+  };
+  readonly nextAction: {
+    readonly kind: 'PAYMENT_REQUIRED' | 'RESULT_READY' | 'PROCEED_TO_SERVICE' | 'NO_ACTION';
+    readonly title: string;
+    readonly action: string | null;
+  };
+  readonly requests: readonly HospitalCompanionRequest[];
+  readonly consolidatedPayment: {
+    readonly available: boolean;
+    readonly itemCount: number;
+    readonly amountMinor: number | null;
+    readonly currency: string | null;
+  };
+  readonly servicePass: null;
+}
