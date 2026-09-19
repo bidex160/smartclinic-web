@@ -149,6 +149,16 @@ export class PharmacyFulfillmentApiService {
       null,
     );
   }
+  createDiagnosticQuote(ref: string, body: { totalMinor: number; currency: string; expiresAt: string }) {
+    return this.http.post<any>(`${this.base}/provider/order-fulfillments/${this.enc(ref)}/diagnostic-quotes`, body);
+  }
+  submitDiagnosticQuote(ref: string) {
+    return this.http.post<any>(`${this.base}/provider/diagnostic-quotes/${this.enc(ref)}/submit`, null);
+  }
+  uploadDiagnosticResult(ref: string, file: File) {
+    const body = new FormData(); body.append('file', file);
+    return this.http.post<any>(`${this.base}/provider/order-fulfillments/${this.enc(ref)}/diagnostic-result`, body);
+  }
   createQuote(ref: string, body: UpsertPharmacyQuoteRequest) {
     return this.http.post<PharmacyQuote>(
       `${this.base}/provider/order-fulfillments/${this.enc(ref)}/quotes`,
