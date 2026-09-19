@@ -94,6 +94,11 @@ export class PharmacyFulfillmentApiService {
   getPatientDiagnosticFulfillment(fulfillmentRef: string) {
     return this.http.get<any>(`${this.base}/me/diagnostic-order-fulfillments/${this.enc(fulfillmentRef)}`);
   }
+  getDiagnosticResultAccess(fulfillmentRef: string) {
+    return this.http.get<{ url?: string; downloadUrl?: string; expiresAt?: string }>(
+      `${this.base}/me/diagnostic-order-fulfillments/${this.enc(fulfillmentRef)}/result/access`,
+    );
+  }
   acceptDiagnosticQuote(quoteRef: string) {
     return this.http.post<any>(`${this.base}/me/diagnostic-quotes/${this.enc(quoteRef)}/accept`, null);
   }
