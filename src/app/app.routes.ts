@@ -578,6 +578,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'diagnostic-orders/:reference',
+        title: 'Diagnostic Request | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-diagnostic-order-detail-page.component').then(
+            (c) => c.ProviderDiagnosticOrderDetailPageComponent,
+          ),
+      },
+      {
         path: 'pharmacy-orders/:reference',
         title: 'Pharmacy Order | SmartClinic',
         canActivate: [providerGuard],
