@@ -186,6 +186,44 @@ import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-pa
 </button>
       </form>
 
+      <section
+        class="mt-7 rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50/80 via-white to-amber-50/50 p-5"
+        aria-labelledby="create-account-heading"
+      >
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">New to SmartClinic?</p>
+        <h2 id="create-account-heading" class="mt-2 text-xl font-bold text-brand-900">
+          Keep your healthcare together.
+        </h2>
+        <p class="mt-2 text-sm leading-6 text-slate-600">
+          Create your SmartClinic account for appointments, tests, prescriptions and hospital connections.
+        </p>
+        <a
+          routerLink="/register"
+          [queryParams]="registrationQueryParams"
+          class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 py-3 font-bold text-brand-700 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-brand-100"
+        >
+          Create my SmartClinic account →
+        </a>
+        @if (hasReferral) {
+          <div class="mt-4 flex items-start gap-3 rounded-xl bg-white/80 px-4 py-3 text-sm text-slate-600">
+            <span class="mt-0.5 text-amber-500" aria-hidden="true">✦</span>
+            <p>
+              <span class="font-bold text-brand-900">You were invited to SmartClinic.</span>
+              Your invitation will be carried into account creation automatically.
+            </p>
+          </div>
+        } @else {
+          <p class="mt-4 text-center text-sm text-slate-500">
+            Have an invitation link? Open it first and SmartClinic will carry your referral automatically.
+          </p>
+        }
+      </section>
+
+      <div class="mt-6 text-center">
+        <a routerLink="/" class="text-sm font-bold text-brand-700 underline underline-offset-4">
+          Back to SmartClinic
+        </a>
+      </div>
 
       </div>
     </section>
@@ -207,6 +245,7 @@ export class LoginPageComponent {
 
   readonly showPassword = signal(false);
   readonly registrationQueryParams = this.authFlowQueryParams();
+  readonly hasReferral = Boolean(this.route.snapshot.queryParamMap.get('ref')?.trim());
 
   readonly form = this.fb.nonNullable.group({
     identifier: ['', Validators.required],
