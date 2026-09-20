@@ -14,6 +14,7 @@ import {
   ProviderReferralsApiService,
 } from '../../core/services/provider-referrals-api.service';
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
+import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
 import { ProviderCareServiceOffering } from '../../core/models/find-care.model';
 
 type PrimaryAction = {
@@ -35,6 +36,7 @@ export class ProviderDashboardPageComponent {
   private readonly profileApi = inject(ProviderOnboardingApiService);
   private readonly referralsApi = inject(ProviderReferralsApiService);
   private readonly careServicesApi = inject(ProviderCareServicesApiService);
+  private readonly careOperationsApi = inject(ProviderCareOperationsApiService);
   readonly utils = inject(UtilsService);
   readonly profileLoading = signal(true);
   readonly profileError = signal<string | null>(null);
@@ -57,6 +59,8 @@ export class ProviderDashboardPageComponent {
   readonly findCareLoading = signal(false);
   readonly findCareLoaded = signal(false);
   readonly findCareError = signal(false);
+  readonly newCareRequestCount = signal(0);
+  readonly careRequestCountError = signal(false);
   readonly activeFindCareServiceCount = computed(
     () => this.findCareOfferings().filter((offering) => offering.isActive).length,
   );
@@ -105,6 +109,7 @@ export class ProviderDashboardPageComponent {
             this.loadSummary();
             this.loadOfferPreview();
             this.loadReferrals();
+            this.loadCareRequestCount();
           }
         },
         error: (error: HttpErrorResponse) =>
@@ -114,6 +119,19 @@ export class ProviderDashboardPageComponent {
               : 'Your provider dashboard is unavailable right now.',
           ),
       });
+  }
+
+  loadCareRequestCount(): void {
+    this.careRequestCountError.set(false);
+    this.careOperationsApi.getCareRequests(1, 100).subscribe({
+      next: (page) => this.newCareRequestCount.set(
+        page.items.filter((request) => request.status === 'AWAITING_PROVIDER_RESPONSE').length,
+      ),
+      error: () => {
+        this.newCareRequestCount.set(0);
+        this.careRequestCountError.set(true);
+      },
+    });
   }
 
   loadFindCareOfferings(): void {
