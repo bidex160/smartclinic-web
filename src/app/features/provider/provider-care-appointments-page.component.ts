@@ -12,7 +12,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
     <p class="text-sm font-bold uppercase text-brand-600">Care operations</p>
-    <h1 class="mt-2 text-3xl font-bold">Care Appointments</h1>
+    <h1 class="mt-2 text-3xl font-bold">Appointments</h1>
     <p class="mt-2 text-slate-600">
       Appointments explicitly scheduled from accepted Care Requests.
     </p>
@@ -53,7 +53,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
               <th class="p-4">Date and time</th>
               <th class="p-4">Location</th>
               <th class="p-4">Status</th>
-              <th class="p-4">Action</th>
+              <th class="p-4">Next step</th>
             </tr>
           </thead>
           <tbody>
