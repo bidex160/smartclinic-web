@@ -261,7 +261,17 @@
             </button>
           </div>
         } @else if (summary(); as totals) {
-          <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <article class="rounded-2xl border-2 border-brand-200 bg-brand-50 p-5">
+              <p class="font-semibold text-brand-900">New patient requests</p>
+              <p class="mt-2 text-4xl font-black text-brand-800">{{ newCareRequestCount() }}</p>
+              @if (careRequestCountError()) {
+                <p class="mt-2 text-sm text-red-700">Request count unavailable. Open the inbox to check.</p>
+              } @else {
+                <p class="mt-2 text-sm text-slate-600">Patients waiting for your response.</p>
+              }
+              <a routerLink="/provider/care-requests" class="mt-4 inline-flex font-bold text-brand-700 underline">Review requests →</a>
+            </article>
             <article class="rounded-2xl border bg-white p-5">
               <p class="font-semibold text-slate-600">New checkup requests</p>
               <p class="mt-2 text-4xl font-bold text-brand-800">{{ totals.offers.new }}</p>
