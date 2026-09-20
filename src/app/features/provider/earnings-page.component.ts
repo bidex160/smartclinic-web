@@ -22,19 +22,19 @@ import {
   template: `<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
     <header>
       <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
-        {{ admin ? 'Operations' : 'Provider workspace' }}
+        {{ admin ? 'Operations' : 'Your clinic' }}
       </p>
-      <h1 class="mt-2 text-3xl font-bold">{{ admin ? 'Revenue' : 'Earnings' }}</h1>
+      <h1 class="mt-2 text-3xl font-bold">{{ admin ? 'Revenue' : 'Payments & earnings' }}</h1>
       <p class="mt-2 text-slate-600">
         {{
           admin
             ? 'Platform commission and provider earnings recorded across SmartClinic services.'
-            : 'Review your Provider share and the transactions that produced it.'
+            : 'See payments from patient services, what you have earned and what is awaiting settlement.'
         }}
       </p>
     </header>
     @if (initialLoading()) {
-      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading financial summary…</p>
+      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading payments and earnings…</p>
     } @else {
       @if (summaryError()) {
         <div role="alert" class="mt-8 rounded-2xl bg-red-50 p-5">
@@ -43,8 +43,7 @@ import {
         </div>
       } @else if (!summaries().length) {
         <p class="mt-8 rounded-2xl border bg-white p-6">
-          No earnings recorded yet. Earnings will appear here as eligible SmartClinic services
-          progress through their financial lifecycle.
+          No payments or earnings have been recorded yet. They will appear here when patients pay for eligible services.
         </p>
       } @else {
         @for (s of summaries(); track s.currency) {
@@ -58,7 +57,7 @@ import {
               </div>
               <div>
                 <p class="text-sm text-slate-600">
-                  {{ admin ? 'Gross Transaction Value' : 'Provider Share' }}
+                  {{ admin ? 'Gross Transaction Value' : 'Your earnings' }}
                 </p>
                 <p class="text-3xl font-bold">
                   {{ money(admin ? s.grossAmountMinor : s.providerShareMinor, s.currency) }}
@@ -77,17 +76,17 @@ import {
                 </article>
               }
               <article class="rounded-xl bg-amber-50 p-4">
-                <p class="font-semibold">Held</p>
+                <p class="font-semibold">Processing</p>
                 <strong>{{ money(s.heldAmountMinor, s.currency) }}</strong>
-                <p class="text-xs">Not yet available for payout.</p>
+                <p class="text-xs">Payment received but not yet available for settlement.</p>
               </article>
               <article class="rounded-xl bg-blue-50 p-4">
-                <p class="font-semibold">Payable</p>
+                <p class="font-semibold">Ready for settlement</p>
                 <strong>{{ money(s.payableAmountMinor, s.currency) }}</strong>
-                <p class="text-xs">Earned and awaiting settlement.</p>
+                <p class="text-xs">Available to be settled to you.</p>
               </article>
               <article class="rounded-xl bg-green-50 p-4">
-                <p class="font-semibold">Settled</p>
+                <p class="font-semibold">Settled to you</p>
                 <strong>{{ money(s.settledAmountMinor, s.currency) }}</strong>
                 <p class="text-xs">Already settled.</p>
               </article>
@@ -98,7 +97,7 @@ import {
                 </article>
               }
             </div>
-            <h3 class="mt-6 text-lg font-bold">By source</h3>
+            <h3 class="mt-6 text-lg font-bold">Where your earnings came from</h3>
             <div class="mt-3 overflow-x-auto">
               <table class="min-w-[620px] w-full text-left">
                 <thead>
@@ -127,7 +126,7 @@ import {
         }
       }
       <section class="mt-8">
-        <h2 class="text-2xl font-bold">Transaction history</h2>
+        <h2 class="text-2xl font-bold">{{ admin ? 'Transaction history' : 'Payment history' }}</h2>
         <form
           [formGroup]="filters"
           (ngSubmit)="apply()"
