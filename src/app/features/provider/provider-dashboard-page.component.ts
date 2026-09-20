@@ -61,12 +61,12 @@ export class ProviderDashboardPageComponent {
     () => this.findCareOfferings().filter((offering) => offering.isActive).length,
   );
   readonly primaryActions: readonly PrimaryAction[] = [
-    { title: 'Find Care Services', helper: 'Set the consultations and specialist services patients can request from you.', route: '/provider/care-services', status: 'findCare' },
-    { title: 'Health Check Services', helper: 'Configure the Health Check services you offer.', route: '/provider/profile', fragment: 'configuration', status: 'healthChecks' },
-    { title: 'Availability', helper: "Set when you're available for appointments and services.", route: '/provider/profile', fragment: 'availability', status: 'availability' },
-    { title: 'Locations', helper: 'Manage locations for in-person Health Check services.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
-    { title: 'Care Requests', helper: 'Review incoming patient care requests.', route: '/provider/care-requests' },
-    { title: 'Appointments', helper: 'View and manage your appointments.', route: '/provider/care-appointments' },
+    { title: 'New requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
+    { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
+    { title: 'Payments & earnings', helper: 'See what has been paid and what is due to you.', route: '/provider/earnings' },
+    { title: 'Services', helper: 'Choose the consultations patients can book.', route: '/provider/care-services', status: 'findCare' },
+    { title: 'Availability', helper: "Set when patients can book you.", route: '/provider/profile', fragment: 'availability', status: 'availability' },
+    { title: 'Clinic locations', helper: 'Manage where you see patients in person.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
   ];
 
   constructor() {
