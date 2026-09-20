@@ -1,7 +1,7 @@
 <main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-  <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Provider Portal</p>
-  <h1 class="mt-2 text-3xl font-bold text-brand-900">Provider Dashboard</h1>
-  <p class="mt-2 text-slate-600">Manage your offers, appointments and Health Checks.</p>
+  <p class="text-sm font-bold uppercase tracking-wider text-brand-600">SmartClinic for providers</p>
+  <h1 class="mt-2 text-3xl font-black text-brand-900">Your clinic today</h1>
+  <p class="mt-2 text-slate-600">Receive patients, manage appointments and keep track of payments in one place.</p>
 
   @if (profileLoading()) {
     <p role="status" class="mt-6 rounded-xl bg-brand-50 p-4">Loading your provider workspace…</p>
@@ -163,7 +163,7 @@
         </section>
       }
       <section class="mt-8" aria-labelledby="primary-actions-heading">
-        <h2 id="primary-actions-heading" class="text-xl font-bold text-brand-900">Quick access</h2>
+        <h2 id="primary-actions-heading" class="text-xl font-bold text-brand-900">What do you need to do?</h2>
       <div
   class="
     grid grid-cols-3 gap-2
@@ -238,7 +238,7 @@
 </div>
       </section>
       <section class="mt-8" aria-labelledby="provider-summary-heading">
-        <h2 id="provider-summary-heading" class="text-xl font-bold text-brand-900">Your work</h2>
+        <h2 id="provider-summary-heading" class="text-xl font-bold text-brand-900">Today at a glance</h2>
         @if (summaryLoading()) {
           <div
             role="status"
