@@ -37,7 +37,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
               <th class="p-4">Preferred time</th>
               <th class="p-4">Status</th>
               <th class="p-4">Received</th>
-              <th class="p-4">Action</th>
+              <th class="p-4">Next step</th>
             </tr>
           </thead>
           <tbody>
@@ -123,7 +123,7 @@ export class ProviderCareRequestsPageComponent {
           this.items.set(r.items);
           this.totalPages.set(r.totalPages);
         },
-        error: () => this.error.set('Care Requests could not be loaded right now.'),
+        error: () => this.error.set('Appointment requests could not be loaded right now.'),
       });
   }
   changePage(delta: number) {
