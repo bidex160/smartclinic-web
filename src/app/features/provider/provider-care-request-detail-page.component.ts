@@ -18,10 +18,10 @@ import { formatMinor } from './care-money';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/care-requests" class="font-bold text-brand-700 underline"
-      >← Care Requests</a
+      >← New patient requests</a
     >
     @if (loading()) {
-      <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading Care Request…</p>
+      <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading patient request…</p>
     } @else if (error() && !request()) {
       <div role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
         {{ error() }}
@@ -29,9 +29,9 @@ import { formatMinor } from './care-money';
       </div>
     } @else if (request(); as r) {
       <header class="mt-6">
-        <p class="break-all text-sm font-bold uppercase text-brand-600">{{ r.reference }}</p>
-        <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
-        <p class="mt-2">{{ label(r.status) }}</p>
+        <p class="text-sm font-bold uppercase tracking-wide text-brand-600">Patient request</p>
+        <h1 class="mt-2 text-3xl font-black text-brand-950">{{ r.service.name }}</h1>
+        <p class="mt-2 text-slate-600">{{ deliveryModeLabel(r.deliveryMode) }} · {{ label(r.status) }}</p>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -42,7 +42,7 @@ import { formatMinor } from './care-money';
         <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
       }
       <section class="mt-6 rounded-2xl border bg-white p-6">
-        <h2 class="text-xl font-bold">Request</h2>
+        <h2 class="text-xl font-bold">Appointment request</h2>
         <dl class="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-500">Delivery</dt>
@@ -100,7 +100,7 @@ import { formatMinor } from './care-money';
           <p class="mt-2 font-semibold">{{ fundingLabel(r) }}</p>
           @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
             <p class="mt-2 text-slate-600">
-              Awaiting patient payment. Care Chat remains available while payment is pending.
+              The request is accepted. We are waiting for the patient to complete payment.
             </p>
           }
         </section>
@@ -137,13 +137,13 @@ import { formatMinor } from './care-money';
         <p
           class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950"
         >
-          Schedule appointment is unavailable while patient payment is pending.
+          Waiting for patient payment. You can schedule the appointment as soon as payment is confirmed.
         </p>
       }
       @if (chatAvailable()) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Communication</h2>
-          <p class="mt-2 text-slate-600">Use the backend-safe patient identity in Care Chat.</p>
+          <h2 class="text-xl font-bold">Message patient</h2>
+          <p class="mt-2 text-slate-600">Use SmartClinic chat if you need to clarify the appointment with the patient.</p>
           <a
             [routerLink]="['/provider/care-requests', r.reference, 'chat']"
             class="mt-4 inline-flex min-h-12 items-center rounded-xl border border-brand-300 px-5 py-3 font-bold text-brand-800"
@@ -192,8 +192,7 @@ import { formatMinor } from './care-money';
         >
           <h2 id="schedule-care-title" class="text-xl font-bold">Schedule appointment</h2>
           <p class="mt-2 text-slate-600">
-            Enter an explicit appointment interval. SmartClinic will check provider eligibility and
-            overlapping appointments.
+            Choose the date and time you will see this patient. SmartClinic will check that the time is available.
           </p>
        <form
   [formGroup]="scheduleForm"
@@ -282,7 +281,7 @@ import { formatMinor } from './care-money';
       formControlName="notes"
       maxlength="2000"
       rows="3"
-      placeholder="Optional operational appointment note"
+      placeholder="Optional note for this appointment"
       class="mt-2 w-full rounded-xl border p-3"
     ></textarea>
   </label>
@@ -324,9 +323,9 @@ import { formatMinor } from './care-money';
           aria-labelledby="decline-care-title"
           class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
-          <h2 id="decline-care-title" class="text-xl font-bold">Decline this Care Request?</h2>
+          <h2 id="decline-care-title" class="text-xl font-bold">Decline this patient request?</h2>
           <p class="mt-2 text-slate-600">
-            SmartClinic will record your response. The frontend will not reassign the request.
+            The patient will see that this request was declined.
           </p>
           <form [formGroup]="declineForm" (ngSubmit)="confirmDecline()" class="mt-5">
             <label for="decline-reason" class="font-bold">Reason</label
@@ -335,7 +334,7 @@ import { formatMinor } from './care-money';
               formControlName="reason"
               rows="4"
               maxlength="1000"
-              placeholder="Explain why this Care Request is being declined"
+              placeholder="Briefly explain why you cannot accept this request"
               class="mt-2 w-full rounded-xl border p-3"
             ></textarea>
             <div class="mt-5 flex justify-end gap-3">
