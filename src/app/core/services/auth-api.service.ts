@@ -28,6 +28,16 @@ export class AuthApiService {
   register(request: RegisterRequest): Observable<CurrentUser> {
     return this.http.post<CurrentUser>(`${this.apiConfig.baseUrl}/auth/register`, request);
   }
+
+  registerBuilder(
+  request: RegisterRequest,
+): Observable<CurrentUser> {
+  return this.http.post<CurrentUser>(
+    `${this.apiConfig.baseUrl}/auth/register-builder`,
+    request,
+  );
+}
+
   forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
     return this.http.post<ForgotPasswordResponse>(
       `${this.apiConfig.baseUrl}/auth/forgot-password`,

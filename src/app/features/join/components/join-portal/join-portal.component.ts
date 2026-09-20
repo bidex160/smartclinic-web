@@ -8,10 +8,17 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   ActivatedRoute,
   Router,
+  RouterLink,
 } from '@angular/router';
+import { IState, ICity } from 'country-state-city';
+import { AuthApiService } from '../../../../core/services/auth-api.service';
+import { LocationDataService } from '../../../../core/services/location-data.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 
 type JoinMode =
   | 'Builder'
@@ -36,7 +43,7 @@ interface JoinEntrance {
 @Component({
   selector: 'app-join-portal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './join-portal.component.html',
  styleUrls: ['./../../../join/join.component.scss'],
@@ -50,6 +57,103 @@ export class JoinPortalComponent implements OnInit {
 
   readonly referralCode = signal('');
   readonly referralStatus = signal<ReferralStatus>('idle');
+
+  private readonly fb =
+  inject(FormBuilder).nonNullable;
+
+private readonly api =
+  inject(AuthApiService);
+
+private readonly locationData =
+  inject(LocationDataService);
+
+readonly pending =
+  signal(false);
+
+readonly submitted =
+  signal(false);
+
+readonly success =
+  signal(false);
+
+readonly error =
+  signal<string | null>(null);
+
+readonly showPassword =
+  signal(false);
+  readonly countries = this.locationData.getCountries();
+
+states: IState[] = [];
+cities: ICity[] = [];
+
+readonly builderForm =
+  this.fb.group({
+    givenName: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(80),
+      ],
+    ],
+
+    familyName: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(80),
+      ],
+    ],
+
+    email: [
+      '',
+      [
+        Validators.email,
+        Validators.maxLength(254),
+      ],
+    ],
+
+    phone: [
+      '',
+      [
+        Validators.maxLength(30),
+      ],
+    ],
+
+    countryCode: [
+      'NG',
+      [
+        Validators.required,
+        Validators.pattern(
+          /^[A-Za-z]{2}$/,
+        ),
+      ],
+    ],
+
+    stateOrRegion: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(120),
+      ],
+    ],
+
+    city: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(120),
+      ],
+    ],
+
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.maxLength(128),
+      ],
+    ],
+  });
 
   readonly entrances: JoinEntrance[] = [
     {
@@ -102,6 +206,12 @@ export class JoinPortalComponent implements OnInit {
     },
   ];
 
+  constructor() {
+  this.states =
+    this.locationData.getStates(
+      'NG',
+    );
+}
   ngOnInit(): void {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -237,7 +347,208 @@ export class JoinPortalComponent implements OnInit {
     }
   }
 
+  registerBuilder(): void {
+  this.submitted.set(true);
+  this.error.set(null);
+
+  if (
+    this.builderForm.invalid ||
+    this.pending()
+  ) {
+    this.builderForm.markAllAsTouched();
+    return;
+  }
+
+  const value =
+    this.builderForm.getRawValue();
+
+  const email =
+    value.email
+      .trim()
+      .toLowerCase();
+
+  const phone =
+    value.phone.trim();
+
+  if (!email && !phone) {
+    this.error.set(
+      'Either email or phone number is required.',
+    );
+
+    return;
+  }
+
+  this.pending.set(true);
+
+  this.api
+    .registerBuilder({
+      givenName:
+        value.givenName.trim(),
+
+      familyName:
+        value.familyName.trim(),
+
+      ...(email && {
+        email,
+      }),
+
+      ...(phone && {
+        phone,
+      }),
+
+      countryCode:
+        value.countryCode
+          .trim()
+          .toUpperCase(),
+
+      stateOrRegion:
+        value.stateOrRegion.trim(),
+
+      city:
+        value.city.trim(),
+
+      password:
+        value.password,
+
+      ...(this.referralCode() && {
+        referralCode:
+          this.referralCode(),
+      }),
+    })
+    .pipe(
+      finalize(() =>
+        this.pending.set(false),
+      ),
+    )
+    .subscribe({
+      next: () => {
+        this.success.set(true);
+
+        this.builderForm.reset({
+          givenName: '',
+          familyName: '',
+          email: '',
+          phone: '',
+          countryCode: 'NG',
+          stateOrRegion: '',
+          city: '',
+          password: '',
+        });
+
+        this.states =
+          this.locationData.getStates(
+            'NG',
+          );
+
+        this.cities = [];
+      },
+
+      error: (
+        error: HttpErrorResponse,
+      ) => {
+        const message =
+          Array.isArray(
+            error.error?.message,
+          )
+            ? error.error.message.join(
+                ', ',
+              )
+            : error.error?.message;
+
+        this.error.set(
+          message ||
+            (this.referralCode() &&
+            error.status === 400
+              ? 'This referral link is no longer valid. Ask the person who invited you for a new link.'
+              : error.status === 409
+                ? 'An account already exists with this email or phone number. Sign in instead.'
+                : error.status === 0
+                  ? 'SmartClinic could not be reached. Check your connection and try again.'
+                  : 'We could not create your Builder account. Check the form and try again.'),
+        );
+      },
+    });
+}
+
+invalid(name: keyof typeof this.builderForm.controls) {
+  return this.builderForm.controls[name].invalid;
+}
+
+  onCountryChange(): void {
+    const countryCode = this.builderForm.controls.countryCode.value;
+
+    this.states = countryCode
+      ? this.locationData.getStates(countryCode)
+      : [];
+
+    this.cities = [];
+
+    this.builderForm.patchValue({
+      stateOrRegion: '',
+      city: '',
+    });
+  }
+
+  onStateChange(): void {
+    const countryCode = this.builderForm.controls.countryCode.value;
+    const stateName = this.builderForm.controls.stateOrRegion.value;
+
+    const selectedState = this.states.find(
+      (state) => state.name === stateName,
+    );
+
+    this.cities =
+      countryCode && selectedState
+        ? this.locationData.getCities(
+            countryCode,
+            selectedState.isoCode,
+          )
+        : [];
+
+    this.builderForm.controls.city.setValue('');
+  }
   get disabled(): boolean {
     return this.mode() === 'Group';
   }
+
+    get passwordStrength(): {
+  level: number;
+  label: string;
+} {
+  const password = this.builderForm.controls.password.value;
+
+  if (!password) {
+    return {
+      level: 0,
+      label: '',
+    };
+  }
+
+  let score = 0;
+
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 2) {
+    return {
+      level: 1,
+      label: 'Weak',
+    };
+  }
+
+  if (score <= 4) {
+    return {
+      level: 2,
+      label: 'Good',
+    };
+  }
+
+  return {
+    level: 3,
+    label: 'Strong',
+  };
+}
 }

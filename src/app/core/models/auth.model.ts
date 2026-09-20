@@ -7,6 +7,7 @@ export interface CurrentUser {
   readonly displayName: string;
   readonly roles: UserRole[];
   readonly status: UserStatus;
+  readonly networkRole: string | null
 }
 
 export interface LoginRequest {
@@ -41,6 +42,7 @@ export interface RegisterRequest {
   readonly countryCode: string;
   readonly stateOrRegion: string;
   readonly city: string;
+  readonly referralCode?: string;
 }
 
 export type AuthSessionResponse = LoginResponse;
