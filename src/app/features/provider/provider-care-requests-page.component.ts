@@ -10,13 +10,11 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Care operations</p>
-    <h1 class="mt-2 text-3xl font-bold">Care Requests</h1>
-    <p class="mt-2 text-slate-600">
-      Review requests assigned to your authenticated provider workspace.
-    </p>
+    <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Appointments</p>
+    <h1 class="mt-2 text-3xl font-black">New patient requests</h1>
+    <p class="mt-2 text-slate-600">Patients who want to book with your clinic or doctor appear here.</p>
     @if (loading()) {
-      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading Care Requests…</p>
+      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading patient requests…</p>
     } @else if (error()) {
       <div role="alert" class="mt-8 rounded-2xl bg-red-50 p-6">
         {{ error() }}
@@ -24,21 +22,21 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
       </div>
     } @else if (!items().length) {
       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
-        <h2 class="text-xl font-bold">No Care Requests</h2>
-        <p class="mt-2 text-slate-600">Assigned requests will appear here.</p>
+        <h2 class="text-xl font-bold">You're all caught up</h2>
+        <p class="mt-2 text-slate-600">New patient appointment requests will appear here.</p>
       </section>
     } @else {
       <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
         <table class="min-w-[900px] w-full text-left">
           <thead class="bg-slate-50">
             <tr>
-              <th class="p-4">Reference</th>
+              <th class="p-4">Patient request</th>
               <th class="p-4">Service</th>
-              <th class="p-4">Delivery</th>
-              <th class="p-4">Requested location</th>
-              <th class="p-4">Requested appointment</th>
+              <th class="p-4">Visit type</th>
+              <th class="p-4">Where</th>
+              <th class="p-4">Preferred time</th>
               <th class="p-4">Status</th>
-              <th class="p-4">Created</th>
+              <th class="p-4">Received</th>
               <th class="p-4">Action</th>
             </tr>
           </thead>
@@ -73,7 +71,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
                   <a
                     [routerLink]="['/provider/care-requests', item.reference]"
                     class="font-bold text-brand-700 underline"
-                    >View request</a
+                    >Review & respond</a
                   >
                 </td>
               </tr>
