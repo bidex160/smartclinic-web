@@ -19,7 +19,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/care-appointments" class="font-bold text-brand-700 underline"
-      >← Care Appointments</a
+      >← Appointments</a
     >
     @if (loading()) {
       <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading appointment…</p>
@@ -30,11 +30,9 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       </p>
     } @else if (appointment(); as a) {
       <header class="mt-6">
-        <p class="break-all text-sm font-bold uppercase text-brand-600">
-          {{ a.appointmentReference }}
-        </p>
-        <h1 class="mt-2 text-3xl font-bold">{{ a.service.name }}</h1>
-        <p class="mt-2">{{ label(a.status) }}</p>
+        <p class="text-sm font-bold uppercase tracking-wide text-brand-600">Patient appointment</p>
+        <h1 class="mt-2 text-3xl font-black text-brand-950">{{ a.service.name }}</h1>
+        <p class="mt-2 text-slate-600">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }} · {{ label(a.status) }}</p>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -134,10 +132,10 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       }
       @if (clinicalRecordType(); as requiredType) {
         <section class="mt-6 rounded-2xl border bg-white p-6" aria-labelledby="clinical-record-heading">
-          <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="clinical-record-heading" class="text-xl font-bold">Clinical record</h2><p class="mt-1 text-slate-600">Required type: {{ recordTypeLabel(requiredType) }}</p></div>
+          <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="clinical-record-heading" class="text-xl font-bold">Clinical record</h2><p class="mt-1 text-slate-600">Document the care provided to this patient.</p></div>
           @if (clinicalRecord(); as record) { <span class="rounded-full px-3 py-1 text-sm font-bold" [class.bg-amber-100]="record.status === 'DRAFT'" [class.text-amber-900]="record.status === 'DRAFT'" [class.bg-green-100]="record.status === 'FINALIZED'" [class.text-green-900]="record.status === 'FINALIZED'">{{ record.status === 'DRAFT' ? 'Draft' : 'Finalized' }}</span> }</div>
           @if (recordLoading()) { <p role="status" class="mt-4">Loading clinical record…</p> }
-          @else if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') { <p class="mt-4 rounded-xl bg-slate-50 p-4">Clinical documentation will be available when the appointment starts.</p> }
+          @else if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') { <p class="mt-4 rounded-xl bg-slate-50 p-4">The consultation note will open when you start this appointment.</p> }
           @else if (recordError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4">{{ recordError() }} <button type="button" (click)="loadClinicalRecord()" class="font-bold underline">Try again</button></p> }
           @else if (clinicalRecord(); as record) {
             @if (requiredType !== 'CONSULTATION') {
