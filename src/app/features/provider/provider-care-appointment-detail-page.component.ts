@@ -93,9 +93,9 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Consultation room</p><h2 class="mt-1 text-2xl font-black text-brand-950">Connect with your patient</h2>
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Consultation room</p><h2 class="mt-1 text-2xl font-black text-brand-950">See your patient</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">The consultation channel is ready for you and the patient.</p>
+            <p class="mt-2 text-slate-600">Your consultation room is ready.</p>
             <div class="mt-4 flex flex-wrap gap-3">
               <a
                 [href]="url"
@@ -119,7 +119,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
               </button>
             </div>
           } @else {
-            <p class="mt-2 text-slate-600">Choose a secure consultation channel. You can use Google Meet or SmartClinic Video.</p>
+            <p class="mt-2 text-slate-600">Set up the video room for this appointment.</p>
             <button
               type="button"
               (click)="openMeetingLink()"
