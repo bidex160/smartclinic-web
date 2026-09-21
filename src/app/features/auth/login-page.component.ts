@@ -233,12 +233,6 @@ export class LoginPageComponent {
 
           const roles = user?.roles ?? [];
 
-          if (user?.networkRole === 'BUILDER' || user?.networkRole   === 'AMBASSADOR') {
-              void this.router.navigate(['/builder/dashboard']);
-              return
-          }
-
-
 
           if (roles.includes('ADMIN') || roles.includes('OPERATIONS')) {
             void this.router.navigate(['/admin/dashboard']);

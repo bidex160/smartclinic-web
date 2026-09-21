@@ -469,7 +469,7 @@ export const routes: Routes = [
 
   {
     path: 'builder',
-    component: PatientLayoutComponent,
+    // component: PatientLayoutComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {

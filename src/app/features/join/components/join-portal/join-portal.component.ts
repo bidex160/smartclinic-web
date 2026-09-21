@@ -470,9 +470,15 @@ readonly builderForm =
     });
 }
 
-invalid(name: keyof typeof this.builderForm.controls) {
-  return this.builderForm.controls[name].invalid;
-}
+  invalid(name: keyof typeof this.builderForm.controls): boolean {
+    const control = this.builderForm.controls[name];
+
+    return (
+      control.invalid &&
+      (control.touched || this.submitted())
+    );
+  }
+
 
   onCountryChange(): void {
     const countryCode = this.builderForm.controls.countryCode.value;
