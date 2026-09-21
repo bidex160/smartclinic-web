@@ -100,7 +100,7 @@ import { formatMinor } from './care-money';
           <p class="mt-2 font-semibold">{{ fundingLabel(r) }}</p>
           @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
             <p class="mt-2 text-slate-600">
-              The request is accepted. We are waiting for the patient to complete payment.
+              You have accepted this patient. SmartClinic is waiting for the patient to complete payment.
             </p>
           }
         </section>
@@ -137,7 +137,7 @@ import { formatMinor } from './care-money';
         <p
           class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950"
         >
-          Waiting for patient payment. You can schedule the appointment as soon as payment is confirmed.
+          Patient accepted ✓ · Waiting for payment. SmartClinic will let you schedule as soon as payment is confirmed.
         </p>
       }
       @if (chatAvailable()) {
@@ -177,7 +177,7 @@ import { formatMinor } from './care-money';
           <a
             [routerLink]="['/provider/care-appointments', appointment.appointmentReference]"
             class="mt-4 inline-block font-bold text-brand-700 underline"
-            >View appointment</a
+            >Open appointment →</a
           >
         </section>
       }

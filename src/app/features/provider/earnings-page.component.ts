@@ -24,12 +24,12 @@ import {
       <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
         {{ admin ? 'Operations' : 'Your clinic' }}
       </p>
-      <h1 class="mt-2 text-3xl font-bold">{{ admin ? 'Revenue' : 'Payments & earnings' }}</h1>
+      <h1 class="mt-2 text-3xl font-bold">{{ admin ? 'Revenue' : 'Your payments' }}</h1>
       <p class="mt-2 text-slate-600">
         {{
           admin
             ? 'Platform commission and provider earnings recorded across SmartClinic services.'
-            : 'See payments from patient services, what you have earned and what is awaiting settlement.'
+            : 'See what patients have paid, what is being processed, what is ready for settlement and what has already been settled to you.'
         }}
       </p>
     </header>
@@ -57,7 +57,7 @@ import {
               </div>
               <div>
                 <p class="text-sm text-slate-600">
-                  {{ admin ? 'Gross Transaction Value' : 'Your earnings' }}
+                  {{ admin ? 'Gross Transaction Value' : 'Total earned' }}
                 </p>
                 <p class="text-3xl font-bold">
                   {{ money(admin ? s.grossAmountMinor : s.providerShareMinor, s.currency) }}
@@ -97,7 +97,7 @@ import {
                 </article>
               }
             </div>
-            <h3 class="mt-6 text-lg font-bold">Where your earnings came from</h3>
+            <h3 class="mt-6 text-lg font-bold">Where your payments came from</h3>
             <div class="mt-3 overflow-x-auto">
               <table class="min-w-[620px] w-full text-left">
                 <thead>
@@ -204,7 +204,7 @@ import {
             </button>
           </p>
         } @else if (!items().length) {
-          <p class="mt-4 rounded-xl border bg-white p-5">No earnings match these filters.</p>
+          <p class="mt-4 rounded-xl border bg-white p-5">No payments match these filters.</p>
         } @else {
           <div class="mt-4 overflow-x-auto rounded-xl border bg-white">
             <table class="min-w-[850px] w-full text-left">

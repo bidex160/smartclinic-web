@@ -59,8 +59,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
             <dd>{{ a.timezone }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Care Request</dt>
-            <dd class="break-all">{{ a.careRequestReference }}</dd>
+            <dt class="text-sm text-slate-500">Visit type</dt>\n            <dd>{{ deliveryModeLabel(a.deliveryMode) }}</dd>
           </div>
           <div>
             <dt class="text-sm text-slate-500">Location</dt>
@@ -132,10 +131,10 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       }
       @if (clinicalRecordType(); as requiredType) {
         <section class="mt-6 rounded-2xl border bg-white p-6" aria-labelledby="clinical-record-heading">
-          <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="clinical-record-heading" class="text-xl font-bold">Clinical record</h2><p class="mt-1 text-slate-600">Document the care provided to this patient.</p></div>
+          <div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="clinical-record-heading" class="text-xl font-bold">Patient notes & orders</h2><p class="mt-1 text-slate-600">Record the consultation and add any prescription, test or scan the patient needs next.</p></div>
           @if (clinicalRecord(); as record) { <span class="rounded-full px-3 py-1 text-sm font-bold" [class.bg-amber-100]="record.status === 'DRAFT'" [class.text-amber-900]="record.status === 'DRAFT'" [class.bg-green-100]="record.status === 'FINALIZED'" [class.text-green-900]="record.status === 'FINALIZED'">{{ record.status === 'DRAFT' ? 'Draft' : 'Finalized' }}</span> }</div>
           @if (recordLoading()) { <p role="status" class="mt-4">Loading clinical record…</p> }
-          @else if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') { <p class="mt-4 rounded-xl bg-slate-50 p-4">The consultation note will open when you start this appointment.</p> }
+          @else if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') { <p class="mt-4 rounded-xl bg-slate-50 p-4">Start the appointment when you are ready to see the patient. Your consultation notes will open automatically.</p> }
           @else if (recordError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4">{{ recordError() }} <button type="button" (click)="loadClinicalRecord()" class="font-bold underline">Try again</button></p> }
           @else if (clinicalRecord(); as record) {
             @if (requiredType !== 'CONSULTATION') {

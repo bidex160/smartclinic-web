@@ -13,6 +13,7 @@ import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { ProviderOnboardingProfile } from '../../core/models/provider-onboarding.model';
 import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
 
 @Component({
@@ -124,6 +125,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Work
             </p>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/offers"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -165,6 +167,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Health Checks
             </a>
 
+
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -182,7 +185,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Care Requests
+              Patient requests
             </a>
 
             <a
@@ -202,19 +205,22 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Care Appointments
+              Appointments
             </a>
+
+            }
 
             <a
               routerLink="/provider/earnings"
               routerLinkActive="!bg-brand-700 !text-white"
               class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >
-              Earnings
+              Payments
             </a>
 
             <a routerLink="/provider/payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700">Payouts</a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -234,6 +240,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               FastTrack
             </a>
+            }
+            @if (careProvider()) {
             <a
   routerLink="/provider/health-record-access"
   routerLinkActive="!bg-brand-700 !text-white"
@@ -252,9 +260,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
     focus:ring-brand-700
   "
 >
-  Health Record Access
+  Patient record access
 </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -272,12 +282,14 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Shared Health Records
+              Shared records
             </a>
+            }
 
             <!-- Exact match is important here.
                  Otherwise /provider/patient-connections/configuration
                  also activates this menu item. -->
+            @if (careProvider()) {
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -296,9 +308,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Patient Connection Requests
+              Patient connections
             </a>
+            }
 
+            @if (orderProvider()) {
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -316,8 +330,9 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Pharmacy Orders
+              Patient orders
             </a>
+            }
           }
 
           <!-- =====================================================
@@ -374,10 +389,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Service Units
+            Service units
           </a>
 
-          <a
+          @if (careProvider()) {
+            <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="!bg-brand-700 !text-white"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -395,9 +411,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Patient Connection Setup
+            Connection setup
           </a>
+            }
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="configuration"
@@ -416,9 +434,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Health Check Services & Locations
+            Health check setup
           </a>
+          }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
@@ -436,9 +456,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Care Services
+            Services
           </a>
+            }
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -459,6 +481,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           >
             Availability
           </a>
+          }
 
           <a
             routerLink="/provider/profile"
@@ -478,7 +501,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Home Visit Coverage
+            Home visit area
           </a>
         </div>
       </nav>
@@ -684,6 +707,7 @@ Menu
               Work
             </p>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/offers"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -715,6 +739,7 @@ Menu
               Health Checks
             </a>
 
+
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -727,7 +752,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Care Requests
+              Patient requests
             </a>
 
             <a
@@ -742,8 +767,10 @@ Menu
                 hover:text-brand-900
               "
             >
-              Care Appointments
+              Appointments
             </a>
+
+            }
 
             <a
               routerLink="/provider/earnings"
@@ -757,7 +784,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Earnings
+              Payments
             </a>
 
             <a
@@ -787,9 +814,10 @@ Menu
                 hover:text-brand-900
               "
             >
-              Payout Accounts
+              Settlement account
             </a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -804,7 +832,9 @@ Menu
             >
               FastTrack
             </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/health-record-access"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -817,9 +847,11 @@ Menu
                 hover:text-brand-900
               "
             >
-              Health Record Access
+              Patient record access
             </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -832,9 +864,11 @@ Menu
                 hover:text-brand-900
               "
             >
-              Shared Health Records
+              Shared records
             </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -848,9 +882,11 @@ Menu
                 hover:text-brand-900
               "
             >
-              Patient Requests
+              Patient connections
             </a>
+            }
 
+            @if (orderProvider()) {
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -863,8 +899,9 @@ Menu
                 hover:text-brand-900
               "
             >
-              Pharmacy Orders
+              Patient orders
             </a>
+            }
           }
 
           <!-- =================================================
@@ -910,10 +947,11 @@ Menu
               hover:text-brand-900
             "
           >
-            Service Units
+            Service units
           </a>
 
-          <a
+          @if (careProvider()) {
+            <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="bg-brand-100 text-brand-900"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -926,9 +964,11 @@ Menu
               hover:text-brand-900
             "
           >
-            Patient Connection Setup
+            Connection setup
           </a>
+            }
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="configuration"
@@ -942,10 +982,12 @@ Menu
               hover:text-brand-900
             "
           >
-            Health Check Services & Locations
+            Health check setup
           </a>
+          }
 
-          <a
+          @if (careProvider()) {
+            <a
             routerLink="/provider/care-services"
             routerLinkActive="bg-brand-100 text-brand-900"
             class="
@@ -957,8 +999,9 @@ Menu
               hover:text-brand-900
             "
           >
-            Care Services
+            Services
           </a>
+            }
 
           <a
             routerLink="/provider/payout-accounts"
@@ -972,9 +1015,10 @@ Menu
               hover:text-brand-900
             "
           >
-            Payout Accounts
+            Settlement account
           </a>
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -990,6 +1034,7 @@ Menu
           >
             Availability
           </a>
+          }
 
           <a
             routerLink="/provider/profile"
@@ -1004,7 +1049,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Home Visit Coverage
+            Home visit area
           </a>
 
           <div class="my-3 border-t border-slate-200"></div>
@@ -1041,6 +1086,9 @@ export class ProviderSessionHeaderComponent {
   readonly authState = inject(AuthStateService);
 
   readonly operational = input(true);
+  readonly providerType = input<ProviderOnboardingProfile['providerType'] | null>(null);
+  readonly orderProvider = () => this.providerType() === 'PHARMACY' || this.providerType() === 'DIAGNOSTIC_CENTRE';
+  readonly careProvider = () => !this.orderProvider();
 
   /**
    * Close the expanded mobile navigation whenever

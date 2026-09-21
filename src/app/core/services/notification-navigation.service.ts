@@ -5,19 +5,19 @@ import { Notification, NotificationDestination, NotificationUserRole } from '../
 export class NotificationNavigationService {
   destination(notification: Notification, role: NotificationUserRole | null): NotificationDestination | null {
     const reference = notification.entityReference;
-    if (!reference || !role) return null;
+    if (!role) return null;
 
     if (role === 'USER') {
       switch (notification.entityType) {
-        case 'CARE_REQUEST': return ['/me/care', reference];
-        case 'CARE_APPOINTMENT': return ['/me/care/appointments', reference];
+        case 'CARE_REQUEST': return reference ? ['/me/care', reference] : ['/me/care'];
+        case 'CARE_APPOINTMENT': return reference ? ['/me/care/appointments', reference] : ['/me/appointments'];
         default: return null;
       }
     }
 
     switch (notification.entityType) {
-      case 'CARE_REQUEST': return ['/provider/care-requests', reference];
-      case 'CARE_APPOINTMENT': return ['/provider/care-appointments', reference];
+      case 'CARE_REQUEST': return reference ? ['/provider/care-requests', reference] : ['/provider/care-requests'];
+      case 'CARE_APPOINTMENT': return reference ? ['/provider/care-appointments', reference] : ['/provider/care-appointments'];
       case 'PROVIDER_PROFILE': return ['/provider/profile'];
       default: return null;
     }

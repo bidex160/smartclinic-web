@@ -22,8 +22,8 @@
     <div class="lg:sticky lg:top-8">
      <app-auth-visual-panel
   eyebrow="SmartClinic Provider Network"
-  title="Join the network connecting patients to trusted care."
-  description="Build your provider profile, publish approved services and become discoverable to patients looking for care."
+  title="Join SmartClinic and start serving patients."
+  description="Create your provider account, complete the setup that applies to you, and start receiving patients and orders once approved."
 />
     </div>
 
@@ -38,23 +38,19 @@
   <p
     class="text-sm font-bold uppercase tracking-[0.14em] text-brand-600"
   >
-    Provider application
+    Join SmartClinic
   </p>
 
   <h1
     class="mt-2 text-3xl font-bold text-brand-900"
   >
-    Register as a SmartClinic provider
+    What kind of healthcare provider are you?
   </h1>
 
   <p
     class="mt-4 max-w-2xl text-slate-700"
   >
-    Create your provider account and begin
-    SmartClinic onboarding. Your profile,
-    services, locations, availability and
-    verification requirements must be completed
-    before SmartClinic can match bookings to you.
+    Choose your provider type and create your account. We will guide you through only the setup you need to start providing care.
   </p>
 
   <!-- =========================================================
@@ -166,32 +162,26 @@
       <h2
         class="text-2xl font-bold text-brand-900"
       >
-        Provider application created successfully.
+        Welcome to SmartClinic.
       </h2>
 
       <p class="mt-3 text-slate-700">
-        Your SmartClinic account and provider
-        application have been created.
+        Your provider account has been created successfully.
       </p>
 
       <p class="mt-3 text-slate-700">
-        Sign in to complete your provider profile and submit it for review. You can configure Find
-        Care, Health Checks, locations and availability separately based on the services you choose
-        to offer.
+        Sign in and we will guide you through the remaining steps: your location, services, availability and verification.
       </p>
 
       <p class="mt-3 text-sm text-slate-600">
-        SmartClinic will only match eligible
-        bookings to providers that satisfy the
-        applicable operational and verification
-        requirements.
+        Once approved, you can start receiving the patient requests and orders that apply to your provider type.
       </p>
 
       <a
         routerLink="/login"
         class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 font-bold text-white focus:ring-4 focus:ring-brand-200"
       >
-        Sign in
+        Continue to provider setup →
       </a>
     </section>
   } @else {
@@ -205,7 +195,7 @@
       novalidate
       class="mt-8 grid gap-5 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft md:grid-cols-2"
     >
-      <!-- Provider display name -->
+      <!-- Clinic or provider name -->
 
       <div>
         <label
@@ -371,7 +361,7 @@
         
       </div>
 
-      <!-- Professional reference -->
+      <!-- Professional or facility licence/reference -->
 
       <div>
         <label
@@ -390,7 +380,7 @@
         <input
           id="register-reference"
           formControlName="professionalReference"
-          placeholder="e.g. MDCN/12345"
+          placeholder="Licence or registration number, if available"
           class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:border-brand-600 focus:ring-4 focus:ring-brand-100"
         />
       </div>
@@ -417,25 +407,11 @@
             Select provider type
           </option>
 
-          <option value="INDIVIDUAL">
-            Individual health professional
-          </option>
-
-          <option value="CLINIC">
-            Clinic
-          </option>
-
-          <option value="HOSPITAL">
-            Hospital
-          </option>
-
-          <option value="DIAGNOSTIC_CENTRE">
-            Laboratory / diagnostic centre
-          </option>
-
-          <option value="PHARMACY">
-            Pharmacy
-          </option>
+          <option value="CLINIC">Clinic</option>
+          <option value="PHARMACY">Pharmacy</option>
+          <option value="DIAGNOSTIC_CENTRE">Laboratory / diagnostic centre</option>
+          <option value="HOSPITAL">Hospital</option>
+          <option value="INDIVIDUAL">Doctor / health professional</option>
 
           <option value="OTHER">
             Other healthcare provider
@@ -617,8 +593,8 @@
       >
         {{
           submitting()
-            ? 'Submitting application…'
-            : 'Submit provider application'
+            ? 'Creating your account…'
+            : 'Create provider account →'
         }}
       </button>
 

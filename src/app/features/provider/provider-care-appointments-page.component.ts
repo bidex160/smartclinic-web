@@ -11,10 +11,10 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
   imports: [RouterLink, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase text-brand-600">Care operations</p>
+    <p class="text-sm font-bold uppercase text-brand-600">Your clinic</p>
     <h1 class="mt-2 text-3xl font-bold">Appointments</h1>
     <p class="mt-2 text-slate-600">
-      Appointments explicitly scheduled from accepted Care Requests.
+      See the patients you are scheduled to attend to and what needs to happen next.
     </p>
     <form [formGroup]="filter" class="mt-6 max-w-xs">
       <label class="font-bold"
@@ -31,7 +31,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
       >
     </form>
     @if (loading()) {
-      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading Care Appointments…</p>
+      <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading appointments…</p>
     } @else if (error()) {
       <p role="alert" class="mt-8 rounded-2xl bg-red-50 p-6">
         {{ error() }}
@@ -39,15 +39,14 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
       </p>
     } @else if (!items().length) {
       <p class="mt-8 rounded-2xl border bg-white p-8 text-center">
-        No Care Appointments match this view.
+        No appointments match this view.
       </p>
     } @else {
       <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
         <table class="min-w-[900px] w-full text-left">
           <thead class="bg-slate-50">
             <tr>
-              <th class="p-4">Appointment</th>
-              <th class="p-4">Care Request</th>
+              <th class="p-4">Patient appointment</th>
               <th class="p-4">Service</th>
               <th class="p-4">Delivery</th>
               <th class="p-4">Date and time</th>
@@ -59,8 +58,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
           <tbody>
             @for (a of items(); track a.appointmentReference) {
               <tr class="border-t">
-                <td class="p-4 break-all font-semibold">{{ a.appointmentReference }}</td>
-                <td class="p-4 break-all">{{ a.careRequestReference }}</td>
+                <td class="p-4 font-semibold">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</td>
                 <td class="p-4">{{ a.service.name }}</td>
                 <td class="p-4">{{ deliveryModeLabel(a.deliveryMode) }}</td>
                 <td class="p-4">
@@ -86,7 +84,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
                   <a
                     [routerLink]="['/provider/care-appointments', a.appointmentReference]"
                     class="font-bold text-brand-700 underline"
-                    >View appointment</a
+                    >Open appointment →</a
                   >
                 </td>
               </tr>
@@ -148,7 +146,7 @@ export class ProviderCareAppointmentsPageComponent {
           this.items.set(r.items);
           this.totalPages.set(r.totalPages);
         },
-        error: () => this.error.set('Care Appointments could not be loaded right now.'),
+        error: () => this.error.set('Appointments could not be loaded right now.'),
       });
   }
   change(d: number) {

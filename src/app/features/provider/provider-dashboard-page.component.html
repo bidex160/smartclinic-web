@@ -42,15 +42,19 @@
               Setup in progress
             </p>
 
-            <h2 class="mt-1 text-xl font-bold text-amber-950">
-              Complete and submit your provider profile
-            </h2>
+            <h2 class="mt-1 text-xl font-bold text-amber-950">Get ready to serve patients</h2>
 
             <p class="mt-2 max-w-2xl text-sm leading-6 text-amber-950">
-              Complete your provider information and submit your profile for
-              SmartClinic review. You won't be available to patients until your
-              provider account has been approved.
+              Finish setting up your {{ providerTypeLabel(current.providerType) }}. SmartClinic will guide you through the information needed before you can start receiving patients or orders.
             </p>
+
+            <div class="mt-5 grid gap-2 sm:grid-cols-2">
+              <p class="rounded-xl bg-white/70 px-4 py-3 font-semibold">1. Tell us about your {{ providerTypeLabel(current.providerType) }} {{ current.readiness.profileComplete ? '✓' : '' }}</p>
+              <p class="rounded-xl bg-white/70 px-4 py-3 font-semibold">2. Add where you provide care {{ current.readiness.providerLocationReady ? '✓' : '' }}</p>
+              <p class="rounded-xl bg-white/70 px-4 py-3 font-semibold">3. Choose the services you provide {{ current.readiness.hasActiveCapability ? '✓' : '' }}</p>
+              <p class="rounded-xl bg-white/70 px-4 py-3 font-semibold">4. Set when you are available {{ current.readiness.hasAvailability ? '✓' : '' }}</p>
+              <p class="rounded-xl bg-white/70 px-4 py-3 font-semibold sm:col-span-2">5. Submit your details for SmartClinic verification</p>
+            </div>
 
             <div class="mt-4 flex flex-wrap items-center gap-3">
               <a
@@ -150,7 +154,7 @@
 
   }
 } @else {
-      @if (!findCareLoading() && findCareLoaded() && !findCareError() && activeFindCareServiceCount() === 0) {
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE' && !findCareLoading() && findCareLoaded() && !findCareError() && activeFindCareServiceCount() === 0) {
         <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6" aria-labelledby="start-care-heading">
           <h2 id="start-care-heading" class="text-xl font-bold text-brand-900">Start offering care</h2>
           <p class="mt-2 text-slate-700">
@@ -171,7 +175,7 @@
     lg:grid-cols-3
   "
 >
-  @for (action of primaryActions; track action.title) {
+  @for (action of primaryActions(); track action.title) {
     <a
       [routerLink]="action.route"
       [fragment]="action.fragment"
@@ -237,7 +241,8 @@
   }
 </div>
       </section>
-      <section class="mt-8 rounded-2xl border-2 border-brand-200 bg-brand-50 p-5" aria-labelledby="care-request-heading">
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
+<section class="mt-8 rounded-2xl border-2 border-brand-200 bg-brand-50 p-5" aria-labelledby="care-request-heading">
         <div class="flex items-center justify-between gap-4">
           <div>
             <p class="text-sm font-bold uppercase tracking-wide text-brand-700">Needs your response</p>
@@ -251,6 +256,8 @@
         }
         <a routerLink="/provider/care-requests" class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white">Review patient requests →</a>
       </section>
+      }
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
       <section class="mt-8" aria-labelledby="provider-summary-heading">
         <h2 id="provider-summary-heading" class="text-xl font-bold text-brand-900">Today at a glance</h2>
         @if (summaryLoading()) {
@@ -404,6 +411,9 @@
         }
       </section>
 
+            }
+
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
       <section class="mt-10" aria-labelledby="offers-preview-heading">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -480,6 +490,8 @@
           }
         }
       </section>
+      }
+
     }
   }
 

@@ -8,8 +8,8 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase text-brand-600">Provider operations</p>
-    <h1 class="mt-2 text-3xl font-bold">Patient Orders</h1><p class="mt-2 text-slate-600">Prescriptions, laboratory tests and imaging requests assigned to your service units.</p>
+    <p class="text-sm font-bold uppercase text-brand-600">Patient care</p>
+    <h1 class="mt-2 text-3xl font-bold">Patient orders</h1><p class="mt-2 text-slate-600">Prescriptions, laboratory tests and imaging requests sent to you appear here.</p>
     @if (loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading patient orders…</p>
     } @else if (error()) {
@@ -28,14 +28,12 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
             <tr>
               @for (
                 h of [
-                  'Fulfillment',
                   'Patient',
-                  'Request',
-                  'Ordering Provider',
-                  'Service unit',
+                  'What they need',
+                  'Sent by',
                   'Status',
-                  'Date',
-                  'Action',
+                  'Received',
+                  'Next step',
                 ];
                 track h
               ) {
@@ -46,18 +44,16 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
           <tbody class="divide-y">
             @for (f of items(); track f.reference) {
               <tr>
-                <td class="break-all p-4 font-bold">{{ f.reference }}</td>
-                <td class="p-4">{{ f.patient.givenName }} {{ f.patient.familyName }}</td>
-                <td class="p-4"><strong>{{ f.clinicalOrder.type }}</strong><span class="block break-all text-xs text-slate-500">{{ f.clinicalOrder.reference }}</span></td>
+                <td class="p-4 font-semibold">{{ f.patient.givenName }} {{ f.patient.familyName }}</td>
+                <td class="p-4"><strong>{{ orderTypeLabel(f.clinicalOrder.type) }}</strong></td>
                 <td class="p-4">{{ f.clinicalOrder.orderingProvider.displayName }}</td>
-                <td class="p-4">{{ f.fulfiller.serviceUnitName }}</td>
-                <td class="p-4">{{ f.status }}</td>
+                <td class="p-4">{{ statusLabel(f.status) }}</td>
                 <td class="p-4">{{ date(f.createdAt) }}</td>
                 <td class="p-4">
                   <a
                     [routerLink]="f.clinicalOrder.type === 'PRESCRIPTION' ? ['/provider/pharmacy-orders', f.reference] : ['/provider/diagnostic-orders', f.reference]"
                     class="font-bold text-brand-700 underline"
-                    >View</a
+                    >Open order →</a
                   >
                 </td>
               </tr>
@@ -82,6 +78,13 @@ export class ProviderPharmacyOrdersPageComponent {
       .listFulfillments()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({ next: (p) => this.items.set(p.items), error: () => this.error.set(true) });
+  }
+  orderTypeLabel(type: string) {
+    return type === 'PRESCRIPTION' ? 'Medicine / prescription' : type === 'IMAGING' ? 'Scan / imaging' : 'Laboratory test';
+  }
+  statusLabel(status: string) {
+    const labels: Record<string, string> = { SELECTED: 'New request', ACCEPTED: 'Accepted', QUOTED: 'Price sent', FUNDED: 'Paid', COMPLETED: 'Completed', CANCELLED: 'Cancelled' };
+    return labels[status] ?? status.replaceAll('_', ' ').toLowerCase().replace(/^./, (x) => x.toUpperCase());
   }
   date(v: string) {
     return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(v));
