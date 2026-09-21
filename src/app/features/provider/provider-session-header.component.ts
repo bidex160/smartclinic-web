@@ -13,6 +13,7 @@ import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
+import { ProviderOnboardingProfile } from '../../core/models/provider-onboarding.model';
 import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
 
 @Component({
@@ -165,6 +166,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Health Checks
             </a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -204,6 +206,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               Appointments
             </a>
+
+            }
 
             <a
               routerLink="/provider/earnings"
@@ -299,6 +303,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Patient connections
             </a>
 
+            @if (orderProvider()) {
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -318,6 +323,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               Patient orders
             </a>
+            }
           }
 
           <!-- =====================================================
@@ -1041,6 +1047,9 @@ export class ProviderSessionHeaderComponent {
   readonly authState = inject(AuthStateService);
 
   readonly operational = input(true);
+  readonly providerType = input<ProviderOnboardingProfile['providerType'] | null>(null);
+  readonly orderProvider = () => this.providerType() === 'PHARMACY' || this.providerType() === 'DIAGNOSTIC_CENTRE';
+  readonly careProvider = () => !this.orderProvider();
 
   /**
    * Close the expanded mobile navigation whenever
