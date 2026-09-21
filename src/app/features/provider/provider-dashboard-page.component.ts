@@ -129,11 +129,13 @@ export class ProviderDashboardPageComponent {
         next: (profile) => {
           this.profile.set(profile);
           if (profile.onboardingStatus === 'APPROVED' && profile.status === 'ACTIVE') {
-            this.loadFindCareOfferings();
-            this.loadSummary();
-            this.loadOfferPreview();
             this.loadReferrals();
-            this.loadCareRequestCount();
+            if (profile.providerType !== 'PHARMACY' && profile.providerType !== 'DIAGNOSTIC_CENTRE') {
+              this.loadFindCareOfferings();
+              this.loadSummary();
+              this.loadOfferPreview();
+              this.loadCareRequestCount();
+            }
           }
         },
         error: (error: HttpErrorResponse) =>
