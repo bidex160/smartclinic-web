@@ -413,6 +413,7 @@
 
             }
 
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
       <section class="mt-10" aria-labelledby="offers-preview-heading">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -489,6 +490,8 @@
           }
         }
       </section>
+      }
+
     }
   }
 
