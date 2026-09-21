@@ -209,8 +209,6 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             </a>
 
             }
-            }
-
 
             <a
               routerLink="/provider/earnings"
