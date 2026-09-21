@@ -257,6 +257,7 @@
         <a routerLink="/provider/care-requests" class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white">Review patient requests →</a>
       </section>
       }
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
       <section class="mt-8" aria-labelledby="provider-summary-heading">
         <h2 id="provider-summary-heading" class="text-xl font-bold text-brand-900">Today at a glance</h2>
         @if (summaryLoading()) {
@@ -409,6 +410,8 @@
           }
         }
       </section>
+
+            }
 
       <section class="mt-10" aria-labelledby="offers-preview-heading">
         <div class="flex flex-wrap items-center justify-between gap-3">
