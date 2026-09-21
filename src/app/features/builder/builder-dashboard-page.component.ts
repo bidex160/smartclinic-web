@@ -39,7 +39,13 @@ import { AuthStateService } from '../../core/services/auth-state.service';
               <h1 class="mt-3 text-3xl font-bold text-slate-950 sm:text-4xl">Welcome back, {{ firstName() }}</h1>
               <p class="mt-3 max-w-2xl text-lg leading-8 text-slate-600">Build your healthcare impact by connecting people with trusted care.</p>
             </div>
+            @if(isPatient()){
             <a routerLink="/me/dashboard" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-200 bg-white px-5 py-3 font-bold text-brand-700 shadow-sm hover:border-brand-300 hover:shadow-md">Open Patient Portal</a>
+
+            }@else{
+            <a routerLink="/provider/dashboard" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-200 bg-white px-5 py-3 font-bold text-brand-700 shadow-sm hover:border-brand-300 hover:shadow-md">Open Provider Portal</a>
+
+            }
           </div>
         </section>
 
@@ -135,7 +141,13 @@ import { AuthStateService } from '../../core/services/auth-state.service';
         <section class="mt-7 rounded-[2rem] border border-brand-100 bg-brand-900 p-6 text-white shadow-sm sm:p-7">
           <h2 class="text-xl font-bold">Your Patient Portal</h2>
           <p class="mt-2 max-w-3xl text-brand-50">Your Builder account is also your SmartClinic patient account. Access your healthcare, appointments and health records from your Patient Portal.</p>
+                     @if(isPatient()){
+
           <a routerLink="/me/dashboard" class="mt-5 inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-5 py-3 font-bold text-brand-800">Open Patient Portal</a>
+           }@else{
+            <a routerLink="/provider/dashboard" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-200 bg-white px-5 py-3 font-bold text-brand-700 shadow-sm hover:border-brand-300 hover:shadow-md">Open Provider Portal</a>
+
+            }
         </section>
       }
     </main>
@@ -151,6 +163,7 @@ export class BuilderDashboardPageComponent {
   readonly error = signal(false);
   readonly copyStatus = signal<string | null>(null);
   readonly firstName = computed(() => this.authState.currentUser()?.displayName?.split(/\s+/)[0] || 'Builder');
+    readonly isPatient = computed(() => this.authState.currentUser()?.roles.includes('USER'));
 
   constructor() {
     this.load();
