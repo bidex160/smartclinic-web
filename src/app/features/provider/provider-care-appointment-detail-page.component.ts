@@ -118,13 +118,20 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
               </button>
             </div>
           } @else {
-            <p class="mt-2 text-slate-600">Set up the video room for this appointment.</p>
+            <p class="mt-2 text-slate-600">Your SmartClinic video room is being prepared.</p>
+            <button
+              type="button"
+              (click)="load()"
+              class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+            >
+              Refresh video room
+            </button>
             <button
               type="button"
               (click)="openMeetingLink()"
-              class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+              class="ml-2 mt-4 rounded-xl border px-5 py-3 font-bold"
             >
-              Set up consultation
+              Use another video link
             </button>
           }
         </section>
