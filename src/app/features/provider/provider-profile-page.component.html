@@ -1,6 +1,6 @@
 <main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-  <p class="text-sm font-bold uppercase tracking-[.14em] text-brand-600">Provider onboarding</p>
-  <h1 class="mt-2 text-3xl font-bold text-brand-900">Provider profile</h1>
+  <p class="text-sm font-bold uppercase tracking-[.14em] text-brand-600">Get ready to serve patients</p>
+  <h1 class="mt-2 text-3xl font-bold text-brand-900">Your provider setup</h1>
   @if (statusMessage()) {
     <p role="status" aria-live="polite" class="mt-5 rounded-xl bg-brand-50 p-4">
       {{ statusMessage() }}
@@ -58,10 +58,9 @@
       aria-labelledby="readiness-heading"
       class="mt-6 rounded-2xl border border-brand-100 bg-white p-6"
     >
-      <h2 id="readiness-heading" class="text-xl font-bold text-brand-900">Health Check readiness</h2>
+      <h2 id="readiness-heading" class="text-xl font-bold text-brand-900">Setup progress</h2>
       <p class="mt-2 text-slate-600">
-        These settings affect your eligibility to provide Health Checks. They do not prevent you
-        from submitting your provider profile for account approval.
+        Complete the steps below so SmartClinic can verify your account and connect you to the services you choose to provide.
       </p>
       <dl class="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
@@ -69,21 +68,21 @@
           <dd class="font-bold">{{ current.readiness.profileComplete ? 'Yes' : 'No' }}</dd>
         </div>
         <div>
-          <dt>Active capability configured</dt>
+          <dt>Services configured</dt>
           <dd class="font-bold">{{ current.readiness.hasActiveCapability ? 'Yes' : 'No' }}</dd>
         </div>
         <div>
-          <dt>Provider-location configuration ready</dt>
+          <dt>Care location ready</dt>
           <dd class="font-bold">{{ current.readiness.providerLocationReady ? 'Yes' : 'No' }}</dd>
         </div>
         <div>
-          <dt>Weekly availability configured</dt>
+          <dt>Availability set</dt>
           <dd class="font-bold">{{ current.readiness.hasAvailability ? 'Yes' : 'No' }}</dd>
         </div>
       </dl>
       @if (current.readiness.blockers.length) {
         <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
-          <h3 class="font-bold">Health Check setup items</h3>
+          <h3 class="font-bold">Still to complete</h3>
           <ul class="mt-2 list-disc pl-5">
             @for (blocker of current.readiness.blockers; track blocker) {
               <li>{{ blockerLabel(blocker) }}</li>
@@ -92,8 +91,7 @@
         </div>
       } @else {
         <p class="mt-5 rounded-xl bg-brand-50 p-4 font-semibold">
-          Your configuration is ready to submit for SmartClinic review. Final booking matching
-          remains backend-authoritative.
+          Your basic setup is ready. Submit your details for SmartClinic review when you are satisfied with them.
         </p>
       }
     </section>
@@ -130,10 +128,10 @@
         />
       </div>
       <div>
-        <label for="profile-reference" class="font-bold">Professional reference</label
+        <label for="profile-reference" class="font-bold">Professional or facility licence/reference</label
         ><input
           id="profile-reference"
-          placeholder="e.g. MDCN/12345"
+          placeholder="Licence or registration number, if available"
           formControlName="professionalReference"
           class="mt-2 min-h-12 w-full rounded-lg border px-3"
         />
