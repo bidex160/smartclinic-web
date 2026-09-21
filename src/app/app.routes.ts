@@ -7,6 +7,7 @@ import {
 import { adminOnlyGuard, adminPricingGuard } from './features/admin/admin-auth.guards';
 import { providerGuard } from './features/provider/provider-auth.guard';
 import { authenticatedUserGuard } from './features/results/authenticated-user.guard';
+import { builderGuard } from './features/builder/builder-auth.guard';
 import { AdminLayoutComponent } from './features/admin/admin-layout.component';
 import { ProviderLayoutComponent } from './features/provider/provider-layout.component';
 import { PatientLayoutComponent } from './features/results/patient-layout.component';
@@ -474,6 +475,24 @@ export const routes: Routes = [
       },
     ],
   },
+
+  {
+    path: 'builder',
+    component: PatientLayoutComponent,
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        title: 'Builder dashboard | SmartClinic',
+        canActivate: [builderGuard],
+        loadComponent: () =>
+          import('./features/builder/builder-dashboard-page.component').then(
+            (c) => c.BuilderDashboardPageComponent,
+          ),
+      },
+    ],
+  },
+
   {
     path: 'health-results/:token',
      data: { preload: true },

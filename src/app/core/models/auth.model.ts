@@ -1,5 +1,6 @@
 export type UserRole = 'USER' | 'ADMIN' | 'OPERATIONS' | 'PROVIDER';
 export type UserStatus = 'ACTIVE' | 'INVITED' | 'SUSPENDED' | 'DEACTIVATED';
+export type UserNetworkRole = 'BUILDER' | 'AMBASSADOR';
 
 export interface CurrentUser {
   readonly id: string;
@@ -7,6 +8,7 @@ export interface CurrentUser {
   readonly displayName: string;
   readonly roles: UserRole[];
   readonly status: UserStatus;
+  readonly networkRole: UserNetworkRole | null;
 }
 
 export interface LoginRequest {

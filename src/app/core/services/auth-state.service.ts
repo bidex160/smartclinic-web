@@ -29,6 +29,10 @@ export class AuthStateService {
     () => this.currentUserState()?.roles.includes('PROVIDER') ?? false,
   );
   readonly isPatient = computed(() => this.currentUserState()?.roles.includes('USER') ?? false);
+  readonly isBuilder = computed(() => {
+    const networkRole = this.currentUserState()?.networkRole;
+    return networkRole === 'BUILDER' || networkRole === 'AMBASSADOR';
+  });
 
   setSession(response: LoginResponse): void {
     this.accessTokenState.set(response.accessToken);
