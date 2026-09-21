@@ -123,7 +123,11 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
                 >Join consultation →</a
               >
             }
-            <div class="mt-4 rounded-2xl bg-white p-4 ring-1 ring-violet-100"><p class="font-bold text-brand-950">Your consultation is being prepared</p><p class="mt-1 text-sm text-slate-600">The Join consultation button will appear here as soon as your doctor confirms the meeting link.</p></div>
+          } @else {
+            <div class="mt-4 rounded-2xl bg-white p-4 ring-1 ring-violet-100">
+              <p class="font-bold text-brand-950">Your consultation is being prepared</p>
+              <p class="mt-1 text-sm text-slate-600">SmartClinic is preparing your video room. You do not need to create or paste a link.</p>
+            </div>
           }
         </section>
       }
