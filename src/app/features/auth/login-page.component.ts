@@ -260,6 +260,10 @@ export class LoginPageComponent {
               void this.router.navigateByUrl(returnUrl);
               return;
             }
+            if (user?.networkRole === 'BUILDER' || user?.networkRole === 'AMBASSADOR') {
+              void this.router.navigate(['/builder/dashboard']);
+              return;
+            }
             void this.router.navigate(['/me/dashboard']);
 
             return;
