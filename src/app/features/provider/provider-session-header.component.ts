@@ -182,7 +182,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Care Requests
+              Patient requests
             </a>
 
             <a
@@ -202,7 +202,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Care Appointments
+              Appointments
             </a>
 
             <a
@@ -210,7 +210,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               routerLinkActive="!bg-brand-700 !text-white"
               class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
             >
-              Earnings
+              Payments
             </a>
 
             <a routerLink="/provider/payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700">Payouts</a>
@@ -252,7 +252,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
     focus:ring-brand-700
   "
 >
-  Health Record Access
+  Patient record access
 </a>
 
             <a
@@ -272,7 +272,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Shared Health Records
+              Shared records
             </a>
 
             <!-- Exact match is important here.
@@ -296,7 +296,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Patient Connection Requests
+              Patient connections
             </a>
 
             <a
@@ -316,7 +316,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                 focus:ring-brand-700
               "
             >
-              Pharmacy Orders
+              Patient orders
             </a>
           }
 
@@ -374,7 +374,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Service Units
+            Service units
           </a>
 
           <a
@@ -395,7 +395,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Patient Connection Setup
+            Connection setup
           </a>
 
           <a
@@ -416,7 +416,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Health Check Services & Locations
+            Health check setup
           </a>
 
             <a
@@ -436,7 +436,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Care Services
+            Services
           </a>
 
           <a
@@ -478,7 +478,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               focus:ring-brand-700
             "
           >
-            Home Visit Coverage
+            Home visit area
           </a>
         </div>
       </nav>
@@ -727,7 +727,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Care Requests
+              Patient requests
             </a>
 
             <a
@@ -742,7 +742,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Care Appointments
+              Appointments
             </a>
 
             <a
@@ -757,7 +757,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Earnings
+              Payments
             </a>
 
             <a
@@ -787,7 +787,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Payout Accounts
+              Settlement account
             </a>
 
             <a
@@ -817,7 +817,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Health Record Access
+              Patient record access
             </a>
 
             <a
@@ -832,7 +832,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Shared Health Records
+              Shared records
             </a>
 
             <a
@@ -848,7 +848,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Patient Requests
+              Patient connections
             </a>
 
             <a
@@ -863,7 +863,7 @@ Menu
                 hover:text-brand-900
               "
             >
-              Pharmacy Orders
+              Patient orders
             </a>
           }
 
@@ -910,7 +910,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Service Units
+            Service units
           </a>
 
           <a
@@ -926,7 +926,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Patient Connection Setup
+            Connection setup
           </a>
 
           <a
@@ -942,7 +942,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Health Check Services & Locations
+            Health check setup
           </a>
 
           <a
@@ -957,7 +957,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Care Services
+            Services
           </a>
 
           <a
@@ -972,7 +972,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Payout Accounts
+            Settlement account
           </a>
 
           <a
@@ -1004,7 +1004,7 @@ Menu
               hover:text-brand-900
             "
           >
-            Home Visit Coverage
+            Home visit area
           </a>
 
           <div class="my-3 border-t border-slate-200"></div>
