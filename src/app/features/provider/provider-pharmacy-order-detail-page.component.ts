@@ -32,7 +32,11 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       </p>
     } @else if (fulfillment(); as f) {
       <header class="mt-6">
-        <p class="text-sm font-bold uppercase text-brand-700">Prescription</p>\n        <h1 class="mt-2 text-3xl font-bold">{{ f.patient.givenName }} {{ f.patient.familyName }}</h1>\n        <p class="mt-2 text-slate-600">{{ statusLabel(f.status) }}</p>
+        <p class="text-sm font-bold uppercase text-brand-700">Prescription</p>
+        <h1 class="mt-2 text-3xl font-bold">
+          {{ f.patient.givenName }} {{ f.patient.familyName }}
+        </h1>
+        <p class="mt-2 text-slate-600">{{ statusLabel(f.status) }}</p>
       </header>
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <dl class="grid gap-4 sm:grid-cols-2">
@@ -49,7 +53,8 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
             <dd>{{ f.fulfiller.serviceUnitName }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Request</dt>\n            <dd>Medicine prescribed for this patient</dd>
+            <dt class="text-sm text-slate-500">Request</dt>
+            <dd>Medicine prescribed for this patient</dd>
           </div>
         </dl>
       </section>
@@ -186,8 +191,18 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       @if (patientState(); as s) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
           <h2 class="text-xl font-bold">Prepare the medicine</h2>
-          <p class="mt-2">Payment: {{ s.funding?.status ? fundingLabel(s.funding.status) : 'Waiting for patient to accept price' }}</p>
-          <p>Medicine: {{ s.dispensing?.status ? dispensingLabel(s.dispensing.status) : 'Not started' }}</p>
+          <p class="mt-2">
+            Payment:
+            {{
+              s?.funding?.status
+                ? fundingLabel(s?.funding?.status)
+                : 'Waiting for patient to accept price'
+            }}
+          </p>
+          <p>
+            Medicine:
+            {{ s?.dispensing?.status ? dispensingLabel(s?.dispensing?.status) : 'Not started' }}
+          </p>
           <div class="mt-4 flex flex-wrap gap-3">
             @if (s.dispensing?.status === 'READY_TO_DISPENSE') {
               <button
@@ -285,9 +300,44 @@ export class ProviderPharmacyOrderDetailPageComponent {
         }),
       );
   }
-  statusLabel(status: string) { const labels: Record<string,string> = { SELECTED: 'New prescription request', ACCEPTED: 'Accepted - send patient a price', QUOTED: 'Price sent to patient', FUNDED: 'Payment confirmed', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }; return labels[status] ?? status.replaceAll('_',' ').toLowerCase().replace(/^./, x => x.toUpperCase()); }
-  fundingLabel(status: string) { const labels: Record<string,string> = { FUNDED: 'Confirmed', PAID: 'Confirmed', PENDING: 'Pending', REQUIRES_REFUND_REVIEW: 'Refund review required' }; return labels[status] ?? status.replaceAll('_',' ').toLowerCase(); }
-  dispensingLabel(status: string) { const labels: Record<string,string> = { READY_TO_DISPENSE: 'Ready to prepare', DISPENSING: 'Being prepared', READY_FOR_PICKUP: 'Ready for patient', COMPLETED: 'Collected' }; return labels[status] ?? status.replaceAll('_',' ').toLowerCase(); }
+  statusLabel(status: string | undefined) {
+     if(!status)return  'QUOTED'
+    const labels: Record<string, string> = {
+      SELECTED: 'New prescription request',
+      ACCEPTED: 'Accepted - send patient a price',
+      QUOTED: 'Price sent to patient',
+      FUNDED: 'Payment confirmed',
+      COMPLETED: 'Completed',
+      CANCELLED: 'Cancelled',
+    };
+    return (
+      labels[status] ??
+      status
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .replace(/^./, (x) => x.toUpperCase())
+    );
+  }
+  fundingLabel(status: string | undefined) {
+    if(!status)return  'Pending'
+    const labels: Record<string, string> = {
+      FUNDED: 'Confirmed',
+      PAID: 'Confirmed',
+      PENDING: 'Pending',
+      REQUIRES_REFUND_REVIEW: 'Refund review required',
+    };
+    return labels[status] ?? status.replaceAll('_', ' ').toLowerCase();
+  }
+  dispensingLabel(status: string | undefined) {
+   if(!status)  return 'Ready to prepare'
+    const labels: Record<string, string> = {
+      READY_TO_DISPENSE: 'Ready to prepare',
+      DISPENSING: 'Being prepared',
+      READY_FOR_PICKUP: 'Ready for patient',
+      COMPLETED: 'Collected',
+    };
+    return labels[status] ?? status.replaceAll('_', ' ').toLowerCase();
+  }
   accept() {
     this.run(this.api.acceptFulfillment(this.reference), () => this.load());
   }
