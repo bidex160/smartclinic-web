@@ -721,6 +721,7 @@ Menu
               Health Checks
             </a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -750,6 +751,8 @@ Menu
             >
               Appointments
             </a>
+
+            }
 
             <a
               routerLink="/provider/earnings"
@@ -857,6 +860,7 @@ Menu
               Patient connections
             </a>
 
+            @if (orderProvider()) {
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -871,6 +875,7 @@ Menu
             >
               Patient orders
             </a>
+            }
           }
 
           <!-- =================================================
