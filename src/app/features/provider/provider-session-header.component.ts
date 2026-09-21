@@ -220,6 +220,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 
             <a routerLink="/provider/payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700">Payouts</a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -239,6 +240,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               FastTrack
             </a>
+            }
+            @if (careProvider()) {
             <a
   routerLink="/provider/health-record-access"
   routerLinkActive="!bg-brand-700 !text-white"
@@ -259,7 +262,9 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 >
   Patient record access
 </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -279,10 +284,12 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               Shared records
             </a>
+            }
 
             <!-- Exact match is important here.
                  Otherwise /provider/patient-connections/configuration
                  also activates this menu item. -->
+            @if (careProvider()) {
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -303,6 +310,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               Patient connections
             </a>
+            }
 
             @if (orderProvider()) {
             <a
@@ -384,7 +392,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             Service units
           </a>
 
-          <a
+          @if (careProvider()) {
+            <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="!bg-brand-700 !text-white"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -404,6 +413,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           >
             Connection setup
           </a>
+            }
 
           <a
             routerLink="/provider/profile"
@@ -426,6 +436,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             Health check setup
           </a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
@@ -445,6 +456,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           >
             Services
           </a>
+            }
 
           <a
             routerLink="/provider/profile"
@@ -801,6 +813,7 @@ Menu
               Settlement account
             </a>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -815,7 +828,9 @@ Menu
             >
               FastTrack
             </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/health-record-access"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -830,7 +845,9 @@ Menu
             >
               Patient record access
             </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -845,7 +862,9 @@ Menu
             >
               Shared records
             </a>
+            }
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -861,6 +880,7 @@ Menu
             >
               Patient connections
             </a>
+            }
 
             @if (orderProvider()) {
             <a
@@ -926,7 +946,8 @@ Menu
             Service units
           </a>
 
-          <a
+          @if (careProvider()) {
+            <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="bg-brand-100 text-brand-900"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -941,6 +962,7 @@ Menu
           >
             Connection setup
           </a>
+            }
 
           <a
             routerLink="/provider/profile"
@@ -958,7 +980,8 @@ Menu
             Health check setup
           </a>
 
-          <a
+          @if (careProvider()) {
+            <a
             routerLink="/provider/care-services"
             routerLinkActive="bg-brand-100 text-brand-900"
             class="
@@ -972,6 +995,7 @@ Menu
           >
             Services
           </a>
+            }
 
           <a
             routerLink="/provider/payout-accounts"
