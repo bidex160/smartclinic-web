@@ -22,7 +22,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/pharmacy-orders" class="font-bold text-brand-700 underline"
-      >← Pharmacy Orders</a
+      >← Patient orders</a
     >
     @if (loading()) {
       <p role="status" class="mt-6 rounded-2xl border p-6">Loading pharmacy order…</p>
@@ -32,9 +32,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       </p>
     } @else if (fulfillment(); as f) {
       <header class="mt-6">
-        <p class="break-all text-sm font-bold text-brand-700">{{ f.reference }}</p>
-        <h1 class="mt-2 text-3xl font-bold">Pharmacy fulfillment</h1>
-        <p class="mt-2">{{ f.status }}</p>
+        <p class="text-sm font-bold uppercase text-brand-700">Prescription</p>\n        <h1 class="mt-2 text-3xl font-bold">{{ f.patient.givenName }} {{ f.patient.familyName }}</h1>\n        <p class="mt-2 text-slate-600">{{ statusLabel(f.status) }}</p>
       </header>
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <dl class="grid gap-4 sm:grid-cols-2">
@@ -43,16 +41,15 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
             <dd class="font-bold">{{ f.patient.givenName }} {{ f.patient.familyName }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Ordering Provider</dt>
+            <dt class="text-sm text-slate-500">Prescribed by</dt>
             <dd>{{ f.clinicalOrder.orderingProvider.displayName }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Pharmacy unit</dt>
+            <dt class="text-sm text-slate-500">Your pharmacy</dt>
             <dd>{{ f.fulfiller.serviceUnitName }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Prescription</dt>
-            <dd class="break-all">{{ f.clinicalOrder.reference }}</dd>
+            <dt class="text-sm text-slate-500">Request</dt>\n            <dd>Medicine prescribed for this patient</dd>
           </div>
         </dl>
       </section>
@@ -81,7 +78,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
         </button>
       } @else if (f.status === 'ACCEPTED') {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Pharmacy quote</h2>
+          <h2 class="text-xl font-bold">Price this prescription</h2>
           @if (quote(); as q) {
             <p class="mt-2 font-bold">{{ q.status }} · {{ money(q.totalMinor, q.currency) }}</p>
             @if (q.status === 'DRAFT') {
@@ -97,7 +94,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 [disabled]="pending()"
                 class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
               >
-                Submit quote
+                Send price to patient →
               </button>
             } @else {
               <div class="mt-4">
@@ -180,7 +177,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 [disabled]="pending() || quoteForm.invalid"
                 class="rounded-xl border px-5 py-3 font-bold"
               >
-                Save draft quote
+                Save price
               </button>
             </form>
           }
@@ -188,16 +185,16 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       }
       @if (patientState(); as s) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Dispensing</h2>
-          <p class="mt-2">Funding: {{ s.funding?.status || 'No accepted quote' }}</p>
-          <p>Dispensing: {{ s.dispensing?.status || 'Not started' }}</p>
+          <h2 class="text-xl font-bold">Prepare the medicine</h2>
+          <p class="mt-2">Payment: {{ s.funding?.status ? fundingLabel(s.funding.status) : 'Waiting for patient to accept price' }}</p>
+          <p>Medicine: {{ s.dispensing?.status ? dispensingLabel(s.dispensing.status) : 'Not started' }}</p>
           <div class="mt-4 flex flex-wrap gap-3">
             @if (s.dispensing?.status === 'READY_TO_DISPENSE') {
               <button
                 (click)="command('start-dispensing')"
                 class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
               >
-                Start Dispensing
+                Start preparing medicine
               </button>
             }
             @if (s.dispensing?.status === 'DISPENSING') {
@@ -205,7 +202,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 (click)="command('ready-for-pickup')"
                 class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
               >
-                Mark Ready for Pickup
+                Medicine ready for pickup
               </button>
             }
             @if (s.dispensing?.status === 'READY_FOR_PICKUP') {
@@ -213,7 +210,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 (click)="command('complete')"
                 class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
               >
-                Complete Handover
+                Confirm medicine collected
               </button>
             }
             @if (s.status === 'SELECTED' || s.status === 'ACCEPTED') {
@@ -221,7 +218,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 (click)="cannot()"
                 class="rounded-xl border border-red-300 px-5 py-3 font-bold text-red-700"
               >
-                Cannot Fulfill
+                Cannot fulfil this prescription
               </button>
             }
           </div>
@@ -288,6 +285,9 @@ export class ProviderPharmacyOrderDetailPageComponent {
         }),
       );
   }
+  statusLabel(status: string) { const labels: Record<string,string> = { SELECTED: 'New prescription request', ACCEPTED: 'Accepted - send patient a price', QUOTED: 'Price sent to patient', FUNDED: 'Payment confirmed', COMPLETED: 'Completed', CANCELLED: 'Cancelled' }; return labels[status] ?? status.replaceAll('_',' ').toLowerCase().replace(/^./, x => x.toUpperCase()); }
+  fundingLabel(status: string) { const labels: Record<string,string> = { FUNDED: 'Confirmed', PAID: 'Confirmed', PENDING: 'Pending', REQUIRES_REFUND_REVIEW: 'Refund review required' }; return labels[status] ?? status.replaceAll('_',' ').toLowerCase(); }
+  dispensingLabel(status: string) { const labels: Record<string,string> = { READY_TO_DISPENSE: 'Ready to prepare', DISPENSING: 'Being prepared', READY_FOR_PICKUP: 'Ready for patient', COMPLETED: 'Collected' }; return labels[status] ?? status.replaceAll('_',' ').toLowerCase(); }
   accept() {
     this.run(this.api.acceptFulfillment(this.reference), () => this.load());
   }
