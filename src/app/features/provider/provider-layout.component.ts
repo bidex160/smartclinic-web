@@ -15,6 +15,7 @@ import { ProviderOffer } from "../../core/models/provider-offer.model";
   template: `
     <app-provider-session-header 
     [operational]="operational() || profile()?.onboardingStatus === 'APPROVED' && profile()?.status === 'ACTIVE'" 
+    [providerType]="profile()?.providerType ?? null"
      />
 
     <div class="min-h-screen bg-slate-50 lg:ml-64">
