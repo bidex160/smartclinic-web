@@ -691,6 +691,7 @@ Menu
               Work
             </p>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/offers"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -722,7 +723,7 @@ Menu
               Health Checks
             </a>
 
-            @if (careProvider()) {
+
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -754,6 +755,8 @@ Menu
             </a>
 
             }
+            }
+
 
             <a
               routerLink="/provider/earnings"
