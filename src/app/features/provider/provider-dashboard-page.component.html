@@ -175,7 +175,7 @@
     lg:grid-cols-3
   "
 >
-  @for (action of primaryActions; track action.title) {
+  @for (action of primaryActions(); track action.title) {
     <a
       [routerLink]="action.route"
       [fragment]="action.fragment"
