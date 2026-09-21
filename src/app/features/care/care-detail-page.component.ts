@@ -186,11 +186,34 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                     : a.providerLocation?.name || 'Provider location pending'
               }}
             </p>
-            <a
-              [routerLink]="['/me/care/appointments', a.reference]"
-              class="mt-4 inline-block font-bold text-brand-700 underline"
-              >{{ a.deliveryMode === 'VIRTUAL' ? 'Open consultation room →' : 'View appointment' }}</a
-            >
+            @if (a.deliveryMode === 'VIRTUAL') {
+              <div class="mt-5 flex flex-wrap gap-3">
+                <a
+                  [routerLink]="['/me/care/appointments', a.reference]"
+                  class="inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 py-3 font-bold text-white"
+                >
+                  {{ a.hasMeetingLink ? 'Start video consultation →' : 'Open consultation →' }}
+                </a>
+                @if (chatAvailable()) {
+                  <a
+                    [routerLink]="['/me/care', r.reference, 'chat']"
+                    class="inline-flex min-h-12 items-center rounded-xl border border-brand-300 px-5 py-3 font-bold text-brand-800"
+                  >
+                    Chat
+                  </a>
+                }
+              </div>
+              @if (!a.hasMeetingLink) {
+                <p class="mt-3 text-sm text-slate-600">
+                  Your consultation is scheduled. The video room is being prepared.
+                </p>
+              }
+            } @else {
+              <a
+                [routerLink]="['/me/care/appointments', a.reference]"
+                class="mt-4 inline-block font-bold text-brand-700 underline"
+              >View appointment →</a>
+            }
           </section>
         }
         @if (canCancelRequest(r.status) && !r.appointment) {
