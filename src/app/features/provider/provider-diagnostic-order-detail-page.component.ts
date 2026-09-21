@@ -8,7 +8,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
   <main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
-    <a routerLink="/provider/pharmacy-orders" class="font-bold text-brand-700 underline">← Provider orders</a>
+    <a routerLink="/provider/pharmacy-orders" class="font-bold text-brand-700 underline">← Patient orders</a>
     @if(loading()){
         <p class="mt-6 rounded-2xl border p-6">Loading request…</p>
     }@else if(error()){
@@ -21,22 +21,22 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
            </header>
            <section class="mt-6 rounded-2xl border bg-white p-6">
                 <p class="font-bold">{{f.clinicalOrder.reference}}</p>@if(f.clinicalOrder.clinicalNote){<p class="mt-2">{{f.clinicalOrder.clinicalNote}}</p>
-            }<p class="mt-3 text-sm">Status: <strong>{{f.status}}</strong></p>
+            }<p class="mt-3 text-sm">Status: <strong>{{statusLabel(f.status)}}</strong></p>
         </section>
             @if(f.status==='SELECTED'){
-                <button (click)="accept()" [disabled]="pending()" class="mt-6 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Accept request</button>
+                <button (click)="accept()" [disabled]="pending()" class="mt-6 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Accept patient request →</button>
              }@else if(f.status==='ACCEPTED'){
                 <section class="mt-6 rounded-2xl border bg-white p-6">
-                    <h2 class="text-xl font-bold">Price this request</h2>
+                    <h2 class="text-xl font-bold">Send the patient a price</h2>
                     <div class="mt-4 grid gap-3 sm:grid-cols-2">
                         <label>Price (NGN)<input #price inputmode="decimal" class="mt-1 block w-full rounded-xl border p-3"></label>
                         <label>Quote valid until<input #expiry type="datetime-local" class="mt-1 block w-full rounded-xl border p-3"></label>
                         </div>
-                        <button (click)="quote(price.value,expiry.value)" [disabled]="pending()" class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Send price to patient</button>
+                        <button (click)="quote(price.value,expiry.value)" [disabled]="pending()" class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Send price to patient →</button>
                     </section>
                     <section class="mt-6 rounded-2xl border bg-white p-6">
-                        <h2 class="text-xl font-bold">Publish result</h2>
-                        <p class="mt-2 text-sm text-slate-600">Upload only after payment is confirmed and the test or scan is completed.</p>
+                        <h2 class="text-xl font-bold">Upload patient result</h2>
+                        <p class="mt-2 text-sm text-slate-600">When payment is confirmed and the test or scan is complete, upload the result for the patient and ordering clinician.</p>
                         <input #file type="file" class="mt-4 block">
                         <button (click)="upload(file.files?.[0])" [disabled]="pending()" class="mt-4 rounded-xl border px-5 py-3 font-bold">Upload result</button>
                   </section>
@@ -63,6 +63,10 @@ export class ProviderDiagnosticOrderDetailPageComponent {
         next: (x) => this.item.set(x),
         error: () => this.error.set('This diagnostic request is unavailable.'),
       });
+  }
+  statusLabel(status: string) {
+    const labels: Record<string, string> = { SELECTED: 'New request', ACCEPTED: 'Accepted - price needed', QUOTED: 'Price sent to patient', FUNDED: 'Payment confirmed', COMPLETED: 'Result completed', CANCELLED: 'Cancelled' };
+    return labels[status] ?? status.replaceAll('_', ' ').toLowerCase().replace(/^./, (x) => x.toUpperCase());
   }
   accept() {
     this.run(this.api.acceptFulfillment(this.ref));
