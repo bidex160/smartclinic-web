@@ -64,6 +64,17 @@ export class ProviderDashboardPageComponent {
   readonly activeFindCareServiceCount = computed(
     () => this.findCareOfferings().filter((offering) => offering.isActive).length,
   );
+  providerTypeLabel(type: ProviderOnboardingProfile['providerType']): string {
+    switch (type) {
+      case 'CLINIC': return 'clinic';
+      case 'HOSPITAL': return 'hospital';
+      case 'DIAGNOSTIC_CENTRE': return 'laboratory / diagnostic centre';
+      case 'PHARMACY': return 'pharmacy';
+      case 'INDIVIDUAL': return 'practice';
+      default: return 'provider account';
+    }
+  }
+
   readonly primaryActions: readonly PrimaryAction[] = [
     { title: 'New requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
     { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
