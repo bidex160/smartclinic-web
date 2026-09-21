@@ -415,6 +415,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           </a>
             }
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="configuration"
@@ -435,6 +436,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           >
             Health check setup
           </a>
+          }
 
             @if (careProvider()) {
             <a
@@ -458,6 +460,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           </a>
             }
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -478,6 +481,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           >
             Availability
           </a>
+          }
 
           <a
             routerLink="/provider/profile"
@@ -964,6 +968,7 @@ Menu
           </a>
             }
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="configuration"
@@ -979,6 +984,7 @@ Menu
           >
             Health check setup
           </a>
+          }
 
           @if (careProvider()) {
             <a
@@ -1012,6 +1018,7 @@ Menu
             Settlement account
           </a>
 
+          @if (careProvider()) {
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -1027,6 +1034,7 @@ Menu
           >
             Availability
           </a>
+          }
 
           <a
             routerLink="/provider/profile"
