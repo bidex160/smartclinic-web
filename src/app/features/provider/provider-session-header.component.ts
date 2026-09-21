@@ -125,6 +125,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Work
             </p>
 
+            @if (careProvider()) {
             <a
               routerLink="/provider/offers"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -166,7 +167,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Health Checks
             </a>
 
-            @if (careProvider()) {
+
             <a
               routerLink="/provider/care-requests"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -208,6 +209,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             </a>
 
             }
+            }
+
 
             <a
               routerLink="/provider/earnings"
