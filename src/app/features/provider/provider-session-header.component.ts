@@ -755,8 +755,6 @@ Menu
             </a>
 
             }
-            }
-
 
             <a
               routerLink="/provider/earnings"
