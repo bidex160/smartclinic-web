@@ -241,6 +241,10 @@ export class LoginPageComponent {
           }
 
           if (roles.includes('PROVIDER')) {
+           if (user?.networkRole === 'BUILDER' || user?.networkRole === 'AMBASSADOR') {
+              void this.router.navigate(['/builder/dashboard']);
+              return;
+            }
             void this.router.navigate(['/provider/dashboard']);
 
             return;
