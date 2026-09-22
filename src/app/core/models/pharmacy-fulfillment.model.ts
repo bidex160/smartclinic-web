@@ -153,8 +153,9 @@ export interface PharmacyQuote {
   readonly expiresAt: string;
   readonly submittedAt: string | null;
   readonly acceptedAt: string | null;
-  readonly pharmacy: {
-    readonly providerReference: string;
+  readonly serviceUnit?: {
+    readonly providerReference:
+ string;
     readonly displayName: string;
     readonly serviceUnitReference: string;
     readonly serviceUnitName: string;
@@ -180,6 +181,12 @@ export interface PatientOrderFulfillment {
     readonly type: ClinicalOrderType;
     readonly status: ClinicalOrderStatus;
     readonly prescription: PrescriptionDetail | null;
+  };
+  readonly serviceUnit?: {
+    readonly providerReference: string;
+    readonly displayName: string;
+    readonly serviceUnitReference: string;
+    readonly serviceUnitName: string;
   };
   readonly pharmacy: {
     readonly providerReference: string;

@@ -69,6 +69,9 @@ export class PharmacyFulfillmentApiService {
       { providerServiceUnitReference },
     );
   }
+  listPatientOrdersByType(type: 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING', page = 1, limit = 20) {
+    return this.http.get<ClinicalOrderPage>(`${this.base}/me/clinical-orders`, { params: new HttpParams().set('type', type).set('page', page).set('limit', limit) });
+  }
   listPatientOrders(page = 1, limit = 20) {
     return this.http.get<ClinicalOrderPage>(`${this.base}/me/clinical-orders`, {
       params: new HttpParams().set('type', 'PRESCRIPTION').set('page', page).set('limit', limit),
@@ -87,37 +90,7 @@ export class PharmacyFulfillmentApiService {
   getPatientOrder(ref: string) {
     return this.http.get<ClinicalOrder>(`${this.base}/me/clinical-orders/${this.enc(ref)}`);
   }
-  searchDiagnosticProviders(orderType: 'LABORATORY' | 'IMAGING', page = 1, limit = 50) {
-    return this.http.get<FulfillmentDirectoryPage>(`${this.base}/me/clinical-order-fulfillment-providers`, {
-      params: new HttpParams().set('orderType', orderType).set('page', page).set('limit', limit),
-    });
-  }
-  getPatientOrderFulfillment(orderRef: string) {
-    return this.http.get<ProviderOrderFulfillment | null>(
-      `${this.base}/me/clinical-orders/${this.enc(orderRef)}/fulfillment`,
-    );
-  }
-  getPatientDiagnosticFulfillment(fulfillmentRef: string) {
-    return this.http.get<any>(`${this.base}/me/diagnostic-order-fulfillments/${this.enc(fulfillmentRef)}`);
-  }
-  getDiagnosticResultAccess(fulfillmentRef: string) {
-    return this.http.get<{ url?: string; downloadUrl?: string; expiresAt?: string }>(
-      `${this.base}/me/diagnostic-order-fulfillments/${this.enc(fulfillmentRef)}/result/access`,
-    );
-  }
-  acceptDiagnosticQuote(quoteRef: string) {
-    return this.http.post<any>(`${this.base}/me/diagnostic-quotes/${this.enc(quoteRef)}/accept`, null);
-  }
-  initializeDiagnosticFunding(quoteRef: string) {
-    return this.http.post<any>(`${this.base}/me/diagnostic-quotes/${this.enc(quoteRef)}/funding/initialize`, {});
-  }
-  selectDiagnosticProvider(orderRef: string, providerServiceUnitReference: string) {
-    return this.http.post(
-      `${this.base}/me/clinical-orders/${this.enc(orderRef)}/select-fulfillment`,
-      { providerServiceUnitReference },
-    );
-  }
-  searchPharmacies(query: {
+  searchFulfillmentProviders(orderType: 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING', query: {
     q?: string;
     country?: string;
     stateOrRegion?: string;
@@ -125,13 +98,19 @@ export class PharmacyFulfillmentApiService {
     page?: number;
     limit?: number;
   }) {
-    let p = new HttpParams().set('page', query.page ?? 1).set('limit', query.limit ?? 20);
+    let p = new HttpParams().set('orderType', orderType).set('page', query.page ?? 1).set('limit', query.limit ?? 20);
     for (const [k, v] of Object.entries(query))
       if (v !== undefined && v !== '') p = p.set(k, String(v));
     return this.http.get<FulfillmentDirectoryPage>(
       `${this.base}/me/clinical-order-fulfillment-providers`,
       { params: p },
     );
+  }
+  selectFulfillment(orderRef: string, providerServiceUnitReference: string) {
+    return this.http.post(`${this.base}/me/clinical-orders/${this.enc(orderRef)}/select-fulfillment`, { providerServiceUnitReference });
+  }
+  searchPharmacies(query: { q?: string; country?: string; stateOrRegion?: string; city?: string; page?: number; limit?: number }) {
+    return this.searchFulfillmentProviders('PRESCRIPTION', query);
   }
   selectPharmacy(orderRef: string, providerServiceUnitReference: string) {
     return this.http.post(
