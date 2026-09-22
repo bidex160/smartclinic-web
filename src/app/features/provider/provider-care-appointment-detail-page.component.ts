@@ -22,19 +22,17 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       >← Care Appointments</a
     >
     @if (loading()) {
-      <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading appointment…</p>
+      <p role="status" class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">Loading appointment…</p>
     } @else if (error() && !appointment()) {
       <p role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
         {{ error() }}
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </p>
     } @else if (appointment(); as a) {
-      <header class="mt-6">
-        <p class="break-all text-sm font-bold uppercase text-brand-600">
-          {{ a.appointmentReference }}
-        </p>
-        <h1 class="mt-2 text-3xl font-bold">{{ a.service.name }}</h1>
-        <p class="mt-2">{{ label(a.status) }}</p>
+      <header class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Clinical workspace</p>
+        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">{{ a.service.name }}</h1>
+        <div class="mt-3 flex flex-wrap items-center gap-3"><span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{ label(a.status) }}</span><span class="text-sm text-slate-500">Appointment {{ a.appointmentReference }}</span></div>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
