@@ -210,3 +210,119 @@ textarea::placeholder {
 @media (max-width:640px) {
   .sc-action:hover,.sc-primary:hover { transform:none; }
 }
+
+/* Shared workspace surfaces: compact on phones, calm and legible on desktop. */
+.workspace-page, .care-discovery-page, .care-workspace-page {
+  color: #253047;
+  padding-top: 1.5rem;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+  h1 { letter-spacing: -.035em; line-height: 1.15; }
+  h2 { letter-spacing: -.02em; }
+  :where(article, fieldset, section, div, p).border:not([class*='border-']) {
+    border-color: #e4e7ef;
+  }
+  :where(button, a, input, select, textarea):focus-visible {
+    outline: 3px solid #8b5cf6 !important;
+    outline-offset: 3px;
+  }
+}
+.workspace-hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border-radius: 1.5rem;
+  border: 1px solid #e4dcf6;
+  background: linear-gradient(115deg, #faf7ff, #f2f0ff 70%, #effaf6);
+  h1 { font-size: clamp(1.65rem, 3vw, 2.35rem); }
+  p:first-child { font-size: .6875rem; letter-spacing: .16em; }
+  p:last-child { max-width: 38rem; font-size: .9375rem; line-height: 1.65; }
+}
+.workspace-hero--admin {
+  background: radial-gradient(ellipse at 100% 0%, #693cc0, transparent 65%), #27114b;
+  border-color: #3b2067;
+  h1 { color: #fff; }
+  p:first-child { color: #d9c5ff; }
+  p:last-child { color: #e4dcef; }
+}
+.workspace-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .625rem;
+  flex-shrink: 0;
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    min-height: 44px;
+    padding: .625rem .875rem;
+    border: 1px solid #8063a6;
+    border-radius: .75rem;
+    color: #fff;
+    font-size: .8125rem;
+    font-weight: 600;
+    background: #ffffff0d;
+    &:hover { background: #ffffff20; }
+  }
+}
+.workspace-page article {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 5px #25203e03, 0 10px 24px #25203e04;
+}
+.workspace-page .metric-grid article {
+  padding: 1.125rem;
+  border-radius: 1.125rem;
+  border-width: 1px;
+  p:first-child { font-size: .8125rem; line-height: 1.5; }
+  p.text-4xl { font-size: 2rem; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -.035em; }
+  a { font-size: .8125rem; min-height: 44px; align-items: center; text-decoration: none; }
+}
+.workspace-shortcuts > a {
+  align-items: flex-start;
+  padding: 1rem;
+  text-align: left;
+  border-radius: 1.125rem;
+  box-shadow: 0 5px 20px #38225905;
+  &:hover { border-color: #b7a2df; background: #fdfbff; }
+  > span:first-child { width: 2.5rem; height: 2.5rem; border-radius: .75rem; }
+}
+.care-choice {
+  position: relative;
+  padding: 1.25rem 2.75rem 1.25rem 1.25rem;
+  min-height: 7.25rem;
+  box-shadow: 0 4px 16px #27114b04;
+  transition: border-color .18s, box-shadow .18s;
+  &::after { content: '↗'; position: absolute; right: 1.125rem; top: 1.25rem; color: #765b9e; }
+  &:hover { border-color: #ab90d6; box-shadow: 0 6px 20px #27114b0a; }
+  &[aria-pressed='true'] { border-color: #7c3aed; background: #faf7ff; }
+}
+.care-provider-card {
+  width: 100%;
+  box-shadow: 0 4px 18px #27114b05;
+  transition: border-color .18s, background .18s;
+  &:hover { border-color: #b59bdc; background: #fdfbff; }
+  &[aria-pressed='true'] { border-color: #7c3aed; background: #faf7ff; box-shadow: 0 0 0 1px #7c3aed; }
+  strong { line-height: 1.4; overflow-wrap: anywhere; }
+}
+.care-workspace-page :where(section, article, fieldset).border {
+  border-color: #e4e7ef;
+  box-shadow: 0 5px 20px #27114b04;
+}
+.care-workspace-page .payment-confirmation { border-color: #bbdfce; }
+@media (max-width: 639px) {
+  .workspace-page, .care-discovery-page, .care-workspace-page { padding-left: 1rem; padding-right: 1rem; }
+  .workspace-hero { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .workspace-page > section { margin-top: 1.75rem; }
+  .workspace-page .metric-grid { gap: .625rem; }
+  .workspace-page .metric-grid article { padding: .875rem; }
+  .workspace-page .metric-grid article p.mt-3 { font-size: .75rem; line-height: 1.5; }
+  .care-discovery-page > h1 { font-size: 2rem; }
+  .care-discovery-page > p { line-height: 1.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .care-choice, .care-provider-card { transition: none; }
+}

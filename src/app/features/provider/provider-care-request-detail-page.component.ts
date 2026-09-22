@@ -16,7 +16,7 @@ import { formatMinor } from './care-money';
   selector: 'app-provider-care-request-detail-page',
   imports: [RouterLink, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
+  template: `<main class="care-workspace-page mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/care-requests" class="font-bold text-brand-700 underline"
       >← New patient requests</a
     >
@@ -134,9 +134,11 @@ import { formatMinor } from './care-money';
         </button>
       }
       @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && r.preferredDate) {
-        <p class="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 font-semibold text-green-950">
-          Payment confirmed ✓ · SmartClinic is confirming the agreed appointment time automatically.
-        </p>
+        <section class="payment-confirmation mt-6 rounded-2xl border border-green-200 bg-green-50 p-5" aria-label="Appointment confirmation status">
+          <p class="font-bold text-green-950">Payment received ✓</p>
+          <p class="mt-2 text-sm leading-6 text-green-900">The appointment is awaiting confirmation. Payment alone does not confirm the appointment time.</p>
+          <button type="button" (click)="load()" [disabled]="loading()" class="mt-3 min-h-11 rounded-xl border border-green-300 bg-white px-4 font-bold text-green-950">Refresh appointment status</button>
+        </section>
       }
       @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
         <p

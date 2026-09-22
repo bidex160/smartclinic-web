@@ -43,7 +43,7 @@ describe('AppComponent', () => {
         email: 'multi@example.test',
         displayName: 'Multi role',
         roles: ['ADMIN', 'PROVIDER', 'USER'],
-        status: 'ACTIVE',
+        networkRole: null, status: 'ACTIVE',
       },
     });
     const fixture = TestBed.createComponent(AppComponent);

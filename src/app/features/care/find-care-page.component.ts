@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import {
   CareDeliveryMode,
   CareRequest,
@@ -22,7 +22,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
   selector: 'app-find-care-page',
   imports: [ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ` <main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+  template: ` <main class="care-discovery-page mx-auto max-w-5xl px-5 py-10 sm:px-8">
     <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
       SmartClinic care network
     </p>
@@ -36,27 +36,30 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
     </p>
     @if (testJourney()) {
       <section class="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Test options">
-        <button type="button" (click)="chooseTestType('LAB_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+        <button type="button" (click)="chooseTestType('LAB_REQUEST')" [attr.aria-pressed]="form.controls.serviceCode.value === 'LAB_REQUEST'" [class.border-brand-600]="form.controls.serviceCode.value === 'LAB_REQUEST'" class="care-choice min-h-28 rounded-2xl border border-slate-200 bg-white p-5 text-left">
           <strong class="block text-lg text-brand-950">Lab Test</strong>
           <span class="mt-1 block text-sm text-slate-600">Blood, urine and other laboratory tests.</span>
         </button>
-        <button type="button" (click)="chooseTestType('IMAGING_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+        <button type="button" (click)="chooseTestType('IMAGING_REQUEST')" [attr.aria-pressed]="form.controls.serviceCode.value === 'IMAGING_REQUEST'" [class.border-brand-600]="form.controls.serviceCode.value === 'IMAGING_REQUEST'" class="care-choice min-h-28 rounded-2xl border border-slate-200 bg-white p-5 text-left">
           <strong class="block text-lg text-brand-950">X-ray or Scan</strong>
           <span class="mt-1 block text-sm text-slate-600">X-ray, ultrasound, CT, MRI and other scans.</span>
         </button>
       </section>
     }
+    @if (unavailableService()) {
+      <p role="alert" class="mt-4 rounded-xl bg-amber-50 p-4 text-amber-900">{{ unavailableService() }} is not currently available. Choose another service or contact your hospital.</p>
+    }
     @if (doctorJourney()) {
       <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
-        <button type="button" (click)="chooseDoctorMode('VIRTUAL')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
-          <strong class="block text-lg text-brand-950">Talk to a Doctor Now</strong>
-          <span class="mt-1 block text-sm text-slate-600">Start with an available doctor online.</span>
+        <button type="button" (click)="chooseDoctorMode('VIRTUAL')" class="care-choice min-h-28 rounded-2xl border border-slate-200 bg-white p-5 text-left">
+          <strong class="block text-lg text-brand-950">Talk to a Doctor</strong>
+          <span class="mt-1 block text-sm text-slate-600">Request a virtual consultation with a care provider.</span>
         </button>
-        <button type="button" (click)="chooseDoctorMode('LATER')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+        <button type="button" (click)="chooseDoctorMode('LATER')" class="care-choice min-h-28 rounded-2xl border border-slate-200 bg-white p-5 text-left">
           <strong class="block text-lg text-brand-950">Book for Later</strong>
           <span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
         </button>
-        <a routerLink="/me/providers" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
+        <a routerLink="/me/providers" class="care-choice min-h-28 rounded-2xl border border-slate-200 bg-white p-5 text-left">
           <strong class="block text-lg text-brand-950">Visit a Hospital</strong>
           <span class="mt-1 block text-sm text-slate-600">Choose a hospital for in-person care.</span>
         </a>
@@ -64,19 +67,20 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
     }
     @if (doctorJourney() && requestedServiceIsValid() && !success()) {
       <section class="mt-8 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50 p-6 shadow-sm">
-        <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Available online</p>
-        <h2 class="mt-1 text-2xl font-black text-brand-950">Choose your doctor</h2>
-        <p class="mt-2 text-sm text-slate-600">Choose who you would like to speak with. The price shown is the current virtual consultation price.</p>
+        <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Virtual consultations</p>
+        <h2 class="mt-1 text-2xl font-black text-brand-950">Choose your care provider</h2>
+        <p class="mt-2 text-sm text-slate-600">Choose a practitioner or clinic for your consultation. Review the current price before continuing.</p>
         @if (providersLoading()) {
           <p class="mt-5 rounded-2xl bg-white p-5 text-slate-600">Finding available doctors…</p>
         } @else if (providers().length) {
           <div class="mt-5 grid gap-3 sm:grid-cols-2">
             @for (p of providers(); track p.providerReference) {
-              <button type="button" (click)="chooseDoctor(p)" class="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md" [class.border-brand-600]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-2]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-brand-100]="form.controls.preferredProviderReference.value === p.providerReference">
+              <button type="button" (click)="chooseDoctor(p)" [attr.aria-pressed]="form.controls.preferredProviderReference.value === p.providerReference" class="care-provider-card rounded-2xl border border-slate-200 bg-white p-5 text-left" [class.border-brand-600]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-2]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-brand-100]="form.controls.preferredProviderReference.value === p.providerReference">
                 <span class="flex items-start gap-4">
-                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xl">👨🏾‍⚕️</span>
-                  <span class="min-w-0"><strong class="block text-lg text-brand-950">{{ p.displayName }}</strong><span class="mt-1 block text-sm text-slate-500">Available for virtual consultation</span>
-                  @if (doctorPrice(p); as price) { <span class="mt-3 block font-black text-brand-800">{{ formatPrice(price.priceMinor, price.currency) }}</span> }
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xl" aria-hidden="true">{{ providerInitials(p.displayName) }}</span>
+                  <span class="min-w-0"><strong class="block text-lg text-brand-950">{{ p.displayName }}</strong><span class="mt-1 block text-sm text-slate-500">{{ providerKind(p.providerType) }} · Virtual consultation</span>
+                  @if (doctorPrice(p); as price) { <span class="mt-3 block font-black text-brand-800">{{ formatPrice(price.priceMinor, price.currency) }}<span class="ml-2 text-xs font-medium text-slate-500">per consultation</span></span> }
+                  @if (form.controls.preferredProviderReference.value === p.providerReference) { <span class="mt-3 inline-flex rounded-full bg-brand-700 px-3 py-1 text-xs font-bold text-white">Selected ✓</span> }
                   </span>
                 </span>
               </button>
@@ -249,10 +253,13 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </div>
           } @else {
             <p class="mt-3 text-sm text-slate-600">
-              Choose a care service to see supported delivery modes.
+              {{ providersLoading() ? 'Checking available delivery modes…' : providersError() ? 'We could not check availability. Try provider search again.' : form.controls.serviceCode.value ? 'No delivery modes are currently available for this service.' : 'Choose a care service to see supported delivery modes.' }}
             </p>
           }
         </fieldset>
+        @if (form.controls.deliveryMode.touched && form.controls.deliveryMode.hasError('required')) {
+          <p role="alert" class="text-red-700">Choose an available delivery mode before submitting.</p>
+        }
         @if (requiresGeography()) {
           <fieldset class="rounded-3xl border bg-white p-6">
             <legend class="px-2 text-xl font-bold">3. Location</legend>
@@ -311,7 +318,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           >
           @if (providersLoading()) {
             <p role="status" class="mt-3 text-sm">Finding matching providers…</p>
-          } @else if (providerSearchReady() && !providers().length) {
+          } @else if (providerSearchReady() && !providersError() && !providers().length) {
             <div class="mt-3 rounded-xl bg-slate-50 p-4">
               <p>No providers currently match these filters.</p>
               <p class="mt-1 text-sm text-slate-600">
@@ -322,7 +329,8 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           }
           @if (providersError()) {
             <p role="alert" class="mt-3 text-red-700">
-              Provider results are unavailable. Change a filter or try again.
+              Provider results are unavailable.
+              <button type="button" (click)="discoverProviders()" class="font-bold underline">Try again</button>
             </p>
           }
           @if (selectedProviderPrice(); as price) {
@@ -396,7 +404,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         }
         <button
           type="submit"
-          [disabled]="submitting()"
+          [disabled]="submitting() || providersLoading() || providersError()"
           class="min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60"
         >
           {{ submitting() ? 'Requesting consultation…' : (doctorJourney() ? 'Continue with this doctor →' : 'Submit Care Request') }}
@@ -442,6 +450,8 @@ export class FindCarePageComponent {
   readonly doctorJourney = signal(false);
   readonly testJourney = signal(false);
   readonly servicesLoaded = signal(false);
+  readonly unavailableService = signal<string | null>(null);
+  private discoverySubscription?: Subscription;
   private draftRestored = false;
   private draftDiscoveryStarted = false;
   readonly providersLoading = signal(false);
@@ -457,7 +467,7 @@ export class FindCarePageComponent {
     stateOrRegion: [''],
     city: [''],
     serviceCode: ['', Validators.required],
-    deliveryMode: ['VIRTUAL' as CareDeliveryMode | '', Validators.required],
+    deliveryMode: ['' as CareDeliveryMode | '', Validators.required],
     preferredProviderReference: [''],
     preferredDate: [''],
     preferredTime: [''],
@@ -499,6 +509,7 @@ export class FindCarePageComponent {
     ];
   };
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.discoverySubscription?.unsubscribe());
     this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor');
     this.testJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'test');
     this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
@@ -535,17 +546,17 @@ export class FindCarePageComponent {
   }
   chooseTestType(serviceCode: 'LAB_REQUEST' | 'IMAGING_REQUEST') {
     this.requestedServiceCode.set(serviceCode);
-    if (this.servicesLoaded() && !this.services().some((service) => service.code === serviceCode)) {
-      this.form.controls.serviceCode.setValue('');
-      // this.invalidateDiscovery();
-      return;
-    }
-    this.form.controls.serviceCode.setValue(serviceCode);
-    // this.invalidateDiscovery();
+    this.applyRequestedServiceCode();
   }
 
   chooseDoctor(p: PublicFindCareProvider) {
     this.form.controls.preferredProviderReference.setValue(p.providerReference);
+  }
+  providerInitials(name: string): string {
+    return name.trim().split(/\s+/).filter(part => !/^dr\.?$/i.test(part)).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'SC';
+  }
+  providerKind(type: string): string {
+    return ({ INDIVIDUAL: 'Practitioner', CLINIC: 'Clinic', DIAGNOSTIC_CENTRE: 'Diagnostic centre', PHARMACY: 'Pharmacy' } as Record<string, string>)[type] ?? 'Care provider';
   }
   doctorPrice(p: PublicFindCareProvider) {
     return p.services.find((s) => s.code === this.form.controls.serviceCode.value)?.deliveryOptions.find((o) => o.deliveryMode === 'VIRTUAL') ?? null;
@@ -618,7 +629,14 @@ export class FindCarePageComponent {
   private applyRequestedServiceCode(): void {
     if (!this.servicesLoaded()) return;
     const requested = this.requestedServiceCode();
-    if (!requested || !this.services().some((service) => service.code === requested)) return;
+    if (!requested) return;
+    if (!this.services().some((service) => service.code === requested)) {
+      this.form.controls.serviceCode.setValue('');
+      this.serviceChanged();
+      this.unavailableService.set(requested === 'IMAGING_REQUEST' ? 'X-ray or Scan' : requested === 'LAB_REQUEST' ? 'Lab Test' : 'This service');
+      return;
+    }
+    this.unavailableService.set(null);
     if (this.form.controls.serviceCode.value === requested) return;
     this.form.controls.serviceCode.setValue(requested);
     this.serviceChanged();
@@ -629,6 +647,7 @@ export class FindCarePageComponent {
     return !!requested && this.services().some((service) => service.code === requested);
   }
   countryChanged(countryCode: string) {
+    this.discoverySubscription?.unsubscribe();
     this.form.controls.countryCode.setValue(countryCode, { emitEvent: false });
     this.requestStateCode.setValue('', { emitEvent: false });
     this.form.patchValue({ stateOrRegion: '', city: '', preferredProviderReference: '' });
@@ -637,6 +656,7 @@ export class FindCarePageComponent {
     this.providers.set([]);
   }
   stateChanged(stateCode: string) {
+    this.discoverySubscription?.unsubscribe();
     this.form.patchValue({ city: '', preferredProviderReference: '' });
     this.requestStateCode.setValue(stateCode, { emitEvent: false });
     const state = this.states().find((s) => s.isoCode === stateCode);
@@ -647,13 +667,17 @@ export class FindCarePageComponent {
     this.providers.set([]);
   }
   serviceChanged() {
-    this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredProviderReference: '' });
+    this.unavailableService.set(null);
+    this.form.patchValue({ deliveryMode: this.doctorJourney() ? 'VIRTUAL' : '', preferredProviderReference: '' });
     this.discoveryProviders.set([]);
     this.providers.set([]);
     this.updateGeographyValidators();
     this.discoverProviders();
   }
   discoverProviders() {
+    this.discoverySubscription?.unsubscribe();
+    this.providersLoading.set(false);
+    this.providersError.set(false);
     this.form.controls.preferredProviderReference.setValue('');
     const v = this.form.getRawValue();
     const deliveryMode = v.deliveryMode || undefined;
@@ -663,7 +687,7 @@ export class FindCarePageComponent {
     }
     this.providersLoading.set(true);
     this.providersError.set(false);
-    this.api
+    this.discoverySubscription = this.api
       .getProviders({
         serviceCode: v.serviceCode,
         ...(deliveryMode ? { deliveryMode } : {}),
@@ -679,15 +703,7 @@ export class FindCarePageComponent {
       .pipe(finalize(() => this.providersLoading.set(false)))
       .subscribe({
         next: (p) => {
-          // if (!deliveryMode) {
-            this.discoveryProviders.set(p.items);
-            const available = this.deliveryModes();
-            if (
-              this.form.controls.deliveryMode.value &&
-              !available.includes(this.form.controls.deliveryMode.value)
-            )
-              this.form.controls.deliveryMode.setValue('');
-          // }
+          if (!deliveryMode) this.discoveryProviders.set(p.items);
           this.providers.set(deliveryMode ? p.items : []);
         },
         error: () => {
@@ -769,7 +785,7 @@ export class FindCarePageComponent {
   }
   submit() {
     this.updateGeographyValidators();
-    if (this.form.invalid || this.submitting()) {
+    if (this.form.invalid || this.submitting() || this.providersLoading() || this.providersError()) {
       this.form.markAllAsTouched();
       return;
     }

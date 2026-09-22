@@ -234,6 +234,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'bills',
+        title: 'Pay a Hospital Bill | SmartClinic',
+        data: { billsMode: true },
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/connections/my-providers-page.component').then(c => c.MyProvidersPageComponent),
+      },
+      {
         path: 'providers',
         title: 'My Providers | SmartClinic',
         canActivate: [authenticatedUserGuard],

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PatientProviderConnection } from '../../core/models/patient-provider-connection.model';
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
@@ -11,8 +11,8 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
   template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8">
     <header class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10 sm:p-10">
       <p class="text-sm font-bold uppercase tracking-[.18em] text-violet-200">Your hospital companion</p>
-      <h1 class="mt-3 text-3xl font-black sm:text-4xl">Your Hospitals</h1>
-      <p class="mt-3 max-w-2xl text-lg text-violet-50">Book care, pay, view records and handle hospital tasks from your phone — without the usual runaround.</p>
+      <h1 class="mt-3 text-3xl font-black sm:text-4xl">{{ billsMode ? 'Pay a Hospital Bill' : 'Your Hospitals' }}</h1>
+      <p class="mt-3 max-w-2xl text-lg text-violet-50">{{ billsMode ? 'Choose your hospital to review issued requests, prices and available payment options.' : 'Book care, pay, view records and handle hospital tasks from your phone — without the usual runaround.' }}</p>
       <a routerLink="/me/providers/connect" class="mt-6 inline-flex rounded-2xl bg-white px-5 py-3 font-extrabold text-brand-900 shadow-sm">+ Connect another hospital</a>
     </header>
 
@@ -47,7 +47,7 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
               @if (item.status === 'CONNECTED') {
                 <p class="mt-4 text-sm font-semibold text-slate-600">Your digital front door to this hospital.</p>
               }
-              <a [routerLink]="['/me/providers', item.reference]" class="mt-5 flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3 font-extrabold text-brand-800 group-hover:bg-brand-100">Open hospital <span>→</span></a>
+              <a [routerLink]="['/me/providers', item.reference]" class="mt-5 flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3 font-extrabold text-brand-800 group-hover:bg-brand-100">{{ billsMode ? 'Review bills' : 'Open hospital' }} <span>→</span></a>
             </article>
           }
         </div>
@@ -62,6 +62,7 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
   </main>`,
 })
 export class MyProvidersPageComponent {
+  readonly billsMode = inject(ActivatedRoute).snapshot.data['billsMode'] === true;
   private readonly api = inject(PatientProviderConnectionsApiService);
   readonly items = signal<readonly PatientProviderConnection[]>([]);
   readonly loading = signal(true);

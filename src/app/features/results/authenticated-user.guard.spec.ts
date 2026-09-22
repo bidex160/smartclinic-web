@@ -13,7 +13,7 @@ describe('authenticatedUserGuard', () => {
         email: null,
         displayName: 'User',
         roles: ['USER'],
-        status: 'ACTIVE',
+        networkRole: null, status: 'ACTIVE',
       },
     });
     state.completeInitialization();
@@ -29,7 +29,7 @@ describe('authenticatedUserGuard', () => {
         email: 'multi@example.test',
         displayName: 'Multi role',
         roles: ['USER', 'ADMIN', 'PROVIDER'],
-        status: 'ACTIVE',
+        networkRole: null, status: 'ACTIVE',
       },
     });
     state.completeInitialization();
@@ -44,7 +44,7 @@ describe('authenticatedUserGuard', () => {
         email: 'provider@example.test',
         displayName: 'Provider',
         roles: ['PROVIDER'],
-        status: 'ACTIVE',
+        networkRole: null, status: 'ACTIVE',
       },
     });
     state.completeInitialization();

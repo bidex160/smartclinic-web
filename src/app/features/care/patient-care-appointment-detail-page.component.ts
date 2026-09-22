@@ -24,7 +24,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       </p>
     } @else if (appointment(); as a) {
       <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
-        <p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">{{ a.deliveryMode === 'VIRTUAL' ? 'Talk to a Doctor' : 'Your appointment' }}</p>
+        <p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">Your appointment</p>
         <h1 class="mt-2 text-3xl font-black">{{ a.provider.displayName }}</h1>
         <p class="mt-2 text-violet-100">{{ a.service.name }} · {{ label(a.status) }}</p>
         <p class="mt-4 text-lg font-bold">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</p>

@@ -22,7 +22,7 @@ describe('ProviderSessionHeaderComponent', () => {
         email: 'provider@example.test',
         displayName: 'Provider',
         roles: ['PROVIDER'],
-        status: 'ACTIVE',
+        networkRole: null, status: 'ACTIVE',
       },
     });
     fixture.detectChanges();
