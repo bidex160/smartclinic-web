@@ -118,26 +118,20 @@ export class PatientHealthCheckV2BookingPageComponent {
     phone: ['', [Validators.maxLength(32)]],
   });
   constructor() {
-    this.states.set(this.locations.getStates('NG'));
+    void this.loadLocations();
     this.loadCatalogue();
     this.loadDependants();
   }
 
-  private setSuggestedAppointment(): void {
-    const suggested = new Date();
-    suggested.setMinutes(suggested.getMinutes() + 90);
-    suggested.setMinutes(Math.ceil(suggested.getMinutes() / 30) * 30, 0, 0);
-    if (suggested.getHours() >= 18) {
-      suggested.setDate(suggested.getDate() + 1);
-      suggested.setHours(9, 0, 0, 0);
+  private async loadLocations(): Promise<void> {
+    try {
+      await this.locations.ready();
+      this.states.set(this.locations.getStates('NG'));
+      const selectedState = this.form.controls.address.controls.stateOrRegion.value;
+      if (selectedState) this.cities.set(this.locations.getCities('NG', selectedState));
+    } catch {
+      this.states.set(this.locations.getStates('NG'));
     }
-    const yyyy = suggested.getFullYear();
-    const mm = String(suggested.getMonth() + 1).padStart(2, '0');
-    const dd = String(suggested.getDate()).padStart(2, '0');
-    const hh = String(suggested.getHours()).padStart(2, '0');
-    const min = String(suggested.getMinutes()).padStart(2, '0');
-    this.form.controls.preferredDate.setValue(`${yyyy}-${mm}-${dd}`);
-    this.form.controls.preferredTime.setValue(`${hh}:${min}`);
   }
 
   loadDependants(): void { this.dependantsLoading.set(true); this.dependantsError.set(false); this.dependantsApi.getDependants().pipe(finalize(() => this.dependantsLoading.set(false))).subscribe({ next: result => this.dependants.set(result.items), error: () => this.dependantsError.set(true) }); }

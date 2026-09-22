@@ -41,7 +41,7 @@ export class AppComponent {
         this.currentUrl.set(event.urlAfterRedirects);
         this.menuOpen.set(false);
       });
-    this.locationDataService.getStatesApi();
+    void this.locationDataService.ready().catch(() => undefined);
   }
 
   logout(): void {
