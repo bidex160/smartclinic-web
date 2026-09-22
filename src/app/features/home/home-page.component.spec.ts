@@ -106,12 +106,12 @@ describe('HomePageComponent', () => {
     const packageNames = packageLinks.map((link) =>
       link.closest('article')?.querySelector('h3')?.textContent?.trim(),
     );
-    expect(packageNames).toEqual(['Essential Health Check', 'Complete Health Check']);
+    expect(packageNames).toEqual(['Complete Health Check', 'Essential Health Check']);
     expect(packageLinks[0].getAttribute('href')).toBe(
-      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
+      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
     );
     expect(packageLinks[1].getAttribute('href')).toBe(
-      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
+      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
     );
     expect(element.querySelectorAll('details').length).toBeGreaterThan(0);
     expect(api.getCatalogue).toHaveBeenCalledOnce();
