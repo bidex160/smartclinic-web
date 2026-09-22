@@ -9,6 +9,7 @@ import { ProviderCareServicesApiService } from '../../core/services/provider-car
 import { ClinicalRecordsApiService } from '../../core/services/clinical-records-api.service';
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
+import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
 import { ProviderPrescriptionSectionComponent } from './provider-prescription-section.component';
 import { ClinicalDocumentationFormComponent } from '../../shared/clinical-documentation-form.component';
 import { ClinicalDocumentationViewComponent } from '../../shared/clinical-documentation-view.component';
@@ -92,19 +93,19 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
-          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Secure video care</p>
-          <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Your next step</p>
+          <h2 class="mt-2 text-2xl font-bold text-slate-950">Video consultation</h2>
+          <p class="mt-2 font-semibold text-slate-800">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</p>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">The consultation room is created automatically. No meeting-link setup is required.</p>
-            <a
-              [href]="url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800"
-              >Join consultation</a
-            >
+            <p class="mt-2 text-slate-600">Payment and appointment are confirmed. The secure consultation room is ready.</p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <a [href]="url" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800">Join video consultation</a>
+              @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
+                <button type="button" (click)="start()" [disabled]="pending()" class="min-h-12 rounded-xl border border-brand-300 bg-white px-5 py-3 font-bold text-brand-800">Start clinical appointment</button>
+              }
+            </div>
           } @else {
-            <p class="mt-2 text-slate-600">The secure room is being prepared. Refresh the appointment shortly.</p>
+            <p class="mt-2 rounded-xl bg-amber-50 p-4 text-amber-950">Payment is confirmed, but the video room is not ready yet. Refresh this appointment shortly. You do not need to create or send a meeting link.</p>
           }
         </section>
       }
@@ -150,17 +151,24 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
           }
         </section>
       }
+      @if (a.status === 'IN_PROGRESS') {
+        <section class="mt-6 rounded-2xl border bg-white p-6">
+          <h2 class="text-xl font-bold">What does the patient need next?</h2>
+          <p class="mt-1 text-slate-600">Choose a next action before completing the consultation. The patient will see issued orders in My Care.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <button type="button" (click)="openNextAction('LABORATORY')" class="rounded-xl border p-4 text-left font-bold text-brand-800">Send for laboratory tests</button>
+            <button type="button" (click)="openNextAction('IMAGING')" class="rounded-xl border p-4 text-left font-bold text-brand-800">Send for imaging</button>
+            <button type="button" (click)="openNextAction('REFERRAL')" class="rounded-xl border p-4 text-left font-bold text-brand-800">Refer to hospital or specialist</button>
+            <button type="button" (click)="openNextAction('PROCEDURE')" class="rounded-xl border p-4 text-left font-bold text-brand-800">Refer for procedure / physical follow-up</button>
+          </div>
+          <p class="mt-3 text-sm text-slate-600">For medicines, use the Prescription section below.</p>
+        </section>
+      }
       @if (a.status === 'IN_PROGRESS') { <app-provider-prescription-section [appointmentReference]="a.appointmentReference" [appointmentStatus]="a.status" /> }
       <div class="mt-6 flex flex-wrap gap-3">
         @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
+          @if (a.deliveryMode !== 'VIRTUAL') { <button type="button" (click)="start()" [disabled]="pending()" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Start appointment</button> }
           <button
-            type="button"
-            (click)="start()"
-            [disabled]="pending()"
-            class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-          >
-            Start appointment</button
-          ><button
             type="button"
             (click)="open('no-show')"
             [disabled]="pending()"
@@ -188,6 +196,17 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
           </button>
         }
       </div>
+    }
+    @if (nextAction(); as action) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="dialog" aria-modal="true" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+        <h2 class="text-xl font-bold">{{ nextActionTitle(action) }}</h2>
+        <p class="mt-2 text-slate-600">Enter the investigation, destination, specialist, reason and any instructions needed. This becomes part of the patient's clinical orders.</p>
+        <form [formGroup]="nextActionForm" (ngSubmit)="issueNextAction(action)" class="mt-5">
+          <label class="font-bold">Clinical instruction<textarea formControlName="clinicalNote" maxlength="4000" rows="6" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. FBC, U&E and malaria test; refer to cardiology at preferred connected hospital"></textarea></label>
+          @if (nextActionError()) { <p role="alert" class="mt-3 rounded-xl bg-red-50 p-3 text-red-800">{{ nextActionError() }}</p> }
+          <div class="mt-5 flex justify-end gap-3"><button type="button" (click)="nextAction.set(null)" [disabled]="nextActionPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="nextActionPending() || nextActionForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ nextActionPending() ? 'Sending…' : 'Send to patient' }}</button></div>
+        </form>
+      </section></div>
     }
     @if (recordFormOpen()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="dialog" aria-modal="true" aria-labelledby="clinical-record-form-title" class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"><h2 id="clinical-record-form-title" class="text-xl font-bold">{{ clinicalRecord() ? 'Edit' : 'Create' }} consultation record</h2><p class="mt-2 text-slate-600">Only the title is required. Add clinically appropriate information available for this consultation.</p>
@@ -249,6 +268,7 @@ export class ProviderCareAppointmentDetailPageComponent {
   private readonly api = inject(ProviderCareOperationsApiService);
   private readonly careServicesApi = inject(ProviderCareServicesApiService);
   private readonly clinicalRecordsApi = inject(ClinicalRecordsApiService);
+  private readonly ordersApi = inject(PharmacyFulfillmentApiService);
   private readonly fb = inject(FormBuilder);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
@@ -258,6 +278,9 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly error = signal<string | null>(null);
   readonly feedback = signal<string | null>(null);
   readonly decision = signal<Decision>(null);
+  readonly nextAction = signal<'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE' | null>(null);
+  readonly nextActionPending = signal(false);
+  readonly nextActionError = signal<string | null>(null);
   readonly clinicalRecordType = signal<ClinicalRecordType | null>(null);
   readonly clinicalRecord = signal<ClinicalRecord | null>(null);
   readonly recordLoading = signal(false);
@@ -278,6 +301,7 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly reasonForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required, Validators.maxLength(2000)]],
   });
+  readonly nextActionForm = this.fb.nonNullable.group({ clinicalNote: ['', [Validators.required, Validators.pattern(/.*\S.*/), Validators.maxLength(4000)]] });
   readonly recordForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.pattern(/.*\S.*/), Validators.maxLength(200)]], summary: ['', Validators.maxLength(4000)],
     presentingComplaint: ['', Validators.maxLength(10000)], historyOfPresentingComplaint: ['', Validators.maxLength(10000)], observations: ['', Validators.maxLength(10000)], assessment: ['', Validators.maxLength(10000)], diagnosis: ['', Validators.maxLength(10000)], plan: ['', Validators.maxLength(10000)], followUpInstructions: ['', Validators.maxLength(10000)],
@@ -317,6 +341,20 @@ export class ProviderCareAppointmentDetailPageComponent {
           ? 'Clinical record could not be loaded. Refresh and try again.'
           : 'We could not load the clinical record.');
       },
+    });
+  }
+  openNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
+    this.nextActionForm.reset({ clinicalNote: '' }); this.nextActionError.set(null); this.nextAction.set(action);
+  }
+  nextActionTitle(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): string {
+    return ({ LABORATORY: 'Laboratory request', IMAGING: 'Imaging request', REFERRAL: 'Hospital / specialist referral', PROCEDURE: 'Procedure / physical follow-up' } as const)[action];
+  }
+  issueNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
+    if (this.nextActionForm.invalid || this.nextActionPending()) { this.nextActionForm.markAllAsTouched(); return; }
+    this.nextActionPending.set(true); this.nextActionError.set(null);
+    this.ordersApi.createClinicalNextAction(this.reference, action, this.nextActionForm.controls.clinicalNote.value.trim()).pipe(finalize(() => this.nextActionPending.set(false))).subscribe({
+      next: () => { this.feedback.set(this.nextActionTitle(action) + ' sent to the patient.'); this.nextAction.set(null); },
+      error: () => this.nextActionError.set('This next action could not be sent. Please review it and try again.'),
     });
   }
   openRecordForm(): void {

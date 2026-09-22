@@ -30,6 +30,12 @@ export class PharmacyFulfillmentApiService {
       `${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders`,
     );
   }
+  createClinicalNextAction(appointment: string, type: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE', clinicalNote: string) {
+    return this.http.post<ClinicalOrder>(
+      `${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders`,
+      { type, clinicalNote },
+    );
+  }
   createPrescription(appointment: string, body: UpsertPrescriptionRequest) {
     return this.http.post<ClinicalOrder>(
       `${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders/prescriptions`,
