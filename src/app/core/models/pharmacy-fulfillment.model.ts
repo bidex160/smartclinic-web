@@ -181,7 +181,7 @@ export interface PatientOrderFulfillment {
     readonly status: ClinicalOrderStatus;
     readonly prescription: PrescriptionDetail | null;
   };
-  readonly pharmacy: {
+  readonly serviceUnit?: {
     readonly providerReference: string;
     readonly displayName: string;
     readonly serviceUnitReference: string;
