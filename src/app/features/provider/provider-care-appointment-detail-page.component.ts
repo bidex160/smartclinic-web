@@ -94,41 +94,20 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
         </dl>
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
-        <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">Virtual consultation</h2>
+        <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Secure video care</p>
+          <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">An external meeting link is configured.</p>
-            <div class="mt-4 flex flex-wrap gap-3">
-              <a
-                [href]="url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-                >Open meeting</a
-              ><button
-                type="button"
-                (click)="openMeetingLink()"
-                class="rounded-xl border px-5 py-3 font-bold"
-              >
-                Replace link</button
-              ><button
-                type="button"
-                (click)="removeMeetingLink()"
-                [disabled]="pending()"
-                class="rounded-xl border border-red-300 px-5 py-3 font-bold text-red-700"
-              >
-                Remove link
-              </button>
-            </div>
-          } @else {
-            <p class="mt-2 text-slate-600">No meeting link added yet.</p>
-            <button
-              type="button"
-              (click)="openMeetingLink()"
-              class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+            <p class="mt-2 text-slate-600">The consultation room is created automatically. No meeting-link setup is required.</p>
+            <a
+              [href]="url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800"
+              >Join consultation</a
             >
-              Add meeting link
-            </button>
+          } @else {
+            <p class="mt-2 text-slate-600">The secure room is being prepared. Refresh the appointment shortly.</p>
           }
         </section>
       }
@@ -223,52 +202,6 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
     @if (finalizeOpen()) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="alertdialog" aria-modal="true" aria-labelledby="finalize-record-title" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 id="finalize-record-title" class="text-xl font-bold">Finalize clinical record?</h2><p class="mt-2 text-slate-600">Once finalized, this clinical record can no longer be edited.</p>@if (recordMutationError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ recordMutationError() }}</p> }<div class="mt-5 flex justify-end gap-3"><button type="button" (click)="finalizeOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Keep draft</button><button type="button" (click)="finalizeClinicalRecord()" [disabled]="recordPending()" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">{{ recordPending() ? 'Finalizing…' : 'Finalize record' }}</button></div></section></div> }
     @if (attachmentToDelete(); as attachment) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="alertdialog" aria-modal="true" aria-labelledby="delete-attachment-title" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 id="delete-attachment-title" class="text-xl font-bold">Delete supporting file?</h2><p class="mt-2 break-words text-slate-600">Remove {{ attachment.originalName }} from this draft clinical record?</p><div class="mt-5 flex justify-end gap-3"><button type="button" (click)="attachmentToDelete.set(null)" [disabled]="attachmentDeleting()" class="rounded-xl border px-5 py-3 font-bold">Keep file</button><button type="button" (click)="deleteAttachment(attachment)" [disabled]="attachmentDeleting()" class="rounded-xl bg-red-700 px-5 py-3 font-bold text-white">{{ attachmentDeleting() ? 'Deleting…' : 'Delete file' }}</button></div></section></div> }
     @if (previewUrl(); as url) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"><section role="dialog" aria-modal="true" aria-labelledby="attachment-preview-title" class="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"><div class="flex items-start justify-between gap-3"><h2 id="attachment-preview-title" class="break-words text-xl font-bold">{{ previewName() }}</h2><button type="button" (click)="closePreview()" class="rounded-lg border px-4 py-2 font-bold">Close</button></div><img [src]="url" [alt]="previewName()" class="mt-4 max-h-[75vh] w-full object-contain" /></section></div> }
-    @if (meetingOpen()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <section
-          role="alertdialog"
-          aria-modal="true"
-          aria-labelledby="meeting-link-title"
-          class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
-        >
-          <h2 id="meeting-link-title" class="text-xl font-bold">
-            {{ appointment()?.meetingUrl ? 'Replace' : 'Add' }} meeting link
-          </h2>
-          <p class="mt-2 text-slate-600">
-            Use an HTTPS link from your approved external meeting service.
-          </p>
-          <form [formGroup]="meetingForm" (ngSubmit)="saveMeetingLink()" class="mt-5">
-            <label for="meeting-url" class="font-bold">Meeting link</label
-            ><input
-              id="meeting-url"
-              type="url"
-              formControlName="meetingUrl"
-              placeholder="e.g. https://meet.google.com/..."
-              class="mt-2 min-h-12 w-full rounded-xl border px-3"
-            />
-            @if (meetingError()) {
-              <p role="alert" class="mt-3 text-red-700">{{ meetingError() }}</p>
-            }
-            <div class="mt-5 flex justify-end gap-3">
-              <button
-                type="button"
-                (click)="meetingOpen.set(false)"
-                [disabled]="pending()"
-                class="rounded-xl border px-4 py-3 font-bold"
-              >
-                Cancel</button
-              ><button
-                type="submit"
-                [disabled]="pending() || meetingForm.invalid"
-                class="rounded-xl bg-brand-700 px-4 py-3 font-bold text-white disabled:opacity-50"
-              >
-                {{ pending() ? 'Saving…' : 'Save meeting link' }}
-              </button>
-            </div>
-          </form>
-        </section>
-      </div>
-    }
     @if (decision(); as action) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <section
@@ -328,8 +261,6 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly error = signal<string | null>(null);
   readonly feedback = signal<string | null>(null);
   readonly decision = signal<Decision>(null);
-  readonly meetingOpen = signal(false);
-  readonly meetingError = signal<string | null>(null);
   readonly clinicalRecordType = signal<ClinicalRecordType | null>(null);
   readonly clinicalRecord = signal<ClinicalRecord | null>(null);
   readonly recordLoading = signal(false);
@@ -347,7 +278,6 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly previewUrl = signal<string | null>(null);
   readonly previewName = signal('');
   readonly deliveryModeLabel = careDeliveryModeLabel;
-  readonly meetingForm = this.fb.nonNullable.group({ meetingUrl: ['', Validators.required] });
   readonly reasonForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required, Validators.maxLength(2000)]],
   });
@@ -460,52 +390,6 @@ export class ProviderCareAppointmentDetailPageComponent {
   private safeRecordError(error: { status?: number; error?: { message?: unknown } }): string { const message = error.error?.message; return (error.status === 400 || error.status === 409) && typeof message === 'string' ? message : 'We could not update this clinical record.'; }
   start() {
     this.run(this.api.startAppointment(this.reference), 'Appointment started.');
-  }
-  openMeetingLink() {
-    this.meetingError.set(null);
-    this.meetingForm.setValue({ meetingUrl: this.appointment()?.meetingUrl ?? '' });
-    this.meetingOpen.set(true);
-  }
-  safeMeetingUrl(value: string | null) {
-    if (!value) return null;
-    try {
-      const url = new URL(value);
-      return url.protocol === 'https:' ? url.toString() : null;
-    } catch {
-      return null;
-    }
-  }
-  saveMeetingLink() {
-    const value = this.meetingForm.controls.meetingUrl.value.trim();
-    if (!this.safeMeetingUrl(value)) {
-      this.meetingError.set('Enter a valid HTTPS meeting link.');
-      return;
-    }
-    this.runMeetingLink(value, 'Meeting link saved.');
-  }
-  removeMeetingLink() {
-    this.runMeetingLink(null, 'Meeting link removed.');
-  }
-  private runMeetingLink(value: string | null, message: string) {
-    if (this.pending()) return;
-    this.pending.set(true);
-    this.meetingError.set(null);
-    this.api
-      .updateMeetingLink(this.reference, value)
-      .pipe(finalize(() => this.pending.set(false)))
-      .subscribe({
-        next: () => {
-          this.meetingOpen.set(false);
-          this.feedback.set(message);
-          this.load();
-        },
-        error: () => {
-          this.meetingError.set(
-            'The meeting link could not be updated. We refreshed the appointment.',
-          );
-          this.load();
-        },
-      });
   }
   open(action: Exclude<Decision, null>) {
     this.reasonForm.reset();
