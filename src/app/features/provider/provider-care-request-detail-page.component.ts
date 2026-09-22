@@ -113,7 +113,7 @@ import { formatMinor } from './care-money';
             [disabled]="pending()"
             class="min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-60"
           >
-            {{ pending() ? 'Updating request…' : 'Accept request' }}</button
+            {{ pending() ? 'Confirming…' : (r.preferredDate ? 'Accept this time →' : 'Accept request →') }}</button
           ><button
             type="button"
             (click)="declineOpen.set(true)"
@@ -124,20 +124,25 @@ import { formatMinor } from './care-money';
           </button>
         </section>
       }
-      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r)) {
+      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && !r.preferredDate) {
         <button
           type="button"
           (click)="openSchedule(r)"
           class="mt-6 min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
         >
-          Schedule appointment
+          Choose appointment time
         </button>
+      }
+      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && r.preferredDate) {
+        <p class="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 font-semibold text-green-950">
+          Payment confirmed ✓ · SmartClinic is confirming the agreed appointment time automatically.
+        </p>
       }
       @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
         <p
           class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950"
         >
-          Patient accepted ✓ · Waiting for payment. SmartClinic will let you schedule as soon as payment is confirmed.
+          Time accepted ✓ · Waiting for payment. Once payment is confirmed, SmartClinic will book this appointment automatically.
         </p>
       }
       @if (chatAvailable()) {
