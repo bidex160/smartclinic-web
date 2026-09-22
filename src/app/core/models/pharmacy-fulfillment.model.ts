@@ -102,6 +102,7 @@ export interface ProviderOrderFulfillment {
     readonly clinicalNote: string | null;
     readonly orderingProvider: { readonly providerReference: string; readonly displayName: string };
     readonly prescription: PrescriptionDetail | null;
+    readonly diagnosticItems?: readonly DiagnosticOrderItem[];
   };
   readonly patient: {
     readonly patientReference: string;
