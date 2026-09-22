@@ -72,7 +72,7 @@ describe('HomePageComponent', () => {
       'My Hospital',
     ]);
     expect(choices[0].getAttribute('href')).toContain('/login');
-    expect(choices[1].getAttribute('href')).toBe('/request-care');
+    expect(choices[1].getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Frequest-care');
     expect(choices[2].getAttribute('href')).toContain('/login');
     expect(choices[2].getAttribute('href')).toContain('returnUrl=%2Fme%2Fproviders%2Fconnect');
     expect(choices[0].textContent).toContain('Check and understand your health');
