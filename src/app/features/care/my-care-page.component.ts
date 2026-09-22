@@ -9,13 +9,15 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
   selector: 'app-my-care-page',
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-    <div class="flex flex-wrap items-end justify-between gap-4">
+  template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+    <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
+      <div class="relative flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-sm font-bold uppercase text-brand-600">Patient Portal</p>
-        <h1 class="mt-2 text-3xl font-bold">My Care</h1>
-        <p class="mt-2 text-slate-600">
-          Track care coordination requests made through SmartClinic.
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Your care journey</p>
+        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">My Care</h1>
+        <p class="mt-2 max-w-2xl text-slate-600">
+          See what is happening now, what needs your attention and what comes next.
         </p>
       </div>
       <div class="flex flex-wrap gap-3">
@@ -27,7 +29,8 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           >FastTrack requests</a
         >
       </div>
-    </div>
+      </div>
+    </header>
     @if (loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading your Care Requests…</p>
     } @else if (error()) {
@@ -36,7 +39,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (!items().length) {
-      <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
+      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
         <h2 class="text-xl font-bold">No Care Requests yet</h2>
         <p class="mt-2 text-slate-600">
           Find an eligible provider or ask SmartClinic to help match you.
@@ -48,7 +51,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         >
       </section>
     } @else {
-      <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
+      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <table class="min-w-[760px] w-full text-left">
           <thead class="bg-slate-50">
             <tr>
@@ -65,7 +68,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           </thead>
           <tbody>
             @for (item of items(); track item.reference) {
-              <tr class="border-t">
+              <tr class="border-t transition hover:bg-slate-50">
                 <td class="p-4 font-semibold">{{ item.service.name }}</td>
                 <td class="p-4">{{ item.participant?.displayName ?? 'You' }}</td>
                 <td class="p-4">
