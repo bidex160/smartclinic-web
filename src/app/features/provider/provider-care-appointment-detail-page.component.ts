@@ -432,6 +432,15 @@ export class ProviderCareAppointmentDetailPageComponent {
       },
     });
   }
+  safeMeetingUrl(value: string | null | undefined): string | null {
+    if (!value) return null;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' ? url.toString() : null;
+    } catch {
+      return null;
+    }
+  }
   label(s: string) {
     return s === 'IN_PROGRESS'
       ? 'In progress'
