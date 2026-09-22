@@ -333,6 +333,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'orders',
+        title: 'Tests & Referrals | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/patient-orders-page.component').then((c) => c.PatientOrdersPageComponent),
+      },
+      {
+        path: 'orders/:reference',
+        title: 'Clinical Request | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/patient-order-detail-page.component').then((c) => c.PatientOrderDetailPageComponent),
+      },
+      {
         path: 'care',
         title: 'My Care | SmartClinic',
         canActivate: [authenticatedUserGuard],
