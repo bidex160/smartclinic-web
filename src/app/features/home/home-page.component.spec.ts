@@ -100,13 +100,13 @@ describe('HomePageComponent', () => {
     expect(text).toContain('₦8,000.00');
     expect(text).toContain('Price shown after you choose a provider');
     expect(text).not.toContain('Home Visit Health Check');
-    const packageHeadings = [...element.querySelectorAll('h3')].map((heading) =>
-      heading.textContent?.trim(),
-    );
-    expect(packageHeadings).toEqual(['Essential Health Check', 'Complete Health Check']);
     const packageLinks = [...element.querySelectorAll('a')].filter((link) =>
       link.textContent?.includes('Explore this check'),
     );
+    const packageNames = packageLinks.map((link) =>
+      link.closest('article')?.querySelector('h3')?.textContent?.trim(),
+    );
+    expect(packageNames).toEqual(['Essential Health Check', 'Complete Health Check']);
     expect(packageLinks[0].getAttribute('href')).toBe(
       '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
     );
