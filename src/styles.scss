@@ -174,3 +174,39 @@ textarea::placeholder {
     animation: none;
   }
 }
+
+/* SmartClinic premium product language */
+.sc-page {
+  background:
+    radial-gradient(circle at 92% 2%, rgba(91,33,182,.07), transparent 26rem),
+    radial-gradient(circle at 4% 28%, rgba(14,116,144,.045), transparent 24rem),
+    #f8fafc;
+}
+.sc-kicker { letter-spacing:.16em; text-transform:uppercase; font-size:.72rem; font-weight:800; }
+.sc-surface {
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(148,163,184,.2);
+  box-shadow:0 18px 50px rgba(15,23,42,.07);
+  backdrop-filter:blur(14px);
+}
+.sc-action {
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.sc-action:hover { transform:translateY(-3px); box-shadow:0 20px 42px rgba(15,23,42,.10); }
+.sc-primary {
+  box-shadow:0 10px 24px rgba(91,33,182,.22);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.sc-primary:hover { transform:translateY(-1px); box-shadow:0 14px 30px rgba(91,33,182,.28); }
+.sc-hero-glow::after {
+  content:'';
+  position:absolute;
+  width:18rem;height:18rem;border-radius:9999px;
+  right:-7rem;top:-9rem;
+  background:rgba(255,255,255,.12);
+  filter:blur(2px);
+  pointer-events:none;
+}
+@media (max-width:640px) {
+  .sc-action:hover,.sc-primary:hover { transform:none; }
+}
