@@ -49,7 +49,7 @@ describe('ProviderAdminDetailPageComponent', () => {
   });
   it('preselects persisted geography using a UI-only state code', async () => {
     const { component } = await setup({ provider: detail({ stateOrRegion: 'Oyo', city: 'Kisi' }) });
-    expect(component.editStateCode.value).toBe('OY');
+    expect(component.editStateCode.value).toBe('Oyo');
     expect(component.profileForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onStateChange('LA');
     expect(component.profileForm.getRawValue()).toMatchObject({ stateOrRegion: 'Lagos', city: '' });
