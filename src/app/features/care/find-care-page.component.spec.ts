@@ -44,6 +44,7 @@ describe('FindCarePageComponent', () => {
     dependants: readonly { patientReference: string; displayName: string }[] = [],
     serviceCode: string | null = null,
     serviceResponse: Observable<typeof services> = of(services),
+    doctorJourney = false,
   ) {
     const find = {
       getServices: vi.fn(() => serviceResponse),
@@ -83,8 +84,8 @@ describe('FindCarePageComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { queryParamMap: convertToParamMap(serviceCode ? { serviceCode } : {}) },
-            queryParamMap: of(convertToParamMap(serviceCode ? { serviceCode } : {})),
+            snapshot: { queryParamMap: convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}) }) },
+            queryParamMap: of(convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}) })),
           },
         },
         { provide: FindCareApiService, useValue: find },
@@ -335,4 +336,37 @@ describe('FindCarePageComponent', () => {
     expect(c.requestStateCode.value).toBe('');
     expect(c.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
   });
+  it('gives immediate feedback and prepares virtual discovery for Talk to a Doctor Now', async () => {
+    const { fixture, find } = await setup(true, [], 'DENTAL', of(services), true);
+    const component = fixture.componentInstance;
+    component.chooseDoctorMode('NOW');
+    fixture.detectChanges();
+    expect(component.doctorMode()).toBe('NOW');
+    expect(component.form.controls.deliveryMode.value).toBe('VIRTUAL');
+    expect(fixture.nativeElement.textContent).toContain('Selected — choose a doctor below');
+    expect(find.getProviders).toHaveBeenCalled();
+  });
+
+  it('makes Book for Later visible and pre-fills the scheduling controls', async () => {
+    const { fixture } = await setup(true, [], 'DENTAL', of(services), true);
+    const component = fixture.componentInstance;
+    component.chooseDoctorMode('LATER');
+    fixture.detectChanges();
+    expect(component.doctorMode()).toBe('LATER');
+    expect(component.form.controls.preferredDate.value).not.toBe('');
+    expect(component.form.controls.preferredTime.value).toBe('09:00');
+    expect(fixture.nativeElement.textContent).toContain('Selected — choose your preferred time below');
+  });
+
+  it('turns Visit a Hospital into an in-person flow with visible confirmation', async () => {
+    const { fixture } = await setup(true, [], 'DENTAL', of(services), true);
+    const component = fixture.componentInstance;
+    component.chooseDoctorMode('HOSPITAL');
+    fixture.detectChanges();
+    expect(component.doctorMode()).toBe('HOSPITAL');
+    expect(component.form.controls.deliveryMode.value).toBe('IN_PERSON');
+    expect(fixture.nativeElement.textContent).toContain('Selected — choose a hospital below');
+    expect(component.form.controls.stateOrRegion.hasError('required')).toBe(true);
+  });
+
 });
