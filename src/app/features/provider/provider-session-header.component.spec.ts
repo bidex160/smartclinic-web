@@ -22,6 +22,7 @@ describe('ProviderSessionHeaderComponent', () => {
         email: 'provider@example.test',
         displayName: 'Provider',
         roles: ['PROVIDER'],
+        networkRole: null,
         status: 'ACTIVE',
       },
     });
