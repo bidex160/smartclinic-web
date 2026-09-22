@@ -16,9 +16,9 @@ describe('ProviderDashboardPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     for (const label of [
-      'New Offers',
-      "Today's Appointments",
-      'Upcoming Appointments',
+      'Requests awaiting your response',
+      'Today',
+      'Coming up',
       'In Progress',
       'Completed',
     ])
