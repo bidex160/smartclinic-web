@@ -1,3 +1,4 @@
+import { ProviderAvatarComponent } from '../../shared/components/provider-avatar.component';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -20,7 +21,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 
 @Component({
   selector: 'app-find-care-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ProviderAvatarComponent, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <main class="care-discovery-page mx-auto max-w-5xl px-5 py-10 sm:px-8">
     <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
@@ -77,7 +78,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             @for (p of providers(); track p.providerReference) {
               <button type="button" (click)="chooseDoctor(p)" [attr.aria-pressed]="form.controls.preferredProviderReference.value === p.providerReference" class="care-provider-card rounded-2xl border border-slate-200 bg-white p-5 text-left" [class.border-brand-600]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-2]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-brand-100]="form.controls.preferredProviderReference.value === p.providerReference">
                 <span class="flex items-start gap-4">
-                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xl" aria-hidden="true">{{ providerInitials(p.displayName) }}</span>
+                  <app-provider-avatar [name]="p.displayName" [url]="p.profileImageUrl" [logo]="p.providerType !== 'INDIVIDUAL'" />
                   <span class="min-w-0"><strong class="block text-lg text-brand-950">{{ p.displayName }}</strong><span class="mt-1 block text-sm text-slate-500">{{ providerKind(p.providerType) }} · Virtual consultation</span>
                   @if (doctorPrice(p); as price) { <span class="mt-3 block font-black text-brand-800">{{ formatPrice(price.priceMinor, price.currency) }}<span class="ml-2 text-xs font-medium text-slate-500">per consultation</span></span> }
                   @if (form.controls.preferredProviderReference.value === p.providerReference) { <span class="mt-3 inline-flex rounded-full bg-brand-700 px-3 py-1 text-xs font-bold text-white">Selected ✓</span> }

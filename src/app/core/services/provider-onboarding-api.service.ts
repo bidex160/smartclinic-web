@@ -34,6 +34,15 @@ export class ProviderOnboardingApiService {
     );
   }
 
+  uploadProfileImage(file: File): Observable<{ profileImageUrl: string | null }> {
+    const body = new FormData(); body.append('file', file);
+    return this.http.post<{ profileImageUrl: string | null }>(`${this.baseUrl}/provider/profile/image`, body, { context: this.mutationContext });
+  }
+
+  removeProfileImage(): Observable<{ profileImageUrl: string | null }> {
+    return this.http.delete<{ profileImageUrl: string | null }>(`${this.baseUrl}/provider/profile/image`, { context: this.mutationContext });
+  }
+
   getProfile(): Observable<ProviderOnboardingProfile> {
     return this.http.get<ProviderOnboardingProfile>(`${this.baseUrl}/provider/profile`);
   }

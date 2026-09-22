@@ -1,3 +1,4 @@
+import { ProviderAvatarComponent } from '../../shared/components/provider-avatar.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -6,7 +7,7 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
 
 @Component({
   selector: 'app-my-providers-page',
-  imports: [RouterLink],
+  imports: [ProviderAvatarComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8">
     <header class="overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10 sm:p-10">
@@ -39,7 +40,7 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
               <div class="flex items-start gap-4">
                 <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-100 to-emerald-50 text-2xl">🏥</div>
                 <div class="min-w-0 flex-1">
-                  <div class="flex flex-wrap items-start justify-between gap-2"><h3 class="text-xl font-black text-brand-950">{{ item.provider.displayName }}</h3><span class="rounded-full px-3 py-1 text-xs font-bold" [class]="item.status === 'CONNECTED' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'">{{ status(item.status) }}</span></div>
+                  <div class="flex flex-wrap items-start justify-between gap-2"><div class="flex items-center gap-3"><app-provider-avatar [name]="item.provider.displayName" [url]="item.provider.profileImageUrl" [logo]="true" /><h3 class="text-xl font-black text-brand-950">{{ item.provider.displayName }}</h3></div><span class="rounded-full px-3 py-1 text-xs font-bold" [class]="item.status === 'CONNECTED' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'">{{ status(item.status) }}</span></div>
                   <p class="mt-1 text-sm text-slate-500">{{ item.provider.location.city || item.provider.location.stateOrRegion || 'SmartClinic network' }}</p>
                 </div>
               </div>

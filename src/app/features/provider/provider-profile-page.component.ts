@@ -1,3 +1,4 @@
+import { ProviderProfileImageComponent } from './provider-profile-image.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
@@ -28,6 +29,7 @@ import { ICountry, IState, ICity } from 'country-state-city';
 @Component({
   selector: 'app-provider-profile-page',
   imports: [
+    ProviderProfileImageComponent,
     ReactiveFormsModule,
     RouterLink,
     ProviderEligibilityConfigComponent,
@@ -136,6 +138,8 @@ if (p.countryCode && p.stateOrRegion) {
         error: (e) => this.handle(e),
       });
   }
+  updateImage(url: string | null): void { this.profile.update(p => p ? { ...p, profileImageUrl: url } : p); }
+
   save(): void {
     if (
       this.form.invalid ||

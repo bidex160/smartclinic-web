@@ -28,3 +28,13 @@ The consultation record editor has a specialist-referral note builder, including
 Structured public provider profiles and a dedicated image upload path, then doctor/facility affiliation invitations and specialty-based discovery. Follow with actual referral handoffs and health-station appointments once recipient permissions and availability are represented. Keep the patient journey: find suitable care, select a time, receive confirmation, attend, and see the next step.
 
 Validation for this addition: four focused tests pass (ENT selection and plan preservation, custom specialties/blank-input validation, combined length limit, and disabled state). Production build passes with existing budget/unused-import warnings. No referral was sent, no live patient data changed, and this addition has not been deployed or browser-tested.
+
+## Public profile image follow-up — 22 September 2026
+
+Implemented after the initial gap review: provider setup now supports public photo/logo upload, replacement and removal through a dedicated API endpoint. Images appear on doctor-selection and hospital-selection/connection cards, with initials when missing or broken. Facilities use an uncropped logo fit. Upload requires a separate explicit public-image action, accepts JPEG/PNG/WebP up to 5 MB, blocks duplicate submissions and preserves the existing image on failure. Identity/approval rules remain unchanged. No real photos, hospital logos or directory records were invented or preloaded.
+
+The backend adds nullable provider image columns and requires its new migration and configured Cloudinary storage before rollout. Details and rollback instructions are in the backend `docs/provider-profile-images.md`. Hospital doctor invitations, affiliations, specialty matching and routed clinical referrals remain future work. This supersedes only the image-upload gap above.
+
+Validation: frontend build passes with existing warnings; 22 focused image-editor/care-discovery tests pass. Public storage, mobile appearance and the full deployed image lifecycle still need live verification.
+
+Follow-up contract/fallback run: nine tests passed across image editor, onboarding API and avatar suites (five overlap with the earlier run; 26 unique frontend tests passed across the four focused suites). Backend has 44 focused passing tests.

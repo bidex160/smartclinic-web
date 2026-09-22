@@ -19,6 +19,7 @@
   @if (loading()) {
     <p role="status" class="mt-6">Loading provider profile…</p>
   } @else if (profile(); as current) {
+    <app-provider-profile-image [name]="current.displayName" [imageUrl]="current.profileImageUrl" [individual]="current.providerType === 'INDIVIDUAL'" [disabled]="current.status === 'SUSPENDED' || current.status === 'INACTIVE'" (imageChange)="updateImage($event)" />
     <section id="profile" class="mt-6 rounded-2xl border bg-white p-6">
       <div class="flex flex-wrap justify-between gap-3">
         <div>

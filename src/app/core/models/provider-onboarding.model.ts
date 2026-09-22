@@ -41,6 +41,7 @@ export interface ProviderOnboardingReadiness {
 }
 
 export interface ProviderOnboardingProfile {
+  readonly profileImageUrl?: string | null;
   readonly displayName: string;
   readonly email: string;
   readonly phone: string | null;
