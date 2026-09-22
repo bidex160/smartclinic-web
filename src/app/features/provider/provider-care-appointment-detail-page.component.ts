@@ -202,7 +202,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
         <h2 class="text-xl font-bold">{{ nextActionTitle(action) }}</h2>
         <p class="mt-2 text-slate-600">Enter the investigation, destination, specialist, reason and any instructions needed. This becomes part of the patient's clinical orders.</p>
         <form [formGroup]="nextActionForm" (ngSubmit)="issueNextAction(action)" class="mt-5">
-          <label class="font-bold">Clinical instruction<textarea formControlName="clinicalNote" maxlength="4000" rows="6" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. FBC, U&E and malaria test; refer to cardiology at preferred connected hospital"></textarea></label>
+          @if(action === 'LABORATORY' || action === 'IMAGING'){<label class="font-bold">Tests / studies <span class="font-normal text-slate-500">(one per line)</span><textarea formControlName="items" rows="4" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. Full blood count&#10;Malaria rapid test"></textarea></label>}<label class="mt-4 block font-bold">Clinical instruction<textarea formControlName="clinicalNote" maxlength="4000" rows="6" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. FBC, U&E and malaria test; refer to cardiology at preferred connected hospital"></textarea></label>
           @if (nextActionError()) { <p role="alert" class="mt-3 rounded-xl bg-red-50 p-3 text-red-800">{{ nextActionError() }}</p> }
           <div class="mt-5 flex justify-end gap-3"><button type="button" (click)="nextAction.set(null)" [disabled]="nextActionPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="nextActionPending() || nextActionForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ nextActionPending() ? 'Sending…' : 'Send to patient' }}</button></div>
         </form>
@@ -301,7 +301,7 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly reasonForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required, Validators.maxLength(2000)]],
   });
-  readonly nextActionForm = this.fb.nonNullable.group({ clinicalNote: ['', [Validators.required, Validators.pattern(/.*\S.*/), Validators.maxLength(4000)]] });
+  readonly nextActionForm = this.fb.nonNullable.group({ clinicalNote: ['', [Validators.required, Validators.pattern(/.*\S.*/), Validators.maxLength(4000)]], items: [''] });
   readonly recordForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.pattern(/.*\S.*/), Validators.maxLength(200)]], summary: ['', Validators.maxLength(4000)],
     presentingComplaint: ['', Validators.maxLength(10000)], historyOfPresentingComplaint: ['', Validators.maxLength(10000)], observations: ['', Validators.maxLength(10000)], assessment: ['', Validators.maxLength(10000)], diagnosis: ['', Validators.maxLength(10000)], plan: ['', Validators.maxLength(10000)], followUpInstructions: ['', Validators.maxLength(10000)],
@@ -344,7 +344,7 @@ export class ProviderCareAppointmentDetailPageComponent {
     });
   }
   openNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
-    this.nextActionForm.reset({ clinicalNote: '' }); this.nextActionError.set(null); this.nextAction.set(action);
+    this.nextActionForm.reset({ clinicalNote: '', items: '' }); this.nextActionError.set(null); this.nextAction.set(action);
   }
   nextActionTitle(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): string {
     return ({ LABORATORY: 'Laboratory request', IMAGING: 'Imaging request', REFERRAL: 'Hospital / specialist referral', PROCEDURE: 'Procedure / physical follow-up' } as const)[action];
@@ -352,7 +352,9 @@ export class ProviderCareAppointmentDetailPageComponent {
   issueNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
     if (this.nextActionForm.invalid || this.nextActionPending()) { this.nextActionForm.markAllAsTouched(); return; }
     this.nextActionPending.set(true); this.nextActionError.set(null);
-    this.ordersApi.createClinicalNextAction(this.reference, action, this.nextActionForm.controls.clinicalNote.value.trim()).pipe(finalize(() => this.nextActionPending.set(false))).subscribe({
+    const note=this.nextActionForm.controls.clinicalNote.value.trim(); const names=this.nextActionForm.controls.items.value.split('\n').map(v=>v.trim()).filter(Boolean);
+    const request=(action==='LABORATORY'||action==='IMAGING') && names.length ? this.ordersApi.createDiagnosticOrder(this.reference,action,note,names.map(name=>({name}))) : this.ordersApi.createClinicalNextAction(this.reference,action,note);
+    request.pipe(finalize(() => this.nextActionPending.set(false))).subscribe({
       next: () => { this.feedback.set(this.nextActionTitle(action) + ' sent to the patient.'); this.nextAction.set(null); },
       error: () => this.nextActionError.set('This next action could not be sent. Please review it and try again.'),
     });

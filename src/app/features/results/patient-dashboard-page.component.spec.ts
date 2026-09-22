@@ -239,6 +239,7 @@ describe('PatientDashboardPageComponent', () => {
       ['Get a consultation', '/me/request-care?serviceCode=EMERGENCY_CONSULTATION'],
       ['Get medication', '/me/request-care?serviceCode=BASIC_MEDICATIONS'],
       ['Get a lab test', '/me/request-care?serviceCode=LAB_REQUEST'],
+      ['↗Tests & referrals', '/me/orders'],
       ['View health records', '/me/health-passport'],
     ]);
     expect(nav.textContent).toContain('Pay bills');

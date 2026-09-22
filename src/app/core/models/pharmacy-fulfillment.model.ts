@@ -49,7 +49,7 @@ export interface ClinicalOrder {
   readonly cancelledAt: string | null;
   readonly cancellationReason: string | null;
   readonly prescription: PrescriptionDetail | null;
-  readonly diagnosticItems?: readonly { readonly name: string; readonly code: string | null; readonly instructions: string | null; readonly sortOrder: number }[];
+  readonly diagnosticItems?: readonly DiagnosticOrderItem[];
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly fulfillment?: {
@@ -70,6 +70,8 @@ export interface UpsertPrescriptionRequest {
   readonly items: readonly Omit<PrescriptionItem, 'sortOrder'>[];
 }
 
+export interface DiagnosticOrderItem { readonly name:string; readonly code:string|null; readonly instructions:string|null; readonly resultText:string|null; readonly resultValue:string|null; readonly resultUnit:string|null; readonly referenceRange:string|null; readonly resultFlag:string|null; readonly resultedAt:string|null; readonly sortOrder:number; }
+export interface DiagnosticResultRequest { readonly items: readonly { readonly sortOrder:number; readonly resultText?:string|null; readonly resultValue?:string|null; readonly resultUnit?:string|null; readonly referenceRange?:string|null; readonly resultFlag?:string|null }[]; }
 export interface FulfillmentDirectoryItem {
   readonly providerReference: string;
   readonly displayName: string;
@@ -100,6 +102,7 @@ export interface ProviderOrderFulfillment {
     readonly clinicalNote: string | null;
     readonly orderingProvider: { readonly providerReference: string; readonly displayName: string };
     readonly prescription: PrescriptionDetail | null;
+    readonly diagnosticItems?: readonly DiagnosticOrderItem[];
   };
   readonly patient: {
     readonly patientReference: string;

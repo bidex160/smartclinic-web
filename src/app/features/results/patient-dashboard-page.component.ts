@@ -128,6 +128,7 @@ interface DashboardNextStep {
               <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-200 text-lg text-slate-600" aria-hidden="true">₦</span>
               <span>Pay a Bill<small class="mt-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Coming soon</small></span>
             </button>
+            <a routerLink="/me/orders" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true">↗</span><span>Tests & referrals</span></a>
             <a routerLink="/me/health-passport" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h9l3 3v15H6zM15 3v4h4M9 12h6m-6 4h6"/></svg></span>
               <span>View health records</span>
