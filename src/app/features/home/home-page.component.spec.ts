@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
+import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { HomePageComponent } from './home-page.component';
 
 const catalogue = [
@@ -48,6 +49,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: api },
         { provide: AuthStateService, useValue: { isPatient: signal(false) } },
+        { provide: ReferralsApiService, useValue: { getLeaderboard: () => of([]) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -121,6 +123,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: { getCatalogue: () => of(catalogue) } },
         { provide: AuthStateService, useValue: { isPatient: signal(true) } },
+        { provide: ReferralsApiService, useValue: { getLeaderboard: () => of([]) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -151,6 +154,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: { getCatalogue: () => of([]) } },
         { provide: AuthStateService, useValue: { isPatient: signal(false) } },
+        { provide: ReferralsApiService, useValue: { getLeaderboard: () => of([]) } },
         {
           provide: PUBLIC_SITE_CONFIG,
           useValue: { whatsappUrl: 'https://wa.me/2348000000000' },
