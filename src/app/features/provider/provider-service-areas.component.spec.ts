@@ -58,7 +58,7 @@ describe('ProviderServiceAreasComponent', () => {
     const fixture = await setup();
     const component = fixture.componentInstance;
     component.edit({ ...area(), stateOrRegion: 'Oyo', city: 'Kisi' });
-    expect(component.areaStateCode.value).toBe('OY');
+    expect(component.areaStateCode.value).toBe('Oyo');
     expect(component.form.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onAreaStateChange('LA');
     expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: 'Lagos', city: '' });
