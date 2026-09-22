@@ -111,6 +111,7 @@ export class PharmacyFulfillmentApiService {
       { providerServiceUnitReference },
     );
   }
+  listFulfillmentsByType(orderType:'PRESCRIPTION'|'LABORATORY'|'IMAGING',page=1,limit=20){return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/order-fulfillments`,{params:new HttpParams().set('orderType',orderType).set('page',page).set('limit',limit)});}
   listFulfillments(page = 1, limit = 20) {
     return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/order-fulfillments`, {
       params: new HttpParams().set('page', page).set('limit', limit),
