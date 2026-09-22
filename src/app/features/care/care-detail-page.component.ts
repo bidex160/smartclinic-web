@@ -125,11 +125,11 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               </dl>
               @if (payment.fundingStatus === 'SATISFIED_FREE') {
                 <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">
-                  No payment required. Your provider can schedule your care.
+                  No payment required. SmartClinic is confirming your agreed appointment time.
                 </p>
               } @else if (payment.fundingStatus === 'PAID') {
                 <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">
-                  Payment confirmed. Your provider can schedule your care.
+                  Payment confirmed. SmartClinic is confirming your agreed appointment time.
                 </p>
               } @else if (r.status === 'PROVIDER_ACCEPTED' && payment.initializationAllowed) {
                 <app-payment-contact-email />
