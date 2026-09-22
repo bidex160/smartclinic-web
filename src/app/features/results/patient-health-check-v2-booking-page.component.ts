@@ -118,9 +118,20 @@ export class PatientHealthCheckV2BookingPageComponent {
     phone: ['', [Validators.maxLength(32)]],
   });
   constructor() {
-    this.states.set(this.locations.getStates('NG'));
+    void this.loadLocations();
     this.loadCatalogue();
     this.loadDependants();
+  }
+
+  private async loadLocations(): Promise<void> {
+    try {
+      await this.locations.ready();
+      this.states.set(this.locations.getStates('NG'));
+      const selectedState = this.form.controls.address.controls.stateOrRegion.value;
+      if (selectedState) this.cities.set(this.locations.getCities('NG', selectedState));
+    } catch {
+      this.states.set(this.locations.getStates('NG'));
+    }
   }
 
   loadDependants(): void { this.dependantsLoading.set(true); this.dependantsError.set(false); this.dependantsApi.getDependants().pipe(finalize(() => this.dependantsLoading.set(false))).subscribe({ next: result => this.dependants.set(result.items), error: () => this.dependantsError.set(true) }); }
