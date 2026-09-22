@@ -27,8 +27,24 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
       <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
       <div class="relative">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">SmartClinic care network</p>
-        <h1 class="mt-2 text-4xl font-bold text-slate-950">Find Care</h1>
-        <p class="mt-3 max-w-2xl text-slate-600">Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.</p>
+        <h1 class="mt-2 text-4xl font-bold text-slate-950">{{ doctorJourney() ? 'See a Doctor' : 'Find Care' }}</h1>
+        <p class="mt-3 max-w-2xl text-slate-600">{{ doctorJourney() ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.' : 'Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.' }}</p>
+        @if (doctorJourney()) {
+          <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
+            <button type="button" (click)="chooseDoctorMode('NOW')" [attr.aria-pressed]="doctorMode() === 'NOW'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'NOW'" [class.ring-brand-300]="doctorMode() === 'NOW'" [class.bg-brand-50]="doctorMode() === 'NOW'">
+              <strong class="block text-lg text-brand-950">Talk to a Doctor Now</strong><span class="mt-1 block text-sm text-slate-600">Start with an available doctor online.</span>
+              @if (doctorMode() === 'NOW') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a doctor below</span> }
+            </button>
+            <button type="button" (click)="chooseDoctorMode('LATER')" [attr.aria-pressed]="doctorMode() === 'LATER'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'LATER'" [class.ring-brand-300]="doctorMode() === 'LATER'" [class.bg-brand-50]="doctorMode() === 'LATER'">
+              <strong class="block text-lg text-brand-950">Book for Later</strong><span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
+              @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">Selected — choose your preferred time below</span> }
+            </button>
+            <button type="button" (click)="chooseDoctorMode('HOSPITAL')" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
+              <strong class="block text-lg text-brand-950">Visit a Hospital</strong><span class="mt-1 block text-sm text-slate-600">Choose a hospital for in-person care.</span>
+              @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a hospital below</span> }
+            </button>
+          </section>
+        }
       </div>
     </header>
     @if (success(); as request) {
@@ -382,7 +398,7 @@ export class FindCarePageComponent {
   readonly servicesError = signal(false);
   readonly requestedServiceCode = signal<string | null>(null);
   readonly doctorJourney = signal(false);
-  readonly testJourney = signal(false);
+  readonly doctorMode = signal<'NOW' | 'LATER' | 'HOSPITAL' | null>(null);
   readonly servicesLoaded = signal(false);
   private draftRestored = false;
   private draftDiscoveryStarted = false;
@@ -442,11 +458,9 @@ export class FindCarePageComponent {
   };
   constructor() {
     this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor');
-    this.testJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'test');
     this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
     this.route.queryParamMap.subscribe((params) => {
       this.doctorJourney.set(params.get('journey') === 'doctor');
-      this.testJourney.set(params.get('journey') === 'test');
       this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
       this.applyRequestedServiceCode();
     });
@@ -475,48 +489,26 @@ export class FindCarePageComponent {
       this.draftRestored = true;
     }
   }
-  chooseTestType(serviceCode: 'LAB_REQUEST' | 'IMAGING_REQUEST') {
-    this.requestedServiceCode.set(serviceCode);
-    if (this.servicesLoaded() && !this.services().some((service) => service.code === serviceCode)) {
-      this.form.controls.serviceCode.setValue('');
-      // this.invalidateDiscovery();
-      return;
-    }
-    this.form.controls.serviceCode.setValue(serviceCode);
-    // this.invalidateDiscovery();
-  }
-
-  chooseDoctor(p: PublicFindCareProvider) {
-    this.form.controls.preferredProviderReference.setValue(p.providerReference);
-  }
-  doctorPrice(p: PublicFindCareProvider) {
-    return p.services.find((s) => s.code === this.form.controls.serviceCode.value)?.deliveryOptions.find((o) => o.deliveryMode === 'VIRTUAL') ?? null;
-  }
-  chooseDoctorMode(mode: 'VIRTUAL' | 'LATER') {
-    if (mode === 'VIRTUAL') {
-      const suggested = new Date(Date.now() + 30 * 60 * 1000);
-      suggested.setMinutes(Math.ceil(suggested.getMinutes() / 15) * 15, 0, 0);
-      const yyyy = suggested.getFullYear();
-      const mm = String(suggested.getMonth() + 1).padStart(2, '0');
-      const dd = String(suggested.getDate()).padStart(2, '0');
-      const hh = String(suggested.getHours()).padStart(2, '0');
-      const mi = String(suggested.getMinutes()).padStart(2, '0');
-      this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredDate: `${yyyy}-${mm}-${dd}`, preferredTime: `${hh}:${mi}` });
+  chooseDoctorMode(mode: 'NOW' | 'LATER' | 'HOSPITAL') {
+    this.doctorMode.set(mode);
+    if (mode === 'HOSPITAL') {
+      this.form.patchValue({ deliveryMode: 'IN_PERSON', preferredProviderReference: '' });
       this.updateGeographyValidators();
       this.discoverProviders();
       return;
     }
-    const suggested = new Date();
-    suggested.setDate(suggested.getDate() + 1);
-    suggested.setHours(9, 0, 0, 0);
-    const yyyy = suggested.getFullYear();
-    const mm = String(suggested.getMonth() + 1).padStart(2, '0');
-    const dd = String(suggested.getDate()).padStart(2, '0');
-    this.form.patchValue({
-      deliveryMode: 'VIRTUAL',
-      preferredDate: `${yyyy}-${mm}-${dd}`,
-      preferredTime: '09:00',
-    });
+    this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredProviderReference: '' });
+    if (mode === 'NOW') {
+      this.form.patchValue({ preferredDate: '', preferredTime: '' });
+    } else {
+      const suggested = new Date();
+      suggested.setDate(suggested.getDate() + 1);
+      suggested.setHours(9, 0, 0, 0);
+      this.form.patchValue({
+        preferredDate: suggested.toISOString().slice(0, 10),
+        preferredTime: '09:00',
+      });
+    }
     this.updateGeographyValidators();
     this.discoverProviders();
   }
