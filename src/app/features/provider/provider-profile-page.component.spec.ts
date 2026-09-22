@@ -74,7 +74,7 @@ describe('ProviderProfilePageComponent', () => {
       stateOrRegion: 'Oyo',
       city: 'Kisi',
     });
-    expect(component.profileStateCode.value).toBe('OY');
+    expect(component.profileStateCode.value).toBe('Oyo');
     expect(component.form.getRawValue()).toMatchObject({
       countryCode: 'NG',
       stateOrRegion: 'Oyo',
