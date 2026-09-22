@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import {
   Country,
   State,
-  City,
   ICountry,
   IState,
   ICity,
@@ -99,10 +98,7 @@ getStates(countryCode: string): IState[] {
     if (!state) {
       return [];
     }
-    return City.getCitiesOfState(countryCode, state.isoCode).map((city) => ({
-      ...city,
-      stateCode: state.name,
-    }));
+    return [];
   }
 
   const parsed = JSON.parse(cached);
