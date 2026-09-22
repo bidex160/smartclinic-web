@@ -106,6 +106,18 @@ describe('ExternalFastTrackPageComponent', () => {
         { provide: FindCareApiService, useValue: find },
         { provide: FastTrackApiService, useValue: { createExternal: vi.fn() } },
         {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: (countryCode: string) => countryCode === 'NG' ? [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ] : [],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo' ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }] : [],
+          },
+        },
+        {
           provide: DependantsApiService,
           useValue: { getDependants: vi.fn(() => of({ items: [] })) },
         },
