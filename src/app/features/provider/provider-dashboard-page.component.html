@@ -302,24 +302,18 @@
                 >View offers</a
               >
             </article>
-            <article class="rounded-2xl border bg-white p-5">
-              <p class="font-semibold text-slate-600">Today's appointments</p>
-              <p class="mt-2 text-4xl font-bold text-brand-800">{{ totals.appointments.today }}</p>
+            <article class="rounded-2xl border-2 border-violet-200 bg-violet-50 p-5">
+              <p class="font-semibold text-slate-700">Patient appointments</p>
+              <p class="mt-2 text-4xl font-black text-brand-800">{{ careAppointmentCount() }}</p>
+              @if (careAppointmentCountError()) {
+                <p class="mt-2 text-sm text-red-700">Appointment count unavailable. Open appointments to check.</p>
+              } @else {
+                <p class="mt-2 text-sm text-slate-600">Scheduled, confirmed or currently in progress.</p>
+              }
               <a
-                routerLink="/provider/appointments"
+                routerLink="/provider/care-appointments"
                 class="mt-4 inline-flex font-bold text-brand-700 underline"
-                >View appointments</a
-              >
-            </article>
-            <article class="rounded-2xl border bg-white p-5">
-              <p class="font-semibold text-slate-600">Upcoming appointments</p>
-              <p class="mt-2 text-4xl font-bold text-brand-800">
-                {{ totals.appointments.upcoming }}
-              </p>
-              <a
-                routerLink="/provider/appointments"
-                class="mt-4 inline-flex font-bold text-brand-700 underline"
-                >View appointments</a
+                >See patient appointments →</a
               >
             </article>
             <article class="rounded-2xl border bg-white p-5">
