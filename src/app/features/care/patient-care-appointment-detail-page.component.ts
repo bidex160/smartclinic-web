@@ -20,11 +20,11 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </p>
     } @else if (appointment(); as a) {
-      <header class="mt-6">
+      <header class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <p class="break-all text-sm font-bold uppercase text-brand-600">
           {{ a.appointmentReference }}
         </p>
-        <h1 class="mt-2 text-3xl font-bold">Your appointment</h1>
+        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Your appointment</h1>
         <p class="mt-2 text-lg">{{ label(a.status) }}</p>
       </header>
       @if (feedback()) {
@@ -35,7 +35,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       @if (error()) {
         <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
       }
-      <section class="mt-6 rounded-2xl border bg-white p-6">
+      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-500">Provider</dt>
@@ -88,21 +88,22 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(a.status) }}</p>
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
-        <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">Virtual consultation</h2>
+        <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Secure video care</p>
+          <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
             <p class="mt-2 text-slate-600">
-              Join using the external link supplied by your provider.
+              Your private consultation room is ready. You do not need to copy or enter a meeting link.
             </p>
             <a
               [href]="url"
               target="_blank"
               rel="noopener noreferrer"
               class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-              >Join virtual consultation</a
+              >Join consultation</a
             >
           } @else {
-            <p class="mt-2 text-slate-600">Your provider has not added the meeting link yet.</p>
+            <p class="mt-2 text-slate-600">Your secure consultation room is being prepared. Refresh this page shortly.</p>
           }
         </section>
       }
