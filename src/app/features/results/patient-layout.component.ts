@@ -21,7 +21,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
   imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent],
   template: `
     <aside
-      class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-brand-900 p-5 text-white lg:flex"
+      class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/10 bg-brand-900 p-5 text-white shadow-xl lg:flex"
     >
       <a routerLink="/" class="flex items-center gap-3 rounded-lg focus:ring-1 ml-2 focus:ring-white/30">
         <img
@@ -54,7 +54,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                   [routerLink]="item.route"
                   routerLinkActive="bg-white/15"
                   [routerLinkActiveOptions]="{ exact: item.exact }"
-                  class="flex min-h-11 items-center rounded-xl px-4 py-2 font-semibold hover:bg-white/10 focus:ring-1 ml-2 focus:ring-white/30"
+                  class="ml-2 flex min-h-11 items-center rounded-xl px-4 py-2 font-semibold transition hover:bg-white/10 focus:ring-1 focus:ring-white/30"
                 >
                   {{ item.label }}
                 </a>
@@ -76,7 +76,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
       </div>
     </aside>
 
-    <header class="border-b bg-white px-5 py-4 lg:hidden">
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur lg:hidden">
       <div class="flex items-center justify-between">
         <a routerLink="/me/dashboard" class="font-bold text-brand-900">
           SmartClinic · Patient Portal
@@ -89,7 +89,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           (click)="menuOpen.set(!menuOpen())"
           [attr.aria-expanded]="menuOpen()"
           aria-controls="patient-mobile-nav"
-          class="min-h-11 rounded-lg border px-4 font-bold"
+          class="min-h-11 rounded-xl border border-slate-200 bg-white px-4 font-bold text-slate-800 shadow-sm"
         >
           Menu
         </button>
@@ -102,7 +102,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             <a
               [routerLink]="item.route"
               (click)="menuOpen.set(false)"
-              class="rounded-lg px-3 py-3 font-bold text-brand-800"
+              class="rounded-xl px-3 py-3 font-bold text-brand-800 hover:bg-brand-50"
             >
               {{ item.label }}
             </a>

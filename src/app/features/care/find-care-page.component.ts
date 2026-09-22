@@ -22,76 +22,18 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
   selector: 'app-find-care-page',
   imports: [ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ` <main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
-      SmartClinic care network
-    </p>
-    <h1 class="mt-2 text-4xl font-bold text-brand-950">{{ doctorJourney() ? 'See a Doctor' : (testJourney() ? 'Get a Test' : 'Find Care') }}</h1>
-    <p class="mt-3 max-w-2xl text-slate-600">
-      {{ doctorJourney()
-        ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.'
-        : (testJourney()
-          ? 'Choose the kind of test you need. If a doctor has already requested a test for you, SmartClinic should carry that request forward.'
-          : 'Tell us what care you need and how you would like to receive it. SmartClinic uses current provider information to help coordinate your request.') }}
-    </p>
-    @if (testJourney()) {
-      <section class="mt-6 grid gap-3 sm:grid-cols-2" aria-label="Test options">
-        <button type="button" (click)="chooseTestType('LAB_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
-          <strong class="block text-lg text-brand-950">Lab Test</strong>
-          <span class="mt-1 block text-sm text-slate-600">Blood, urine and other laboratory tests.</span>
-        </button>
-        <button type="button" (click)="chooseTestType('IMAGING_REQUEST')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
-          <strong class="block text-lg text-brand-950">X-ray or Scan</strong>
-          <span class="mt-1 block text-sm text-slate-600">X-ray, ultrasound, CT, MRI and other scans.</span>
-        </button>
-      </section>
-    }
-    @if (doctorJourney()) {
-      <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
-        <button type="button" (click)="chooseDoctorMode('VIRTUAL')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
-          <strong class="block text-lg text-brand-950">Talk to a Doctor Now</strong>
-          <span class="mt-1 block text-sm text-slate-600">Start with an available doctor online.</span>
-        </button>
-        <button type="button" (click)="chooseDoctorMode('LATER')" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
-          <strong class="block text-lg text-brand-950">Book for Later</strong>
-          <span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
-        </button>
-        <a routerLink="/me/providers" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200 hover:ring-brand-300">
-          <strong class="block text-lg text-brand-950">Visit a Hospital</strong>
-          <span class="mt-1 block text-sm text-slate-600">Choose a hospital for in-person care.</span>
-        </a>
-      </section>
-    }
-    @if (doctorJourney() && requestedServiceIsValid() && !success()) {
-      <section class="mt-8 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50 p-6 shadow-sm">
-        <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Available online</p>
-        <h2 class="mt-1 text-2xl font-black text-brand-950">Choose your doctor</h2>
-        <p class="mt-2 text-sm text-slate-600">Choose who you would like to speak with. The price shown is the current virtual consultation price.</p>
-        @if (providersLoading()) {
-          <p class="mt-5 rounded-2xl bg-white p-5 text-slate-600">Finding available doctors…</p>
-        } @else if (providers().length) {
-          <div class="mt-5 grid gap-3 sm:grid-cols-2">
-            @for (p of providers(); track p.providerReference) {
-              <button type="button" (click)="chooseDoctor(p)" class="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md" [class.border-brand-600]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-2]="form.controls.preferredProviderReference.value === p.providerReference" [class.ring-brand-100]="form.controls.preferredProviderReference.value === p.providerReference">
-                <span class="flex items-start gap-4">
-                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xl">👨🏾‍⚕️</span>
-                  <span class="min-w-0"><strong class="block text-lg text-brand-950">{{ p.displayName }}</strong><span class="mt-1 block text-sm text-slate-500">Available for virtual consultation</span>
-                  @if (doctorPrice(p); as price) { <span class="mt-3 block font-black text-brand-800">{{ formatPrice(price.priceMinor, price.currency) }}</span> }
-                  </span>
-                </span>
-              </button>
-            }
-          </div>
-        } @else if (providersError()) {
-          <p class="mt-5 rounded-2xl bg-red-50 p-4 text-red-800">Doctors are temporarily unavailable. Please try again.</p>
-        } @else {
-          <p class="mt-5 rounded-2xl bg-white p-5 text-slate-600">No online doctors are showing yet. You can try again shortly or visit a hospital.</p>
-        }
-      </section>
-    }
+  template: ` <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
+    <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
+      <div class="relative">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">SmartClinic care network</p>
+        <h1 class="mt-2 text-4xl font-bold text-slate-950">Find Care</h1>
+        <p class="mt-3 max-w-2xl text-slate-600">Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.</p>
+      </div>
+    </header>
     @if (success(); as request) {
-      <section class="mt-8 rounded-3xl border border-green-200 bg-green-50 p-7">
-        <h2 class="text-2xl font-bold text-green-950">Your request is in</h2>
+      <section class="mt-6 rounded-[2rem] border border-green-200 bg-green-50 p-7 shadow-sm">
+        <h2 class="text-2xl font-bold text-green-950">Care Request submitted</h2>
         <dl class="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-600">Reference</dt>
@@ -151,8 +93,8 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         >
       </section>
     } @else {
-      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-7" novalidate>
-        <fieldset class="rounded-3xl border bg-white p-6" [class.hidden]="doctorJourney() && requestedServiceIsValid()">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 grid gap-5" novalidate>
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
           @if (servicesLoading()) {
             <p role="status" class="mt-3">Loading care services…</p>
@@ -181,8 +123,8 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             }
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
-          <legend class="px-2 text-xl font-bold">Who is this for?</legend>
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <legend class="px-2 text-xl font-bold">Who is this care request for?</legend>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
               ><input
@@ -222,7 +164,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6" [class.hidden]="doctorJourney()">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
           @if (deliveryModes().length) {
             <div class="mt-3 grid gap-3 sm:grid-cols-3">
@@ -254,7 +196,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           }
         </fieldset>
         @if (requiresGeography()) {
-          <fieldset class="rounded-3xl border bg-white p-6">
+          <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <legend class="px-2 text-xl font-bold">3. Location</legend>
             <div class="mt-3 grid gap-5 md:grid-cols-3">
               <label class="font-semibold"
@@ -294,7 +236,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </div>
           </fieldset>
         }
-        <fieldset class="rounded-3xl border bg-white p-6" [class.hidden]="doctorJourney()">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
             {{ requiresGeography() ? '4' : '3' }}. Preferred provider
           </legend>
@@ -346,7 +288,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
             {{ doctorJourney() ? 'Anything else?' : (requiresGeography() ? '5. Optional request details' : '4. Optional request details') }}
           </legend>

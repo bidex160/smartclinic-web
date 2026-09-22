@@ -21,17 +21,17 @@ import { formatMinor } from './care-money';
       >← New patient requests</a
     >
     @if (loading()) {
-      <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading patient request…</p>
+      <p role="status" class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">Loading Care Request…</p>
     } @else if (error() && !request()) {
       <div role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
         {{ error() }}
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (request(); as r) {
-      <header class="mt-6">
-        <p class="text-sm font-bold uppercase tracking-wide text-brand-600">Patient request</p>
-        <h1 class="mt-2 text-3xl font-black text-brand-950">{{ r.service.name }}</h1>
-        <p class="mt-2 text-slate-600">{{ deliveryModeLabel(r.deliveryMode) }} · {{ label(r.status) }}</p>
+      <header class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Patient request</p>
+        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">{{ r.service.name }}</h1>
+        <div class="mt-3 flex flex-wrap items-center gap-3"><span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{ label(r.status) }}</span><span class="text-sm text-slate-500">Reference {{ r.reference }}</span></div>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -41,8 +41,8 @@ import { formatMinor } from './care-money';
       @if (error()) {
         <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
       }
-      <section class="mt-6 rounded-2xl border bg-white p-6">
-        <h2 class="text-xl font-bold">Appointment request</h2>
+      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-bold">Request</h2>
         <dl class="mt-5 grid gap-5 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-500">Delivery</dt>
@@ -95,7 +95,7 @@ import { formatMinor } from './care-money';
         </dl>
       </section>
       @if (r.funding || r.status === 'PROVIDER_ACCEPTED') {
-        <section class="mt-6 rounded-2xl border bg-white p-6">
+        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 class="text-xl font-bold">Payment status</h2>
           <p class="mt-2 font-semibold">{{ fundingLabel(r) }}</p>
           @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {
@@ -146,9 +146,9 @@ import { formatMinor } from './care-money';
         </p>
       }
       @if (chatAvailable()) {
-        <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Message patient</h2>
-          <p class="mt-2 text-slate-600">Use SmartClinic chat if you need to clarify the appointment with the patient.</p>
+        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="text-xl font-bold">Communication</h2>
+          <p class="mt-2 text-slate-600">Use the backend-safe patient identity in Care Chat.</p>
           <a
             [routerLink]="['/provider/care-requests', r.reference, 'chat']"
             class="mt-4 inline-flex min-h-12 items-center rounded-xl border border-brand-300 px-5 py-3 font-bold text-brand-800"

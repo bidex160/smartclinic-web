@@ -6,6 +6,7 @@ import { CareRequestsApiService } from '../../core/services/care-requests-api.se
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { FindCarePageComponent } from './find-care-page.component';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 describe('FindCarePageComponent', () => {
   const services = [
     {
@@ -87,6 +88,20 @@ describe('FindCarePageComponent', () => {
           },
         },
         { provide: FindCareApiService, useValue: find },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: () => [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
         { provide: CareRequestsApiService, useValue: care },
         {
           provide: DependantsApiService,
@@ -106,7 +121,7 @@ describe('FindCarePageComponent', () => {
     const { fixture, find } = await setup(true, [], 'DENTAL');
     const c = fixture.componentInstance;
     expect(c.form.controls.serviceCode.value).toBe('DENTAL');
-    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', limit: 50 });
+    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', limit: 50 });
   });
 
   it('ignores an invalid serviceCode and leaves normal service selection available', async () => {
@@ -132,7 +147,7 @@ describe('FindCarePageComponent', () => {
       preferredProviderReference: '',
     });
     c.serviceChanged();
-    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', limit: 50 });
+    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', limit: 50 });
     expect(c.deliveryModes()).toEqual(['IN_PERSON', 'VIRTUAL', 'HOME_VISIT']);
     c.form.controls.deliveryMode.setValue('VIRTUAL');
     c.deliveryModeChanged();

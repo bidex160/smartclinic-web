@@ -20,20 +20,22 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
     <main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
       <a routerLink="/me/care" class="font-bold text-brand-700 underline">← My Care</a>
       @if (loading()) {
-        <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading Care Request…</p>
+        <p role="status" class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">Loading Care Request…</p>
       } @else if (error()) {
         <div role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
           We couldn't load this Care Request.
           <button type="button" (click)="load()" class="font-bold underline">Try again</button>
         </div>
       } @else if (request(); as r) {
-        <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
-          <p class="text-xs font-bold uppercase tracking-[.16em] text-violet-200">{{ r.deliveryMode === 'VIRTUAL' ? 'Talk to a Doctor' : 'Your care' }}</p>
-          <h1 class="mt-2 text-3xl font-black">{{ r.assignedProvider?.displayName || r.preferredProvider?.displayName || r.service.name }}</h1>
-          <p class="mt-2 text-violet-100">{{ r.service.name }} · {{ label(r.status) }}</p>
-          @if (r.service.price) { <p class="mt-4 text-xl font-black">{{ formatPrice(r.service.price.priceMinor, r.service.price.currency) }}</p> }
+        <header class="relative mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
+          <div class="relative">
+          <p class="text-sm font-bold uppercase text-brand-600">Care Request {{ r.reference }}</p>
+          <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
+          <p class="mt-2 text-lg font-semibold text-slate-600">{{ label(r.status) }}</p>
+          </div>
         </header>
-        <section class="mt-7 rounded-2xl border bg-white p-6">
+        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <dl class="grid gap-5 sm:grid-cols-2">
             <div>
               <dt class="text-sm text-slate-500">Delivery</dt>
@@ -99,7 +101,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
         @if (r.status === 'PROVIDER_ACCEPTED' || r.funding) {
           <section
-            class="mt-6 rounded-2xl border bg-white p-6"
+            class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
             aria-labelledby="care-payment-title"
           >
             <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Next step</p>
@@ -159,9 +161,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           </section>
         }
         @if (r.appointment; as a) {
-          <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-            <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Confirmed</p>
-            <h2 class="mt-1 text-2xl font-black text-brand-950">{{ a.deliveryMode === 'VIRTUAL' ? 'Your consultation' : 'Your appointment' }}</h2>
+          <section class="mt-6 rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm">
+            <h2 class="text-xl font-bold">Your appointment</h2>
             <p class="mt-3 font-semibold">
               {{ deliveryModeLabel(a.deliveryMode) }} · {{ appointmentLabel(a.status) }}
             </p>
@@ -226,7 +227,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           </button>
         }
         @if (chatAvailable()) {
-          <section class="mt-6 rounded-2xl border bg-white p-6">
+          <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <h2 class="text-xl font-bold">Communication</h2>
             <p class="mt-2 text-slate-600">Message your provider about this Care Request.</p>
             <a

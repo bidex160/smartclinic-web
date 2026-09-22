@@ -1,8 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import {
   Country,
-  // State,
-  // City,
   ICountry,
   IState,
   ICity,
@@ -68,7 +66,7 @@ getStates(countryCode: string): IState[] {
   const cached = localStorage.getItem(CACHE_KEY);
 
   if (!cached) {
-    return []; // cache not loaded yet, call getStatesApi() first
+    return [];
   }
 
   const parsed = JSON.parse(cached);

@@ -9,16 +9,12 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-      <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
-        Patient Portal
-      </p>
-
-      <h1 class="mt-2 text-3xl font-bold text-brand-950">
-        Health Records
-      </h1>
-
-      <div class="mt-2 flex flex-wrap items-center justify-between gap-4"><p class="text-slate-600">Review finalized clinical records shared through your General Care appointments.</p><div class="flex flex-wrap gap-3"><a routerLink="/me/health-records/access-requests" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Access Requests</a><a routerLink="/me/health-records/sharing" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Manage sharing</a></div></div>
+    <main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+      <header class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">My health records</p>
+        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Health Records</h1>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-4"><p class="max-w-2xl text-slate-600">Your finalized clinical records from care delivered through SmartClinic.</p><div class="flex flex-wrap gap-3"><a routerLink="/me/health-records/access-requests" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Access Requests</a><a routerLink="/me/health-records/sharing" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Manage sharing</a></div></div>
+      </header>
 
       @if (loading()) {
         <p
@@ -45,7 +41,7 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
         </div>
       }
       @else if (!records().length) {
-        <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
+        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
           <h2 class="text-xl font-bold">
             No finalized health records yet
           </h2>
@@ -56,7 +52,7 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
         </section>
       }
       @else {
-        <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div class="mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
               <thead class="bg-slate-50">

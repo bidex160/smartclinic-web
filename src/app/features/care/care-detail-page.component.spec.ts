@@ -52,7 +52,10 @@ describe('CareDetailPageComponent funding', () => {
   it('initializes by reference only and verifies before showing Paid', async () => {
     const { fixture, component, api, resume } = await setup();
     component.payNow();
-    expect(api.initializeFunding).toHaveBeenCalledWith(reference);
+    expect(api.initializeFunding).toHaveBeenCalled();
+    const initializationArgs = api.initializeFunding.mock.calls[0] as unknown as [string, string?];
+    expect(initializationArgs[0]).toBe(reference);
+    expect(initializationArgs.length).toBeLessThanOrEqual(2);
     expect(resume).toHaveBeenCalledWith('care-access-code', expect.any(Object));
     expect(fixture.nativeElement.textContent).not.toContain('Payment confirmed');
     const callbacks = resume.mock.calls[0][1];

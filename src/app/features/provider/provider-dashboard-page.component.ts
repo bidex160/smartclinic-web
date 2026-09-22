@@ -110,14 +110,8 @@ export class ProviderDashboardPageComponent {
       .getSummary()
       .pipe(finalize(() => this.referralLoading.set(false)))
       .subscribe({
-        next: (summary) => {
-          console.log(summary);
-          this.referralSummary.set(summary);
-        },
-        error: (er) => {
-          console.log(er);
-          this.referralSummary.set(null);
-        },
+        next: (summary) => this.referralSummary.set(summary),
+        error: () => this.referralSummary.set(null),
       });
   }
 

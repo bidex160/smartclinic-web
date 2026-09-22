@@ -46,17 +46,17 @@ describe('InternalGuidedSelfCheckReviewsPageComponent', () => {
     expect(text).toContain('My Self-Check Reviews');
     expect(text).toContain('SC-GSR-ONE');
     expect(text).toContain('SC-GSC-ONE');
-    expect(text).toContain('Urgent priority');
+    expect(text).toContain('Urgent');
     expect(text).toContain('Assigned');
     expect(text).toContain('In clinical review');
-    expect(text).toContain('RED · Urgent');
-    expect(text).toContain('AMBER · Routine');
+    expect(text).toContain('RED');
+    expect(text).toContain('AMBER');
     expect(text).toContain('Not started');
     expect(text).toContain('Open Review');
     expect(text).not.toContain('Patient name');
     expect(text).not.toContain('Provider');
     expect(
-      f.nativeElement.querySelector('a[href="/internal/guided-self-check-reviews/SC-GSR-ONE"]'),
+      f.nativeElement.querySelector('a[href="/me/internal/guided-self-check-reviews/SC-GSR-ONE"]'),
     ).not.toBeNull();
   });
   it('preserves backend urgent-before-routine ordering', async () => {

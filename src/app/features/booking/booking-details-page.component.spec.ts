@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { BookingDetailsPageComponent } from './booking-details-page.component';
 import { BookingFlowStateService } from './booking-flow-state.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 
 describe('BookingDetailsPageComponent', () => {
   let component: BookingDetailsPageComponent;
@@ -11,7 +12,23 @@ describe('BookingDetailsPageComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BookingDetailsPageComponent],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: () => [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
+      ],
     }).compileComponents();
     state = TestBed.inject(BookingFlowStateService);
     state.selectPackage({
@@ -131,7 +148,7 @@ describe('BookingDetailsPageComponent', () => {
     draft.visitAddress = { ...draft.visitAddress, countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' };
     state.saveDetails(draft);
     const restored = TestBed.createComponent(BookingDetailsPageComponent).componentInstance;
-    expect(restored.visitStateCode.value).toBe('OY');
+    expect(restored.visitStateCode.value).toBe('Oyo');
     expect(restored.form.controls.visitAddress.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     expect(restored.visitCities.some(city => city.name === 'Kisi')).toBe(true);
     restored.onVisitCountryChange('GH');

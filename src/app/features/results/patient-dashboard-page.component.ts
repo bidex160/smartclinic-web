@@ -27,7 +27,7 @@ interface DashboardNextStep {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="sc-page mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-10">
       @if (loading()) {
         <section role="status" aria-live="polite" class="animate-pulse space-y-4">
           <span class="sr-only">Loading your dashboard…</span>
@@ -47,7 +47,9 @@ interface DashboardNextStep {
           </button>
         </section>
       } @else if (dashboard(); as value) {
-        <header class="flex flex-wrap items-start justify-between gap-3">
+        <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-100/60 blur-3xl"></div>
+          <div class="relative flex flex-wrap items-start justify-between gap-3">
           <div>
             <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Patient home</p>
             <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
@@ -68,14 +70,17 @@ interface DashboardNextStep {
           <p aria-live="polite" class="w-full text-sm font-semibold text-brand-700">
             {{ copyFeedback() }}
           </p>
+          </div>
         </header>
 
         <section
-          class="sc-hero-glow relative mt-5 overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-brand-950 to-violet-800 p-6 text-white shadow-[0_24px_60px_rgba(30,20,70,0.24)] sm:p-8"
+          class="relative mt-5 overflow-hidden rounded-[2rem] bg-brand-900 p-6 text-white shadow-xl sm:p-8"
           aria-labelledby="next-step-heading"
         >
-          <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
-          <h2 id="next-step-heading" class="mt-1 text-xl font-bold sm:text-2xl">
+          <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="relative">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-100">Your next step</p>
+          <h2 id="next-step-heading" class="mt-1 text-2xl font-bold">
             {{ nextStep(value).title }}
           </h2>
           <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-50 sm:text-base">
@@ -86,36 +91,33 @@ interface DashboardNextStep {
             class="mt-3 inline-flex min-h-10 items-center rounded-xl bg-white px-4 text-sm font-bold text-brand-900 focus:ring-4 focus:ring-white/40"
             >{{ nextStep(value).label }} <span class="ml-2" aria-hidden="true">→</span></a
           >
+          </div>
         </section>
 
-        <nav class="mt-9" aria-labelledby="quick-access-heading">
-          <div class="mb-3">
-            <p class="text-sm font-bold uppercase tracking-wider text-brand-700">SmartClinic</p>
-            <h2 id="quick-access-heading" class="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">
-              What do you need today?
-            </h2>
-            <p class="mt-1 text-sm text-slate-600">Choose what you want to do. We’ll guide you from there.</p>
-          </div>
+        <nav class="mt-4" aria-labelledby="quick-access-heading">
+          <h2 id="quick-access-heading" class="mb-2 text-sm font-bold uppercase tracking-wider text-brand-700">Quick access</h2>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <a routerLink="/me/book" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(76,29,149,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(76,29,149,0.15)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-violet-200/30 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-violet-600 text-xl text-white shadow-md shadow-violet-600/20" aria-hidden="true">♥</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Book a Checkup</span><span class="text-brand-500 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/health-journey" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.4-7-10.2A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7 2.8C19 16.6 12 21 12 21Z"/><path stroke-linecap="round" d="M12 11v4m-2-2h4"/></svg></span>
+              <span>Book a checkup</span>
             </a>
-            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(6,95,70,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(6,95,70,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-emerald-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-emerald-600 text-xl text-white shadow-md shadow-emerald-600/20" aria-hidden="true">✚</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>See a Doctor</span><span class="text-emerald-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/request-care"
+             [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION' }"
+              class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 3v-3.5a2.5 2.5 0 0 1-2-2.5v-5.5Z"/></svg></span>
+              <span>Get a consultation</span>
             </a>
-            <a routerLink="/me/providers" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(3,105,161,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(3,105,161,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-sky-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-sky-600 text-sm font-black text-white shadow-md shadow-sky-600/20" aria-hidden="true">H</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Visit a Hospital</span><span class="text-sky-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a 
+             [queryParams]="{ serviceCode: 'BASIC_MEDICATIONS' }"
+            routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 4h8v3H8zM6 7h12v13H6zM9 11h6m-6 4h4"/></svg></span>
+              <span>Get medication</span>
             </a>
-            <a routerLink="/me/prescriptions" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(180,83,9,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(180,83,9,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-amber-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-amber-500 text-sm font-black text-white shadow-md shadow-amber-500/20" aria-hidden="true">Rx</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Get Medicine</span><span class="text-amber-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/request-care" 
+            [queryParams]="{ serviceCode: 'LAB_REQUEST' }"
+            class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 3-5 9h6l-2 9 8-11h-6l3-7H9Z"/></svg></span>
+              <span>Get a lab test</span>
             </a>
             <a routerLink="/me/tests" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(190,24,93,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(190,24,93,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-rose-200/35 blur-xl" aria-hidden="true"></span>
@@ -126,6 +128,10 @@ interface DashboardNextStep {
               <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-200 text-lg text-slate-600" aria-hidden="true">₦</span>
               <span>Pay a Bill<small class="mt-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Coming soon</small></span>
             </button>
+            <a routerLink="/me/health-passport" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h9l3 3v15H6zM15 3v4h4M9 12h6m-6 4h6"/></svg></span>
+              <span>View health records</span>
+            </a>
           </div>
         </nav>
 
@@ -137,19 +143,42 @@ interface DashboardNextStep {
             </div>
             <a routerLink="/me/care" class="text-sm font-bold text-brand-700">View care →</a>
           </div>
-          <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <a routerLink="/me/providers" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <span class="text-xl" aria-hidden="true">🏥</span>
-              <p class="mt-2 text-sm font-bold text-brand-950">{{ value.setup.hasConnectedProvider ? 'Hospital connected' : value.setup.hasProviderConnection ? 'Connection in progress' : 'Choose a hospital' }}</p>
-            </a>
-            <a routerLink="/me/care" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <span class="text-xl" aria-hidden="true">♥</span>
-              <p class="mt-2 text-sm font-bold text-brand-950">{{ value.setup.hasCareRequest ? 'Care activity' : 'Start your care' }}</p>
-            </a>
-            <a routerLink="/me/health-passport" class="col-span-2 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100 sm:col-span-1">
-              <span class="text-xl" aria-hidden="true">▣</span>
-              <p class="mt-2 text-sm font-bold text-brand-950">Health Passport</p>
-            </a>
+          <div class="mt-3 grid gap-3 md:grid-cols-2">
+            <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+              <h3 class="font-bold">Hospital connection</h3>
+              @if (value.setup.hasConnectedProvider) {
+                <p class="mt-1 text-sm text-slate-600">You have a connected healthcare provider.</p>
+                <a routerLink="/me/providers" class="mt-2 inline-block font-bold text-brand-700"
+                  >View My Hospitals →</a
+                >
+              } @else if (value.setup.hasProviderConnection) {
+                <p class="mt-1 text-sm text-slate-600">Your provider connection is in progress.</p>
+                <a routerLink="/me/providers" class="mt-2 inline-block font-bold text-brand-700"
+                  >View connection →</a
+                >
+              } @else {
+                <p class="mt-1 text-sm text-slate-600">No hospital connected yet.</p>
+                <a
+                  routerLink="/me/providers/connect"
+                  class="mt-2 inline-block font-bold text-brand-700"
+                  >Choose My Hospital →</a
+                >
+              }
+            </article>
+            <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+              <h3 class="font-bold">Care activity</h3>
+              @if (value.setup.hasCareRequest) {
+                <p class="mt-1 text-sm text-slate-600">You have care activity in My Care.</p>
+                <a routerLink="/me/care" class="mt-2 inline-block font-bold text-brand-700"
+                  >Open My Care →</a
+                >
+              } @else {
+                <p class="mt-1 text-sm text-slate-600">No care request yet.</p>
+                <a routerLink="/me/request-care" class="mt-2 inline-block font-bold text-brand-700"
+                  >Find Care →</a
+                >
+              }
+            </article>
           </div>
         </section>
 

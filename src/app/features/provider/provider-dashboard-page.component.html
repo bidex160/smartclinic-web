@@ -1,7 +1,12 @@
-<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-  <p class="text-sm font-bold uppercase tracking-wider text-brand-600">SmartClinic for providers</p>
-  <h1 class="mt-2 text-3xl font-black text-brand-900">Your clinic today</h1>
-  <p class="mt-2 text-slate-600">Receive patients, manage appointments and keep track of payments in one place.</p>
+<main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+  <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
+    <div class="relative">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Provider workspace</p>
+      <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Provider Dashboard</h1>
+      <p class="mt-2 max-w-2xl text-slate-600">Manage patient requests, appointments, services and the work that needs your attention.</p>
+    </div>
+  </header>
 
   @if (profileLoading()) {
     <p role="status" class="mt-6 rounded-xl bg-brand-50 p-4">Loading your provider workspace…</p>
@@ -170,8 +175,8 @@
         <h2 id="primary-actions-heading" class="text-xl font-bold text-brand-900">What do you need to do?</h2>
       <div
   class="
-    grid grid-cols-3 gap-2
-    sm:grid-cols-3 sm:gap-3
+    grid grid-cols-2 gap-3
+    sm:grid-cols-3
     lg:grid-cols-3
   "
 >
@@ -181,8 +186,8 @@
       [fragment]="action.fragment"
       class="
         group flex min-w-0 flex-col items-center
-        rounded-xl border border-slate-200 bg-white
-        px-2 py-3 text-center
+        rounded-2xl border border-slate-200 bg-white
+        px-3 py-4 text-center shadow-sm
         transition
         hover:border-brand-300 hover:shadow-sm
         focus-visible:outline focus-visible:outline-2
@@ -282,19 +287,9 @@
             </button>
           </div>
         } @else if (summary(); as totals) {
-          <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <article class="rounded-2xl border-2 border-brand-200 bg-brand-50 p-5">
-              <p class="font-semibold text-brand-900">New patient requests</p>
-              <p class="mt-2 text-4xl font-black text-brand-800">{{ newCareRequestCount() }}</p>
-              @if (careRequestCountError()) {
-                <p class="mt-2 text-sm text-red-700">Request count unavailable. Open the inbox to check.</p>
-              } @else {
-                <p class="mt-2 text-sm text-slate-600">Patients waiting for your response.</p>
-              }
-              <a routerLink="/provider/care-requests" class="mt-4 inline-flex font-bold text-brand-700 underline">Review requests →</a>
-            </article>
-            <article class="rounded-2xl border bg-white p-5">
-              <p class="font-semibold text-slate-600">New checkup requests</p>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="font-semibold text-slate-600">New Offers</p>
               <p class="mt-2 text-4xl font-bold text-brand-800">{{ totals.offers.new }}</p>
               <a
                 routerLink="/provider/offers"
@@ -302,22 +297,28 @@
                 >View offers</a
               >
             </article>
-            <article class="rounded-2xl border-2 border-violet-200 bg-violet-50 p-5">
-              <p class="font-semibold text-slate-700">Patient appointments</p>
-              <p class="mt-2 text-4xl font-black text-brand-800">{{ careAppointmentCount() }}</p>
-              @if (careAppointmentCountError()) {
-                <p class="mt-2 text-sm text-red-700">Appointment count unavailable. Open appointments to check.</p>
-              } @else {
-                <p class="mt-2 text-sm text-slate-600">Scheduled, confirmed or currently in progress.</p>
-              }
+            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="font-semibold text-slate-600">Today's Appointments</p>
+              <p class="mt-2 text-4xl font-bold text-brand-800">{{ totals.appointments.today }}</p>
               <a
                 routerLink="/provider/care-appointments"
                 class="mt-4 inline-flex font-bold text-brand-700 underline"
                 >See patient appointments →</a
               >
             </article>
-            <article class="rounded-2xl border bg-white p-5">
-              <p class="font-semibold text-slate-600">Checkups in progress</p>
+            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="font-semibold text-slate-600">Upcoming Appointments</p>
+              <p class="mt-2 text-4xl font-bold text-brand-800">
+                {{ totals.appointments.upcoming }}
+              </p>
+              <a
+                routerLink="/provider/appointments"
+                class="mt-4 inline-flex font-bold text-brand-700 underline"
+                >View appointments</a
+              >
+            </article>
+            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="font-semibold text-slate-600">In Progress</p>
               <p class="mt-2 text-4xl font-bold text-brand-800">
                 {{ totals.healthChecks.inProgress }}
               </p>
@@ -327,8 +328,8 @@
                 >View Health Checks</a
               >
             </article>
-            <article class="rounded-2xl border bg-white p-5">
-              <p class="font-semibold text-slate-600">Completed checkups</p>
+            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p class="font-semibold text-slate-600">Completed</p>
               <p class="mt-2 text-4xl font-bold text-brand-800">
                 {{ totals.healthChecks.completed }}
               </p>

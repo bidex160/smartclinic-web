@@ -6,6 +6,7 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { ProviderServiceAreasApiService } from '../../core/services/provider-service-areas-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderServiceAreasComponent } from './provider-service-areas.component';
 
 describe('ProviderServiceAreasComponent', () => {
@@ -58,7 +59,7 @@ describe('ProviderServiceAreasComponent', () => {
     const fixture = await setup();
     const component = fixture.componentInstance;
     component.edit({ ...area(), stateOrRegion: 'Oyo', city: 'Kisi' });
-    expect(component.areaStateCode.value).toBe('OY');
+    expect(component.areaStateCode.value).toBe('Oyo');
     expect(component.form.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onAreaStateChange('LA');
     expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: 'Lagos', city: '' });
@@ -120,6 +121,20 @@ async function setup(overrides: Record<string, unknown> = {}) {
                 isActive: true,
               },
             ]),
+        },
+      },
+      {
+        provide: LocationDataService,
+        useValue: {
+          getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+          getStates: () => [
+            { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+            { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+          ],
+          getCities: (_countryCode: string, stateCode: string) =>
+            stateCode === 'Oyo'
+              ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+              : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
         },
       },
       {
