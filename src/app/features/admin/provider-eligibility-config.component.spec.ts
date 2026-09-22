@@ -203,7 +203,7 @@ describe('ProviderEligibilityConfigComponent', () => {
       state: 'Oyo',
       city: 'Kisi',
     });
-    expect(component.locationStateCode.value).toBe('OY');
+    expect(component.locationStateCode.value).toBe('Oyo');
     expect(component.locationForm.getRawValue()).toMatchObject({
       countryCode: 'NG',
       state: 'Oyo',
