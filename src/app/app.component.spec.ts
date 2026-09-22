@@ -43,6 +43,7 @@ describe('AppComponent', () => {
         email: 'multi@example.test',
         displayName: 'Multi role',
         roles: ['ADMIN', 'PROVIDER', 'USER'],
+        networkRole: null,
         status: 'ACTIVE',
       },
     });

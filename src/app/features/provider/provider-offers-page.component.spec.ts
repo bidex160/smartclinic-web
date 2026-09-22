@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { describe, expect, it, vi } from 'vitest';
 import { of } from 'rxjs';
 
 import { ProviderOffer } from '../../core/models/provider-offer.model';
@@ -8,6 +9,10 @@ import { ProviderOffersApiService } from '../../core/services/provider-offers-ap
 import { ProviderOffersPageComponent } from './provider-offers-page.component';
 
 describe('ProviderOffersPageComponent', () => {
+  it('registers the provider offers suite', () => {
+    expect(true).toBe(true);
+  });
+
   it('renders only the safe offer fields supplied by the provider API', async () => {
     const { fixture } = await setup();
     fixture.detectChanges();

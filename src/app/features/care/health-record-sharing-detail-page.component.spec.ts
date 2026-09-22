@@ -6,7 +6,7 @@ import { HealthRecordSharingDetailPageComponent } from './health-record-sharing-
 
 describe('HealthRecordSharingDetailPageComponent', () => {
   it.each([
-    ['ACTIVE', null, null, 'can access your all finalized health records'],
+    ['ACTIVE', null, null, 'can access your health passport and finalized clinical records'],
     ['REVOKED', null, '2026-09-03T10:00:00Z', 'This access was revoked'],
     ['EXPIRED', '2026-09-03T10:00:00Z', null, 'This access expired'],
   ])('renders authoritative %s access messaging', async (status, expiresAt, revokedAt, expected) => {

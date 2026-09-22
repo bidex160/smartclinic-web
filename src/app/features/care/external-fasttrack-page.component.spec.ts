@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { ExternalFastTrackPageComponent } from './external-fasttrack-page.component';
 
 describe('ExternalFastTrackPageComponent', () => {
@@ -48,6 +49,20 @@ describe('ExternalFastTrackPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: FindCareApiService, useValue: find },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: (countryCode: string) => countryCode === 'NG' ? [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ] : [],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }, { name: 'Ibadan', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
         { provide: FastTrackApiService, useValue: fast },
         {
           provide: DependantsApiService,
@@ -90,6 +105,18 @@ describe('ExternalFastTrackPageComponent', () => {
         provideRouter([]),
         { provide: FindCareApiService, useValue: find },
         { provide: FastTrackApiService, useValue: { createExternal: vi.fn() } },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: (countryCode: string) => countryCode === 'NG' ? [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ] : [],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo' ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }] : [],
+          },
+        },
         {
           provide: DependantsApiService,
           useValue: { getDependants: vi.fn(() => of({ items: [] })) },

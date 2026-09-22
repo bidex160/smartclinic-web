@@ -29,10 +29,12 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
   imports: [ReactiveFormsModule, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <section
-    class="rounded-2xl border bg-white p-6"
+    class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
     aria-labelledby="patient-payment-heading"
   >
-    <h2 id="patient-payment-heading" class="text-xl font-bold text-brand-900">Payment</h2>
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Secure checkout</p>
+    <h2 id="patient-payment-heading" class="mt-2 text-2xl font-bold text-slate-950">Payment</h2>
+    <p class="mt-2 text-sm text-slate-600">Review your total, apply eligible rewards and choose how you would like to complete payment.</p>
     @if (statusLoading()) {
       <p role="status" class="mt-4">Loading payment status…</p>
     }
@@ -275,9 +277,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
 export class PatientPaymentPanelComponent implements OnInit {
   @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   @Input({ required: true }) reference = '';
-  @Input() set reloadVerify(v: any){
-    console.log(v)
-  } ;
+  @Input() set reloadVerify(_value: unknown) {
+    // Retained as an input hook for parent-driven payment status refreshes.
+  }
   @Output() readonly statusChanged = new EventEmitter<PublicBookingPaymentStatus>();
   private readonly api = inject(HealthCheckResultsApiService);
   private readonly navigateExternal = inject(EXTERNAL_NAVIGATOR);
@@ -474,7 +476,6 @@ export class PatientPaymentPanelComponent implements OnInit {
     initialization.subscribe({
       next: (result) => {
         this.pending.set(false);
-        console.log(result)
         if (result.provider === 'OPAY' && result.checkoutUrl) {
           window.location.assign(result.checkoutUrl);
           return;

@@ -10,12 +10,12 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
   selector: 'app-provider-care-appointments-page',
   imports: [RouterLink, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase text-brand-600">Care operations</p>
-    <h1 class="mt-2 text-3xl font-bold">Care Appointments</h1>
-    <p class="mt-2 text-slate-600">
-      Appointments explicitly scheduled from accepted Care Requests.
-    </p>
+  template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+    <header class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Clinical operations</p>
+      <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Care Appointments</h1>
+      <p class="mt-2 max-w-2xl text-slate-600">Manage scheduled care, enter consultations and complete the clinical workflow from one place.</p>
+    </header>
     <form [formGroup]="filter" class="mt-6 max-w-xs">
       <label class="font-bold"
         >Status<select
@@ -42,7 +42,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
         No Care Appointments match this view.
       </p>
     } @else {
-      <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
+      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <table class="min-w-[900px] w-full text-left">
           <thead class="bg-slate-50">
             <tr>
@@ -58,7 +58,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
           </thead>
           <tbody>
             @for (a of items(); track a.appointmentReference) {
-              <tr class="border-t">
+              <tr class="border-t transition hover:bg-slate-50">
                 <td class="p-4 break-all font-semibold">{{ a.appointmentReference }}</td>
                 <td class="p-4 break-all">{{ a.careRequestReference }}</td>
                 <td class="p-4">{{ a.service.name }}</td>

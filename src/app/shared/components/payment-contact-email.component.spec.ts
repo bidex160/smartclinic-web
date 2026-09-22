@@ -14,7 +14,7 @@ describe('PaymentContactEmailComponent', () => {
     };
     const { component, fixture } = await setup(user);
     expect(fixture.nativeElement.querySelector('input[type="email"]')).toBeNull();
-    expect(component.request()).toEqual({ paymentProvider: 'PAYSTACK' });
+    expect(component.request()).toEqual({ paymentProvider: 'OPAY' });
   });
 
   it('requires, validates, and normalizes payment email for a null-email account', async () => {
@@ -27,7 +27,7 @@ describe('PaymentContactEmailComponent', () => {
     component.control.setValue('  ADA@Example.COM  ');
     expect(component.request()).toEqual({
       paymentEmail: 'ada@example.com',
-      paymentProvider: 'PAYSTACK',
+      paymentProvider: 'OPAY',
     });
     expect(user.email).toBeNull();
   });

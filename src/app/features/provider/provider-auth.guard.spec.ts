@@ -51,6 +51,7 @@ function authenticate(state: AuthStateService, roles: UserRole[]): void {
       email: 'provider@example.test',
       displayName: 'Provider',
       roles,
+      networkRole: null,
       status: 'ACTIVE',
     },
   });

@@ -26,7 +26,7 @@ describe('SmartClinicCompanionComponent', () => {
     component.explain('find-care');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Tell SmartClinic what you need help with');
+    expect(fixture.nativeElement.textContent).toContain('Find Care helps when something is worrying you');
     const link = fixture.nativeElement.querySelector('.guide__answer a') as HTMLAnchorElement;
     expect(link.getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Frequest-care');
   });

@@ -61,6 +61,15 @@ import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-pa
             }
 
             <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-5" novalidate>
+              <p class="text-sm text-slate-600">
+                New to SmartClinic?
+                <a
+                  routerLink="/register"
+                  [queryParams]="registrationQueryParams"
+                  class="font-bold text-brand-700 underline"
+                  >Create an account</a
+                >
+              </p>
               <div>
                 <label for="identifier" class="font-bold"> Email or phone number </label>
 

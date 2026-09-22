@@ -54,7 +54,7 @@ export class BookingReviewPageComponent {
         error: (error: HttpErrorResponse) => {
                      const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
 
-          this.submissionError.set(message || this.getSubmissionError(error));
+          this.submissionError.set(error.status === 422 ? this.getSubmissionError(error) : message || this.getSubmissionError(error));
           queueMicrotask(() =>
             this.host.nativeElement.querySelector<HTMLElement>('#submission-error')?.focus(),
           );

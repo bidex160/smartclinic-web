@@ -236,9 +236,9 @@ describe('PatientDashboardPageComponent', () => {
       ]),
     ).toEqual([
       ['Book a checkup', '/me/health-journey'],
-      ['Get a consultation', '/me/request-care'],
-      ['Get medication', '/me/request-care'],
-      ['Get a lab test', '/me/request-care'],
+      ['Get a consultation', '/me/request-care?serviceCode=EMERGENCY_CONSULTATION'],
+      ['Get medication', '/me/request-care?serviceCode=BASIC_MEDICATIONS'],
+      ['Get a lab test', '/me/request-care?serviceCode=LAB_REQUEST'],
       ['View health records', '/me/health-passport'],
     ]);
     expect(nav.textContent).toContain('Pay bills');
@@ -301,7 +301,7 @@ describe('PatientDashboardPageComponent', () => {
     expect(section.textContent).toContain('Reserved points60');
     expect(section.textContent).toContain('Lifetime earned500');
     expect(section.textContent).toContain('Verified referrals36');
-    expect(section.textContent.replace(/\s+/g, '')).toContain('Yourposition#12');
+    expect(section.textContent.replace(/\s+/g, '')).toContain('Leadershipposition#12');
     expect(section.textContent).toContain('SC-ABC123');
     expect(section.textContent).toContain('Next achievement: Level 3');
     expect(section.querySelector('a[href="/me/referrals"]')).not.toBeNull();
@@ -320,7 +320,7 @@ describe('PatientDashboardPageComponent', () => {
   it('uses authenticated Impact rank without loading or calculating a public leaderboard', async () => {
     const { fixture, referralsApi } = await setup();
 
-    expect(fixture.nativeElement.textContent.replace(/\s+/g, '')).toContain('Yourposition#12');
+    expect(fixture.nativeElement.textContent.replace(/\s+/g, '')).toContain('Leadershipposition#12');
     expect(referralsApi.getMyImpact).toHaveBeenCalledOnce();
     expect(referralsApi.summary).not.toHaveBeenCalled();
     expect(referralsApi.getPublicLeaderboard).not.toHaveBeenCalled();
@@ -334,7 +334,7 @@ describe('PatientDashboardPageComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent.replace(/\s+/g, '')).toContain(
-      'YourpositionNotrankedyet',
+      'LeadershippositionNotrankedyet',
     );
   });
 

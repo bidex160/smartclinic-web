@@ -118,7 +118,6 @@ export class PatientHealthCheckV2BookingPageComponent {
     phone: ['', [Validators.maxLength(32)]],
   });
   constructor() {
-    console.log('xxx')
     this.states.set(this.locations.getStates('NG'));
     this.loadCatalogue();
     this.loadDependants();

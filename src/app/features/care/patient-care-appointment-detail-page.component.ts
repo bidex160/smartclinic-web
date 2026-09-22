@@ -10,7 +10,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
   selector: 'app-patient-care-appointment-detail-page',
   imports: [RouterLink, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
+  template: `<main class="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-10">
     <a routerLink="/me/care" class="font-bold text-brand-700 underline">← My Care</a>
     @if (loading()) {
       <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading your appointment…</p>
@@ -21,11 +21,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       </p>
     } @else if (appointment(); as a) {
       <header class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <p class="break-all text-sm font-bold uppercase text-brand-600">
-          {{ a.appointmentReference }}
-        </p>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Your care journey</p>
         <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Your appointment</h1>
-        <p class="mt-2 text-lg">{{ label(a.status) }}</p>
+        <div class="mt-3 flex flex-wrap items-center gap-3"><span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{ label(a.status) }}</span><span class="text-sm text-slate-500">Reference {{ a.appointmentReference }}</span></div>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -85,7 +83,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             </div>
           }
         </dl>
-        <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(a.status) }}</p>
+        <div class="mt-6 rounded-2xl bg-slate-50 p-5"><p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">What happens next</p><p class="mt-2 font-semibold text-slate-800">{{ nextStep(a.status) }}</p></div>
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
@@ -229,7 +227,7 @@ export class PatientCareAppointmentDetailPageComponent {
           SCHEDULED: 'Your appointment has been scheduled.',
           CONFIRMED: 'Your appointment is confirmed.',
           IN_PROGRESS: 'Your appointment is currently in progress.',
-          COMPLETED: 'This appointment has been completed.',
+          COMPLETED: 'This appointment is complete. Your clinical records, prescriptions or results will appear in the relevant sections when finalized by your provider.',
           CANCELLED: 'This appointment was cancelled.',
           NO_SHOW: 'This appointment was recorded as a no-show.',
         } as Record<string, string>

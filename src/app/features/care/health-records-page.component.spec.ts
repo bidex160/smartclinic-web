@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { describe, expect, it, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ClinicalRecordsApiService } from '../../core/services/clinical-records-api.service';

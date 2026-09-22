@@ -129,9 +129,6 @@ if (p.countryCode && p.stateOrRegion) {
             this.form.disable();
             this.profileStateCode.disable({ emitEvent: false });
           }
-         this.form.controls['stateOrRegion'].enable()
-         this.profileStateCode.enable()
-         this.form.controls['city'].enable()
         },
         error: (e) => this.handle(e),
       });

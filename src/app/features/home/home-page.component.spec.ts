@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
+import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { HomePageComponent } from './home-page.component';
 
 const catalogue = [
@@ -48,6 +49,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: api },
         { provide: AuthStateService, useValue: { isPatient: signal(false) } },
+        { provide: ReferralsApiService, useValue: { getPublicLeaderboard: () => of({ people: [], cities: [], countries: [] }) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -70,7 +72,7 @@ describe('HomePageComponent', () => {
       'My Hospital',
     ]);
     expect(choices[0].getAttribute('href')).toContain('/login');
-    expect(choices[1].getAttribute('href')).toBe('/request-care');
+    expect(choices[1].getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Frequest-care');
     expect(choices[2].getAttribute('href')).toContain('/login');
     expect(choices[2].getAttribute('href')).toContain('returnUrl=%2Fme%2Fproviders%2Fconnect');
     expect(choices[0].textContent).toContain('Check and understand your health');
@@ -98,17 +100,18 @@ describe('HomePageComponent', () => {
     expect(text).toContain('₦8,000.00');
     expect(text).toContain('Price shown after you choose a provider');
     expect(text).not.toContain('Home Visit Health Check');
-    expect(text.indexOf('Essential Health Check')).toBeLessThan(
-      text.indexOf('Complete Health Check'),
-    );
     const packageLinks = [...element.querySelectorAll('a')].filter((link) =>
       link.textContent?.includes('Explore this check'),
     );
+    const packageNames = packageLinks.map((link) =>
+      link.closest('article')?.querySelector('h3')?.textContent?.trim(),
+    );
+    expect(packageNames).toEqual(['Complete Health Check', 'Essential Health Check']);
     expect(packageLinks[0].getAttribute('href')).toBe(
-      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
+      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
     );
     expect(packageLinks[1].getAttribute('href')).toBe(
-      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
+      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
     );
     expect(element.querySelectorAll('details').length).toBeGreaterThan(0);
     expect(api.getCatalogue).toHaveBeenCalledOnce();
@@ -121,6 +124,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: { getCatalogue: () => of(catalogue) } },
         { provide: AuthStateService, useValue: { isPatient: signal(true) } },
+        { provide: ReferralsApiService, useValue: { getPublicLeaderboard: () => of({ people: [], cities: [], countries: [] }) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -151,6 +155,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: { getCatalogue: () => of([]) } },
         { provide: AuthStateService, useValue: { isPatient: signal(false) } },
+        { provide: ReferralsApiService, useValue: { getPublicLeaderboard: () => of({ people: [], cities: [], countries: [] }) } },
         {
           provide: PUBLIC_SITE_CONFIG,
           useValue: { whatsappUrl: 'https://wa.me/2348000000000' },

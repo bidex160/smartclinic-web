@@ -6,6 +6,7 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { PatientHealthCheckV2BookingPageComponent } from './patient-health-check-v2-booking-page.component';
 
 describe('PatientHealthCheckV2BookingPageComponent', () => {
@@ -408,6 +409,20 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
         { provide: HealthCheckResultsApiService, useValue: bookingApi },
         { provide: ProviderRecruitmentInvitationsApiService, useValue: invitationApi },
         { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [{ patientReference: 'SCP-AB12-CD34', firstName: 'Aisha', lastName: 'Okafor', displayName: 'Aisha Okafor', dateOfBirth: '2015-06-12', countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Ikeja', relationship: { type: 'MOTHER', role: 'GUARDIAN', isPrimary: true } }] }) } },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: () => [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientHealthCheckV2BookingPageComponent);

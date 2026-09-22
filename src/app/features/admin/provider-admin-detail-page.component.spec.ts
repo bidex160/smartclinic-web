@@ -12,6 +12,7 @@ import { ProviderEligibilityApiService } from '../../core/services/provider-elig
 import { ProviderServiceAreasApiService } from '../../core/services/provider-service-areas-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 
 describe('ProviderAdminDetailPageComponent', () => {
   it('renders safe detail, linked user, counts, and no credential data', async () => {
@@ -49,7 +50,7 @@ describe('ProviderAdminDetailPageComponent', () => {
   });
   it('preselects persisted geography using a UI-only state code', async () => {
     const { component } = await setup({ provider: detail({ stateOrRegion: 'Oyo', city: 'Kisi' }) });
-    expect(component.editStateCode.value).toBe('OY');
+    expect(component.editStateCode.value).toBe('Oyo');
     expect(component.profileForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onStateChange('LA');
     expect(component.profileForm.getRawValue()).toMatchObject({ stateOrRegion: 'Lagos', city: '' });
@@ -326,6 +327,20 @@ describe('ProviderAdminDetailPageComponent', () => {
         { provide: ProviderEligibilityApiService, useValue: eligibilityApi() },
         { provide: HealthCheckPackagesApiService, useValue: { getPackages: () => of([]) } },
         { provide: FulfilmentModesApiService, useValue: { getFulfilmentModes: () => of([]) } },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: () => [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
         {
           provide: ProviderServiceAreasApiService,
           useValue: { listOwn: () => of([]), listForAdmin: () => of([]) },

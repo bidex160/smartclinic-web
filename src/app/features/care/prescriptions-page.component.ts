@@ -7,10 +7,12 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   selector: 'app-prescriptions-page',
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase text-brand-600">Patient portal</p>
-    <h1 class="mt-2 text-3xl font-bold">Prescriptions</h1>
-    <p class="mt-2 text-slate-600">Issued prescriptions from your General Care appointments.</p>
+  template: `<main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+    <header class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">My health records</p>
+      <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Prescriptions</h1>
+      <p class="mt-2 text-slate-600">Medicines prescribed during your SmartClinic care journey, kept together for easy access.</p>
+    </header>
     @if (loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading prescriptions…</p>
     } @else if (error()) {
@@ -19,11 +21,11 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
         <button (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (!items().length) {
-      <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
+      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
         <h2 class="text-xl font-bold">No prescriptions yet.</h2>
       </section>
     } @else {
-      <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
+      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <table class="min-w-full divide-y">
           <thead>
             <tr>
