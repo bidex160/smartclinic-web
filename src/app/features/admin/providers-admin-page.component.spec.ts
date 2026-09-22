@@ -69,9 +69,9 @@ describe('ProvidersAdminPageComponent', () => {
   it('translates the state ISO selection to the API state name and clears dependants', async () => {
     const { component } = await setup();
     component.onCountryChange('NG');
-    component.onStateChange('OY');
+    component.onStateChange('Oyo');
     component.createForm.controls.city.setValue('Kisi');
-    expect(component.createStateCode.value).toBe('OY');
+    expect(component.createStateCode.value).toBe('Oyo');
     expect(component.createForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onCountryChange('GH');
     expect(component.createStateCode.value).toBe('');
