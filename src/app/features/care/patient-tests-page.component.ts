@@ -1,9 +1,286 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
-import { ClinicalOrder, FulfillmentDirectoryItem } from '../../core/models/pharmacy-fulfillment.model';
-import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
-@Component({selector:'app-patient-tests-page',imports:[RouterLink],changeDetection:ChangeDetectionStrategy.OnPush,template:`<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8"><p class="text-sm font-bold uppercase text-brand-600">SmartClinic tests</p><h1 class="mt-2 text-3xl font-black text-brand-950">Get a Test</h1><p class="mt-2 text-slate-600">Doctor-requested tests and scans appear here automatically.</p>
-@if(loading()){<p class="mt-8 rounded-2xl border bg-white p-6">Loading your tests…</p>}@else if(error()){<p class="mt-8 rounded-2xl bg-red-50 p-6 text-red-800">We couldn't load your tests. <button (click)="load()" class="font-bold underline">Try again</button></p>}@else if(items().length){<section class="mt-7 grid gap-4">@for(o of items();track o.reference){<article class="rounded-[1.5rem] border bg-white p-6 shadow-sm"><div class="flex items-start gap-4"><span class="text-2xl">{{o.type==='IMAGING'?'🩻':'🧪'}}</span><div class="min-w-0 flex-1"><p class="text-xs font-bold uppercase tracking-[.14em] text-brand-600">{{o.type==='IMAGING'?'Scan / imaging':'Laboratory test'}}</p><h2 class="mt-1 text-xl font-black text-brand-950">{{names(o)}}</h2><p class="mt-2 text-sm text-slate-600">Requested by {{o.orderingProvider.displayName}}{{o.issuedAt?' · '+date(o.issuedAt):''}}</p>@if(o.clinicalNote){<p class="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{{o.clinicalNote}}</p>}<button type="button" (click)="choose(o)" class="mt-4 font-bold text-brand-700">{{o.type==='IMAGING'?'Choose where to do this scan →':'Choose where to do this test →'}}</button>
-@if(selectedOrder()?.reference===o.reference){<div class="mt-4 border-t pt-4">@if(fulfillment();as f){<div class="mb-4 rounded-2xl bg-brand-50 p-4"><p class="font-bold text-brand-950">{{f.provider?.displayName||f.fulfiller?.displayName}}</p><p class="mt-1 text-sm text-slate-600">{{f.status==='SELECTED'?'Centre selected · waiting for acceptance':f.status==='ACCEPTED'?'Centre accepted your request':''}}</p>@if(f.quote;as q){<div class="mt-3 border-t border-brand-100 pt-3"><p class="text-sm text-slate-600">Price</p><p class="text-2xl font-black">{{money(q.totalMinor,q.currency)}}</p>@if(q.status==='SUBMITTED'){<button type="button" (click)="acceptQuote(q.reference)" [disabled]="paymentPending()" class="mt-3 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Accept price & continue →</button>}@else if(q.status==='ACCEPTED_BY_PATIENT'&&!f.funding?.satisfied){<button type="button" (click)="pay(q.reference)" [disabled]="paymentPending()" class="mt-3 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">{{paymentPending()?'Preparing payment…':'Pay now →'}}</button>}@else if(f.funding?.satisfied){<p class="mt-3 font-bold text-emerald-700">Paid ✓ The centre can continue with your test.</p>}</div>}@if(f.execution?.resultAvailable){<div class="mt-3 rounded-xl bg-emerald-50 p-3"><p class="font-bold text-emerald-800">Result ready ✓</p><button type="button" (click)="openResult(f.reference)" [disabled]="resultOpening()" class="mt-2 font-bold text-brand-700 underline">{{resultOpening()?'Opening result…':'View result →'}}</button><p class="mt-2 text-xs text-slate-500">Your ordering clinician can also access this result through SmartClinic.</p></div>}</div>}@if(providersLoading()){<p class="text-sm text-slate-600">Finding available centres…</p>}@else if(providers().length){<p class="mb-3 text-sm font-bold text-brand-950">Available centres</p><div class="grid gap-2">@for(p of providers();track p.providerServiceUnitReference){<button type="button" (click)="select(o,p.providerServiceUnitReference)" [disabled]="selecting()" class="rounded-xl border p-3 text-left hover:border-brand-300 disabled:opacity-50"><strong class="block">{{p.displayName}}</strong><span class="text-sm text-slate-600">{{p.unitName}}{{p.location.city?', '+p.location.city:''}}</span></button>}</div>}@else{<p class="text-sm text-slate-600">No available centre is listed yet for this request.</p>}</div>}</div></div></article>}</section>}@else{<section class="mt-8 rounded-2xl border bg-white p-8 text-center"><h2 class="text-xl font-bold">No doctor-requested tests yet</h2><p class="mt-2 text-slate-600">If a SmartClinic doctor requests a lab test or scan, it will appear here automatically.</p><a routerLink="/me/request-care" [queryParams]="{journey:'test'}" class="mt-5 inline-flex rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">I want to request a test</a></section>}</main>`})
-export class PatientTestsPageComponent{private readonly api=inject(PharmacyFulfillmentApiService);readonly items=signal<readonly ClinicalOrder[]>([]);readonly loading=signal(true);readonly error=signal(false);readonly selectedOrder=signal<ClinicalOrder|null>(null);readonly providers=signal<readonly FulfillmentDirectoryItem[]>([]);readonly providersLoading=signal(false);readonly selecting=signal(false);readonly fulfillment=signal<any|null>(null);readonly paymentPending=signal(false);readonly resultOpening=signal(false);constructor(){this.load();}load(){this.loading.set(true);this.error.set(false);this.api.listPatientDiagnosticOrders().pipe(finalize(()=>this.loading.set(false))).subscribe({next:p=>this.items.set(p.items.filter(o=>o.status==='ISSUED')),error:()=>this.error.set(true)});}choose(o:ClinicalOrder){this.selectedOrder.set(o);this.providers.set([]);this.fulfillment.set(null);this.loadFulfillment(o);this.providersLoading.set(true);this.api.searchDiagnosticProviders(o.type==='IMAGING'?'IMAGING':'LABORATORY').pipe(finalize(()=>this.providersLoading.set(false))).subscribe({next:p=>this.providers.set(p.items),error:()=>this.providers.set([])});}select(o:ClinicalOrder,unit:string){if(this.selecting())return;this.selecting.set(true);this.api.selectDiagnosticProvider(o.reference,unit).pipe(finalize(()=>this.selecting.set(false))).subscribe({next:()=>this.loadFulfillment(o),error:()=>this.error.set(true)});}loadFulfillment(o:ClinicalOrder){this.api.getPatientOrderFulfillment(o.reference).subscribe({next:f=>{this.fulfillment.set(f);if(f?.reference)this.api.getPatientDiagnosticFulfillment(f.reference).subscribe({next:d=>this.fulfillment.set({...f,...d})});},error:()=>this.fulfillment.set(null)});}acceptQuote(ref:string){this.paymentPending.set(true);this.api.acceptDiagnosticQuote(ref).pipe(finalize(()=>this.paymentPending.set(false))).subscribe({next:()=>{const o=this.selectedOrder();if(o)this.loadFulfillment(o);},error:()=>this.error.set(true)});}pay(ref:string){this.paymentPending.set(true);this.api.initializeDiagnosticFunding(ref).pipe(finalize(()=>this.paymentPending.set(false))).subscribe({next:(r:any)=>{if(r.checkoutUrl)window.location.href=r.checkoutUrl;else{const o=this.selectedOrder();if(o)this.loadFulfillment(o);}},error:()=>this.error.set(true)});}openResult(ref:string){if(this.resultOpening())return;this.resultOpening.set(true);const win=window.open('','_blank');this.api.getDiagnosticResultAccess(ref).pipe(finalize(()=>this.resultOpening.set(false))).subscribe({next:r=>{if(r.url){if(win)win.location.href=r.url;else window.location.href=r.url;}else if(win)win.close();},error:()=>{if(win)win.close();this.error.set(true);}});}money(v:number,currency:string){return new Intl.NumberFormat('en-NG',{style:'currency',currency:currency||'NGN'}).format(v/100);}names(o:ClinicalOrder){return o.diagnosticItems?.map(i=>i.name).join(', ')||(o.type==='IMAGING'?'Imaging request':'Laboratory request');}date(v:string){return new Intl.DateTimeFormat('en-NG',{dateStyle:'medium'}).format(new Date(v));}}
+// import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+// import { RouterLink } from '@angular/router';
+// import { finalize } from 'rxjs';
+// import {
+//   ClinicalOrder,
+//   FulfillmentDirectoryItem,
+// } from '../../core/models/pharmacy-fulfillment.model';
+// import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+// @Component({
+//   selector: 'app-patient-tests-page',
+//   imports: [RouterLink],
+//   changeDetection: ChangeDetectionStrategy.OnPush,
+//   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+//     <p class="text-sm font-bold uppercase text-brand-600">SmartClinic tests</p>
+//     <h1 class="mt-2 text-3xl font-black text-brand-950">Get a Test</h1>
+//     <p class="mt-2 text-slate-600">Doctor-requested tests and scans appear here automatically.</p>
+//     @if (loading()) {
+//       <p class="mt-8 rounded-2xl border bg-white p-6">Loading your tests…</p>
+//     } @else if (error()) {
+//       <p class="mt-8 rounded-2xl bg-red-50 p-6 text-red-800">
+//         We couldn't load your tests.
+//         <button (click)="load()" class="font-bold underline">Try again</button>
+//       </p>
+//     } @else if (items().length) {
+//       <section class="mt-7 grid gap-4">
+//         @for (o of items(); track o.reference) {
+//           <article class="rounded-[1.5rem] border bg-white p-6 shadow-sm">
+//             <div class="flex items-start gap-4">
+//               <span class="text-2xl">{{ o.type === 'IMAGING' ? '🩻' : '🧪' }}</span>
+//               <div class="min-w-0 flex-1">
+//                 <p class="text-xs font-bold uppercase tracking-[.14em] text-brand-600">
+//                   {{ o.type === 'IMAGING' ? 'Scan / imaging' : 'Laboratory test' }}
+//                 </p>
+//                 <h2 class="mt-1 text-xl font-black text-brand-950">{{ names(o) }}</h2>
+//                 <p class="mt-2 text-sm text-slate-600">
+//                   Requested by {{ o.orderingProvider.displayName
+//                   }}{{ o.issuedAt ? ' · ' + date(o.issuedAt) : '' }}
+//                 </p>
+//                 @if (o.clinicalNote) {
+//                   <p class="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+//                     {{ o.clinicalNote }}
+//                   </p>
+//                 }
+//                 <button type="button" (click)="choose(o)" class="mt-4 font-bold text-brand-700">
+//                   {{
+//                     o.type === 'IMAGING'
+//                       ? 'Choose where to do this scan →'
+//                       : 'Choose where to do this test →'
+//                   }}
+//                 </button>
+//                 @if (selectedOrder()?.reference === o.reference) {
+//                   <div class="mt-4 border-t pt-4">
+//                     @if (fulfillment(); as f) {
+//                       <div class="mb-4 rounded-2xl bg-brand-50 p-4">
+//                         <p class="font-bold text-brand-950">
+//                           {{ f.provider?.displayName || f.fulfiller?.displayName }}
+//                         </p>
+//                         <p class="mt-1 text-sm text-slate-600">
+//                           {{
+//                             f.status === 'SELECTED'
+//                               ? 'Centre selected · waiting for acceptance'
+//                               : f.status === 'ACCEPTED'
+//                                 ? 'Centre accepted your request'
+//                                 : ''
+//                           }}
+//                         </p>
+//                         @if (f.quote; as q) {
+//                           <div class="mt-3 border-t border-brand-100 pt-3">
+//                             <p class="text-sm text-slate-600">Price</p>
+//                             <p class="text-2xl font-black">{{ money(q.totalMinor, q.currency) }}</p>
+//                             @if (q.status === 'SUBMITTED') {
+//                               <button
+//                                 type="button"
+//                                 (click)="acceptQuote(q.reference)"
+//                                 [disabled]="paymentPending()"
+//                                 class="mt-3 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+//                               >
+//                                 Accept price & continue →
+//                               </button>
+//                             } @else if (
+//                               q.status === 'ACCEPTED_BY_PATIENT' && !f.funding?.satisfied
+//                             ) {
+//                               <button
+//                                 type="button"
+//                                 (click)="pay(q.reference)"
+//                                 [disabled]="paymentPending()"
+//                                 class="mt-3 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+//                               >
+//                                 {{ paymentPending() ? 'Preparing payment…' : 'Pay now →' }}
+//                               </button>
+//                             } @else if (f.funding?.satisfied) {
+//                               <p class="mt-3 font-bold text-emerald-700">
+//                                 Paid ✓ The centre can continue with your test.
+//                               </p>
+//                             }
+//                           </div>
+//                         }
+//                         @if (f.execution?.resultAvailable) {
+//                           <div class="mt-3 rounded-xl bg-emerald-50 p-3">
+//                             <p class="font-bold text-emerald-800">Result ready ✓</p>
+//                             <button
+//                               type="button"
+//                               (click)="openResult(f.reference)"
+//                               [disabled]="resultOpening()"
+//                               class="mt-2 font-bold text-brand-700 underline"
+//                             >
+//                               {{ resultOpening() ? 'Opening result…' : 'View result →' }}
+//                             </button>
+//                             <p class="mt-2 text-xs text-slate-500">
+//                               Your ordering clinician can also access this result through
+//                               SmartClinic.
+//                             </p>
+//                           </div>
+//                         }
+//                       </div>
+//                     }
+//                     @if (providersLoading()) {
+//                       <p class="text-sm text-slate-600">Finding available centres…</p>
+//                     } @else if (providers().length) {
+//                       <p class="mb-3 text-sm font-bold text-brand-950">Available centres</p>
+//                       <div class="grid gap-2">
+//                         @for (p of providers(); track p.providerServiceUnitReference) {
+//                           <button
+//                             type="button"
+//                             (click)="select(o, p.providerServiceUnitReference)"
+//                             [disabled]="selecting()"
+//                             class="rounded-xl border p-3 text-left hover:border-brand-300 disabled:opacity-50"
+//                           >
+//                             <strong class="block">{{ p.displayName }}</strong
+//                             ><span class="text-sm text-slate-600"
+//                               >{{ p.unitName
+//                               }}{{ p.location.city ? ', ' + p.location.city : '' }}</span
+//                             >
+//                           </button>
+//                         }
+//                       </div>
+//                     } @else {
+//                       <p class="text-sm text-slate-600">
+//                         No available centre is listed yet for this request.
+//                       </p>
+//                     }
+//                   </div>
+//                 }
+//               </div>
+//             </div>
+//           </article>
+//         }
+//       </section>
+//     } @else {
+//       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
+//         <h2 class="text-xl font-bold">No doctor-requested tests yet</h2>
+//         <p class="mt-2 text-slate-600">
+//           If a SmartClinic doctor requests a lab test or scan, it will appear here automatically.
+//         </p>
+//         <a
+//           routerLink="/me/request-care"
+//           [queryParams]="{ journey: 'test' }"
+//           class="mt-5 inline-flex rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+//           >I want to request a test</a
+//         >
+//       </section>
+//     }
+//   </main>`,
+// })
+// export class PatientTestsPageComponent {
+//   private readonly api = inject(PharmacyFulfillmentApiService);
+//   readonly items = signal<readonly ClinicalOrder[]>([]);
+//   readonly loading = signal(true);
+//   readonly error = signal(false);
+//   readonly selectedOrder = signal<ClinicalOrder | null>(null);
+//   readonly providers = signal<readonly FulfillmentDirectoryItem[]>([]);
+//   readonly providersLoading = signal(false);
+//   readonly selecting = signal(false);
+//   readonly fulfillment = signal<any | null>(null);
+//   readonly paymentPending = signal(false);
+//   readonly resultOpening = signal(false);
+//   constructor() {
+//     this.load();
+//   }
+//   load() {
+//     this.loading.set(true);
+//     this.error.set(false);
+//     this.api
+//       .listPatientDiagnosticOrders()
+//       .pipe(finalize(() => this.loading.set(false)))
+//       .subscribe({
+//         next: (p) => this.items.set(p.items.filter((o) => o.status === 'ISSUED')),
+//         error: () => this.error.set(true),
+//       });
+//   }
+//   choose(o: ClinicalOrder) {
+//     this.selectedOrder.set(o);
+//     this.providers.set([]);
+//     this.fulfillment.set(null);
+//     this.loadFulfillment(o);
+//     this.providersLoading.set(true);
+//     this.api
+//       .searchDiagnosticProviders(o.type === 'IMAGING' ? 'IMAGING' : 'LABORATORY')
+//       .pipe(finalize(() => this.providersLoading.set(false)))
+//       .subscribe({ next: (p) => this.providers.set(p.items), error: () => this.providers.set([]) });
+//   }
+//   select(o: ClinicalOrder, unit: string) {
+//     if (this.selecting()) return;
+//     this.selecting.set(true);
+//     this.api
+//       .selectDiagnosticProvider(o.reference, unit)
+//       .pipe(finalize(() => this.selecting.set(false)))
+//       .subscribe({ next: () => this.loadFulfillment(o), error: () => this.error.set(true) });
+//   }
+//   loadFulfillment(o: ClinicalOrder) {
+//     this.api.getPatientOrderFulfillment(o.reference).subscribe({
+//       next: (f) => {
+//         this.fulfillment.set(f);
+//         if (f?.reference)
+//           this.api
+//             .getPatientDiagnosticFulfillment(f.reference)
+//             .subscribe({ next: (d) => this.fulfillment.set({ ...f, ...d }) });
+//       },
+//       error: () => this.fulfillment.set(null),
+//     });
+//   }
+//   acceptQuote(ref: string) {
+//     this.paymentPending.set(true);
+//     this.api
+//       .acceptDiagnosticQuote(ref)
+//       .pipe(finalize(() => this.paymentPending.set(false)))
+//       .subscribe({
+//         next: () => {
+//           const o = this.selectedOrder();
+//           if (o) this.loadFulfillment(o);
+//         },
+//         error: () => this.error.set(true),
+//       });
+//   }
+//   pay(ref: string) {
+//     this.paymentPending.set(true);
+//     this.api
+//       .initializeDiagnosticFunding(ref)
+//       .pipe(finalize(() => this.paymentPending.set(false)))
+//       .subscribe({
+//         next: (r: any) => {
+//           if (r.checkoutUrl) window.location.href = r.checkoutUrl;
+//           else {
+//             const o = this.selectedOrder();
+//             if (o) this.loadFulfillment(o);
+//           }
+//         },
+//         error: () => this.error.set(true),
+//       });
+//   }
+//   openResult(ref: string) {
+//     if (this.resultOpening()) return;
+//     this.resultOpening.set(true);
+//     const win = window.open('', '_blank');
+//     this.api
+//       .getDiagnosticResultAccess(ref)
+//       .pipe(finalize(() => this.resultOpening.set(false)))
+//       .subscribe({
+//         next: (r) => {
+//           if (r.url) {
+//             if (win) win.location.href = r.url;
+//             else window.location.href = r.url;
+//           } else if (win) win.close();
+//         },
+//         error: () => {
+//           if (win) win.close();
+//           this.error.set(true);
+//         },
+//       });
+//   }
+//   money(v: number, currency: string) {
+//     return new Intl.NumberFormat('en-NG', {
+//       style: 'currency',
+//       currency: currency || 'NGN',
+//     }).format(v / 100);
+//   }
+//   names(o: ClinicalOrder) {
+//     return (
+//       o.diagnosticItems?.map((i) => i.name).join(', ') ||
+//       (o.type === 'IMAGING' ? 'Imaging request' : 'Laboratory request')
+//     );
+//   }
+//   date(v: string) {
+//     return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(v));
+//   }
+// }
