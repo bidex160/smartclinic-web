@@ -122,10 +122,10 @@ interface DashboardNextStep {
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-rose-500 text-sm font-black text-white shadow-md shadow-rose-500/20" aria-hidden="true">T</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>Get a Test</span><span class="text-rose-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <button type="button" disabled aria-disabled="true" class="relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 text-left font-bold text-slate-500 shadow-sm">
+            <a routerLink="/me/bills" class="relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 text-left font-bold text-slate-500 shadow-sm">
               <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-200 text-lg text-slate-600" aria-hidden="true">₦</span>
-              <span>Pay a Bill<small class="mt-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Coming soon</small></span>
-            </button>
+              <span>Pay a Bill</span>
+            </a>
           </div>
         </nav>
 

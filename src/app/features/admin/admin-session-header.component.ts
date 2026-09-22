@@ -551,7 +551,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           focus:ring-brand-200
         "
       >
-        Operations navigation
+        <span>Operations navigation</span><span class="ml-auto text-sm text-slate-500">Menu <span aria-hidden="true">☰</span></span>
       </summary>
 
       <div class="border-t border-slate-100 px-4 py-4">

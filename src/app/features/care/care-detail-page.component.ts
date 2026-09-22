@@ -28,7 +28,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </div>
       } @else if (request(); as r) {
         <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
-          <p class="text-xs font-bold uppercase tracking-[.16em] text-violet-200">{{ r.deliveryMode === 'VIRTUAL' ? 'Talk to a Doctor' : 'Your care' }}</p>
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-violet-200">Your care request</p>
           <h1 class="mt-2 text-3xl font-black">{{ r.assignedProvider?.displayName || r.preferredProvider?.displayName || r.service.name }}</h1>
           <p class="mt-2 text-violet-100">{{ r.service.name }} · {{ label(r.status) }}</p>
           @if (r.service.price) { <p class="mt-4 text-xl font-black">{{ formatPrice(r.service.price.priceMinor, r.service.price.currency) }}</p> }

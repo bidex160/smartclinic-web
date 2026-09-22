@@ -54,6 +54,8 @@ export class HomePageComponent {
   readonly testQueryParams = computed(() =>
     this.authState.isPatient() ? null : { returnUrl: '/me/tests' },
   );
+  readonly billRoute = computed(() => this.authState.isPatient() ? '/me/bills' : '/login');
+  readonly billQueryParams = computed(() => this.authState.isPatient() ? null : { returnUrl: '/me/bills' });
   readonly myHospitalRoute = computed(() =>
     this.authState.isPatient() ? '/me/providers/connect' : '/login',
   );

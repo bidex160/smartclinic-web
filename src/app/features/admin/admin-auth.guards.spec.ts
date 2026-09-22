@@ -90,6 +90,6 @@ describe('adminOnlyGuard', () => {
 function authenticate(state: AuthStateService, roles: UserRole[]): void {
   state.setSession({
     accessToken: 'token',
-    user: { id: 'id', email: 'user@example.test', displayName: 'User', roles, status: 'ACTIVE' },
+    user: { id: 'id', email: 'user@example.test', displayName: 'User', roles, networkRole: null, status: 'ACTIVE' },
   });
 }

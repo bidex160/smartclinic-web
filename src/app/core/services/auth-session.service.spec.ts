@@ -105,7 +105,7 @@ function session(): LoginResponse {
       email: null,
       displayName: 'Patient',
       roles: ['USER'],
-      status: 'ACTIVE',
+      networkRole: null, status: 'ACTIVE',
     },
   };
 }

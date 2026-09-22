@@ -1,3 +1,4 @@
+import { LocationDataService } from '../../core/services/location-data.service';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { Observable, of, Subject } from 'rxjs';
@@ -78,6 +79,14 @@ describe('FindCarePageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FindCarePageComponent],
       providers: [
+        { provide: LocationDataService, useValue: {
+          getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+          getStates: (country: string) => country === 'NG' ? [
+            { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            { name: 'Lagos', isoCode: 'Lagos', countryCode: 'NG' },
+          ] : [],
+          getCities: (_country: string, state: string) => [{ name: state === 'Oyo' ? 'Kisi' : 'Ikeja', stateCode: state, countryCode: 'NG' }],
+        } },
         provideRouter([]),
         {
           provide: ActivatedRoute,
@@ -102,6 +111,68 @@ describe('FindCarePageComponent', () => {
     fixture.detectChanges();
     return { fixture, find, care, router: TestBed.inject(Router) };
   }
+  it('resets virtual care and discovers options when Lab Test is selected', async () => {
+    const { fixture, find, care } = await setup();
+    const c = fixture.componentInstance;
+    c.services.set([{ code: 'LAB_REQUEST', name: 'Lab test', description: null, providerCount: 1 }]);
+    c.form.patchValue({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', preferredProviderReference: 'old' });
+    c.chooseTestType('LAB_REQUEST');
+    expect(c.form.controls.deliveryMode.value).toBe('');
+    expect(c.form.controls.preferredProviderReference.value).toBe('');
+    expect(find.getProviders).toHaveBeenLastCalledWith({ serviceCode: 'LAB_REQUEST', limit: 50 });
+    c.submit();
+    expect(care.create).not.toHaveBeenCalled();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Choose an available delivery mode');
+  });
+  it('explains unavailable imaging and clears an earlier service selection', async () => {
+    const { fixture, care } = await setup(true, [], 'DENTAL');
+    const c = fixture.componentInstance;
+    c.form.controls.deliveryMode.setValue('VIRTUAL');
+    c.chooseTestType('IMAGING_REQUEST');
+    fixture.detectChanges();
+    expect(c.form.controls.serviceCode.value).toBe('');
+    expect(fixture.nativeElement.textContent).toContain('X-ray or Scan is not currently available');
+    c.submit();
+    expect(care.create).not.toHaveBeenCalled();
+  });
+  it('blocks submission during pending or failed provider discovery', async () => {
+    const { fixture, find, care } = await setup();
+    const c = fixture.componentInstance;
+    c.form.patchValue({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL' });
+    const pending = new Subject<any>();
+    find.getProviders.mockReturnValueOnce(pending);
+    c.discoverProviders();
+    c.submit();
+    expect(care.create).not.toHaveBeenCalled();
+    pending.error(new Error('offline'));
+    c.submit();
+    expect(care.create).not.toHaveBeenCalled();
+    c.discoverProviders();
+    c.submit();
+    expect(care.create).toHaveBeenCalledTimes(1);
+  });
+  it('ignores a late discovery response after the service changes', async () => {
+    const { fixture, find } = await setup();
+    const c = fixture.componentInstance;
+    const pending = new Subject<any>();
+    find.getProviders.mockReturnValueOnce(pending);
+    c.form.controls.serviceCode.setValue('DENTAL');
+    c.serviceChanged();
+    c.chooseTestType('IMAGING_REQUEST');
+    pending.next({ items: [provider] });
+    expect(c.discoveryProviders()).toEqual([]);
+    expect(c.providersLoading()).toBe(false);
+  });
+  it('keeps the full delivery-mode choices after a filtered search', async () => {
+    const { fixture, find } = await setup(true, [], 'DENTAL');
+    const c = fixture.componentInstance;
+    find.getProviders.mockReturnValueOnce(of({ items: [], page: 1, limit: 50, total: 0, totalPages: 0 }));
+    c.form.controls.deliveryMode.setValue('VIRTUAL');
+    c.deliveryModeChanged();
+    expect(c.deliveryModes()).toEqual(['IN_PERSON', 'VIRTUAL', 'HOME_VISIT']);
+    expect(c.form.controls.deliveryMode.value).toBe('VIRTUAL');
+  });
   it('preselects a valid serviceCode only after catalogue validation and reuses serviceChanged', async () => {
     const { fixture, find } = await setup(true, [], 'DENTAL');
     const c = fixture.componentInstance;

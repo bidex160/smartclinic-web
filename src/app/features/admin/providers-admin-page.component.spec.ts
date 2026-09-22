@@ -1,3 +1,4 @@
+import { LocationDataService } from '../../core/services/location-data.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -6,6 +7,20 @@ import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProvidersAdminPageComponent } from './providers-admin-page.component';
 
 describe('ProvidersAdminPageComponent', () => {
+  it('allows a Pharmacy to be selected in the create form and submitted', async () => {
+    const { fixture, component, api } = await setup();
+    fixture.detectChanges();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('#provider-type');
+    expect(Array.from(select.options).some(option => option.value === 'PHARMACY')).toBe(true);
+    select.value = 'PHARMACY';
+    select.dispatchEvent(new Event('change'));
+    component.createForm.patchValue({
+      displayName: 'Test Pharmacy', email: 'pharmacy@example.test',
+      countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Ikeja',
+    });
+    component.createProvider();
+    expect(api.create).toHaveBeenCalledWith(expect.objectContaining({ providerType: 'PHARMACY' }));
+  });
   it('renders safe provider rows and the admin navigation link', async () => {
     const { fixture } = await setup();
     fixture.detectChanges();
@@ -69,9 +84,9 @@ describe('ProvidersAdminPageComponent', () => {
   it('translates the state ISO selection to the API state name and clears dependants', async () => {
     const { component } = await setup();
     component.onCountryChange('NG');
-    component.onStateChange('OY');
+    component.onStateChange('Oyo');
     component.createForm.controls.city.setValue('Kisi');
-    expect(component.createStateCode.value).toBe('OY');
+    expect(component.createStateCode.value).toBe('Oyo');
     expect(component.createForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onCountryChange('GH');
     expect(component.createStateCode.value).toBe('');
@@ -132,6 +147,14 @@ describe('ProvidersAdminPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProvidersAdminPageComponent],
       providers: [
+        { provide: LocationDataService, useValue: {
+          getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+          getStates: (country: string) => country === 'NG' ? [
+            { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            { name: 'Lagos', isoCode: 'Lagos', countryCode: 'NG' },
+          ] : [],
+          getCities: (_country: string, state: string) => [{ name: state === 'Oyo' ? 'Kisi' : 'Ikeja', stateCode: state, countryCode: 'NG' }],
+        } },
         provideRouter([]),
         { provide: AdminProvidersApiService, useValue: api },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },

@@ -190,6 +190,6 @@ function user() {
     email: 'admin@example.test',
     displayName: 'Admin',
     roles: ['ADMIN' as const],
-    status: 'ACTIVE' as const,
+    networkRole: null, status: 'ACTIVE' as const,
   };
 }

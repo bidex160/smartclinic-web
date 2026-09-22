@@ -99,6 +99,14 @@ export class ProviderDashboardPageComponent {
     ];
   });
 
+  actionIcon(action: PrimaryAction): string {
+    if (action.route.includes('earnings')) return 'M3 5h16v4H3z M3 9h18v12H3z M16 14h5 M17 16h1';
+    if (action.route.includes('appointments') || action.fragment === 'availability') return 'M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16 M8 14h3 M8 17h6';
+    if (action.fragment === 'configuration') return 'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0';
+    if (action.route.includes('requests') || action.route.includes('orders')) return 'M5 3h14v18H5z M9 8h6 M9 12h6 M9 16h4';
+    return 'M4 5h16v16H4z M8 3v4 M16 3v4 M8 13h8 M12 9v8';
+  }
+
   constructor() {
     this.load();
   }

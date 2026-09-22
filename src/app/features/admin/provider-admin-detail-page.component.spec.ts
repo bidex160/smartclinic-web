@@ -1,3 +1,4 @@
+import { LocationDataService } from '../../core/services/location-data.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
@@ -14,6 +15,14 @@ import { HealthCheckPackagesApiService } from '../../core/services/health-check-
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
 
 describe('ProviderAdminDetailPageComponent', () => {
+  it('preserves Pharmacy selection when editing an existing pharmacy profile', async () => {
+    const { fixture, component, api } = await setup({ provider: detail({ providerType: 'PHARMACY' }) });
+    fixture.detectChanges();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('#edit-provider-type');
+    expect(select.value).toBe('PHARMACY');
+    component.updateProfile();
+    expect(api.update).toHaveBeenCalledWith('provider-id', expect.objectContaining({ providerType: 'PHARMACY' }));
+  });
   it('renders safe detail, linked user, counts, and no credential data', async () => {
     const { fixture } = await setup();
     fixture.detectChanges();
@@ -49,9 +58,9 @@ describe('ProviderAdminDetailPageComponent', () => {
   });
   it('preselects persisted geography using a UI-only state code', async () => {
     const { component } = await setup({ provider: detail({ stateOrRegion: 'Oyo', city: 'Kisi' }) });
-    expect(component.editStateCode.value).toBe('OY');
+    expect(component.editStateCode.value).toBe('Oyo');
     expect(component.profileForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
-    component.onStateChange('LA');
+    component.onStateChange('Lagos');
     expect(component.profileForm.getRawValue()).toMatchObject({ stateOrRegion: 'Lagos', city: '' });
   });
 
@@ -315,6 +324,14 @@ describe('ProviderAdminDetailPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProviderAdminDetailPageComponent],
       providers: [
+        { provide: LocationDataService, useValue: {
+          getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+          getStates: (country: string) => country === 'NG' ? [
+            { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            { name: 'Lagos', isoCode: 'Lagos', countryCode: 'NG' },
+          ] : [],
+          getCities: (_country: string, state: string) => [{ name: state === 'Oyo' ? 'Kisi' : 'Ikeja', stateCode: state, countryCode: 'NG' }],
+        } },
         provideRouter([]),
         {
           provide: ActivatedRoute,

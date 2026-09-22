@@ -42,6 +42,23 @@ describe('ProviderOnboardingApiService', () => {
     expect(request.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
     request.flush(profile());
   });
+  it('uploads multipart images and removes them without automatic mutation replay', () => {
+    const { api, http } = setup();
+    const file = new File(['image'], 'photo.png', { type: 'image/png' });
+    api.uploadProfileImage(file).subscribe();
+    let request = http.expectOne('http://api.test/api/v1/provider/profile/image');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body.get('file')).toBe(file);
+    expect(request.request.headers.has('Content-Type')).toBe(false);
+    expect(request.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    request.flush({ profileImageUrl: 'https://res.cloudinary.com/test/photo.png' });
+    api.removeProfileImage().subscribe();
+    request = http.expectOne('http://api.test/api/v1/provider/profile/image');
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.context.get(SKIP_AUTH_RETRY)).toBe(true);
+    request.flush({ profileImageUrl: null });
+    http.verify();
+  });
   function setup() {
     TestBed.configureTestingModule({
       providers: [

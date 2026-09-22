@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, ViewChild, effect, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { Notification } from '../../core/models/notification.model';
@@ -12,23 +12,23 @@ import { NotificationRealtimeService } from '../../core/services/notification-re
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="relative" #host>
-      <button type="button" (click)="toggle()" [attr.aria-expanded]="state.open()"
+      <button #bell type="button" (click)="toggle()" [attr.aria-expanded]="state.open()"
         aria-controls="notification-panel" [attr.aria-label]="bellLabel()"
         class="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
         <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
         </svg>
         @if (state.unreadCount() > 0) {
-          <span class="absolute right-1 top-1 min-w-4 rounded-full bg-brand-700 px-1 text-center text-[10px] font-bold leading-4 text-white">{{ badge() }}</span>
+          <span class="absolute -right-0.5 -top-0.5 min-w-5 rounded-full border-2 border-white bg-brand-700 px-1 text-center text-[10px] font-bold leading-4 text-white">{{ badge() }}</span>
         }
       </button>
 
       @if (state.open()) {
-        <section id="notification-panel" aria-label="Notifications" class="absolute right-0 top-12 z-50 w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+        <section id="notification-panel" aria-label="Notifications" class="fixed inset-x-4 top-24 z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[min(23rem,calc(100vw-2rem))]">
           <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <h2 class="font-bold text-slate-900">Notifications</h2>
+            <h2 class="font-bold text-slate-900">Notifications</h2><button type="button" (click)="close(true)" aria-label="Close notifications" class="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100">✕</button></div><div class="px-4">
             @if (state.unreadCount() > 0) {
-              <button type="button" [disabled]="state.markingAll()" (click)="markAll()" class="text-sm font-bold text-brand-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">{{ state.markingAll() ? 'Updating…' : 'Mark all as read' }}</button>
+              <button type="button" [disabled]="state.markingAll()" (click)="markAll()" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">{{ state.markingAll() ? 'Updating…' : 'Mark all as read' }}</button>
             }
           </div>
           @if (state.latestLoading()) { <p role="status" class="px-4 py-6 text-sm text-slate-600">Loading notifications…</p> }
@@ -52,6 +52,7 @@ import { NotificationRealtimeService } from '../../core/services/notification-re
   `,
 })
 export class NotificationBellComponent {
+  @ViewChild('bell') private bell?: ElementRef<HTMLButtonElement>;
   readonly state = inject(NotificationsStateService);
   private readonly auth = inject(AuthStateService);
   private readonly router = inject(Router);
@@ -68,7 +69,7 @@ export class NotificationBellComponent {
   }
 
   toggle(): void { this.state.togglePanel(); }
-  close(): void { this.state.closePanel(); }
+  close(restoreFocus = false): void { this.state.closePanel(); if (restoreFocus) this.bell?.nativeElement.focus(); }
   markAll(): void { this.state.markAllRead(); }
 
   openNotification(item: Notification): void {
@@ -97,7 +98,7 @@ export class NotificationBellComponent {
     return date.toLocaleDateString(undefined, { dateStyle: 'medium' });
   }
 
-  @HostListener('document:keydown.escape') onEscape(): void { this.close(); }
+  @HostListener('document:keydown.escape') onEscape(): void { if (this.state.open()) this.close(true); }
   @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent): void {
     if (this.state.open() && !this.host.nativeElement.contains(event.target as Node)) this.close();
   }

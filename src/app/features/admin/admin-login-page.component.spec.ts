@@ -103,7 +103,7 @@ function loginResponse(roles: UserRole[]): LoginResponse {
       email: 'admin@example.test',
       displayName: 'Admin User',
       roles,
-      status: 'ACTIVE',
+      networkRole: null, status: 'ACTIVE',
     },
   };
 }

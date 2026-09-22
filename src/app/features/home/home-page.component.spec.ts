@@ -69,7 +69,9 @@ describe('HomePageComponent', () => {
     expect(text).toContain('Get Medicine');
     expect(text).toContain('Get a Test');
     expect(text).toContain('Pay a Bill');
-    expect(text).toContain('Coming soon');
+    expect(text).not.toContain('Coming soon');
+    const bill = element.querySelector('[aria-label="Healthcare actions"] a[href="/login?returnUrl=%2Fme%2Fbills"]');
+    expect(bill?.textContent).toContain('Pay a Bill');
 
     expect(text).toContain('Your care, together in one place.');
     expect(text).toContain('Clear pricing');
@@ -109,8 +111,9 @@ describe('HomePageComponent', () => {
     expect(links.find((link) => link.textContent?.includes('Get a Test'))?.getAttribute('href'))
       .toBe('/me/tests');
 
+    expect(links.find(link => link.textContent?.includes('Pay a Bill'))?.getAttribute('href')).toBe('/me/bills');
     const packageLinks = [...element.querySelectorAll('a')].filter((link) =>
-      link.textContent?.includes('View'),
+      link.textContent?.includes('Start my Health Check'),
     );
     expect(packageLinks.some((link) => link.getAttribute('href') === '/health-check/packages?package=ESSENTIAL')).toBe(true);
     expect(element.querySelector('a[href*="wa.me"], a[href*="whatsapp"]')).toBeNull();

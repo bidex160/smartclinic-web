@@ -43,8 +43,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <h2 class="mt-1 text-2xl font-black">{{ h.nextAction.title }}</h2>
               @if (h.consolidatedPayment.itemCount > 0 && h.consolidatedPayment.amountMinor !== null && h.consolidatedPayment.currency) {
                 <p class="mt-2 text-violet-100">{{ h.consolidatedPayment.itemCount }} request{{ h.consolidatedPayment.itemCount === 1 ? '' : 's' }} · {{ money(h.consolidatedPayment.amountMinor, h.consolidatedPayment.currency) }}</p>
-                @if (h.nextAction.kind === 'PAYMENT_REQUIRED') { <button type="button" (click)="payAllWallet()" [disabled]="settling()" class="mt-4 rounded-xl bg-white px-5 py-3 font-black text-brand-950">{{ settling() ? 'Confirming payment…' : 'Pay all from Wallet →' }}</button> }
+                @if (h.nextAction.kind === 'PAYMENT_REQUIRED' && h.consolidatedPayment.available) { <button type="button" (click)="payAllWallet()" [disabled]="settling()" class="mt-4 rounded-xl bg-white px-5 py-3 font-black text-brand-950">{{ settling() ? 'Confirming payment…' : 'Pay all from Wallet →' }}</button> }
               }
+              @if (h.nextAction.kind === 'PAYMENT_REQUIRED' && !h.consolidatedPayment.available) { <p class="mt-3 text-sm">Open each request below to review its quote and payment options.</p> }
             </div>
             @if (servicePass(); as pass) { <div class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Payment confirmed ✓</p><h3 class="mt-1 text-xl font-black text-emerald-950">SmartClinic Service Pass</h3><p class="mt-2 font-bold">{{ money(pass.amountMinor, pass.currency) }} · {{ c.provider.displayName }}</p><p class="mt-3 rounded-xl bg-white p-3 font-mono text-sm font-bold">{{ pass.reference }}</p><p class="mt-2 text-sm text-emerald-900">Show this pass at the hospital service point. Open it again whenever staff need to verify payment.</p><button type="button" (click)="refreshPass()" class="mt-3 font-bold text-emerald-900 underline">Refresh verification pass</button></div> }
             @if (h.requests.length) {
@@ -53,12 +54,12 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
                     <div class="flex items-start justify-between gap-3">
                       <div><p class="font-black text-brand-950">{{ requestTitle(request.type) }}</p><p class="mt-1 text-sm text-slate-600">{{ request.serviceUnit || 'Requested by your care team' }}</p></div>
-                      <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="request.resultReady ? 'bg-emerald-50 text-emerald-800' : request.paymentStatus === 'PAID' ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'">{{ request.resultReady ? 'Result ready' : request.paymentStatus === 'PAID' ? 'Paid ✓' : request.paymentStatus === 'NOT_PRICED' ? 'Being prepared' : 'Payment needed' }}</span>
+                      <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="request.resultReady ? 'bg-emerald-50 text-emerald-800' : request.paymentStatus === 'PAID' ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'">{{ request.resultReady ? 'Result ready' : request.paymentStatus === 'PAID' ? 'Paid ✓' : request.paymentStatus === 'NOT_PRICED' ? 'Being prepared' : request.paymentStatus === 'PENDING' ? 'Payment needed' : label(request.paymentStatus) }}</span>
                     </div>
                     @if (request.amountMinor !== null && request.currency) { <p class="mt-3 font-extrabold text-slate-900">{{ money(request.amountMinor, request.currency) }}</p> }
                     @if (request.resultReady) { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">View result →</a> }
-                    @else if (request.type === 'PRESCRIPTION') { <a routerLink="/me/prescriptions" class="mt-3 inline-flex font-bold text-brand-700">Open prescription →</a> }
-                    @else { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">Open request →</a> }
+                    @else if (request.type === 'PRESCRIPTION') { <a [routerLink]="['/me/prescriptions', request.orderReference]" class="mt-3 inline-flex font-bold text-brand-700">Open prescription →</a> }
+                    @else if (request.type === 'LABORATORY' || request.type === 'IMAGING') { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">Open request →</a> }
                   </article>
                 }
               </div>
@@ -66,7 +67,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <div class="mt-5 rounded-2xl bg-emerald-50 p-5"><p class="font-black text-emerald-900">Nothing waiting for you ✓</p><p class="mt-1 text-sm text-emerald-800">New requests from this hospital will appear here automatically.</p></div>
             }
           } @else {
-            <p class="mt-3 rounded-2xl bg-amber-50 p-4 text-amber-900">Your hospital companion is temporarily unavailable. Your hospital connection is still safe.</p>
+            <div role="alert" class="mt-3 rounded-2xl bg-amber-50 p-4 text-amber-900"><p>Your hospital companion is temporarily unavailable. Your hospital connection is still safe.</p><button type="button" (click)="loadCompanion()" class="mt-2 font-bold underline">Try again</button></div>
           }
           <div class="mt-5 flex flex-wrap gap-3">
             <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white px-4 py-3 font-bold text-brand-900 ring-1 ring-slate-200">Book care</a>
@@ -235,6 +236,8 @@ export class ProviderConnectionDetailPageComponent {
       .subscribe({
         next: (r) => {
           this.connection.set(r.connection);
+          if (r.connection.status === 'CONNECTED') this.loadCompanion();
+          else this.companion.set(null);
           this.funding.set(r.funding);
           this.api.directory(r.connection.provider.displayName, 1, 100).subscribe({
             next: (page) =>
@@ -254,7 +257,7 @@ export class ProviderConnectionDetailPageComponent {
        this.companionLoading.set(true);
       this.api.companion(this.reference).pipe(finalize(() => this.companionLoading.set(false))).subscribe({ next: value => this.companion.set(value), error: () => this.companion.set(null) });
      }
-    payAllWallet(){if(this.settling())return;this.settling.set(true);this.error.set('');this.api.settleWallet(this.reference).pipe(finalize(()=>this.settling.set(false))).subscribe({next:r=>{this.servicePass.set(r.servicePass);this.loadCompanion();},error:e=>this.error.set(e?.error?.message||'Unable to complete this wallet payment.')});}
+    payAllWallet(){if(this.settling() || !this.companion()?.consolidatedPayment.available)return;this.settling.set(true);this.error.set('');this.api.settleWallet(this.reference).pipe(finalize(()=>this.settling.set(false))).subscribe({next:r=>{this.servicePass.set(r.servicePass);this.loadCompanion();},error:e=>this.error.set(e?.error?.message||'Unable to complete this wallet payment.')});}
   refreshPass(){const pass=this.servicePass();if(!pass)return;this.api.servicePassToken(pass.reference).subscribe({next:p=>this.servicePass.set(p),error:()=>this.error.set('Unable to refresh this Service Pass.')});}
   requestTitle(type: string) { return type === 'LABORATORY' ? '🧪 Laboratory request' : type === 'IMAGING' ? '🩻 Imaging request' : type === 'PRESCRIPTION' ? '💊 Prescription' : type === 'PROCEDURE' ? '🏥 Procedure' : '↗ Referral'; }
  pay() {

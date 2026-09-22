@@ -6,6 +6,7 @@ export type PatientProviderConnectionStatus =
 export type PatientProviderConnectionFundingPurpose = 'INITIAL' | 'CONVERSION_ADDITIONAL';
 export type PatientProviderConnectionFundingStatus = 'PENDING' | 'PAID' | 'SATISFIED_FREE';
 export interface PatientProviderConnectionProvider {
+  readonly profileImageUrl?: string | null;
   readonly providerReference: string;
   readonly displayName: string;
   readonly providerType: string;

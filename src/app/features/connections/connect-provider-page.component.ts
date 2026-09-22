@@ -1,3 +1,4 @@
+import { ProviderAvatarComponent } from '../../shared/components/provider-avatar.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -11,7 +12,7 @@ import { formatMinor } from '../provider/care-money';
 
 @Component({
   selector: 'app-connect-provider-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ProviderAvatarComponent, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a [routerLink]="backUrl()" class="font-bold text-brand-700 underline">← Back</a>
@@ -63,7 +64,7 @@ import { formatMinor } from '../provider/care-money';
           <div class="mt-5 grid gap-3">
             @for (p of providers(); track p.providerReference) {
               <button type="button" (click)="choose(p)" class="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md">
-                <span class="flex items-center gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-xl">🏥</span><span class="block text-lg font-black text-brand-950">{{ p.displayName }}</span></span
+                <span class="flex items-center gap-3"><app-provider-avatar [name]="p.displayName" [url]="p.profileImageUrl" [logo]="true" /><span class="block text-lg font-black text-brand-950">{{ p.displayName }}</span></span
                 ><span class="mt-2 block text-sm text-slate-600">{{ location(p) }}</span
                 >
                 @if (p.newPatientRegistration.enabled) {

@@ -71,6 +71,7 @@ export interface PublicProviderCareService {
   readonly fastTrackCurrency: string | null;
 }
 export interface PublicFindCareProvider {
+  readonly profileImageUrl?: string | null;
   readonly providerReference: string;
   readonly displayName: string;
   readonly providerType: string;
