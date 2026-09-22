@@ -27,8 +27,24 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
       <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
       <div class="relative">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">SmartClinic care network</p>
-        <h1 class="mt-2 text-4xl font-bold text-slate-950">Find Care</h1>
-        <p class="mt-3 max-w-2xl text-slate-600">Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.</p>
+        <h1 class="mt-2 text-4xl font-bold text-slate-950">{{ doctorJourney() ? 'See a Doctor' : 'Find Care' }}</h1>
+        <p class="mt-3 max-w-2xl text-slate-600">{{ doctorJourney() ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.' : 'Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.' }}</p>
+        @if (doctorJourney()) {
+          <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
+            <button type="button" (click)="chooseDoctorMode('NOW')" [attr.aria-pressed]="doctorMode() === 'NOW'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'NOW'" [class.ring-brand-300]="doctorMode() === 'NOW'" [class.bg-brand-50]="doctorMode() === 'NOW'">
+              <strong class="block text-lg text-brand-950">Talk to a Doctor Now</strong><span class="mt-1 block text-sm text-slate-600">Start with an available doctor online.</span>
+              @if (doctorMode() === 'NOW') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a doctor below</span> }
+            </button>
+            <button type="button" (click)="chooseDoctorMode('LATER')" [attr.aria-pressed]="doctorMode() === 'LATER'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'LATER'" [class.ring-brand-300]="doctorMode() === 'LATER'" [class.bg-brand-50]="doctorMode() === 'LATER'">
+              <strong class="block text-lg text-brand-950">Book for Later</strong><span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
+              @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">Selected — choose your preferred time below</span> }
+            </button>
+            <button type="button" (click)="chooseDoctorMode('HOSPITAL')" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
+              <strong class="block text-lg text-brand-950">Visit a Hospital</strong><span class="mt-1 block text-sm text-slate-600">Choose a hospital for in-person care.</span>
+              @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a hospital below</span> }
+            </button>
+          </section>
+        }
       </div>
     </header>
     @if (success(); as request) {
@@ -371,6 +387,8 @@ export class FindCarePageComponent {
   readonly servicesLoading = signal(true);
   readonly servicesError = signal(false);
   readonly requestedServiceCode = signal<string | null>(null);
+  readonly doctorJourney = signal(false);
+  readonly doctorMode = signal<'NOW' | 'LATER' | 'HOSPITAL' | null>(null);
   readonly servicesLoaded = signal(false);
   private draftRestored = false;
   private draftDiscoveryStarted = false;
@@ -429,8 +447,10 @@ export class FindCarePageComponent {
     ];
   };
   constructor() {
+    this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor');
     this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
     this.route.queryParamMap.subscribe((params) => {
+      this.doctorJourney.set(params.get('journey') === 'doctor');
       this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
       this.applyRequestedServiceCode();
     });
@@ -459,6 +479,30 @@ export class FindCarePageComponent {
       this.draftRestored = true;
     }
   }
+  chooseDoctorMode(mode: 'NOW' | 'LATER' | 'HOSPITAL') {
+    this.doctorMode.set(mode);
+    if (mode === 'HOSPITAL') {
+      this.form.patchValue({ deliveryMode: 'IN_PERSON', preferredProviderReference: '' });
+      this.updateGeographyValidators();
+      this.discoverProviders();
+      return;
+    }
+    this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredProviderReference: '' });
+    if (mode === 'NOW') {
+      this.form.patchValue({ preferredDate: '', preferredTime: '' });
+    } else {
+      const suggested = new Date();
+      suggested.setDate(suggested.getDate() + 1);
+      suggested.setHours(9, 0, 0, 0);
+      this.form.patchValue({
+        preferredDate: suggested.toISOString().slice(0, 10),
+        preferredTime: '09:00',
+      });
+    }
+    this.updateGeographyValidators();
+    this.discoverProviders();
+  }
+
   selectParticipant(selection: HealthCheckParticipantSelection) {
     this.participant.set(selection);
   }
