@@ -277,8 +277,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
 export class PatientPaymentPanelComponent implements OnInit {
   @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   @Input({ required: true }) reference = '';
-  @Input() set reloadVerify(_value: unknown) {
-    // Retained as an input hook for parent-driven payment status refreshes.
+  @Input() set reloadVerify(value: unknown) {
+    if (value == null || value === false || !this.reference) return;
+    this.refreshAll();
   }
   @Output() readonly statusChanged = new EventEmitter<PublicBookingPaymentStatus>();
   private readonly api = inject(HealthCheckResultsApiService);
@@ -548,9 +549,7 @@ export class PatientPaymentPanelComponent implements OnInit {
     });
   }
   refreshAll() {
-    this.verify()
-    this.refresh();
-    this.loadRewards();
+    this.verify();
   }
   private applyStatus(s: PublicBookingPaymentStatus) {
     this.status.set(s);
