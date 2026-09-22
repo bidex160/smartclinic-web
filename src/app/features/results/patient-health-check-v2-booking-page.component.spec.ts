@@ -412,6 +412,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
         {
           provide: LocationDataService,
           useValue: {
+            ready: () => Promise.resolve(),
             getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
             getStates: () => [
               { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
