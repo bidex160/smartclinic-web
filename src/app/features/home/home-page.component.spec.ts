@@ -100,9 +100,10 @@ describe('HomePageComponent', () => {
     expect(text).toContain('₦8,000.00');
     expect(text).toContain('Price shown after you choose a provider');
     expect(text).not.toContain('Home Visit Health Check');
-    expect(text.indexOf('Essential Health Check')).toBeLessThan(
-      text.indexOf('Complete Health Check'),
+    const packageHeadings = [...element.querySelectorAll('h3')].map((heading) =>
+      heading.textContent?.trim(),
     );
+    expect(packageHeadings).toEqual(['Essential Health Check', 'Complete Health Check']);
     const packageLinks = [...element.querySelectorAll('a')].filter((link) =>
       link.textContent?.includes('Explore this check'),
     );
