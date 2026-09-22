@@ -131,7 +131,7 @@ describe('BookingDetailsPageComponent', () => {
     draft.visitAddress = { ...draft.visitAddress, countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' };
     state.saveDetails(draft);
     const restored = TestBed.createComponent(BookingDetailsPageComponent).componentInstance;
-    expect(restored.visitStateCode.value).toBe('OY');
+    expect(restored.visitStateCode.value).toBe('Oyo');
     expect(restored.form.controls.visitAddress.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     expect(restored.visitCities.some(city => city.name === 'Kisi')).toBe(true);
     restored.onVisitCountryChange('GH');
