@@ -277,9 +277,11 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
 export class PatientPaymentPanelComponent implements OnInit {
   @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   @Input({ required: true }) reference = '';
+  private lastReloadVerify: unknown;
   @Input() set reloadVerify(value: unknown) {
-    if (value == null || value === false || !this.reference) return;
-    this.refreshAll();
+    if (value == null || value === false || !this.reference || Object.is(value, this.lastReloadVerify)) return;
+    this.lastReloadVerify = value;
+    this.verify();
   }
   @Output() readonly statusChanged = new EventEmitter<PublicBookingPaymentStatus>();
   private readonly api = inject(HealthCheckResultsApiService);
