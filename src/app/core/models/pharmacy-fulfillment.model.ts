@@ -75,7 +75,7 @@ export interface FulfillmentDirectoryItem {
   readonly providerType: string;
   readonly providerServiceUnitReference: string;
   readonly unitName: string;
-  readonly capabilityType: 'PHARMACY';
+  readonly capabilityType: 'PHARMACY' | 'LABORATORY' | 'RADIOLOGY';
   readonly location: {
     readonly city: string;
     readonly stateOrRegion: string;
@@ -152,8 +152,9 @@ export interface PharmacyQuote {
   readonly expiresAt: string;
   readonly submittedAt: string | null;
   readonly acceptedAt: string | null;
-  readonly pharmacy: {
-    readonly providerReference: string;
+  readonly serviceUnit?: {
+    readonly providerReference:
+ string;
     readonly displayName: string;
     readonly serviceUnitReference: string;
     readonly serviceUnitName: string;
@@ -179,6 +180,12 @@ export interface PatientOrderFulfillment {
     readonly type: ClinicalOrderType;
     readonly status: ClinicalOrderStatus;
     readonly prescription: PrescriptionDetail | null;
+  };
+  readonly serviceUnit?: {
+    readonly providerReference: string;
+    readonly displayName: string;
+    readonly serviceUnitReference: string;
+    readonly serviceUnitName: string;
   };
   readonly pharmacy: {
     readonly providerReference: string;
