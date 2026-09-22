@@ -22,17 +22,17 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
   selector: 'app-find-care-page',
   imports: [ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ` <main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase tracking-wider text-brand-600">
-      SmartClinic care network
-    </p>
-    <h1 class="mt-2 text-4xl font-bold text-brand-950">Find Care</h1>
-    <p class="mt-3 max-w-2xl text-slate-600">
-      Tell us what care you need and how you would like to receive it. SmartClinic uses current
-      provider information to help coordinate your request.
-    </p>
+  template: ` <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
+    <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
+      <div class="relative">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">SmartClinic care network</p>
+        <h1 class="mt-2 text-4xl font-bold text-slate-950">Find Care</h1>
+        <p class="mt-3 max-w-2xl text-slate-600">Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.</p>
+      </div>
+    </header>
     @if (success(); as request) {
-      <section class="mt-8 rounded-3xl border border-green-200 bg-green-50 p-7">
+      <section class="mt-6 rounded-[2rem] border border-green-200 bg-green-50 p-7 shadow-sm">
         <h2 class="text-2xl font-bold text-green-950">Care Request submitted</h2>
         <dl class="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
@@ -93,8 +93,8 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         >
       </section>
     } @else {
-      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-7" novalidate>
-        <fieldset class="rounded-3xl border bg-white p-6">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 grid gap-5" novalidate>
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
           @if (servicesLoading()) {
             <p role="status" class="mt-3">Loading care services…</p>
@@ -123,7 +123,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             }
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">Who is this care request for?</legend>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
@@ -164,7 +164,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
           @if (deliveryModes().length) {
             <div class="mt-3 grid gap-3 sm:grid-cols-3">
@@ -196,7 +196,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           }
         </fieldset>
         @if (requiresGeography()) {
-          <fieldset class="rounded-3xl border bg-white p-6">
+          <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <legend class="px-2 text-xl font-bold">3. Location</legend>
             <div class="mt-3 grid gap-5 md:grid-cols-3">
               <label class="font-semibold"
@@ -236,7 +236,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </div>
           </fieldset>
         }
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
             {{ requiresGeography() ? '4' : '3' }}. Preferred provider
           </legend>
@@ -288,7 +288,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
-        <fieldset class="rounded-3xl border bg-white p-6">
+        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
             {{ requiresGeography() ? '5' : '4' }}. Optional request details
           </legend>
