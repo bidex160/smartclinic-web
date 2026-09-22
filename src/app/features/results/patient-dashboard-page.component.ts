@@ -27,7 +27,7 @@ interface DashboardNextStep {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-10">
       @if (loading()) {
         <section role="status" aria-live="polite" class="animate-pulse space-y-4">
           <span class="sr-only">Loading your dashboard…</span>
@@ -47,7 +47,9 @@ interface DashboardNextStep {
           </button>
         </section>
       } @else if (dashboard(); as value) {
-        <header class="flex flex-wrap items-start justify-between gap-3">
+        <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-100/60 blur-3xl"></div>
+          <div class="relative flex flex-wrap items-start justify-between gap-3">
           <div>
             <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Patient home</p>
             <h1 class="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">
@@ -68,13 +70,16 @@ interface DashboardNextStep {
           <p aria-live="polite" class="w-full text-sm font-semibold text-brand-700">
             {{ copyFeedback() }}
           </p>
+          </div>
         </header>
 
         <section
-          class="mt-4 rounded-2xl bg-brand-900 p-5 text-white shadow-soft sm:p-6"
+          class="relative mt-5 overflow-hidden rounded-[2rem] bg-brand-900 p-6 text-white shadow-xl sm:p-8"
           aria-labelledby="next-step-heading"
         >
-          <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
+          <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="relative">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-100">Your next step</p>
           <h2 id="next-step-heading" class="mt-1 text-2xl font-bold">
             {{ nextStep(value).title }}
           </h2>
@@ -86,30 +91,31 @@ interface DashboardNextStep {
             class="mt-4 inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900 focus:ring-4 focus:ring-white/40"
             >{{ nextStep(value).label }} <span class="ml-2" aria-hidden="true">→</span></a
           >
+          </div>
         </section>
 
         <nav class="mt-4" aria-labelledby="quick-access-heading">
           <h2 id="quick-access-heading" class="mb-2 text-sm font-bold uppercase tracking-wider text-brand-700">Quick access</h2>
-          <div class="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-6">
-            <a routerLink="/me/health-journey" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <a routerLink="/me/health-journey" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.4-7-10.2A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7 2.8C19 16.6 12 21 12 21Z"/><path stroke-linecap="round" d="M12 11v4m-2-2h4"/></svg></span>
               <span>Book a checkup</span>
             </a>
             <a routerLink="/me/request-care"
              [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION' }"
-              class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+              class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 3v-3.5a2.5 2.5 0 0 1-2-2.5v-5.5Z"/></svg></span>
               <span>Get a consultation</span>
             </a>
             <a 
              [queryParams]="{ serviceCode: 'BASIC_MEDICATIONS' }"
-            routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+            routerLink="/me/request-care" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 4h8v3H8zM6 7h12v13H6zM9 11h6m-6 4h4"/></svg></span>
               <span>Get medication</span>
             </a>
             <a routerLink="/me/request-care" 
             [queryParams]="{ serviceCode: 'LAB_REQUEST' }"
-            class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+            class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 3-5 9h6l-2 9 8-11h-6l3-7H9Z"/></svg></span>
               <span>Get a lab test</span>
             </a>
@@ -117,7 +123,7 @@ interface DashboardNextStep {
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path stroke-linecap="round" d="M3 10h18m-4 5h2"/></svg></span>
               <span>Pay bills<small class="block text-[10px] font-medium text-slate-500">Coming soon</small></span>
             </button>
-            <a routerLink="/me/health-passport" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
+            <a routerLink="/me/health-passport" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h9l3 3v15H6zM15 3v4h4M9 12h6m-6 4h6"/></svg></span>
               <span>View health records</span>
             </a>
@@ -133,7 +139,7 @@ interface DashboardNextStep {
             <a routerLink="/me/care" class="font-bold text-brand-700 underline">View care</a>
           </div>
           <div class="mt-3 grid gap-3 md:grid-cols-2">
-            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+            <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <h3 class="font-bold">Hospital connection</h3>
               @if (value.setup.hasConnectedProvider) {
                 <p class="mt-1 text-sm text-slate-600">You have a connected healthcare provider.</p>
@@ -154,7 +160,7 @@ interface DashboardNextStep {
                 >
               }
             </article>
-            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+            <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <h3 class="font-bold">Care activity</h3>
               @if (value.setup.hasCareRequest) {
                 <p class="mt-1 text-sm text-slate-600">You have care activity in My Care.</p>
