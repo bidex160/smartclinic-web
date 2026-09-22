@@ -52,7 +52,8 @@ describe('ProviderRegisterPageComponent', () => {
   });
   it.each(['CLINIC', 'LABORATORY', 'PHARMACY'] as const)('captures %s referral intent without overriding provider selection', async (type) => {
     const { component, api } = await setup(() => of(profile()), { ref: 'SC-ABC123', type }); component.form.setValue(valid()); component.register();
-    expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ referralCode: 'SC-ABC123', intendedReferralType: type, providerType: 'INDIVIDUAL' }));
+    const providerType = type === 'LABORATORY' ? 'DIAGNOSTIC_CENTRE' : type;
+    expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ referralCode: 'SC-ABC123', intendedReferralType: type, providerType }));
   });
   it('keeps ISO state selection out of the provider registration payload', async () => {
     const { component, api } = await setup();
