@@ -57,7 +57,7 @@ describe('ProviderDashboardPageComponent', () => {
   it('keeps pending providers in onboarding without calling operational APIs', async () => {
     const { fixture, summaryApi, offersApi } = await setup('DRAFT', 'PENDING');
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Complete your provider setup');
+    expect(fixture.nativeElement.textContent).toContain('Setup in progress');
     expect(summaryApi.getSummary).not.toHaveBeenCalled();
     expect(offersApi.getOffers).not.toHaveBeenCalled();
   });
@@ -67,7 +67,7 @@ describe('ProviderDashboardPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(careServicesApi.getOfferings).toHaveBeenCalledOnce();
-    expect(text).toContain('Primary actions');
+    expect(text).toContain('Quick access');
     expect(text).toContain('Start offering care');
     expect(text).toContain('Set up Find Care services');
     expect(text).toContain('Health Check Services');
