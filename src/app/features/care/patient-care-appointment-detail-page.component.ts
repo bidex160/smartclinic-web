@@ -23,11 +23,12 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </p>
     } @else if (appointment(); as a) {
-      <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
-        <p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">{{ a.deliveryMode === 'VIRTUAL' ? 'Talk to a Doctor' : 'Your appointment' }}</p>
-        <h1 class="mt-2 text-3xl font-black">{{ a.provider.displayName }}</h1>
-        <p class="mt-2 text-violet-100">{{ a.service.name }} · {{ label(a.status) }}</p>
-        <p class="mt-4 text-lg font-bold">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</p>
+      <header class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="break-all text-sm font-bold uppercase text-brand-600">
+          {{ a.appointmentReference }}
+        </p>
+        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Your appointment</h1>
+        <p class="mt-2 text-lg">{{ label(a.status) }}</p>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -37,7 +38,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       @if (error()) {
         <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
       }
-      <section class="mt-6 rounded-2xl border bg-white p-6">
+      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
             <dt class="text-sm text-slate-500">Provider</dt>
@@ -90,44 +91,22 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(a.status) }}</p>
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
-        <section class="mt-6 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50 p-6 shadow-sm">
-          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Your consultation room</p>
-          <h2 class="mt-1 text-2xl font-black text-brand-950">Ready when it's time</h2>
+        <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Secure video care</p>
+          <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
             <p class="mt-2 text-slate-600">
-              Your secure consultation link is ready. Join from here when your appointment starts.
+              Your private consultation room is ready. You do not need to copy or enter a meeting link.
             </p>
-            @if (isEmbeddableConsultation(url)) {
-              <div class="mt-5 overflow-hidden rounded-2xl bg-slate-950 shadow-lg ring-1 ring-violet-200">
-                <iframe
-                  [src]="trustedMeetingUrl(url)"
-                  title="SmartClinic video consultation"
-                  allow="camera; microphone; fullscreen; display-capture; autoplay"
-                  referrerpolicy="no-referrer"
-                  class="h-[70vh] min-h-[520px] w-full border-0"
-                ></iframe>
-              </div>
-              <a
-                [href]="url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-3 inline-flex min-h-11 items-center rounded-xl border border-brand-200 bg-white px-4 py-2 font-bold text-brand-800"
-                >Open video in a new window</a
-              >
-            } @else {
-              <a
-                [href]="url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-                >Join consultation →</a
-              >
-            }
+            <a
+              [href]="url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+              >Join consultation</a
+            >
           } @else {
-            <div class="mt-4 rounded-2xl bg-white p-4 ring-1 ring-violet-100">
-              <p class="font-bold text-brand-950">Your consultation is being prepared</p>
-              <p class="mt-1 text-sm text-slate-600">SmartClinic is preparing your video room. You do not need to create or paste a link.</p>
-            </div>
+            <p class="mt-2 text-slate-600">Your secure consultation room is being prepared. Refresh this page shortly.</p>
           }
         </section>
       }
