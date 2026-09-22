@@ -83,7 +83,7 @@ export class PharmacyFulfillmentApiService {
   getPatientOrder(ref: string) {
     return this.http.get<ClinicalOrder>(`${this.base}/me/clinical-orders/${this.enc(ref)}`);
   }
-  searchFulfillmentProviders(orderType: 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING', query: {
+  searchFulfillmentProviders(orderType: 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE', query: {
     q?: string;
     country?: string;
     stateOrRegion?: string;
