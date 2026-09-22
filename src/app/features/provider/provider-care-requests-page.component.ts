@@ -9,12 +9,12 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
   selector: 'app-provider-care-requests-page',
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-    <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Care operations</p>
-    <h1 class="mt-2 text-3xl font-bold">Care Requests</h1>
-    <p class="mt-2 text-slate-600">
-      Review requests assigned to your authenticated provider workspace.
-    </p>
+  template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+    <header class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Care operations</p>
+      <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Care Requests</h1>
+      <p class="mt-2 max-w-2xl text-slate-600">Review new patient requests, respond promptly and move funded care into an appointment.</p>
+    </header>
     @if (loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading Care Requests…</p>
     } @else if (error()) {
@@ -28,7 +28,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
         <p class="mt-2 text-slate-600">Assigned requests will appear here.</p>
       </section>
     } @else {
-      <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
+      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <table class="min-w-[900px] w-full text-left">
           <thead class="bg-slate-50">
             <tr>
@@ -44,7 +44,7 @@ import { careDeliveryModeLabel } from '../care/care-delivery-mode';
           </thead>
           <tbody>
             @for (item of items(); track item.reference) {
-              <tr class="border-t">
+              <tr class="border-t transition hover:bg-slate-50">
                 <td class="p-4 font-semibold break-all">{{ item.reference }}</td>
                 <td class="p-4">{{ item.service.name }}</td>
                 <td class="p-4">{{ deliveryModeLabel(item.deliveryMode) }}</td>
