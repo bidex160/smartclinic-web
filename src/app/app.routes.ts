@@ -591,6 +591,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'diagnostic-orders',
+        title: 'Diagnostic Handoffs | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-diagnostic-orders-page.component').then(c => c.ProviderDiagnosticOrdersPageComponent),
+      },
+      {
+        path: 'diagnostic-orders/:reference',
+        title: 'Diagnostic Handoff | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-diagnostic-order-detail-page.component').then(c => c.ProviderDiagnosticOrderDetailPageComponent),
+      },
+      {
         path: 'pharmacy-orders',
         title: 'Pharmacy Orders | SmartClinic',
         canActivate: [providerGuard],

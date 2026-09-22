@@ -30,6 +30,9 @@ export class PharmacyFulfillmentApiService {
       `${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders`,
     );
   }
+  createDiagnosticOrder(appointment:string,type:'LABORATORY'|'IMAGING',clinicalNote:string,items:readonly {name:string;code?:string|null;instructions?:string|null}[]) {
+    return this.http.post<ClinicalOrder>(`${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders/diagnostics`,{type,clinicalNote,items});
+  }
   createClinicalNextAction(appointment: string, type: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE', clinicalNote: string) {
     return this.http.post<ClinicalOrder>(
       `${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders`,
@@ -108,6 +111,7 @@ export class PharmacyFulfillmentApiService {
       { providerServiceUnitReference },
     );
   }
+  listFulfillmentsByType(orderType:'PRESCRIPTION'|'LABORATORY'|'IMAGING',page=1,limit=20){return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/order-fulfillments`,{params:new HttpParams().set('orderType',orderType).set('page',page).set('limit',limit)});}
   listFulfillments(page = 1, limit = 20) {
     return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/order-fulfillments`, {
       params: new HttpParams().set('page', page).set('limit', limit),
@@ -118,6 +122,7 @@ export class PharmacyFulfillmentApiService {
       `${this.base}/provider/order-fulfillments/${this.enc(ref)}`,
     );
   }
+  submitDiagnosticResults(ref:string,body:import('../models/pharmacy-fulfillment.model').DiagnosticResultRequest){return this.http.post<ProviderOrderFulfillment>(`${this.base}/provider/order-fulfillments/${this.enc(ref)}/results`,body);}
   acceptFulfillment(ref: string) {
     return this.http.post<ProviderOrderFulfillment>(
       `${this.base}/provider/order-fulfillments/${this.enc(ref)}/accept`,
