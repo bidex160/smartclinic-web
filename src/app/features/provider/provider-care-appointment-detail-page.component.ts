@@ -93,19 +93,19 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
-          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Secure video care</p>
-          <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Your next step</p>
+          <h2 class="mt-2 text-2xl font-bold text-slate-950">Video consultation</h2>
+          <p class="mt-2 font-semibold text-slate-800">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</p>
           @if (safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">The consultation room is created automatically. No meeting-link setup is required.</p>
-            <a
-              [href]="url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800"
-              >Join consultation</a
-            >
+            <p class="mt-2 text-slate-600">Payment and appointment are confirmed. The secure consultation room is ready.</p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <a [href]="url" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800">Join video consultation</a>
+              @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
+                <button type="button" (click)="start()" [disabled]="pending()" class="min-h-12 rounded-xl border border-brand-300 bg-white px-5 py-3 font-bold text-brand-800">Start clinical appointment</button>
+              }
+            </div>
           } @else {
-            <p class="mt-2 text-slate-600">The secure room is being prepared. Refresh the appointment shortly.</p>
+            <p class="mt-2 rounded-xl bg-amber-50 p-4 text-amber-950">Payment is confirmed, but the video room is not ready yet. Refresh this appointment shortly. You do not need to create or send a meeting link.</p>
           }
         </section>
       }
@@ -154,14 +154,8 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       @if (a.status === 'IN_PROGRESS') { <app-provider-prescription-section [appointmentReference]="a.appointmentReference" [appointmentStatus]="a.status" /> }
       <div class="mt-6 flex flex-wrap gap-3">
         @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
+          @if (a.deliveryMode !== 'VIRTUAL') { <button type="button" (click)="start()" [disabled]="pending()" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Start appointment</button> }
           <button
-            type="button"
-            (click)="start()"
-            [disabled]="pending()"
-            class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-          >
-            Start appointment</button
-          ><button
             type="button"
             (click)="open('no-show')"
             [disabled]="pending()"
