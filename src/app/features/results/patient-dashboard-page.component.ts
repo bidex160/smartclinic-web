@@ -27,7 +27,7 @@ interface DashboardNextStep {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
+    <main class="sc-page mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
       @if (loading()) {
         <section role="status" aria-live="polite" class="animate-pulse space-y-4">
           <span class="sr-only">Loading your dashboard…</span>
@@ -50,7 +50,7 @@ interface DashboardNextStep {
         <header class="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Patient home</p>
-            <h1 class="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">
+            <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
               Welcome, {{ value.patient.firstName }}
             </h1>
             <p class="mt-1 text-sm text-slate-600">
@@ -71,7 +71,7 @@ interface DashboardNextStep {
         </header>
 
         <section
-          class="relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-violet-700 p-5 text-white shadow-[0_18px_42px_rgba(76,29,149,0.22)] sm:p-6"
+          class="sc-hero-glow relative mt-5 overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-brand-950 to-violet-800 p-6 text-white shadow-[0_24px_60px_rgba(30,20,70,0.24)] sm:p-8"
           aria-labelledby="next-step-heading"
         >
           <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
@@ -88,7 +88,7 @@ interface DashboardNextStep {
           >
         </section>
 
-        <nav class="mt-7" aria-labelledby="quick-access-heading">
+        <nav class="mt-9" aria-labelledby="quick-access-heading">
           <div class="mb-3">
             <p class="text-sm font-bold uppercase tracking-wider text-brand-700">SmartClinic</p>
             <h2 id="quick-access-heading" class="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">
@@ -97,27 +97,27 @@ interface DashboardNextStep {
             <p class="mt-1 text-sm text-slate-600">Choose what you want to do. We’ll guide you from there.</p>
           </div>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <a routerLink="/me/book" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(76,29,149,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(76,29,149,0.15)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/book" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(76,29,149,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(76,29,149,0.15)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-violet-200/30 blur-xl" aria-hidden="true"></span>
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-violet-600 text-xl text-white shadow-md shadow-violet-600/20" aria-hidden="true">♥</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>Book a Checkup</span><span class="text-brand-500 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(6,95,70,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(6,95,70,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(6,95,70,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(6,95,70,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-emerald-200/35 blur-xl" aria-hidden="true"></span>
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-emerald-600 text-xl text-white shadow-md shadow-emerald-600/20" aria-hidden="true">✚</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>See a Doctor</span><span class="text-emerald-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/providers" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(3,105,161,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(3,105,161,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/providers" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(3,105,161,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(3,105,161,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-sky-200/35 blur-xl" aria-hidden="true"></span>
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-sky-600 text-sm font-black text-white shadow-md shadow-sky-600/20" aria-hidden="true">H</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>Visit a Hospital</span><span class="text-sky-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/prescriptions" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(180,83,9,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(180,83,9,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/prescriptions" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(180,83,9,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(180,83,9,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-amber-200/35 blur-xl" aria-hidden="true"></span>
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-amber-500 text-sm font-black text-white shadow-md shadow-amber-500/20" aria-hidden="true">Rx</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>Get Medicine</span><span class="text-amber-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/tests" class="group relative flex min-h-[132px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(190,24,93,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(190,24,93,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+            <a routerLink="/me/tests" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(190,24,93,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(190,24,93,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
               <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-rose-200/35 blur-xl" aria-hidden="true"></span>
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-rose-500 text-sm font-black text-white shadow-md shadow-rose-500/20" aria-hidden="true">T</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>Get a Test</span><span class="text-rose-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
