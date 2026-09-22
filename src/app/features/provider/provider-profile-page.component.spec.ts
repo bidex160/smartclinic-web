@@ -9,6 +9,7 @@ import { ProviderServiceAreasApiService } from '../../core/services/provider-ser
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderProfilePageComponent } from './provider-profile-page.component';
 
 describe('ProviderProfilePageComponent', () => {
@@ -116,6 +117,23 @@ describe('ProviderProfilePageComponent', () => {
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },
         { provide: HealthCheckPackagesApiService, useValue: { getPackages: () => of([]) } },
         { provide: FulfilmentModesApiService, useValue: { getFulfilmentModes: () => of([]) } },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: (countryCode: string) =>
+              countryCode === 'NG'
+                ? [
+                    { name: 'Lagos', isoCode: 'Lagos', countryCode: 'NG' },
+                    { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+                  ]
+                : [],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'Lagos', countryCode: 'NG' }],
+          },
+        },
         {
           provide: ProviderServiceAreasApiService,
           useValue: { listOwn: () => of([]), listForAdmin: () => of([]) },
