@@ -19,9 +19,9 @@ describe('PatientBookingPageComponent geography', () => {
     }).compileComponents();
     const component = TestBed.createComponent(PatientBookingPageComponent).componentInstance;
     component.onSelfCountryChange('NG');
-    component.onSelfStateChange('OY');
+    component.onSelfStateChange('Oyo');
     component.visitAddressForm.controls.city.setValue('Kisi');
-    expect(component.bookingStateCode.value).toBe('OY');
+    expect(component.bookingStateCode.value).toBe('Oyo');
     expect(component.visitAddressForm.getRawValue()).toMatchObject({ countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Kisi' });
     component.onSelfCountryChange('GH');
     expect(component.bookingStateCode.value).toBe('');
