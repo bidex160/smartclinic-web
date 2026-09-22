@@ -351,7 +351,14 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             {{ doctorJourney() ? 'Anything else?' : (requiresGeography() ? '5. Optional request details' : '4. Optional request details') }}
           </legend>
           @if (doctorJourney()) {
-            <p class="mt-2 text-sm text-slate-600">Optional — add a preferred time, contact method or a short note only if you want to.</p>
+            <p class="mt-2 text-sm text-slate-600">SmartClinic recommends a time for your consultation. Keep it or change it before continuing.</p>
+            @if (form.controls.preferredDate.value && form.controls.preferredTime.value) {
+              <div class="mt-4 rounded-2xl border border-brand-200 bg-brand-50 p-4">
+                <p class="text-xs font-bold uppercase tracking-wide text-brand-700">Recommended time</p>
+                <p class="mt-1 text-lg font-black text-brand-950">{{ form.controls.preferredDate.value }} · {{ form.controls.preferredTime.value }}</p>
+                <p class="mt-1 text-sm text-slate-600">Your doctor can accept this time or suggest another.</p>
+              </div>
+            }
           }
           <div class="mt-3 grid gap-5 sm:grid-cols-2">
             <label class="font-semibold"
@@ -545,7 +552,14 @@ export class FindCarePageComponent {
   }
   chooseDoctorMode(mode: 'VIRTUAL' | 'LATER') {
     if (mode === 'VIRTUAL') {
-      this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredDate: '', preferredTime: '' });
+      const suggested = new Date(Date.now() + 30 * 60 * 1000);
+      suggested.setMinutes(Math.ceil(suggested.getMinutes() / 15) * 15, 0, 0);
+      const yyyy = suggested.getFullYear();
+      const mm = String(suggested.getMonth() + 1).padStart(2, '0');
+      const dd = String(suggested.getDate()).padStart(2, '0');
+      const hh = String(suggested.getHours()).padStart(2, '0');
+      const mi = String(suggested.getMinutes()).padStart(2, '0');
+      this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredDate: `${yyyy}-${mm}-${dd}`, preferredTime: `${hh}:${mi}` });
       this.updateGeographyValidators();
       this.discoverProviders();
       return;
