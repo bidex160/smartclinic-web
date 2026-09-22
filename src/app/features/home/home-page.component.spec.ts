@@ -49,7 +49,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: api },
         { provide: AuthStateService, useValue: { isPatient: signal(false) } },
-        { provide: ReferralsApiService, useValue: { getLeaderboard: () => of([]) } },
+        { provide: ReferralsApiService, useValue: { getPublicLeaderboard: () => of([]) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -123,7 +123,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: { getCatalogue: () => of(catalogue) } },
         { provide: AuthStateService, useValue: { isPatient: signal(true) } },
-        { provide: ReferralsApiService, useValue: { getLeaderboard: () => of([]) } },
+        { provide: ReferralsApiService, useValue: { getPublicLeaderboard: () => of([]) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -154,7 +154,7 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         { provide: HealthCheckPackagesApiService, useValue: { getCatalogue: () => of([]) } },
         { provide: AuthStateService, useValue: { isPatient: signal(false) } },
-        { provide: ReferralsApiService, useValue: { getLeaderboard: () => of([]) } },
+        { provide: ReferralsApiService, useValue: { getPublicLeaderboard: () => of([]) } },
         {
           provide: PUBLIC_SITE_CONFIG,
           useValue: { whatsappUrl: 'https://wa.me/2348000000000' },
