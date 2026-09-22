@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AdminProvidersApiService } from '../../core/services/admin-providers-api.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { ProvidersAdminPageComponent } from './providers-admin-page.component';
 
 describe('ProvidersAdminPageComponent', () => {
@@ -135,6 +136,20 @@ describe('ProvidersAdminPageComponent', () => {
         provideRouter([]),
         { provide: AdminProvidersApiService, useValue: api },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: () => [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(ProvidersAdminPageComponent);
