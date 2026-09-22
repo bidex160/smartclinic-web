@@ -106,7 +106,7 @@ describe('FindCarePageComponent', () => {
     const { fixture, find } = await setup(true, [], 'DENTAL');
     const c = fixture.componentInstance;
     expect(c.form.controls.serviceCode.value).toBe('DENTAL');
-    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', limit: 50 });
+    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', limit: 50 });
   });
 
   it('ignores an invalid serviceCode and leaves normal service selection available', async () => {
@@ -132,7 +132,7 @@ describe('FindCarePageComponent', () => {
       preferredProviderReference: '',
     });
     c.serviceChanged();
-    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', limit: 50 });
+    expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', limit: 50 });
     expect(c.deliveryModes()).toEqual(['IN_PERSON', 'VIRTUAL', 'HOME_VISIT']);
     c.form.controls.deliveryMode.setValue('VIRTUAL');
     c.deliveryModeChanged();
