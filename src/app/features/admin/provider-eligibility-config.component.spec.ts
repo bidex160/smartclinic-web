@@ -5,6 +5,7 @@ import { FulfilmentModesApiService } from '../../core/services/fulfilment-modes-
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { ProviderEligibilityApiService } from '../../core/services/provider-eligibility-api.service';
 import { ProviderSelfConfigurationApiService } from '../../core/services/provider-self-configuration-api.service';
+import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderEligibilityConfigComponent } from './provider-eligibility-config.component';
 describe('ProviderEligibilityConfigComponent', () => {
   it('renders catalogue-labelled capabilities and HOME_VISIT limitation', async () => {
@@ -335,6 +336,20 @@ describe('ProviderEligibilityConfigComponent', () => {
       providers: [
         { provide: ProviderEligibilityApiService, useValue: api },
         { provide: ProviderSelfConfigurationApiService, useValue: api },
+        {
+          provide: LocationDataService,
+          useValue: {
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
+            getStates: () => [
+              { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
+              { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
+            ],
+            getCities: (_countryCode: string, stateCode: string) =>
+              stateCode === 'Oyo'
+                ? [{ name: 'Kisi', stateCode: 'Oyo', countryCode: 'NG' }]
+                : [{ name: 'Ikeja', stateCode: 'LA', countryCode: 'NG' }],
+          },
+        },
         {
           provide: HealthCheckPackagesApiService,
           useValue: {
