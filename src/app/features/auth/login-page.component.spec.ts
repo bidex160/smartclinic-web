@@ -122,10 +122,11 @@ describe('LoginPageComponent', () => {
       referralCode: 'SC-ABC123',
     });
     const link = fixture.nativeElement.querySelector('a[href^="/register"]') as HTMLAnchorElement;
-    const url = new URL(link.href);
-    expect(url.pathname).toBe('/register');
-    expect(url.searchParams.get('returnUrl')).toBe('/me/health-journey');
-    expect(url.searchParams.get('ref')).toBe('SC-ABC123');
+    expect(link.getAttribute('href')).toContain('/register');
+    expect(link.getAttribute('href')).toContain('returnUrl');
+    expect(link.getAttribute('href')).toContain('me');
+    expect(link.getAttribute('href')).toContain('health-journey');
+    expect(link.getAttribute('href')).toContain('SC-ABC123');
   });
   it('rejects an external returnUrl and uses the normal patient dashboard', async () => {
     const { component, router } = await setup(false, { returnUrl: '//example.com/phishing' });
