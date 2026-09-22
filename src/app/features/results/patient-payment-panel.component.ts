@@ -551,7 +551,8 @@ export class PatientPaymentPanelComponent implements OnInit {
     });
   }
   refreshAll() {
-    this.verify();
+    this.refresh();
+    this.loadRewards();
   }
   private applyStatus(s: PublicBookingPaymentStatus) {
     this.status.set(s);
