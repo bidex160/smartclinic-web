@@ -10,8 +10,21 @@ export class NotificationNavigationService {
     if (role === 'USER') {
       switch (notification.entityType) {
         case 'CARE_REQUEST': return reference ? ['/me/care', reference] : ['/me/care'];
-        case 'CARE_APPOINTMENT': return reference ? ['/me/care/appointments', reference] : ['/me/appointments'];
-        default: return null;
+        case 'CARE_APPOINTMENT': return reference ? ['/me/care/appointments', reference] : ['/me/care'];
+        case 'HEALTH_CHECK': return reference ? ['/me/health-checks', reference] : ['/me/health-checks'];
+        case 'GUIDED_SELF_CHECK':
+        case 'SELF_CHECK': return reference ? ['/me/self-checks', reference] : ['/me/self-checks'];
+        case 'CLINICAL_ORDER':
+        case 'PATIENT_ORDER':
+        case 'DIAGNOSTIC_ORDER':
+        case 'LAB_ORDER':
+        case 'RADIOLOGY_ORDER':
+        case 'REFERRAL':
+        case 'PROCEDURE_ORDER': return reference ? ['/me/orders', reference] : ['/me/orders'];
+        case 'PROVIDER_CONNECTION': return reference ? ['/me/providers', reference] : ['/me/providers'];
+        case 'PAYMENT':
+        case 'BILL': return ['/me/care'];
+        default: return ['/me/notifications'];
       }
     }
 
