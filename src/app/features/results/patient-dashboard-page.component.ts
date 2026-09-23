@@ -439,7 +439,7 @@ export class PatientDashboardPageComponent {
   private paymentContinuationRoute(
     resource: PatientDashboardRecommendedActionDetail['resource'],
   ): string | string[] {
-    if (!resource?.reference.trim()) return '/me/care';
+    if (!resource?.reference.trim()) return '/me/orders';
 
     switch (resource.domain) {
       case 'GUIDED_SELF_CHECK':
@@ -451,9 +451,17 @@ export class PatientDashboardPageComponent {
       case 'PROVIDER_CONNECTION':
         return ['/me/providers', resource.reference];
       case 'CARE_APPOINTMENT':
-        return '/me/care';
+        return ['/me/care/appointments', resource.reference];
+      case 'PATIENT_ORDER':
+      case 'CLINICAL_ORDER':
+      case 'DIAGNOSTIC_ORDER':
+      case 'LAB_ORDER':
+      case 'RADIOLOGY_ORDER':
+      case 'REFERRAL':
+      case 'PROCEDURE_ORDER':
+        return ['/me/orders', resource.reference];
       default:
-        return '/me/care';
+        return '/me/orders';
     }
   }
 
