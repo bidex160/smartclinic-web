@@ -173,7 +173,8 @@ export class PatientHealthCheckV2BookingPageComponent {
   }
 
   packageLabel(p: HealthCheckCataloguePackage, index: number): string {
-    return ['Self Check', 'Basic Check', 'Essential Check', 'Complete Check'][index] ?? p.name;
+    const labels: Record<string, string> = { SELF: 'Self Check', BASIC: 'Basic Check', ESSENTIAL: 'Essential Check', COMPLETE: 'Complete Check' };
+    return labels[p.code.toUpperCase()] ?? p.name;
   }
 
   packageSummary(p: HealthCheckCataloguePackage, index: number): string {
