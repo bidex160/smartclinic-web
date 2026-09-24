@@ -49,7 +49,7 @@ describe('ProviderProfilePageComponent', () => {
     };
     const { fixture, component, api } = await setup(value);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Health Check readiness');
+    expect(fixture.nativeElement.textContent).toContain('Setup progress');
     expect(fixture.nativeElement.textContent).toContain('Add at least one active Health Check service');
     expect(fixture.nativeElement.textContent).toContain('Configure a location for your in-person Health Check service');
     expect(fixture.nativeElement.textContent).toContain('Add weekly availability for your Health Check services');
