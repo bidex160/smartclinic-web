@@ -451,6 +451,8 @@ function activeProvider() {
     stateOrRegion: 'Lagos',
     city: 'Ikeja',
     onboardingStatus: 'APPROVED' as const,
+    isPlatformDefault: false,
+    platformDefaultPriority: null,
     submittedAt: null,
     reviewedAt: null,
     reviewNote: null,
