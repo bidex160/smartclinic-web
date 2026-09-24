@@ -308,8 +308,13 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           <legend class="px-2 text-xl font-bold">
             {{ doctorJourney() ? 'Anything else?' : (requiresGeography() ? '5. Optional request details' : '4. Optional request details') }}
           </legend>
-          @if (doctorJourney()) {
-            <p class="mt-2 text-sm text-slate-600">SmartClinic recommends a time for your consultation. Keep it or change it before continuing.</p>
+          @if (doctorJourney() && doctorMode() === 'NOW') {
+            <div class="mt-2 rounded-2xl border border-green-200 bg-green-50 p-4">
+              <p class="font-black text-green-950">As soon as possible</p>
+              <p class="mt-1 text-sm text-green-900">No time to enter. Choose a doctor and send the request. If they accept, you pay and SmartClinic confirms the consultation automatically.</p>
+            </div>
+          } @else if (doctorJourney()) {
+            <p class="mt-2 text-sm text-slate-600">Choose when you would like the consultation. Your doctor can accept that time or suggest another.</p>
             @if (form.controls.preferredDate.value && form.controls.preferredTime.value) {
               <div class="mt-4 rounded-2xl border border-brand-200 bg-brand-50 p-4">
                 <p class="text-xs font-bold uppercase tracking-wide text-brand-700">Recommended time</p>
@@ -318,6 +323,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               </div>
             }
           }
+          @if (!doctorJourney() || doctorMode() !== 'NOW') {
           <div class="mt-3 grid gap-5 sm:grid-cols-2">
             <label class="font-semibold"
               >Preferred date (optional)<input
@@ -348,6 +354,12 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               ></textarea>
             </label>
           </div>
+          } @else {
+            <div class="mt-4 grid gap-5 sm:grid-cols-2">
+              <label class="font-semibold">Contact method<select formControlName="contactMethod" class="mt-2 min-h-12 w-full rounded-xl border px-3"><option value="EMAIL">Email</option><option value="PHONE">Phone</option><option value="WHATSAPP">WhatsApp</option></select></label>
+              <label class="font-semibold sm:col-span-2">Notes <span class="font-normal text-slate-500">(optional)</span><textarea formControlName="notes" maxlength="4000" rows="3" placeholder="What would you like the doctor to know?" class="mt-2 w-full rounded-xl border p-3"></textarea></label>
+            </div>
+          }
         </fieldset>
         @if (error()) {
           <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
@@ -499,7 +511,9 @@ export class FindCarePageComponent {
     }
     this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredProviderReference: '' });
     if (mode === 'NOW') {
-      this.form.patchValue({ preferredDate: '', preferredTime: '' });
+      const suggested = new Date(Date.now() + 5 * 60_000);
+      const local = this.localSlot(suggested);
+      this.form.patchValue({ preferredDate: local.date, preferredTime: local.time });
     } else {
       const suggested = new Date();
       suggested.setDate(suggested.getDate() + 1);
@@ -511,6 +525,12 @@ export class FindCarePageComponent {
     }
     this.updateGeographyValidators();
     this.discoverProviders();
+  }
+
+  private localSlot(value: Date): { date: string; time: string } {
+    const parts = new Intl.DateTimeFormat('en-CA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(value);
+    const part=(type:Intl.DateTimeFormatPartTypes)=>parts.find(x=>x.type===type)?.value??'';
+    return { date: `${part('year')}-${part('month')}-${part('day')}`, time: `${part('hour')}:${part('minute')}` };
   }
 
   selectParticipant(selection: HealthCheckParticipantSelection) {
@@ -696,6 +716,7 @@ export class FindCarePageComponent {
         : {}),
       ...(v.preferredDate ? { preferredDate: v.preferredDate } : {}),
       ...(v.preferredTime ? { preferredTime: v.preferredTime } : {}),
+      ...(v.preferredDate && v.preferredTime ? { preferredTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lagos' } : {}),
       contactMethod: v.contactMethod,
       ...(v.notes.trim() ? { notes: v.notes.trim() } : {}),
       ...this.participantRequest(),
