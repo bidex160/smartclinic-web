@@ -21,6 +21,8 @@ import { ProviderRecruitmentInvitationsApiService } from '../../core/services/pr
 import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { formatEarningMoney } from '../provider/provider-earning-presentation';
 import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
+import { AssistedMatchingApiService } from '../../core/services/assisted-matching-api.service';
+import { AssistedMatchContact } from '../../core/models/assisted-match.model';
 
 type BookingStep = 1 | 2 | 3 | 4;
 
@@ -39,6 +41,7 @@ export class PatientHealthCheckV2BookingPageComponent {
   private readonly locations = inject(LocationDataService);
   private readonly providerInvitations = inject(ProviderRecruitmentInvitationsApiService);
   private readonly dependantsApi = inject(DependantsApiService);
+  private readonly assistedMatching = inject(AssistedMatchingApiService);
 
   readonly steps = ['Your checkup', 'Provider', 'Options', 'Review & Pay'] as const;
   readonly currentStep = signal<BookingStep>(1);
@@ -66,6 +69,9 @@ export class PatientHealthCheckV2BookingPageComponent {
   readonly participant = signal<HealthCheckParticipantSelection>({ kind: 'SELF' });
   readonly states = signal<readonly IState[]>([]);
   readonly cities = signal<readonly ICity[]>([]);
+  readonly assistedMatchingBusy = signal(false);
+  readonly assistedMatchReference = signal<string | null>(null);
+  readonly assistedMatchError = signal('');
   readonly money = formatEarningMoney;
   private quoteRequest = 0;
   private discoveryRequest = 0;
@@ -476,6 +482,11 @@ export class PatientHealthCheckV2BookingPageComponent {
       if (typeof content?.scrollIntoView === 'function')
         content.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+  }
+
+  requestAssistedMatch(contactPreference: AssistedMatchContact='NOTIFY'): void {
+    if(this.assistedMatchingBusy())return; const v=this.form.getRawValue(); this.assistedMatchingBusy.set(true);this.assistedMatchError.set('');
+    this.assistedMatching.create({serviceKind:'HEALTH_CHECK',packageCode:v.packageCode,fulfilmentModeCode:v.fulfilmentModeCode,preferredDate:v.preferredDate,preferredTime:v.preferredTime,preferredTimezone:v.timezone,countryCode:v.address.countryCode.toUpperCase(),stateOrRegion:v.address.stateOrRegion,city:v.address.city,postalCode:v.address.postalCode||undefined,contactPreference}).pipe(finalize(()=>this.assistedMatchingBusy.set(false))).subscribe({next:x=>this.assistedMatchReference.set(x.reference),error:()=>this.assistedMatchError.set('We could not start the assisted search. Please try again.')});
   }
 
   openProviderInvitation(): void {
