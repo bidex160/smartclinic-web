@@ -55,6 +55,9 @@ export class ProviderServiceAreasComponent implements OnInit {
     postalCode: ['', Validators.maxLength(30)],
     travelFee: [0, [Validators.required, Validators.min(0)]],
     priority: [100, [Validators.required, Validators.min(1), Validators.max(999)]],
+    originLatitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
+    originLongitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
+    maxRadiusKm: [null as number | null, [Validators.min(0.1), Validators.max(1000)]],
   });
 private readonly locationData = inject(LocationDataService);
 
@@ -122,6 +125,9 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       postalCode: area.postalCode ?? '',
       travelFee: Number(area.travelFeeMinor || 0) / 100,
       priority: area.priority ?? 100,
+      originLatitude: area.originLatitude === null ? null : Number(area.originLatitude),
+      originLongitude: area.originLongitude === null ? null : Number(area.originLongitude),
+      maxRadiusKm: area.maxRadiusKm === null ? null : Number(area.maxRadiusKm),
     });
     this.initializeAreaGeography(area.countryCode, area.stateOrRegion, area.city ?? '');
   }
@@ -136,6 +142,9 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       postalCode: '',
       travelFee: 0,
       priority: 100,
+      originLatitude: null,
+      originLongitude: null,
+      maxRadiusKm: null,
     });
     this.areaStates = this.locationData.getStates('NG');
     this.areaCities = [];
@@ -156,6 +165,9 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       postalCode: value.postalCode.trim() || null,
       travelFeeMinor: Math.round(Number(value.travelFee || 0) * 100),
       priority: Number(value.priority || 100),
+      originLatitude: value.originLatitude,
+      originLongitude: value.originLongitude,
+      maxRadiusKm: value.maxRadiusKm,
     };
     const operation = this.editingId()
       ? this.areasApi.update(this.editingId()!, body)
