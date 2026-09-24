@@ -180,6 +180,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
+        @if (!doctorJourney()) {
         <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
           @if (deliveryModes().length) {
@@ -211,6 +212,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </p>
           }
         </fieldset>
+        }
         @if (requiresGeography()) {
           <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <legend class="px-2 text-xl font-bold">3. Location</legend>
@@ -601,7 +603,7 @@ export class FindCarePageComponent {
     this.providers.set([]);
   }
   serviceChanged() {
-    this.form.patchValue({ deliveryMode: '', preferredProviderReference: '' });
+    this.form.patchValue({ deliveryMode: this.doctorJourney() && this.doctorMode() !== 'HOSPITAL' ? 'VIRTUAL' : this.doctorMode() === 'HOSPITAL' ? 'IN_PERSON' : '', preferredProviderReference: '' });
     this.discoveryProviders.set([]);
     this.providers.set([]);
     this.updateGeographyValidators();
@@ -636,11 +638,7 @@ export class FindCarePageComponent {
           // if (!deliveryMode) {
             this.discoveryProviders.set(p.items);
             const available = this.deliveryModes();
-            if (
-              this.form.controls.deliveryMode.value &&
-              !available.includes(this.form.controls.deliveryMode.value)
-            )
-              this.form.controls.deliveryMode.setValue('');
+            if (!this.doctorJourney() && this.form.controls.deliveryMode.value && !available.includes(this.form.controls.deliveryMode.value)) this.form.controls.deliveryMode.setValue('');
           // }
           this.providers.set(deliveryMode ? p.items : []);
         },
