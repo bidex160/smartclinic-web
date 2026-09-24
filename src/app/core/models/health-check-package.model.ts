@@ -66,6 +66,8 @@ export interface HealthCheckProviderDiscoveryRequest {
   readonly stateOrRegion: string;
   readonly city: string;
   readonly postalCode?: string;
+  readonly latitude?: number;
+  readonly longitude?: number;
   readonly page?: number;
   readonly limit?: number;
 }
