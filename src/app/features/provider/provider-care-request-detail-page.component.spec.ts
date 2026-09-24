@@ -96,7 +96,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
   }
   it('loads by reference and accepts then refreshes authoritative detail', async () => {
     const { fixture, api } = await setup();
-    expect(fixture.nativeElement.textContent).toContain('Accept request');
+    expect(fixture.nativeElement.textContent).toContain('Accept this time');
     expect(fixture.nativeElement.textContent).toContain('₦10,000');
     fixture.componentInstance.accept();
     expect(api.acceptCareRequest).toHaveBeenCalledWith('SC-CARE-ABCDEF012345');
@@ -104,7 +104,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
   });
   it('schedules accepted care with public location reference and authoritative refetch', async () => {
     const { fixture, api } = await setup('PROVIDER_ACCEPTED');
-    expect(fixture.nativeElement.textContent).toContain('Schedule appointment');
+    expect(fixture.nativeElement.textContent).toContain('Payment confirmed');
     const c = fixture.componentInstance;
     c.scheduleOpen.set(true);
     c.scheduleForm.setValue({
@@ -125,7 +125,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
   });
   it('gates scheduling on authoritative funding while keeping chat available', async () => {
     const pending = await setup('PROVIDER_ACCEPTED', false, false, 'VIRTUAL', 'PENDING');
-    expect(pending.fixture.nativeElement.textContent).toContain('Awaiting patient payment');
+    expect(pending.fixture.nativeElement.textContent).toContain('Waiting for payment');
     const buttons = [...pending.fixture.nativeElement.querySelectorAll('button')].map((button: Element) => button.textContent ?? '');
     expect(buttons.some((label) => label.includes('Schedule appointment'))).toBe(false);
     expect(pending.fixture.nativeElement.textContent).toContain('Chat with patient');
