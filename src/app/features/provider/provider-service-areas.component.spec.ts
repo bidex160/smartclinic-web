@@ -21,6 +21,11 @@ describe('ProviderServiceAreasComponent', () => {
       stateOrRegion: 'Lagos',
       city: '',
       postalCode: '',
+      travelFee: 0,
+      priority: 100,
+      originLatitude: null,
+      originLongitude: null,
+      maxRadiusKm: null,
     });
     component.save();
     expect(create).toHaveBeenCalledWith({
@@ -29,6 +34,11 @@ describe('ProviderServiceAreasComponent', () => {
       stateOrRegion: 'Lagos',
       city: null,
       postalCode: null,
+      travelFee: 0,
+      priority: 100,
+      originLatitude: null,
+      originLongitude: null,
+      maxRadiusKm: null,
     });
     expect(JSON.stringify(create.mock.calls[0])).not.toContain('providerId');
     const text = fixture.nativeElement.textContent as string;
@@ -50,6 +60,11 @@ describe('ProviderServiceAreasComponent', () => {
       stateOrRegion: 'Lagos',
       city: 'Ikeja',
       postalCode: '',
+      travelFee: 0,
+      priority: 100,
+      originLatitude: null,
+      originLongitude: null,
+      maxRadiusKm: null,
     });
     component.save();
     expect(component.error()).toContain('conflicts');
@@ -166,6 +181,11 @@ function area() {
     stateOrRegion: 'Lagos',
     city: null,
     postalCode: null,
+    travelFeeMinor: 0,
+    priority: 100,
+    originLatitude: null,
+    originLongitude: null,
+    maxRadiusKm: null,
     isActive: true,
     createdAt: '',
     updatedAt: '',
