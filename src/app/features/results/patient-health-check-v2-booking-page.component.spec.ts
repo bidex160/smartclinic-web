@@ -7,6 +7,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
+import { AssistedMatchingApiService } from '../../core/services/assisted-matching-api.service';
 import { PatientHealthCheckV2BookingPageComponent } from './patient-health-check-v2-booking-page.component';
 
 describe('PatientHealthCheckV2BookingPageComponent', () => {
@@ -408,6 +409,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
         { provide: HealthCheckPackagesApiService, useValue: packageApi },
         { provide: HealthCheckResultsApiService, useValue: bookingApi },
         { provide: ProviderRecruitmentInvitationsApiService, useValue: invitationApi },
+        { provide: AssistedMatchingApiService, useValue: { create: vi.fn(() => of({ reference: 'SC-AM-SAFE' })) } },
         { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [{ patientReference: 'SCP-AB12-CD34', firstName: 'Aisha', lastName: 'Okafor', displayName: 'Aisha Okafor', dateOfBirth: '2015-06-12', countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Ikeja', relationship: { type: 'MOTHER', role: 'GUARDIAN', isPrimary: true } }] }) } },
         {
           provide: LocationDataService,
