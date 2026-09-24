@@ -29,6 +29,8 @@ export interface AdminProviderListItem {
   readonly stateOrRegion: string | null;
   readonly city: string | null;
   readonly onboardingStatus: ProviderOnboardingStatus;
+  readonly isPlatformDefault: boolean;
+  readonly platformDefaultPriority: number | null;
   readonly submittedAt: string | null;
   readonly reviewedAt: string | null;
   readonly reviewNote: string | null;
@@ -70,7 +72,10 @@ export interface CreateAdminProviderRequest {
   readonly city: string;
 }
 
-export type UpdateAdminProviderRequest = Partial<Omit<CreateAdminProviderRequest, 'email'>>;
+export type UpdateAdminProviderRequest = Partial<Omit<CreateAdminProviderRequest, 'email'>> & {
+  readonly isPlatformDefault?: boolean;
+  readonly platformDefaultPriority?: number | null;
+};
 
 export interface AdminCreatedProviderResponse {
   readonly provider: AdminProviderDetail;
