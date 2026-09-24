@@ -163,6 +163,7 @@ export interface CareRequest {
   } | null;
   readonly preferredProvider: CareRequestProviderSummary | null;
   readonly assignedProvider: CareRequestProviderSummary | null;
+  readonly hostProvider?: CareRequestProviderSummary | null;
   readonly preferredDate: string | null;
   readonly preferredTime: string | null;
   readonly preferredTimezone?: string | null;
@@ -203,6 +204,7 @@ export interface CareRequestAppointmentSummary {
   readonly scheduledTimeFrom?: string;
   readonly scheduledTimeTo?: string;
   readonly timezone?: string;
+  readonly location?: CareAppointmentLocation | null;
   readonly providerLocation?: CareAppointmentLocation | null;
 }
 export interface CareRequestPage {
