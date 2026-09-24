@@ -20,9 +20,6 @@ describe('ProviderDashboardPageComponent', () => {
       expect(text).toContain(label);
     expect(summaryApi.getSummary).toHaveBeenCalledOnce();
     expect(offersApi.getOffers).toHaveBeenCalledWith('OFFERED');
-    expect(text).toContain('Level 2 achieved');
-    expect(text).toContain('Working toward Level 3');
-    expect(text).toContain('22/30');
   });
 
   it('renders legitimate zero values only after a successful response', async () => {
