@@ -94,6 +94,8 @@ export interface HealthCheckProviderOffering {
   readonly packageCode: string;
   readonly basePackagePriceMinor: number;
   readonly currency: string;
+  readonly travelFeeMinor: number;
+  readonly travelDistanceKm: number | null;
   readonly fulfilmentMode: {
     code: 'PROVIDER_LOCATION' | 'HOME_VISIT';
     name: string;
