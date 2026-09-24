@@ -412,6 +412,7 @@ export class FindCarePageComponent {
   readonly servicesError = signal(false);
   readonly requestedServiceCode = signal<string | null>(null);
   readonly doctorJourney = signal(false);
+  readonly hostInstitutionReference = signal<string | null>(null);
   readonly doctorMode = signal<'NOW' | 'LATER' | 'HOSPITAL' | null>(null);
   readonly servicesLoaded = signal(false);
   private draftRestored = false;
@@ -471,10 +472,13 @@ export class FindCarePageComponent {
     ];
   };
   constructor() {
-    this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor');
+    this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor' || !!this.route.snapshot.queryParamMap.get('institution'));
+    this.hostInstitutionReference.set(this.route.snapshot.queryParamMap.get('institution'));
+    const initialDoctorMode=this.route.snapshot.queryParamMap.get('doctorMode'); if(initialDoctorMode==='NOW'||initialDoctorMode==='LATER'||initialDoctorMode==='HOSPITAL') this.chooseDoctorMode(initialDoctorMode);
     this.requestedServiceCode.set(this.readRequestedServiceCode(this.route.snapshot.queryParamMap.get('serviceCode')));
     this.route.queryParamMap.subscribe((params) => {
-      this.doctorJourney.set(params.get('journey') === 'doctor');
+      this.doctorJourney.set(params.get('journey') === 'doctor' || !!params.get('institution'));
+      this.hostInstitutionReference.set(params.get('institution'));
       this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
       this.applyRequestedServiceCode();
     });
@@ -702,6 +706,7 @@ export class FindCarePageComponent {
     return {
       serviceCode: v.serviceCode,
       deliveryMode: v.deliveryMode as CareDeliveryMode,
+      ...(this.hostInstitutionReference() ? { hostProviderReference: this.hostInstitutionReference()! } : {}),
       ...(v.preferredProviderReference
         ? { preferredProviderReference: v.preferredProviderReference }
         : {}),
