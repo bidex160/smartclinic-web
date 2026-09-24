@@ -1,107 +1,119 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  Country,
-  // State,
-  // City,
-  ICountry,
-  IState,
-  ICity,
-} from 'country-state-city';
+import { Country, ICountry, IState, ICity } from 'country-state-city';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+type NigeriaLocationCache = { states: Array<{ name: string; cities: string[] }> };
+
+@Injectable({ providedIn: 'root' })
 export class LocationDataService {
-    private readonly http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
+  private readonly cacheKey = 'nigeria_states_cities';
+  private readonly cacheTimeKey = 'nigeria_states_cities_time';
+  private readonly cacheTtlMs = 24 * 60 * 60 * 1000;
+  private loading: Promise<NigeriaLocationCache> | null = null;
+
   getCountries(): ICountry[] {
     return Country.getAllCountries().filter((country) => country.isoCode === 'NG');
   }
 
-async getStatesApi() {
-  const CACHE_KEY = 'nigeria_states_cities';
-  const CACHE_TIME_KEY = 'nigeria_states_cities_time';
-  const TWENTY_FOUR_HRS = 24 * 60 * 60 * 1000;
+  async getStatesApi(): Promise<NigeriaLocationCache[]> {
+    const data = await this.ensureNigeriaLocations();
+    return [data];
+  }
 
-  const cached = localStorage.getItem(CACHE_KEY);
-  const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+  async ready(): Promise<void> {
+    await this.ensureNigeriaLocations();
+  }
 
-  if (cached && cachedTime) {
-    const isExpired = Date.now() - Number(cachedTime) > TWENTY_FOUR_HRS;
-    if (!isExpired) {
-      return JSON.parse(cached);
+  getStates(countryCode: string): IState[] {
+    if (countryCode !== 'NG') return [];
+    return this.readCache().states.map((state) => ({
+      name: state.name,
+      isoCode: state.name,
+      countryCode: 'NG',
+    }));
+  }
+
+  getCities(countryCode: string, stateCode: string): ICity[] {
+    if (countryCode !== 'NG' || !stateCode) return [];
+    const state = this.readCache().states.find((item) => item.name === stateCode);
+    return (state?.cities ?? []).map((name) => ({
+      name,
+      stateCode,
+      countryCode: 'NG',
+    }));
+  }
+
+  private ensureNigeriaLocations(): Promise<NigeriaLocationCache> {
+    const cached = this.readFreshCache();
+    if (cached) return Promise.resolve(cached);
+    if (this.loading) return this.loading;
+
+    this.loading = lastValueFrom(
+      this.http.get<any[]>('https://temikeezy.github.io/nigeria-geojson-data/data/full.json'),
+    )
+      .then((data) => {
+        const formatted: NigeriaLocationCache = {
+          states: data.map((state) => ({
+            name: state.state,
+            cities: [
+              ...new Set<string>(
+                state.lgas.flatMap((lga: any) => [
+                  lga.name,
+                  ...(lga.wards ?? []).map((ward: any) => ward.name),
+                ]),
+              ),
+            ].sort(),
+          })),
+        };
+        this.writeCache(formatted);
+        return formatted;
+      })
+      .finally(() => {
+        this.loading = null;
+      });
+
+    return this.loading;
+  }
+
+  private readFreshCache(): NigeriaLocationCache | null {
+    try {
+      const cached = localStorage.getItem(this.cacheKey);
+      const cachedTime = localStorage.getItem(this.cacheTimeKey);
+      if (!cached || !cachedTime) return null;
+      if (Date.now() - Number(cachedTime) > this.cacheTtlMs) return null;
+      return this.parseCache(cached);
+    } catch {
+      return null;
     }
   }
 
-  const data: any[] = await lastValueFrom(
-    this.http.get<any[]>('https://temikeezy.github.io/nigeria-geojson-data/data/full.json')
-  );
-
-  // 1. FORMAT first
-  const formatted = [
-    {
-      states: data.map(s => ({
-        name: s.state,
-        cities: [...new Set(
-  s.lgas.flatMap((lga: any) => [
-    lga.name,
-    ...lga.wards.map((w: any) => w.name)
-  ])
-)].sort()
-      }))
+  private readCache(): NigeriaLocationCache {
+    try {
+      const cached = localStorage.getItem(this.cacheKey);
+      return cached ? this.parseCache(cached) : { states: [] };
+    } catch {
+      return { states: [] };
     }
-  ];
-
-  // 2. THEN CACHE the formatted result
-  localStorage.setItem(CACHE_KEY, JSON.stringify(formatted));
-  localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
-
-  return formatted;
-}
-getStates(countryCode: string): IState[] {
-  if (!countryCode || countryCode!== 'NG') {
-    return [];
   }
 
-  const CACHE_KEY = 'nigeria_states_cities';
-  const cached = localStorage.getItem(CACHE_KEY);
-
-  if (!cached) {
-    return []; // cache not loaded yet, call getStatesApi() first
+  private parseCache(value: string): NigeriaLocationCache {
+    try {
+      const parsed = JSON.parse(value);
+      const states = parsed?.states ?? parsed?.[0]?.states;
+      return Array.isArray(states) ? { states } : { states: [] };
+    } catch {
+      return { states: [] };
+    }
   }
 
-  const parsed = JSON.parse(cached);
-  // handle both formats: { states: [...] } or [{ states: [...] }]
-  const statesArray = parsed.states || parsed[0]?.states || [];
-
-  return statesArray.map((state: any) => ({
-    name: state.name,
-    isoCode: state.name,
-    countryCode: 'NG',
-  }));
-}
- getCities(countryCode: string, stateCode: string): ICity[] {
-  if (!countryCode ||!stateCode) {
-    return [];
+  private writeCache(value: NigeriaLocationCache): void {
+    try {
+      localStorage.setItem(this.cacheKey, JSON.stringify([value]));
+      localStorage.setItem(this.cacheTimeKey, Date.now().toString());
+    } catch {
+      // Location data still remains available to the awaiting caller for this session.
+    }
   }
-
-  const CACHE_KEY = 'nigeria_states_cities';
-  const cached = localStorage.getItem(CACHE_KEY);
-
-  if (!cached) {
-    return [];
-  }
-
-  const parsed = JSON.parse(cached);
-  const statesArray = parsed.states || parsed[0]?.states || [];
-
-  const state = statesArray.find((s: any) => s.name === stateCode);
-
-  return state?.cities.map((city: any) => ({
-    name: typeof city === 'string'? city : city.name,
-    stateCode: stateCode,
-    countryCode: countryCode,
-  }))?? [];
-}
 }
