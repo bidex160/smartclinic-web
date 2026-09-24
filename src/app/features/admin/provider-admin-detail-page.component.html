@@ -418,6 +418,32 @@
               class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
             />
           </div>
+          <fieldset class="rounded-xl border border-brand-100 bg-brand-50 p-4">
+            <legend class="px-1 font-bold text-brand-900">SmartClinic default option</legend>
+            <label class="mt-2 flex items-start gap-3">
+              <input type="checkbox" formControlName="isPlatformDefault" class="mt-1 h-5 w-5" />
+              <span>
+                <strong>Prioritize this provider for patients</strong>
+                <span class="mt-1 block text-sm text-slate-600">
+                  Multiple providers can be defaults. Patients can still choose another eligible provider.
+                </span>
+              </span>
+            </label>
+            @if (profileForm.controls.isPlatformDefault.value) {
+              <label for="default-priority" class="mt-4 block font-bold">
+                Priority
+                <span class="font-normal text-slate-500">(lower number appears first)</span>
+              </label>
+              <input
+                id="default-priority"
+                type="number"
+                min="0"
+                formControlName="platformDefaultPriority"
+                placeholder="e.g. 1"
+                class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3"
+              />
+            }
+          </fieldset>
           <button
             type="submit"
             [disabled]="mutating()"
