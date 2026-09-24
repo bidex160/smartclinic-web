@@ -57,6 +57,7 @@ export class SmartClinicCompanionComponent {
   readonly speaking = signal(false);
   readonly query = signal('');
   readonly answer = signal<GuideAnswer | null>(null);
+  readonly recentQuestions = signal<string[]>(this.loadRecentQuestions());
 
   readonly character = computed(
     () => CHARACTERS.find((item) => item.id === this.preferences().character) ?? CHARACTERS[0],
@@ -199,7 +200,9 @@ export class SmartClinicCompanionComponent {
   }
 
   ask(): void {
-    const value = this.query().trim().toLowerCase();
+    const raw = this.query().trim();
+    const value = raw.toLowerCase();
+    if (raw) this.rememberQuestion(raw);
     if (!value) return;
     if (/(chest pain|cannot breathe|can't breathe|unconscious|bleeding|emergency|suicide)/i.test(value)) {
       this.answer.set({
@@ -210,6 +213,12 @@ export class SmartClinicCompanionComponent {
             : 'This guide is not an emergency service. Call your local emergency number or go to the nearest emergency department now.',
       });
       this.speakAnswerAutomatically();
+    } else if (/(pay|payment|pay bill|fetch bill|invoice|receipt|wallet)/i.test(value)) {
+      this.answer.set({title: this.language()==='pcm'?'Bills & payment':'Bills & payment',body:this.language()==='pcm'?'Open My Hospital or Bills. Connect your hospital if needed, fetch available bills, review them, then pay with the payment option shown. Paid bills should return confirmation to the connected hospital.':'Open My Hospital or Bills. Connect your hospital if needed, fetch available bills, review them, then pay with the available payment option. Paid bills return confirmation through the connected hospital flow.',route:'/me/bills',action:this.language()==='pcm'?'See bills':'View Bills'}); this.speakAnswerAutomatically();
+    } else if (/(lab|laboratory|blood test|scan|x-ray|xray|radiology|imaging|medicine|medication|pharmacy|prescription)/i.test(value)) {
+      this.answer.set({title:this.language()==='pcm'?'Tests & medicines':'Tests & medicines',body:this.language()==='pcm'?'SmartClinic fit help you find test, scan or medicine from the catalogue and connect you to available provider. Prescription medicine still need valid prescription.':'SmartClinic can help you find common tests, scans, and medicines from the catalogue and connect you to an available provider. Prescription medicines still require a valid prescription.',route:'/me/orders',action:this.language()==='pcm'?'Open my care':'Open Tests & Referrals'}); this.speakAnswerAutomatically();
+    } else if (/(specialist|dermatologist|cardiologist|gynecologist|gynaecologist|pediatrician|paediatrician|orthopedic|orthopaedic|ent|eye doctor)/i.test(value)) {
+      this.answer.set({title:this.language()==='pcm'?'Find specialist':'Find a specialist',body:this.language()==='pcm'?'Use Find Care describe wetin dey worry you. SmartClinic go show suitable doctor or specialist wey dey available; you still fit choose another provider.':'Use Find Care and describe what you need. SmartClinic can surface suitable available doctors or specialists, and you remain free to choose another provider.',route:'/me/request-care',action:this.language()==='pcm'?'Find specialist':'Find Care'}); this.speakAnswerAutomatically();
     } else if (/(well|check|test|healthy)/i.test(value)) this.explain('stay-well');
     else if (/(doctor|care|sick|symptom|help)/i.test(value)) this.explain('find-care');
     else if (/(hospital|record|bill|wallet)/i.test(value)) this.explain('hospital');
@@ -273,6 +282,10 @@ export class SmartClinicCompanionComponent {
     this.listening.set(true);
     recognition.start();
   }
+
+  useRecentQuestion(question:string):void{this.query.set(question);this.ask();}
+  private rememberQuestion(question:string):void{const next=[question,...this.recentQuestions().filter(x=>x.toLowerCase()!==question.toLowerCase())].slice(0,3);this.recentQuestions.set(next);if(typeof localStorage!=='undefined')localStorage.setItem('smartclinic-guide-recent-v1',JSON.stringify(next));}
+  private loadRecentQuestions():string[]{if(typeof localStorage==='undefined')return[];try{return JSON.parse(localStorage.getItem('smartclinic-guide-recent-v1')??'[]').slice(0,3)}catch{return[]}}
 
   private updatePreferences(patch: Partial<GuidePreferences>): void {
     const next = { ...this.preferences(), ...patch };
