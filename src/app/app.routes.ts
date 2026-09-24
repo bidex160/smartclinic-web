@@ -544,6 +544,12 @@ export const routes: Routes = [
     component: ProviderLayoutComponent,
     children: [
       {
+        path: 'network',
+        title: 'Grow My Network | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-network-page.component').then((c) => c.ProviderNetworkPageComponent),
+      },
+      {
         path: 'access-denied',
         title: 'Provider access required | SmartClinic',
         loadComponent: () =>
