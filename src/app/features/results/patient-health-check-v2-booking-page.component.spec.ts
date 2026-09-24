@@ -81,7 +81,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     );
     expect(component.currentStep()).toBe(3);
     expect(component.selectedOffering()?.providerReference).toBe('SCPR-SAFE');
-    expect(component.selectedLocation()?.locationReference).toBe('SC-LOC-SAFE');
+    expect(component.selectedLocation()?.reference).toBe('SC-LOC-SAFE');
   });
 
   it('keeps an empty discovery on Appointment with a friendly state', async () => {
