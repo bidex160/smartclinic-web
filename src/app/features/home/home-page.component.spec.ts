@@ -108,6 +108,8 @@ describe('HomePageComponent', () => {
       '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
     );
     expect(element.querySelectorAll('details').length).toBeGreaterThan(0);
+  });
+
   it('routes authenticated patient actions directly into their care journeys', async () => {
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
