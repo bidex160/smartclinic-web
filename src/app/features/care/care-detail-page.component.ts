@@ -332,12 +332,11 @@ export class CareDetailPageComponent {
         const previous = this.request()?.status;
         this.request.set(r);
         if (r.status === 'PROVIDER_ACCEPTED' && !this.fundingLoading()) this.loadFunding();
-        if (previous && previous !== r.status && ['SCHEDULED','IN_PROGRESS','COMPLETED','CANCELLED','DECLINED','UNFULFILLABLE'].includes(r.status)) this.feedbackStatus(r.status);
+        if (previous && previous !== r.status && ['SCHEDULED','IN_PROGRESS','COMPLETED','CANCELLED','DECLINED','UNFULFILLABLE'].includes(r.status)) this.paymentError.set(null);
       },
       error: () => undefined,
     });
   }
-  private feedbackStatus(status: string): void { const messages: Record<string,string> = { SCHEDULED:'Your appointment is confirmed.', IN_PROGRESS:'Your consultation has started.', COMPLETED:'Your consultation is complete. Your next steps stay in SmartClinic.', CANCELLED:'This care journey was cancelled.', DECLINED:'This provider could not take the request. SmartClinic can help you choose another option.', UNFULFILLABLE:'SmartClinic could not confirm a provider yet. Choose another option or contact support.' }; const message=messages[status]; if(message) this.paymentError.set(null); }
   load() {
     this.loading.set(true);
     this.error.set(false);
