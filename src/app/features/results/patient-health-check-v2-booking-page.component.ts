@@ -172,22 +172,32 @@ export class PatientHealthCheckV2BookingPageComponent {
       });
   }
 
-  packageLabel(p: HealthCheckCataloguePackage, index: number): string {
-    const labels: Record<string, string> = { SELF: 'Self Check', BASIC: 'Basic Check', ESSENTIAL: 'Essential Check', COMPLETE: 'Complete Check' };
+  packageLabel(p: HealthCheckCataloguePackage, _index: number): string {
+    const labels: Record<string, string> = {
+      BASIC: 'Basic Health Check',
+      ESSENTIAL: 'Essential Health Check',
+      COMPLETE: 'Complete Health Check',
+    };
     return labels[p.code.toUpperCase()] ?? p.name;
   }
 
-  packageSummary(p: HealthCheckCataloguePackage, index: number): string {
-    return p.description?.trim() || [
-      'A quick check of your key health numbers.',
-      'Routine screening for everyday health.',
-      'A broader health assessment with more checks.',
-      'Our most comprehensive routine health check.',
-    ][index] || 'A simple SmartClinic health check.';
+  packageSummary(p: HealthCheckCataloguePackage, _index: number): string {
+    const summaries: Record<string, string> = {
+      BASIC: 'Vitals, point-of-care screening and clinician interpretation.',
+      ESSENTIAL: 'A focused check of your key health numbers.',
+      COMPLETE: 'Our most comprehensive portable SmartClinic health screening.',
+    };
+    return p.description?.trim() || summaries[p.code.toUpperCase()] || 'A simple SmartClinic health check.';
   }
 
   fallbackPrice(index: number): number {
-    return [250000, 500000, 800000, 1600000][index] ?? 0;
+    const item = this.packages()[index];
+    const prices: Record<string, number> = {
+      BASIC: 500000,
+      ESSENTIAL: 800000,
+      COMPLETE: 1600000,
+    };
+    return item ? prices[item.code.toUpperCase()] ?? 0 : 0;
   }
 
   selectPackageAndContinue(p: HealthCheckCataloguePackage): void {
