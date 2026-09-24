@@ -124,6 +124,7 @@ describe('HomePageComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
     const links = [...element.querySelectorAll('[aria-label="Healthcare actions"] a')] as HTMLAnchorElement[];
 
+    expect(links.find((link) => link.textContent?.includes('Talk to a Doctor'))?.getAttribute('href'))
       .toContain('/me/request-care');
     expect(links.find((link) => link.textContent?.includes('Visit a Hospital'))?.getAttribute('href'))
       .toBe('/me/providers/connect');
