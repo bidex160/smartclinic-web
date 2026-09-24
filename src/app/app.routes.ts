@@ -137,6 +137,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/notifications/notifications-page.component').then((c) => c.NotificationsPageComponent),
       },
       {
+        path: 'institutions',
+        title: 'Hospitals & clinics | SmartClinic',
+        loadComponent: () => import('./features/care/institutional-care-page.component').then((c) => c.InstitutionalCarePageComponent),
+      },
+      {
+        path: 'institutions/:reference',
+        title: 'Hospital or clinic | SmartClinic',
+        loadComponent: () => import('./features/care/institutional-care-detail-page.component').then((c) => c.InstitutionalCareDetailPageComponent),
+      },
+      {
         path: 'request-care',
         title: 'Find Care | SmartClinic',
         loadComponent: () =>
