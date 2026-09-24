@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, forkJoin, of } from 'rxjs';
+import PaystackPop from '@paystack/inline-js';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { HospitalCompanionView, HospitalWalletSettlementResponse, PatientProviderConnection } from '../../core/models/patient-provider-connection.model';
 import { PatientWalletView } from '../../core/models/patient-wallet.model';
@@ -15,7 +17,7 @@ interface BillGroup {
 
 @Component({
   selector: 'app-patient-pay-bills-page',
-  imports: [RouterLink],
+  imports: [RouterLink, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10">
@@ -41,6 +43,7 @@ interface BillGroup {
             <p class="text-xs font-bold uppercase tracking-wider text-violet-200">SmartClinic Wallet</p>
             <p class="mt-2 text-3xl font-black">{{ money(w.balanceMinor, w.currency) }}</p>
             <p class="mt-1 text-sm text-violet-100">Available balance</p>
+            <app-payment-contact-email />
           </section>
         }
 
@@ -102,7 +105,8 @@ interface BillGroup {
                       {{ settlingReference() === group.connection.reference ? 'Confirming payment…' : 'Pay all from Wallet' }}
                     </button>
                     @if (!canWalletPay(group)) {
-                      <p class="text-sm text-amber-800">Wallet balance is lower than this hospital total.</p>
+                      <button type="button" (click)="paySecurely(group)" [disabled]="payingReference() === group.connection.reference" class="rounded-xl bg-brand-950 px-5 py-3 font-bold text-white disabled:opacity-50">{{ payingReference() === group.connection.reference ? 'Preparing payment…' : 'Pay securely' }}</button>
+                      <p class="w-full text-sm text-slate-600">We will fund your SmartClinic Wallet with the exact shortfall, then you can complete the hospital payment without paying twice.</p>
                     }
                     <a [routerLink]="['/me/providers', group.connection.reference]" class="font-bold text-brand-700 underline">Open hospital</a>
                   </div>
@@ -128,14 +132,22 @@ interface BillGroup {
 export class PatientPayBillsPageComponent {
   private readonly connectionsApi = inject(PatientProviderConnectionsApiService);
   private readonly walletApi = inject(PatientWalletApiService);
+  private readonly route = inject(ActivatedRoute);
   readonly loading = signal(true);
   readonly error = signal('');
   readonly wallet = signal<PatientWalletView | null>(null);
   readonly groups = signal<readonly BillGroup[]>([]);
   readonly settlingReference = signal<string | null>(null);
+  readonly payingReference = signal<string | null>(null);
   readonly passes = signal<Record<string, HospitalWalletSettlementResponse>>({});
 
-  constructor() { this.load(); }
+  popup = new PaystackPop();
+
+  constructor() {
+    const walletPayment = this.route.snapshot.queryParamMap.get('walletPayment');
+    if (walletPayment) this.verifyReturnedPayment(walletPayment);
+    else this.load();
+  }
 
   load(): void {
     this.loading.set(true);
@@ -169,6 +181,53 @@ export class PatientPayBillsPageComponent {
     const total = group.companion.consolidatedPayment.amountMinor;
     const currency = group.companion.consolidatedPayment.currency;
     return !!wallet && total !== null && !!currency && wallet.currency === currency && wallet.balanceMinor >= total;
+  }
+
+  paySecurely(group: BillGroup): void {
+    const total = group.companion.consolidatedPayment.amountMinor;
+    const currency = group.companion.consolidatedPayment.currency;
+    if (total === null || currency !== 'NGN' || this.payingReference()) return;
+    const balance = this.wallet()?.currency === currency ? this.wallet()!.balanceMinor : 0;
+    const shortfall = Math.max(0, total - balance);
+    if (!shortfall) { this.payWallet(group); return; }
+    this.payingReference.set(group.connection.reference);
+    this.error.set('');
+    this.walletApi.initializeTopUp(shortfall, group.connection.reference)
+      .pipe(finalize(() => this.payingReference.set(null)))
+      .subscribe({
+        next: payment => {
+          if (payment.provider === 'OPAY' && payment.checkoutUrl) { window.location.assign(payment.checkoutUrl); return; }
+          if (!payment.accessCode) { this.error.set('Unable to start secure payment.'); return; }
+          this.popup.resumeTransaction(payment.accessCode, {
+            onSuccess: () => this.verifyAndSettle(payment.reference, group.connection.reference),
+            onError: () => this.error.set('Payment was not completed. You can safely retry.'),
+          });
+        },
+        error: error => this.error.set(error?.error?.message || 'Unable to start secure payment.'),
+      });
+  }
+
+  private verifyReturnedPayment(reference: string): void {
+    this.loading.set(true);
+    this.walletApi.verifyTopUp(reference).subscribe({
+      next: payment => {
+        if (payment.paid && payment.connectionReference) this.verifyAndSettle(reference, payment.connectionReference);
+        else { this.error.set('Payment could not be confirmed yet. You can safely retry.'); this.load(); }
+      },
+      error: () => { this.error.set('Payment could not be confirmed yet. You can safely retry.'); this.load(); },
+    });
+  }
+
+  private verifyAndSettle(reference: string, connectionReference: string): void {
+    this.walletApi.verifyTopUp(reference).pipe(
+      switchMap(payment => {
+        if (!payment.paid) throw new Error('Payment is not confirmed');
+        return this.connectionsApi.settleWallet(connectionReference);
+      }),
+    ).subscribe({
+      next: result => { this.passes.update(current => ({ ...current, [connectionReference]: result })); this.load(); },
+      error: error => { this.error.set(error?.error?.message || 'Payment was received, but the hospital settlement still needs confirmation. Your wallet balance is safe.'); this.load(); },
+    });
   }
 
   payWallet(group: BillGroup): void {
