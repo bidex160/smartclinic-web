@@ -78,7 +78,7 @@ describe('PatientDashboardPageComponent', () => {
         .querySelector('a')
         .getAttribute('href'),
     ).toBe('/me/profile');
-    expect(text.indexOf('Your next step')).toBeLessThan(text.indexOf('Your Care'));
+    expect(text.indexOf('Your next step')).toBeLessThan(text.indexOf('Your care'));
   });
 
   it.each([
@@ -231,22 +231,17 @@ describe('PatientDashboardPageComponent', () => {
     const nav = fixture.nativeElement.querySelector('[aria-labelledby="quick-access-heading"]');
     expect(
       [...nav.querySelectorAll('a')].map((a: HTMLAnchorElement) => [
-        a.textContent.trim(),
+        a.textContent.replace(/→/g, '').trim(),
         a.getAttribute('href'),
       ]),
     ).toEqual([
-      ['Book a checkup', '/me/health-journey'],
-      ['Get a consultation', '/me/request-care?serviceCode=EMERGENCY_CONSULTATION'],
-      ['Get medication', '/me/request-care?serviceCode=BASIC_MEDICATIONS'],
-      ['Get a lab test', '/me/request-care?serviceCode=LAB_REQUEST'],
-      ['↗Tests & referrals', '/me/orders'],
-      ['View health records', '/me/health-passport'],
+      ['Book a Checkup', '/me/book'],
+      ['See a Doctor', '/me/request-care'],
+      ['Visit a Hospital', '/me/providers'],
+      ['Get Medicine', '/me/prescriptions'],
+      ['Get a Test', '/me/lab-tests'],
+      ['Pay Bills', '/me/pay-bills'],
     ]);
-    expect(nav.textContent).toContain('Pay bills');
-    expect(nav.textContent).toContain('Coming soon');
-    expect(nav.querySelector('button')?.getAttribute('routerlink')).toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/me/providers/connect"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/me/care"]')).not.toBeNull();
   });
 
   it('keeps configured WhatsApp help above the mobile patient navigation', async () => {
@@ -263,95 +258,57 @@ describe('PatientDashboardPageComponent', () => {
     const care = fixture.nativeElement
       .querySelector('#your-care-heading')
       .closest('section').textContent;
-    expect(care).toContain('No hospital connected yet');
-    expect(care).toContain('No care request yet');
+    expect(care).toContain('Choose a hospital');
+    expect(care).toContain('Start your care');
     expect(care).not.toMatch(/next appointment|Dr\.|hospital name/i);
   });
 
-  it('preserves all zero Health Check statistics and adds a useful empty action', async () => {
+  it('uses a motivating Health Check empty state instead of zero-stat clutter', async () => {
     const { fixture } = await setup({ healthChecks: { items: [] } });
     const section = fixture.nativeElement
       .querySelector('#health-check-summary-heading')
       .closest('section');
-    expect(
-      [...section.querySelectorAll('article')].map((x: HTMLElement) =>
-        x.textContent.replace(/\s+/g, ' ').trim(),
-      ),
-    ).toEqual(['Awaiting payment0', 'Upcoming / active0', 'Completed0', 'Needs attention0']);
-    expect(section.textContent).toContain("You haven't completed a Health Check yet");
+    expect(section.querySelectorAll('article')).toHaveLength(0);
+    expect(section.textContent).toContain('Your health deserves a place on your priority list.');
+    expect(section.textContent).toContain('Check my health');
     expect(section.querySelector('a[href="/me/health-journey"]')).not.toBeNull();
   });
 
-  it('uses Passport projections without fabricating a clinical value', async () => {
+  it('keeps the dashboard Passport as a simple gateway without fabricating clinical values', async () => {
     const { fixture } = await setup();
     const section = fixture.nativeElement.querySelector('#passport-heading').closest('section');
-    expect(section.textContent).toContain('Blood pressure');
-    expect(section.textContent).toContain('Reported by you');
+    expect(section.textContent).toContain('Your health story, wherever you go.');
     expect(section.textContent).not.toContain('120/80');
     expect(section.querySelector('a[href="/me/health-passport"]')).not.toBeNull();
   });
 
-  it('uses authoritative referral balances, level, code and links with encoded WhatsApp sharing', async () => {
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText: vi.fn().mockResolvedValue(undefined) },
-    });
-    const { fixture, component } = await setup();
-    const section = fixture.nativeElement.querySelector('#impact-heading').closest('section');
-    expect(section.textContent).toContain('Available points340');
-    expect(section.textContent).toContain('Reserved points60');
-    expect(section.textContent).toContain('Lifetime earned500');
-    expect(section.textContent).toContain('Verified referrals36');
-    expect(section.textContent.replace(/\s+/g, '')).toContain('Leadershipposition#12');
-    expect(section.textContent).toContain('SC-ABC123');
-    expect(section.textContent).toContain('Next achievement: Level 3');
-    expect(section.querySelector('a[href="/me/referrals"]')).not.toBeNull();
-    const share = section.querySelector('a[href^="https://wa.me/"]') as HTMLAnchorElement;
-    expect(decodeURIComponent(share.href)).toContain(
-      'https://smartclinic.example/register?ref=SC-ABC123',
-    );
-    await component.copyReferralCode();
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('SC-ABC123');
-    await component.copyReferralLink();
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-      'https://smartclinic.example/register?ref=SC-ABC123',
-    );
-  });
-
-  it('uses authenticated Impact rank without loading or calculating a public leaderboard', async () => {
+  it('shows compact authoritative community impact and routes to full Impact details', async () => {
     const { fixture, referralsApi } = await setup();
-
-    expect(fixture.nativeElement.textContent.replace(/\s+/g, '')).toContain('Leadershipposition#12');
+    const section = fixture.nativeElement.querySelector('#impact-heading').closest('section');
+    expect(section.textContent).toContain('340 points');
+    expect(section.textContent.replace(/\s+/g, '')).toContain('·#12');
+    expect(section.querySelector('a[href="/me/impact"]')).not.toBeNull();
     expect(referralsApi.getMyImpact).toHaveBeenCalledOnce();
     expect(referralsApi.summary).not.toHaveBeenCalled();
     expect(referralsApi.getPublicLeaderboard).not.toHaveBeenCalled();
   });
 
-  it('renders the authoritative opted-in unranked state', async () => {
+  it('does not fabricate a leaderboard position when the patient is unranked or opted out', async () => {
     const { fixture, component } = await setup();
     component.referrals.update((value) =>
       value ? { ...value, leaderboard: { optedIn: true, position: null } } : value,
     );
     fixture.detectChanges();
+    let section = fixture.nativeElement.querySelector('#impact-heading').closest('section');
+    expect(section.textContent).not.toContain('#12');
 
-    expect(fixture.nativeElement.textContent.replace(/\s+/g, '')).toContain(
-      'LeadershippositionNotrankedyet',
-    );
-  });
-
-  it('omits rank for opted-out patients and preserves precise reward terminology', async () => {
-    const { fixture, component } = await setup();
     component.referrals.update((value) =>
       value ? { ...value, leaderboard: { optedIn: false, position: null } } : value,
     );
     fixture.detectChanges();
-    const section = fixture.nativeElement.querySelector('#impact-heading').closest('section');
-
-    expect(section.textContent).not.toContain('Your position');
-    expect(section.textContent).toContain('Reserved points');
-    expect(section.textContent).not.toContain('Pending points');
-    expect(section.textContent).toContain('Next achievement: Level 3');
-    expect(section.textContent).not.toContain('Next reward');
+    section = fixture.nativeElement.querySelector('#impact-heading').closest('section');
+    expect(section.textContent).not.toMatch(/#\d+/);
+    expect(section.textContent).toContain('340 points');
   });
 
   it('keeps Getting Started semantics compact and accurate', async () => {
