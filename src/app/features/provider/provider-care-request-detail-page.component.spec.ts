@@ -132,7 +132,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
     TestBed.resetTestingModule();
     const free = await setup('PROVIDER_ACCEPTED', false, false, 'VIRTUAL', 'SATISFIED_FREE');
     expect(free.fixture.nativeElement.textContent).toContain('Free — no payment required');
-    expect(free.fixture.nativeElement.textContent).toContain('Schedule appointment');
+    expect(free.fixture.nativeElement.textContent).toContain('Payment confirmed');
   });
   it('validates interval and preserves scheduling values after overlap conflict', async () => {
     const { fixture, api } = await setup('PROVIDER_ACCEPTED', false, true);
