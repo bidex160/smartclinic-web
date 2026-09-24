@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, forkJoin, of } from 'rxjs';
 import PaystackPop from '@paystack/inline-js';
@@ -130,6 +130,7 @@ interface BillGroup {
   `,
 })
 export class PatientPayBillsPageComponent {
+  @ViewChild(PaymentContactEmailComponent) private paymentContact?: PaymentContactEmailComponent;
   private readonly connectionsApi = inject(PatientProviderConnectionsApiService);
   private readonly walletApi = inject(PatientWalletApiService);
   private readonly route = inject(ActivatedRoute);
@@ -190,9 +191,11 @@ export class PatientPayBillsPageComponent {
     const balance = this.wallet()?.currency === currency ? this.wallet()!.balanceMinor : 0;
     const shortfall = Math.max(0, total - balance);
     if (!shortfall) { this.payWallet(group); return; }
+    const paymentRequest = this.paymentContact?.request();
+    if (paymentRequest === null) return;
     this.payingReference.set(group.connection.reference);
     this.error.set('');
-    this.walletApi.initializeTopUp(shortfall, group.connection.reference)
+    this.walletApi.initializeTopUp(shortfall, group.connection.reference, paymentRequest)
       .pipe(finalize(() => this.payingReference.set(null)))
       .subscribe({
         next: payment => {
