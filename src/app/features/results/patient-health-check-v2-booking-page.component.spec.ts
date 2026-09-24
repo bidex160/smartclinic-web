@@ -79,7 +79,9 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(JSON.stringify(packageApi.discoverProviders.mock.calls[0][0])).not.toContain(
       'addressLine1',
     );
-    expect(component.currentStep()).toBe(2);
+    expect(component.currentStep()).toBe(3);
+    expect(component.selectedOffering()?.providerReference).toBe('SCPR-SAFE');
+    expect(component.selectedLocation()?.locationReference).toBe('SC-LOC-SAFE');
   });
 
   it('keeps an empty discovery on Appointment with a friendly state', async () => {
