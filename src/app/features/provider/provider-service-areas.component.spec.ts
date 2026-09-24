@@ -21,7 +21,7 @@ describe('ProviderServiceAreasComponent', () => {
       stateOrRegion: 'Lagos',
       city: '',
       postalCode: '',
-      travelFee: 0,
+      travelFeeMinor: 0,
       priority: 100,
       originLatitude: null,
       originLongitude: null,
