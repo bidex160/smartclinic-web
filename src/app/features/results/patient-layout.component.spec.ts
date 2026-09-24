@@ -128,7 +128,10 @@ describe('PatientLayoutComponent', () => {
         links: [
           ['My Care', '/me/care'],
           ['Health Records', '/me/health-records'],
+          ['Lab Tests', '/me/lab-tests'],
+          ['Medicines', '/me/medicines'],
           ['Prescriptions', '/me/prescriptions'],
+          ['Pay Bills', '/me/pay-bills'],
           ['FastTrack', '/me/fasttrack'],
         ],
       },
