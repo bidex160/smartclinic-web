@@ -36,6 +36,8 @@ describe('ProviderAdminDetailPageComponent', () => {
       countryCode: 'NG',
       stateOrRegion: 'Lagos',
       city: 'Ikeja',
+      isPlatformDefault: false,
+      platformDefaultPriority: null,
     });
     component.updateProfile();
     expect(api.update).toHaveBeenCalledWith('provider-id', {
@@ -46,6 +48,8 @@ describe('ProviderAdminDetailPageComponent', () => {
       countryCode: 'NG',
       stateOrRegion: 'Lagos',
       city: 'Ikeja',
+      isPlatformDefault: false,
+      platformDefaultPriority: null,
     });
   });
   it('preselects persisted geography using a UI-only state code', async () => {
@@ -365,6 +369,8 @@ function detail(changes: Partial<AdminProviderDetail> = {}): AdminProviderDetail
     countryCode: 'NG',
     stateOrRegion: 'Lagos',
     city: 'Ikeja',
+    isPlatformDefault: false,
+    platformDefaultPriority: null,
     onboardingStatus: 'APPROVED',
     submittedAt: '2026-08-17T08:00:00Z',
     reviewedAt: '2026-08-18T07:00:00Z',
