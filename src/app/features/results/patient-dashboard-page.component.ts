@@ -122,9 +122,9 @@ interface DashboardNextStep {
               <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-rose-500 text-sm font-black text-white shadow-md shadow-rose-500/20" aria-hidden="true">T</span>
               <span class="relative flex w-full items-end justify-between gap-2"><span>Get a Test</span><span class="text-rose-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
-            <a routerLink="/me/care" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(30,41,59,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(30,41,59,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-800 text-lg text-white" aria-hidden="true">✓</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>My Care</span><span class="text-brand-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/pay-bills" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(30,41,59,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(30,41,59,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
+              <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-800 text-lg text-white" aria-hidden="true">₦</span>
+              <span class="relative flex w-full items-end justify-between gap-2"><span>Pay Bills</span><span class="text-brand-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
             </a>
           </div>
         </nav>
