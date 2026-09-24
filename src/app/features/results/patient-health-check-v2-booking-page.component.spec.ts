@@ -11,11 +11,11 @@ import { AssistedMatchingApiService } from '../../core/services/assisted-matchin
 import { PatientHealthCheckV2BookingPageComponent } from './patient-health-check-v2-booking-page.component';
 
 describe('PatientHealthCheckV2BookingPageComponent', () => {
-  it('starts on Appointment and renders the compact four-step progress UI', async () => {
+  it('starts on Your checkup and renders the compact four-step progress UI', async () => {
     const { component, fixture } = await setup();
     expect(component.currentStep()).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('Step 1 of 4');
-    for (const label of ['Appointment', 'Provider', 'Customise', 'Review & Pay'])
+    for (const label of ['Your checkup', 'Provider', 'Options', 'Review & Pay'])
       expect(fixture.nativeElement.textContent).toContain(label);
     expect(fixture.nativeElement.textContent).not.toContain('Choose a provider');
   });
@@ -88,7 +88,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     component.discover(1);
     fixture.detectChanges();
     expect(component.currentStep()).toBe(1);
-    expect(fixture.nativeElement.textContent).toContain('No providers available');
+    expect(fixture.nativeElement.textContent).toContain('No matching provider for this exact choice yet');
     expect(fixture.nativeElement.textContent).toContain('Invite a provider');
   });
 
@@ -251,7 +251,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(text).not.toContain('Get authoritative quote');
     expect(text).not.toContain('Final booking review');
     expect(text.match(/Review & Pay/g)?.length).toBeGreaterThanOrEqual(1);
-    expect(text).toContain('Price confirmed for this booking');
+    expect(text).toContain('Review & Pay');
     expect(text).toContain('₦9,000');
   });
 
