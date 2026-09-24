@@ -131,6 +131,7 @@ export interface CreateCareRequest {
   readonly city?: string;
   readonly preferredDate?: string;
   readonly preferredTime?: string;
+  readonly preferredTimezone?: string;
   readonly contactMethod: CareRequestContactMethod;
   readonly notes?: string;
   readonly participantPatientReference?: string;
@@ -163,6 +164,7 @@ export interface CareRequest {
   readonly assignedProvider: CareRequestProviderSummary | null;
   readonly preferredDate: string | null;
   readonly preferredTime: string | null;
+  readonly preferredTimezone?: string | null;
   readonly contactMethod: CareRequestContactMethod;
   readonly notes: string | null;
   readonly funding: CareRequestFundingSummary | null;
