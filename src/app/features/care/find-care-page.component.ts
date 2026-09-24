@@ -415,7 +415,7 @@ export class FindCarePageComponent {
     stateOrRegion: [''],
     city: [''],
     serviceCode: ['', Validators.required],
-    deliveryMode: ['VIRTUAL' as CareDeliveryMode | '', Validators.required],
+    deliveryMode: ['' as CareDeliveryMode | '', Validators.required],
     preferredProviderReference: [''],
     preferredDate: [''],
     preferredTime: [''],
@@ -532,7 +532,7 @@ export class FindCarePageComponent {
       .pipe(finalize(() => this.servicesLoading.set(false)))
       .subscribe({
         next: (v) => {
-          this.services.set(v);
+          this.services.set(v.filter((service) => !['BASIC_MEDICATIONS', 'LAB_REQUEST'].includes(service.code)));
           this.servicesLoaded.set(true);
           this.applyRequestedServiceCode();
           if (this.draftRestored && !this.requestedServiceIsValid() && !this.draftDiscoveryStarted) {
@@ -581,7 +581,7 @@ export class FindCarePageComponent {
     this.providers.set([]);
   }
   serviceChanged() {
-    this.form.patchValue({ deliveryMode: 'VIRTUAL', preferredProviderReference: '' });
+    this.form.patchValue({ deliveryMode: '', preferredProviderReference: '' });
     this.discoveryProviders.set([]);
     this.providers.set([]);
     this.updateGeographyValidators();
