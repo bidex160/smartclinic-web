@@ -53,6 +53,8 @@ export class ProviderServiceAreasComponent implements OnInit {
     stateOrRegion: ['', [Validators.required]],
     city: [''],
     postalCode: ['', Validators.maxLength(30)],
+    travelFee: [0, [Validators.required, Validators.min(0)]],
+    priority: [100, [Validators.required, Validators.min(1), Validators.max(999)]],
   });
 private readonly locationData = inject(LocationDataService);
 
@@ -118,6 +120,8 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       stateOrRegion: area.stateOrRegion,
       city: area.city ?? '',
       postalCode: area.postalCode ?? '',
+      travelFee: Number(area.travelFeeMinor || 0) / 100,
+      priority: area.priority ?? 100,
     });
     this.initializeAreaGeography(area.countryCode, area.stateOrRegion, area.city ?? '');
   }
@@ -130,6 +134,8 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       stateOrRegion: '',
       city: '',
       postalCode: '',
+      travelFee: 0,
+      priority: 100,
     });
     this.areaStates = this.locationData.getStates('NG');
     this.areaCities = [];
@@ -148,6 +154,8 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       stateOrRegion: value.stateOrRegion.trim(),
       city: value.city.trim() || null,
       postalCode: value.postalCode.trim() || null,
+      travelFeeMinor: Math.round(Number(value.travelFee || 0) * 100),
+      priority: Number(value.priority || 100),
     };
     const operation = this.editingId()
       ? this.areasApi.update(this.editingId()!, body)
