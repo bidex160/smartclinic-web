@@ -493,6 +493,27 @@ export class ProviderCareRequestDetailPageComponent {
       .subscribe({
         next: (r) => {
           this.request.set(r);
+          if (r.appointment) {
+            this.scheduledAppointment.set({
+              appointmentReference: r.appointment.reference,
+              careRequestReference: r.reference,
+              status: r.appointment.status,
+              deliveryMode: r.appointment.deliveryMode,
+              service: r.service,
+              provider: r.assignedProvider ?? r.preferredProvider!,
+              providerLocation: r.appointment.providerLocation ?? null,
+              scheduledDate: r.appointment.scheduledDate ?? r.preferredDate ?? '',
+              scheduledTimeFrom: r.appointment.scheduledTimeFrom ?? r.preferredTime ?? '',
+              scheduledTimeTo: r.appointment.scheduledTimeTo ?? '',
+              timezone: r.appointment.timezone ?? r.preferredTimezone ?? 'Africa/Lagos',
+              notes: r.notes,
+              meetingUrl: null,
+              createdAt: r.createdAt,
+              updatedAt: r.updatedAt,
+            });
+          } else {
+            this.scheduledAppointment.set(null);
+          }
           this.chatApi.getChat('provider', this.reference).subscribe({
             next: (chat) => {
               this.chatAvailable.set(true);
