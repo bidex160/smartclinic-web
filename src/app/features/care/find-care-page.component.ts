@@ -40,7 +40,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">Selected — choose your preferred time below</span> }
             </button>
             <button type="button" (click)="chooseDoctorMode('HOSPITAL')" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
-              <strong class="block text-lg text-brand-950">Visit a Hospital</strong><span class="mt-1 block text-sm text-slate-600">Choose a hospital for in-person care.</span>
+              <strong class="block text-lg text-brand-950">Visit a Hospital</strong><span class="mt-1 block text-sm text-slate-600">Browse hospitals first, then choose the service or doctor you need there.</span>
               @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a hospital below</span> }
             </button>
           </section>
