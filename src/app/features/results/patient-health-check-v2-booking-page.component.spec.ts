@@ -60,7 +60,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(component.form.controls.address.controls.addressLine1.hasError('required')).toBe(true);
   });
 
-  it('discovers with geography only and advances only when providers are returned', async () => {
+  it('does not constrain provider-location discovery by patient geography and advances when a provider is returned', async () => {
     const { component, packageApi } = await setup();
     setAppointment(component, 'PROVIDER_LOCATION');
     component.discover(1);
@@ -70,9 +70,6 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
       preferredDate: '2026-09-10',
       preferredTime: '09:00',
       timezone: 'Africa/Lagos',
-      countryCode: 'NG',
-      stateOrRegion: 'Lagos',
-      city: 'Ikeja',
       page: 1,
       limit: 10,
     });
@@ -82,6 +79,24 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(component.currentStep()).toBe(3);
     expect(component.selectedOffering()?.providerReference).toBe('SCPR-SAFE');
     expect(component.selectedLocation()?.reference).toBe('SC-LOC-SAFE');
+  });
+
+  it('uses patient geography for HOME_VISIT discovery', async () => {
+    const { component, packageApi } = await setup({ offerings: [homeOffering] });
+    setAppointment(component, 'HOME_VISIT');
+    component.discover(1);
+    expect(packageApi.discoverProviders).toHaveBeenCalledWith({
+      packageCode: 'ESSENTIAL',
+      fulfilmentModeCode: 'HOME_VISIT',
+      preferredDate: '2026-09-10',
+      preferredTime: '09:00',
+      timezone: 'Africa/Lagos',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
+      page: 1,
+      limit: 10,
+    });
   });
 
   it('keeps an empty discovery on Appointment with a friendly state', async () => {
