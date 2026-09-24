@@ -1,0 +1,6 @@
+import { CareDeliveryMode, PublicProviderCareService } from './find-care.model';
+export interface InstitutionalCareSummary{providerReference:string;displayName:string;providerType:string;location:{city:string|null;stateOrRegion:string|null;countryCode:string|null};locations:readonly {locationReference:string;name:string;addressLine1:string;addressLine2:string|null;city:string;stateOrRegion:string;postalCode:string|null;countryCode:string}[];capabilities:{virtual:boolean;inPerson:boolean;homeVisit:boolean};services:readonly PublicProviderCareService[];}
+export interface InstitutionalVirtualDoctor{providerReference:string;displayName:string;isDefault:boolean;priceMinor:number|null;currency:string|null;}
+export interface InstitutionalCareDetail extends InstitutionalCareSummary{virtualDoctors:readonly InstitutionalVirtualDoctor[];}
+export type InstitutionalCarePath='VIRTUAL_NOW'|'VIRTUAL_LATER'|'IN_PERSON'|'HOME_VISIT';
+export function pathDeliveryMode(path:InstitutionalCarePath):CareDeliveryMode{return path==='IN_PERSON'?'IN_PERSON':path==='HOME_VISIT'?'HOME_VISIT':'VIRTUAL';}
