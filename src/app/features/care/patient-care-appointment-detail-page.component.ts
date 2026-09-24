@@ -271,17 +271,21 @@ export class PatientCareAppointmentDetailPageComponent {
       error: () => this.orders.set([]),
     });
   }
-  orderRoute(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? '/me/prescriptions/' + o.reference : '/me/tests'; }
-  orderIcon(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? '💊' : o.type === 'IMAGING' ? '🩻' : '🧪'; }
+  orderRoute(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? '/me/prescriptions/' + o.reference : '/me/orders/' + o.reference; }
+  orderIcon(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? '💊' : o.type === 'IMAGING' ? '🩻' : o.type === 'REFERRAL' ? '↗' : o.type === 'PROCEDURE' ? '🏥' : '🧪'; }
   orderTitle(o: ClinicalOrder): string {
     if (o.type === 'PRESCRIPTION') return o.prescription?.items?.length === 1 ? o.prescription.items[0].medicationName : 'Prescription';
+    if (o.type === 'REFERRAL') return 'Specialist / hospital referral';
+    if (o.type === 'PROCEDURE') return 'Physical follow-up';
     return o.diagnosticItems?.map((i) => i.name).join(', ') || (o.type === 'IMAGING' ? 'Scan or imaging' : 'Laboratory test');
   }
   orderDetail(o: ClinicalOrder): string {
     if (o.type === 'PRESCRIPTION') return o.prescription?.items?.map((i) => i.medicationName).join(', ') || 'Medicine prescribed by your doctor';
+    if (o.type === 'REFERRAL') return o.clinicalNote || 'Referral requested by your doctor';
+    if (o.type === 'PROCEDURE') return o.clinicalNote || 'Your doctor asked to continue this care in person';
     return o.type === 'IMAGING' ? 'Imaging requested by your doctor' : 'Test requested by your doctor';
   }
-  orderAction(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? 'Get medicine' : o.type === 'IMAGING' ? 'Book scan' : 'Complete test'; }
+  orderAction(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? 'Get medicine' : o.type === 'IMAGING' ? 'Book scan' : o.type === 'REFERRAL' ? 'Choose specialist' : o.type === 'PROCEDURE' ? 'Arrange physical follow-up' : 'Complete test'; }
   isEmbeddableConsultation(value: string) {
     try {
       const host = new URL(value).hostname.toLowerCase();
