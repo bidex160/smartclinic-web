@@ -98,6 +98,8 @@
             </div>
           </form>
 
+          @if (recentQuestions().length) {<div class="guide__quick-actions" aria-label="Recent help questions">@for (question of recentQuestions(); track question) {<button type="button" (click)="useRecentQuestion(question)">{{ question }}</button>}</div>}
+
           <div class="guide__tools">
             <button type="button" (click)="explainThisPage()">Show me this page</button>
             @if (supportsVoiceInput) {
