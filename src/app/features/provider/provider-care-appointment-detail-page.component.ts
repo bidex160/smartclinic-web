@@ -10,6 +10,8 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
 import { UtilsService } from '../../core/services/utils.service';
 import { careDeliveryModeLabel } from '../care/care-delivery-mode';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
+import { SmartClinicServiceCatalogueItem } from '../../core/models/service-catalogue.model';
 import { ProviderPrescriptionSectionComponent } from './provider-prescription-section.component';
 import { ClinicalDocumentationFormComponent } from '../../shared/clinical-documentation-form.component';
 import { ClinicalDocumentationViewComponent } from '../../shared/clinical-documentation-view.component';
@@ -202,7 +204,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
         <h2 class="text-xl font-bold">{{ nextActionTitle(action) }}</h2>
         <p class="mt-2 text-slate-600">Enter the investigation, destination, specialist, reason and any instructions needed. This becomes part of the patient's clinical orders.</p>
         <form [formGroup]="nextActionForm" (ngSubmit)="issueNextAction(action)" class="mt-5">
-          @if(action === 'LABORATORY' || action === 'IMAGING'){<label class="font-bold">Tests / studies <span class="font-normal text-slate-500">(one per line)</span><textarea formControlName="items" rows="4" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. Full blood count&#10;Malaria rapid test"></textarea></label>}<label class="mt-4 block font-bold">Clinical instruction<textarea formControlName="clinicalNote" maxlength="4000" rows="6" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. FBC, U&E and malaria test; refer to cardiology at preferred connected hospital"></textarea></label>
+          @if(action === 'LABORATORY' || action === 'IMAGING'){<div><label class="font-bold">Search common {{action==='LABORATORY'?'tests':'imaging studies'}}<input type="search" #investigationSearch (input)="searchInvestigations(action, investigationSearch.value)" class="mt-2 block min-h-12 w-full rounded-xl border px-3" placeholder="Start typing e.g. FBC, ultrasound, CT"></label>@if(investigationCatalogue().length){<div class="mt-2 max-h-48 overflow-y-auto rounded-xl border bg-white p-2">@for(item of investigationCatalogue();track item.code){<button type="button" (click)="addInvestigation(item)" class="flex w-full items-center justify-between rounded-lg p-3 text-left hover:bg-slate-50"><span><strong>{{item.name}}</strong><small class="block text-slate-500">{{item.groupName || item.subcategory || ''}}</small></span><span class="font-bold text-brand-700">+ Add</span></button>}</div>}@if(selectedInvestigations().length){<div class="mt-3 flex flex-wrap gap-2">@for(item of selectedInvestigations();track item.code){<button type="button" (click)="removeInvestigation(item.code)" class="rounded-full bg-brand-50 px-3 py-2 text-sm font-bold text-brand-900">{{item.name}} ×</button>}</div>}<details class="mt-3"><summary class="cursor-pointer text-sm font-bold text-brand-700">Can't find it? Add another test/study</summary><textarea formControlName="items" rows="3" class="mt-2 block w-full rounded-xl border p-3" placeholder="One per line"></textarea></details></div>}<label class="mt-4 block font-bold">Clinical instruction<textarea formControlName="clinicalNote" maxlength="4000" rows="6" class="mt-2 block w-full rounded-xl border p-3" placeholder="e.g. FBC, U&E and malaria test; refer to cardiology at preferred connected hospital"></textarea></label>
           @if (nextActionError()) { <p role="alert" class="mt-3 rounded-xl bg-red-50 p-3 text-red-800">{{ nextActionError() }}</p> }
           <div class="mt-5 flex justify-end gap-3"><button type="button" (click)="nextAction.set(null)" [disabled]="nextActionPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="nextActionPending() || nextActionForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ nextActionPending() ? 'Sending…' : 'Send to patient' }}</button></div>
         </form>
@@ -269,6 +271,7 @@ export class ProviderCareAppointmentDetailPageComponent {
   private readonly careServicesApi = inject(ProviderCareServicesApiService);
   private readonly clinicalRecordsApi = inject(ClinicalRecordsApiService);
   private readonly ordersApi = inject(PharmacyFulfillmentApiService);
+  private readonly catalogueApi = inject(ServiceCatalogueApiService);
   private readonly fb = inject(FormBuilder);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
@@ -281,6 +284,8 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly nextAction = signal<'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE' | null>(null);
   readonly nextActionPending = signal(false);
   readonly nextActionError = signal<string | null>(null);
+  readonly investigationCatalogue = signal<readonly SmartClinicServiceCatalogueItem[]>([]);
+  readonly selectedInvestigations = signal<readonly SmartClinicServiceCatalogueItem[]>([]);
   readonly clinicalRecordType = signal<ClinicalRecordType | null>(null);
   readonly clinicalRecord = signal<ClinicalRecord | null>(null);
   readonly recordLoading = signal(false);
@@ -344,16 +349,20 @@ export class ProviderCareAppointmentDetailPageComponent {
     });
   }
   openNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
-    this.nextActionForm.reset({ clinicalNote: '', items: '' }); this.nextActionError.set(null); this.nextAction.set(action);
+    this.nextActionForm.reset({ clinicalNote: '', items: '' }); this.nextActionError.set(null); this.selectedInvestigations.set([]); this.investigationCatalogue.set([]); this.nextAction.set(action);
+    if(action==='LABORATORY'||action==='IMAGING') this.searchInvestigations(action,'');
   }
+  searchInvestigations(action:'LABORATORY'|'IMAGING'|'REFERRAL'|'PROCEDURE',q:string):void{if(action!=='LABORATORY'&&action!=='IMAGING')return;this.catalogueApi.list(action==='LABORATORY'?'LAB_TEST':'IMAGING_STUDY',q).subscribe({next:items=>this.investigationCatalogue.set(items.slice(0,20)),error:()=>this.investigationCatalogue.set([])});}
+  addInvestigation(item:SmartClinicServiceCatalogueItem):void{if(!this.selectedInvestigations().some(x=>x.code===item.code))this.selectedInvestigations.update(x=>[...x,item]);}
+  removeInvestigation(code:string):void{this.selectedInvestigations.update(x=>x.filter(i=>i.code!==code));}
   nextActionTitle(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): string {
     return ({ LABORATORY: 'Laboratory request', IMAGING: 'Imaging request', REFERRAL: 'Hospital / specialist referral', PROCEDURE: 'Procedure / physical follow-up' } as const)[action];
   }
   issueNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
     if (this.nextActionForm.invalid || this.nextActionPending()) { this.nextActionForm.markAllAsTouched(); return; }
     this.nextActionPending.set(true); this.nextActionError.set(null);
-    const note=this.nextActionForm.controls.clinicalNote.value.trim(); const names=this.nextActionForm.controls.items.value.split('\n').map(v=>v.trim()).filter(Boolean);
-    const request=(action==='LABORATORY'||action==='IMAGING') && names.length ? this.ordersApi.createDiagnosticOrder(this.reference,action,note,names.map(name=>({name}))) : this.ordersApi.createClinicalNextAction(this.reference,action,note);
+    const note=this.nextActionForm.controls.clinicalNote.value.trim(); const selected=this.selectedInvestigations(); const free=this.nextActionForm.controls.items.value.split('\n').map(v=>v.trim()).filter(Boolean); const items=[...selected.map(x=>({name:x.name,code:x.code})),...free.map(name=>({name}))];
+    const request=(action==='LABORATORY'||action==='IMAGING') && items.length ? this.ordersApi.createDiagnosticOrder(this.reference,action,note,items) : this.ordersApi.createClinicalNextAction(this.reference,action,note);
     request.pipe(finalize(() => this.nextActionPending.set(false))).subscribe({
       next: () => { this.feedback.set(this.nextActionTitle(action) + ' sent to the patient.'); this.nextAction.set(null); },
       error: () => this.nextActionError.set('This next action could not be sent. Please review it and try again.'),
