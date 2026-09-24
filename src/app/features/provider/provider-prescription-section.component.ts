@@ -22,6 +22,8 @@ import {
   UpsertPrescriptionRequest,
 } from '../../core/models/pharmacy-fulfillment.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
+import { SmartClinicServiceCatalogueItem } from '../../core/models/service-catalogue.model';
 
 @Component({
   selector: 'app-provider-prescription-section',
@@ -146,6 +148,8 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
               class="mt-2 block w-full rounded-xl border p-3"
             ></textarea>
           </label>
+
+          <div class="rounded-xl bg-slate-50 p-4"><label class="font-bold">Find a common medicine<input type="search" #medicineSearch (input)="searchMedicines(medicineSearch.value)" class="mt-2 block min-h-11 w-full rounded-lg border bg-white px-3" placeholder="Search medicine catalogue"></label>@if(medicineCatalogue().length){<div class="mt-2 max-h-44 overflow-y-auto rounded-lg border bg-white p-2">@for(medicine of medicineCatalogue();track medicine.code){<button type="button" (click)="addCatalogueMedicine(medicine)" class="flex w-full items-center justify-between rounded-lg p-2 text-left hover:bg-slate-50"><span><strong>{{medicine.name}}</strong><small class="block text-slate-500">{{medicine.requiresPrescription?'Prescription medicine':medicine.groupName || 'Common medicine'}}</small></span><span class="font-bold text-brand-700">+ Add</span></button>}</div>}<p class="mt-2 text-xs text-slate-500">The catalogue speeds up entry; the doctor still sets dose, frequency, duration and instructions for this patient.</p></div>
 
           <!-- Medications -->
           <div
@@ -409,6 +413,8 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   `,
 })
 export class ProviderPrescriptionSectionComponent {
+  private readonly catalogueApi=inject(ServiceCatalogueApiService);
+  readonly medicineCatalogue=signal<readonly SmartClinicServiceCatalogueItem[]>([]);
   readonly appointmentReference = input.required<string>();
   readonly appointmentStatus = input.required<string>();
 
@@ -585,6 +591,9 @@ export class ProviderPrescriptionSectionComponent {
       ],
     });
   }
+
+  searchMedicines(q:string):void{this.catalogueApi.list('MEDICATION',q).subscribe({next:items=>this.medicineCatalogue.set(items.slice(0,20)),error:()=>this.medicineCatalogue.set([])});}
+  addCatalogueMedicine(medicine:SmartClinicServiceCatalogueItem):void{const g=this.itemGroup();g.controls.medicationName.setValue(medicine.name);this.items.push(g);this.medicineCatalogue.set([]);}
 
   addItem(): void {
     this.items.push(this.itemGroup());
