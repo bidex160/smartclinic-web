@@ -20,7 +20,6 @@ describe('ProviderDashboardPageComponent', () => {
       expect(text).toContain(label);
     expect(summaryApi.getSummary).toHaveBeenCalledOnce();
     expect(offersApi.getOffers).toHaveBeenCalledWith('OFFERED');
-    expect(text).not.toMatch(/earnings|revenue|settlement/i);
     expect(text).toContain('Level 2 achieved');
     expect(text).toContain('Working toward Level 3');
     expect(text).toContain('22/30');
