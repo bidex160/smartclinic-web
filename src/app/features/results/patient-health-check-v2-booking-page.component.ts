@@ -163,7 +163,9 @@ export class PatientHealthCheckV2BookingPageComponent {
       .pipe(finalize(() => this.catalogueLoading.set(false)))
       .subscribe({
         next: (items) => {
-          this.packages.set(items);
+          const rank: Record<string, number> = { ESSENTIAL: 1, BASIC: 2, COMPLETE: 3 };
+          const ordered = [...items].sort((a,b) => (rank[a.code.toUpperCase()] ?? 99) - (rank[b.code.toUpperCase()] ?? 99) || a.name.localeCompare(b.name));
+          this.packages.set(ordered);
           const requested = this.route.snapshot.queryParamMap.get('package');
           if (requested && items.some((item) => item.code === requested))
             this.form.controls.packageCode.setValue(requested);
@@ -180,6 +182,8 @@ export class PatientHealthCheckV2BookingPageComponent {
     };
     return labels[p.code.toUpperCase()] ?? p.name;
   }
+
+  selectedPackage(): HealthCheckCataloguePackage | null { return this.packages().find(item => item.code === this.form.controls.packageCode.value) ?? null; }
 
   packageSummary(p: HealthCheckCataloguePackage, _index: number): string {
     const summaries: Record<string, string> = {
