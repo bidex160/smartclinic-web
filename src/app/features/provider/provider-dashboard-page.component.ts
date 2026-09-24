@@ -63,6 +63,9 @@ export class ProviderDashboardPageComponent {
   readonly careRequestCountError = signal(false);
   readonly careAppointmentCount = signal(0);
   readonly careAppointmentCountError = signal(false);
+  readonly todayAppointmentCount = signal(0);
+  readonly inProgressAppointmentCount = signal(0);
+  readonly upcomingAppointmentCount = signal(0);
   readonly activeFindCareServiceCount = computed(
     () => this.findCareOfferings().filter((offering) => offering.isActive).length,
   );
@@ -162,12 +165,14 @@ export class ProviderDashboardPageComponent {
   loadCareAppointmentCount(): void {
     this.careAppointmentCountError.set(false);
     this.careOperationsApi.getAppointments(1, 100).subscribe({
-      next: (page) =>
-        this.careAppointmentCount.set(
-          page.items.filter((appointment) =>
-            ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS'].includes(appointment.status),
-          ).length,
-        ),
+      next: (page) => {
+        const active = page.items.filter((appointment) => ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS'].includes(appointment.status));
+        this.careAppointmentCount.set(active.length);
+        const today = new Intl.DateTimeFormat('en-CA', { year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
+        this.todayAppointmentCount.set(active.filter(a => a.scheduledDate === today).length);
+        this.inProgressAppointmentCount.set(active.filter(a => a.status === 'IN_PROGRESS').length);
+        this.upcomingAppointmentCount.set(active.filter(a => a.scheduledDate > today).length);
+      },
       error: () => {
         this.careAppointmentCount.set(0);
         this.careAppointmentCountError.set(true);
