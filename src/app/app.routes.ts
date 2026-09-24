@@ -342,6 +342,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'lab-tests',
+        loadComponent: () => import('./features/care/patient-service-catalogue-page.component').then(m => m.PatientServiceCataloguePageComponent),
+      },
+      {
+        path: 'medicines',
+        loadComponent: () => import('./features/care/patient-service-catalogue-page.component').then(m => m.PatientServiceCataloguePageComponent),
+      },
+      {
         path: 'orders',
         title: 'Tests & Referrals | SmartClinic',
         canActivate: [authenticatedUserGuard],
