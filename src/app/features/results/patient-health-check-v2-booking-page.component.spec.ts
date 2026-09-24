@@ -455,6 +455,8 @@ const providerOffering = {
   packageCode: 'ESSENTIAL',
   basePackagePriceMinor: 800000,
   currency: 'NGN',
+  travelFeeMinor: 0,
+  travelDistanceKm: null,
   fulfilmentMode: {
     code: 'PROVIDER_LOCATION' as const,
     name: 'Provider location',
