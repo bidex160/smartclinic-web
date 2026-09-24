@@ -82,6 +82,7 @@ export class ProviderDashboardPageComponent {
     if (type === 'PHARMACY') return [
       { title: 'Patient prescriptions', helper: 'Accept prescriptions, send prices and prepare medicines.', route: '/provider/pharmacy-orders' },
       { title: 'Your payments', helper: 'See patient payments and settlements.', route: '/provider/earnings' },
+      { title: 'Grow my network', helper: 'Recommend trusted providers and grow your impact.', route: '/provider/network' },
       { title: 'Pharmacy setup', helper: 'Keep your pharmacy details and service units up to date.', route: '/provider/profile' },
     ];
     if (type === 'DIAGNOSTIC_CENTRE') return [
@@ -93,6 +94,7 @@ export class ProviderDashboardPageComponent {
       { title: 'New patient requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
       { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
       { title: 'Your payments', helper: 'See what patients have paid and what is due to you.', route: '/provider/earnings' },
+      { title: 'Grow my network', helper: 'Recommend trusted pharmacies, labs and clinics and grow your impact.', route: '/provider/network' },
       { title: 'Services', helper: 'Choose the consultations patients can book.', route: '/provider/care-services', status: 'findCare' },
       { title: 'Availability', helper: 'Set when patients can book you.', route: '/provider/profile', fragment: 'availability', status: 'availability' },
       { title: 'Locations', helper: 'Manage where you see patients in person.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
