@@ -9,4 +9,7 @@ export class ServiceCatalogueApiService {
   list(category: SmartClinicCatalogueCategory, q='') {
     return this.http.get<readonly SmartClinicServiceCatalogueItem[]>(`${this.base}/me/service-catalogue`, { params: { category, ...(q.trim()?{q:q.trim()}:{}) } });
   }
+  providerList(category: SmartClinicCatalogueCategory) {
+    return this.http.get<readonly SmartClinicServiceCatalogueItem[]>(`${this.base}/provider/service-catalogue`, { params: { category } });
+  }
 }
