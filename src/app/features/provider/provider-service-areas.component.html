@@ -38,7 +38,7 @@
                   }
                   · {{ area.countryCode }}
                 </p>
-                <p class="mt-1 font-semibold">{{ area.isActive ? 'Active' : 'Inactive' }}</p>
+                <p class="mt-1 font-semibold">{{ area.isActive ? 'Active' : 'Inactive' }} · Travel fee {{ (+area.travelFeeMinor / 100).toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }) }} · Priority {{ area.priority }}</p>
               </div>
               @if (editable()) {
                 <div class="flex gap-2">
@@ -173,6 +173,16 @@
             maxlength="30"
             class="mt-2 min-h-12 w-full rounded-lg border px-3"
           />
+        </div>
+        <div>
+          <label for="area-travel-fee" class="font-bold">Travel fee</label>
+          <input id="area-travel-fee" type="number" min="0" step="100" formControlName="travelFee" class="mt-2 min-h-12 w-full rounded-lg border px-3" />
+          <p class="mt-1 text-sm text-slate-500">Added only when this service area is the patient's matched Home Visit area. Use 0 for included travel.</p>
+        </div>
+        <div>
+          <label for="area-priority" class="font-bold">Matching priority</label>
+          <input id="area-priority" type="number" min="1" max="999" formControlName="priority" class="mt-2 min-h-12 w-full rounded-lg border px-3" />
+          <p class="mt-1 text-sm text-slate-500">Lower numbers are preferred when more than one area matches.</p>
         </div>
         @if (!homeVisitServices().length) {
           <p class="md:col-span-2 rounded-lg bg-amber-50 p-3">
