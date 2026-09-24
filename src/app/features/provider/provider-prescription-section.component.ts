@@ -592,7 +592,7 @@ export class ProviderPrescriptionSectionComponent {
     });
   }
 
-  searchMedicines(q:string):void{this.catalogueApi.list('MEDICATION',q).subscribe({next:items=>this.medicineCatalogue.set(items.slice(0,20)),error:()=>this.medicineCatalogue.set([])});}
+  searchMedicines(q:string):void{const term=q.trim().toLowerCase();this.catalogueApi.providerList('MEDICATION').subscribe({next:items=>this.medicineCatalogue.set(items.filter(item=>!term||item.name.toLowerCase().includes(term)||item.code.toLowerCase().includes(term)).slice(0,20)),error:()=>{this.medicineCatalogue.set([]);this.mutationError.set('The medicine catalogue could not be loaded. Please try again.');}});}
   addCatalogueMedicine(medicine:SmartClinicServiceCatalogueItem):void{const g=this.itemGroup();g.controls.medicationName.setValue(medicine.name);this.items.push(g);this.medicineCatalogue.set([]);}
 
   addItem(): void {
