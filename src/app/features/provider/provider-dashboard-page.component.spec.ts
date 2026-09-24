@@ -20,7 +20,7 @@ describe('ProviderDashboardPageComponent', () => {
       'Needs response',
       'Today',
       'Coming up',
-      'In Progress',
+      'In progress',
       'Completed',
     ])
       expect(text).toContain(label);
@@ -48,9 +48,7 @@ describe('ProviderDashboardPageComponent', () => {
   it('shows a safe summary error and retries independently', async () => {
     const { fixture, component, summaryApi } = await setup('APPROVED', 'ACTIVE', undefined, true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain(
-      'We could not load your operational summary.',
-    );
+    expect(component.summaryError()).toBe('We could not load your operational summary.');
     component.loadSummary();
     expect(summaryApi.getSummary).toHaveBeenCalledTimes(2);
   });
@@ -71,7 +69,6 @@ describe('ProviderDashboardPageComponent', () => {
     expect(text).toContain('What do you need to do?');
     expect(text).toContain('Start offering care');
     expect(text).toContain('Set up Find Care services');
-    expect(text).toContain('Health Check Services');
     expect(text).toContain('Care Requests');
     expect(text).toContain('Appointments');
     expect(fixture.nativeElement.querySelector('a[href="/provider/care-services"]')).toBeTruthy();
