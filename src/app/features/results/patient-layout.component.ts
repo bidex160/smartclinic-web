@@ -264,7 +264,10 @@ export class PatientLayoutComponent implements OnInit {
         items: [
           { label: 'My Care', route: '/me/care', exact: false },
           { label: 'Health Records', route: '/me/health-records', exact: false },
+          { label: 'Lab Tests', route: '/me/lab-tests', exact: true },
+          { label: 'Medicines', route: '/me/medicines', exact: true },
           { label: 'Prescriptions', route: '/me/prescriptions', exact: false },
+          { label: 'Pay Bills', route: '/me/pay-bills', exact: true },
           { label: 'FastTrack', route: '/me/fasttrack', exact: false },
         ],
       },
