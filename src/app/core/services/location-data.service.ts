@@ -47,7 +47,7 @@ export class LocationDataService {
 
   private ensureNigeriaLocations(): Promise<NigeriaLocationCache> {
     const cached = this.readFreshCache();
-    if (cached) return Promise.resolve(cached);
+    if (cached?.states?.length) return Promise.resolve(cached);
     if (this.loading) return this.loading;
 
     this.loading = lastValueFrom(
