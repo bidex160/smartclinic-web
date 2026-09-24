@@ -1,0 +1,4 @@
+export interface ClinicalSuggestionItem{readonly code:string;readonly category:'LAB_TEST'|'MEDICATION'|'IMAGING_STUDY';readonly name:string;readonly groupName:string|null;readonly requiresPrescription:boolean;readonly standardPriceMinor:number;readonly currency:string}
+export interface ClinicalDiagnosisSuggestion{readonly code:string;readonly diagnosisName:string;readonly reason:string;readonly clinicalNote:string|null;readonly labs:readonly ClinicalSuggestionItem[];readonly imaging:readonly ClinicalSuggestionItem[];readonly medications:readonly ClinicalSuggestionItem[];readonly referrals:readonly string[]}
+export interface ClinicalDecisionSupportResponse{readonly redFlags:readonly string[];readonly diagnoses:readonly ClinicalDiagnosisSuggestion[]}
+export interface ClinicalDecisionSupportInput{presentingComplaint?:string;historyOfPresentingComplaint?:string;observations?:string;assessment?:string;diagnosis?:string}
