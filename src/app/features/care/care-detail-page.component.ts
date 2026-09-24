@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, ViewChild, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, interval, startWith, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CareRequest, CareRequestFunding } from '../../core/models/find-care.model';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { CareChatApiService } from '../../core/services/care-chat-api.service';
@@ -306,6 +307,7 @@ export class CareDetailPageComponent {
   private readonly find = inject(FindCareApiService);
   private readonly fast = inject(FastTrackApiService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
   readonly request = signal<CareRequest | null>(null);
@@ -325,7 +327,12 @@ export class CareDetailPageComponent {
   popup = new PaystackPop();
   constructor() {
     this.load();
+    interval(15000).pipe(startWith(0), switchMap(() => this.api.get(this.reference)), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (r) => { if (this.isLive(r.status)) { this.request.set(r); if (r.status === 'PROVIDER_ACCEPTED' && !this.fundingLoading()) this.loadFunding(); } },
+      error: () => undefined,
+    });
   }
+  private isLive(status: string): boolean { return ['SUBMITTED','MATCHING','PROVIDER_SELECTED','AWAITING_PROVIDER_RESPONSE','PROVIDER_ACCEPTED','SCHEDULED','IN_PROGRESS'].includes(status); }
   load() {
     this.loading.set(true);
     this.error.set(false);
