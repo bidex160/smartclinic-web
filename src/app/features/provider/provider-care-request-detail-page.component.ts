@@ -501,7 +501,7 @@ export class ProviderCareRequestDetailPageComponent {
               deliveryMode: r.appointment.deliveryMode,
               service: r.service,
               provider: r.assignedProvider ?? r.preferredProvider!,
-              providerLocation: r.appointment.providerLocation ?? null,
+              providerLocation: r.appointment.location ?? r.appointment.providerLocation ?? null,
               scheduledDate: r.appointment.scheduledDate ?? r.preferredDate ?? '',
               scheduledTimeFrom: r.appointment.scheduledTimeFrom ?? r.preferredTime ?? '',
               scheduledTimeTo: r.appointment.scheduledTimeTo ?? '',
