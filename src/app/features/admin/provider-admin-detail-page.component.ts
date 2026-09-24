@@ -79,6 +79,8 @@ export class ProviderAdminDetailPageComponent {
     countryCode: ['', [Validators.required]],
     stateOrRegion: ['', [Validators.required]],
     city: ['', [Validators.required]],
+    isPlatformDefault: false,
+    platformDefaultPriority: this.formBuilder.control<number | null>(null, [Validators.min(0)]),
   });
   readonly rejectionForm = this.formBuilder.group({ reviewNote: ['', Validators.maxLength(1000)] });
   readonly userSearchForm = this.formBuilder.group({
@@ -220,6 +222,8 @@ readonly editStateCode = new FormControl<string>('', {
             countryCode: provider.countryCode ?? '',
             stateOrRegion: provider.stateOrRegion ?? '',
             city: provider.city ?? '',
+            isPlatformDefault: provider.isPlatformDefault,
+            platformDefaultPriority: provider.platformDefaultPriority,
           });
           this.initializeProfileGeography(provider);
         },
@@ -243,6 +247,8 @@ readonly editStateCode = new FormControl<string>('', {
         countryCode: value.countryCode.trim().toUpperCase(),
         stateOrRegion: value.stateOrRegion.trim(),
         city: value.city.trim(),
+        isPlatformDefault: value.isPlatformDefault,
+        platformDefaultPriority: value.isPlatformDefault ? value.platformDefaultPriority : null,
       }),
       'Provider profile updated.',
     );
@@ -374,6 +380,8 @@ readonly editStateCode = new FormControl<string>('', {
   countryCode: provider.countryCode ?? '',
   stateOrRegion: provider.stateOrRegion ?? '',
   city: provider.city ?? '',
+  isPlatformDefault: provider.isPlatformDefault,
+  platformDefaultPriority: provider.platformDefaultPriority,
 });
 
 this.initializeProfileGeography(provider);
@@ -452,7 +460,7 @@ this.initializeProfileGeography(provider);
       this.cities = this.locationDataService.getCities(provider.countryCode, selectedState.isoCode);
     }
     this.profileForm.patchValue(
-      { countryCode: provider.countryCode ?? '', stateOrRegion: provider.stateOrRegion ?? '', city: provider.city ?? '' },
+      { countryCode: provider.countryCode ?? '', stateOrRegion: provider.stateOrRegion ?? '', city: provider.city ?? '', isPlatformDefault: provider.isPlatformDefault, platformDefaultPriority: provider.platformDefaultPriority },
       { emitEvent: false },
     );
   }
