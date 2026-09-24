@@ -354,6 +354,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/care/patient-order-detail-page.component').then((c) => c.PatientOrderDetailPageComponent),
       },
       {
+        path: 'pay-bills',
+        loadComponent: () =>
+          import('./features/results/patient-pay-bills-page.component').then(
+            (m) => m.PatientPayBillsPageComponent,
+          ),
+      },
+      {
         path: 'care',
         title: 'My Care | SmartClinic',
         canActivate: [authenticatedUserGuard],
