@@ -17,7 +17,7 @@ describe('ProviderDashboardPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     for (const label of [
-      'Requests awaiting your response',
+      'Needs response',
       'Today',
       'Coming up',
       'In Progress',
@@ -68,7 +68,7 @@ describe('ProviderDashboardPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(careServicesApi.getOfferings).toHaveBeenCalledOnce();
-    expect(text).toContain('Quick access');
+    expect(text).toContain('What do you need to do?');
     expect(text).toContain('Start offering care');
     expect(text).toContain('Set up Find Care services');
     expect(text).toContain('Health Check Services');
@@ -131,7 +131,7 @@ async function setup(
       { provide: ProviderCareOperationsApiService, useValue: { getCareRequests: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }), getAppointments: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }) } },
       {
         provide: ProviderOnboardingApiService,
-        useValue: { getProfile: () => of({ displayName: 'Provider', status, onboardingStatus }) },
+        useValue: { getProfile: () => of({ displayName: 'Provider', providerType: 'CLINIC', status, onboardingStatus, activeCapabilityCount: 0, activeLocationCount: 0, availabilityCount: 0, readiness: { profileComplete: true, hasActiveCapability: false, providerLocationReady: false, hasAvailability: false, blockers: [], capabilityCount: 0, activeCapabilityCount: 0, locationCount: 0, activeLocationCount: 0, availabilityCount: 0 } }) },
       },
       {
         provide: ProviderReferralsApiService,
