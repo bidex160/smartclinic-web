@@ -33,19 +33,19 @@ describe('CareDetailPageComponent funding', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('₦20,000');
     expect(text).toContain('Awaiting payment');
-    expect(text).toContain('Pay now');
+    expect(text).toContain('Pay & confirm consultation');
     expect(api.getFunding).toHaveBeenCalledWith(reference);
   });
   it('does not expose payment before provider acceptance', async () => {
     const { fixture, api } = await setup('AWAITING_PROVIDER_RESPONSE', { ...funding(), initializationAllowed: false });
-    expect(fixture.nativeElement.textContent).not.toContain('Pay now');
+    expect(fixture.nativeElement.textContent).not.toContain('Pay & confirm consultation');
     expect(api.getFunding).not.toHaveBeenCalled();
   });
   it.each([['PAID', 'Paid'], ['SATISFIED_FREE', 'Free']] as const)('renders %s without initializing Paystack', async (status, label) => {
     const value = funding(status, status === 'SATISFIED_FREE' ? 0 : 2000000);
     const { fixture, component, api } = await setup('PROVIDER_ACCEPTED', value);
     expect(fixture.nativeElement.textContent).toContain(label);
-    expect(fixture.nativeElement.textContent).not.toContain('Pay now');
+    expect(fixture.nativeElement.textContent).not.toContain('Pay & confirm consultation');
     component.payNow();
     expect(api.initializeFunding).not.toHaveBeenCalled();
   });
@@ -71,6 +71,6 @@ describe('CareDetailPageComponent funding', () => {
     resume.mock.calls[0][1].onError();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('not completed');
-    expect(fixture.nativeElement.textContent).toContain('Pay now');
+    expect(fixture.nativeElement.textContent).toContain('Pay & confirm consultation');
   });
 });
