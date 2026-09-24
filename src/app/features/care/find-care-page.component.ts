@@ -39,7 +39,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               <strong class="block text-lg text-brand-950">Book for Later</strong><span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
               @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">Selected — choose your preferred time below</span> }
             </button>
-            <button type="button" (click)="chooseDoctorMode('HOSPITAL')" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
+            <button type="button" (click)="openInstitutionCare()" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
               <strong class="block text-lg text-brand-950">Visit a Hospital</strong><span class="mt-1 block text-sm text-slate-600">Browse hospitals first, then choose the service or doctor you need there.</span>
               @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a hospital below</span> }
             </button>
@@ -507,6 +507,7 @@ export class FindCarePageComponent {
       this.draftRestored = true;
     }
   }
+  openInstitutionCare(){ void this.router.navigate(['/me/institutions']); }
   chooseDoctorMode(mode: 'NOW' | 'LATER' | 'HOSPITAL') {
     this.doctorMode.set(mode);
     if (mode === 'HOSPITAL') {
