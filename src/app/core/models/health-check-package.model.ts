@@ -62,9 +62,9 @@ export interface HealthCheckProviderDiscoveryRequest {
   readonly preferredDate: string;
   readonly preferredTime: string;
   readonly timezone: string;
-  readonly countryCode: string;
-  readonly stateOrRegion: string;
-  readonly city: string;
+  readonly countryCode?: string;
+  readonly stateOrRegion?: string;
+  readonly city?: string;
   readonly postalCode?: string;
   readonly latitude?: number;
   readonly longitude?: number;
