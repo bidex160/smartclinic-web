@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
 import { ProviderPrescriptionSectionComponent } from './provider-prescription-section.component';
+import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
 
 describe('ProviderPrescriptionSectionComponent form UX', () => {
   it('uses clinical placeholders and keeps Create Prescription local until Save draft', async () => {
@@ -11,7 +12,7 @@ describe('ProviderPrescriptionSectionComponent form UX', () => {
     };
     await TestBed.configureTestingModule({
       imports: [ProviderPrescriptionSectionComponent],
-      providers: [{ provide: PharmacyFulfillmentApiService, useValue: api }],
+      providers: [{ provide: PharmacyFulfillmentApiService, useValue: api }, { provide: ServiceCatalogueApiService, useValue: { providerList: vi.fn(() => of([])) } }],
     }).compileComponents();
     const fixture = TestBed.createComponent(ProviderPrescriptionSectionComponent);
     fixture.componentRef.setInput('appointmentReference', 'SC-APT-1');
@@ -29,5 +30,15 @@ describe('ProviderPrescriptionSectionComponent form UX', () => {
       'e.g. 7 days', 'e.g. 21 capsules', 'e.g. Oral', 'e.g. Take after meals',
     ]));
     expect(api.createPrescription).not.toHaveBeenCalled();
+  });
+
+  it('loads common medicines through the provider-authorized catalogue', async () => {
+    const api = { listAppointmentOrders: vi.fn(() => of({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 })) };
+    const catalogue = { providerList: vi.fn(() => of([{ code: 'MED_AMOXICILLIN_500', name: 'Amoxicillin 500 mg', requiresPrescription: true }])) };
+    await TestBed.configureTestingModule({ imports: [ProviderPrescriptionSectionComponent], providers: [{ provide: PharmacyFulfillmentApiService, useValue: api }, { provide: ServiceCatalogueApiService, useValue: catalogue }] }).compileComponents();
+    const fixture = TestBed.createComponent(ProviderPrescriptionSectionComponent); fixture.componentRef.setInput('appointmentReference','SC-APT-1'); fixture.componentRef.setInput('appointmentStatus','IN_PROGRESS'); fixture.detectChanges();
+    fixture.componentInstance.searchMedicines('amoxi');
+    expect(catalogue.providerList).toHaveBeenCalledWith('MEDICATION');
+    expect(fixture.componentInstance.medicineCatalogue()[0]?.name).toBe('Amoxicillin 500 mg');
   });
 });
