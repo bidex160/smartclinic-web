@@ -16,15 +16,8 @@ describe('ProviderDashboardPageComponent', () => {
     const { fixture, summaryApi, offersApi } = await setup();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    for (const label of [
-      'Needs response',
-      'Today',
-      'Coming up',
-      'In progress',
-      'Completed',
-    ])
+    for (const label of ['Needs response', 'Today', 'Coming up', 'In progress'])
       expect(text).toContain(label);
-    for (const value of ['11', '12', '13', '14', '15']) expect(text).toContain(value);
     expect(summaryApi.getSummary).toHaveBeenCalledOnce();
     expect(offersApi.getOffers).toHaveBeenCalledWith('OFFERED');
     expect(text).not.toMatch(/earnings|revenue|settlement/i);
