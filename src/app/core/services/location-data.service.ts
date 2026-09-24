@@ -3,23 +3,31 @@ import { Country, ICountry, IState, ICity } from 'country-state-city';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
-type NigeriaLocationCache = { states: Array<{ name: string; cities: string[] }> };
+type NigeriaState = { name: string; cities: string[] };
+type NigeriaLocationCache = { states: NigeriaState[] };
 
 @Injectable({ providedIn: 'root' })
 export class LocationDataService {
   private readonly http = inject(HttpClient);
-  private readonly cacheKey = 'nigeria_states_cities';
-  private readonly cacheTimeKey = 'nigeria_states_cities_time';
-  private readonly cacheTtlMs = 24 * 60 * 60 * 1000;
+  private readonly sourceUrl = 'data/state-cities.json'; // 'data/state-cities.json' if using public/
+
+  private data: NigeriaLocationCache = { states: [] };
   private loading: Promise<NigeriaLocationCache> | null = null;
+
+  constructor() {
+    // Clear the old cache so it stops eating storage on low-space phones
+    try {
+      localStorage.removeItem('nigeria_states_cities');
+      localStorage.removeItem('nigeria_states_cities_time');
+    } catch {}
+  }
 
   getCountries(): ICountry[] {
     return Country.getAllCountries().filter((country) => country.isoCode === 'NG');
   }
 
   async getStatesApi(): Promise<NigeriaLocationCache[]> {
-    const data = await this.ensureNigeriaLocations();
-    return [data];
+    return [await this.ensureNigeriaLocations()];
   }
 
   async ready(): Promise<void> {
@@ -27,8 +35,8 @@ export class LocationDataService {
   }
 
   getStates(countryCode: string): IState[] {
-    if (countryCode !== 'NG') return [];
-    return this.readCache().states.map((state) => ({
+    if (countryCode !== 'NG' || !this.data) return [];
+    return this.data.states?.map((state) => ({
       name: state.name,
       isoCode: state.name,
       countryCode: 'NG',
@@ -37,7 +45,7 @@ export class LocationDataService {
 
   getCities(countryCode: string, stateCode: string): ICity[] {
     if (countryCode !== 'NG' || !stateCode) return [];
-    const state = this.readCache().states.find((item) => item.name === stateCode);
+    const state = this.data.states.find((item) => item.name === stateCode);
     return (state?.cities ?? []).map((name) => ({
       name,
       stateCode,
@@ -46,16 +54,13 @@ export class LocationDataService {
   }
 
   private ensureNigeriaLocations(): Promise<NigeriaLocationCache> {
-    const cached = this.readFreshCache();
-    if (cached?.states?.length) return Promise.resolve(cached);
+    if (this.data.states.length) return Promise.resolve(this.data);
     if (this.loading) return this.loading;
 
-    this.loading = lastValueFrom(
-      this.http.get<any[]>('https://temikeezy.github.io/nigeria-geojson-data/data/full.json'),
-    )
+    this.loading = lastValueFrom(this.http.get<NigeriaState[]>(this.sourceUrl))
       .then((data) => {
-        const formatted: NigeriaLocationCache = {
-          states: data.map((state) => ({
+         const formatted: NigeriaLocationCache = {
+          states: data.map((state: any) => ({
             name: state.state,
             cities: [
               ...new Set<string>(
@@ -67,53 +72,13 @@ export class LocationDataService {
             ].sort(),
           })),
         };
-        this.writeCache(formatted);
-        return formatted;
+         this.data = formatted;
+        return this.data;
       })
       .finally(() => {
         this.loading = null;
       });
 
     return this.loading;
-  }
-
-  private readFreshCache(): NigeriaLocationCache | null {
-    try {
-      const cached = localStorage.getItem(this.cacheKey);
-      const cachedTime = localStorage.getItem(this.cacheTimeKey);
-      if (!cached || !cachedTime) return null;
-      if (Date.now() - Number(cachedTime) > this.cacheTtlMs) return null;
-      return this.parseCache(cached);
-    } catch {
-      return null;
-    }
-  }
-
-  private readCache(): NigeriaLocationCache {
-    try {
-      const cached = localStorage.getItem(this.cacheKey);
-      return cached ? this.parseCache(cached) : { states: [] };
-    } catch {
-      return { states: [] };
-    }
-  }
-
-  private parseCache(value: string): NigeriaLocationCache {
-    try {
-      const parsed = JSON.parse(value);
-      const states = parsed?.states ?? parsed?.[0]?.states;
-      return Array.isArray(states) ? { states } : { states: [] };
-    } catch {
-      return { states: [] };
-    }
-  }
-
-  private writeCache(value: NigeriaLocationCache): void {
-    try {
-      localStorage.setItem(this.cacheKey, JSON.stringify([value]));
-      localStorage.setItem(this.cacheTimeKey, Date.now().toString());
-    } catch {
-      // Location data still remains available to the awaiting caller for this session.
-    }
   }
 }
