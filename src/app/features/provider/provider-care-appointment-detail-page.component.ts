@@ -15,10 +15,12 @@ import { SmartClinicServiceCatalogueItem } from '../../core/models/service-catal
 import { ProviderPrescriptionSectionComponent } from './provider-prescription-section.component';
 import { ClinicalDocumentationFormComponent } from '../../shared/clinical-documentation-form.component';
 import { ClinicalDocumentationViewComponent } from '../../shared/clinical-documentation-view.component';
+import { ClinicalSmartSuggestionsComponent } from '../../shared/clinical-smart-suggestions.component';
+import { ClinicalSuggestionItem } from '../../core/models/clinical-decision-support.model';
 type Decision = 'complete' | 'no-show' | 'cancel' | null;
 @Component({
   selector: 'app-provider-care-appointment-detail-page',
-  imports: [RouterLink, ReactiveFormsModule, ProviderPrescriptionSectionComponent, ClinicalDocumentationFormComponent, ClinicalDocumentationViewComponent],
+  imports: [RouterLink, ReactiveFormsModule, ProviderPrescriptionSectionComponent, ClinicalDocumentationFormComponent, ClinicalDocumentationViewComponent, ClinicalSmartSuggestionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/care-appointments" class="font-bold text-brand-700 underline"
@@ -214,6 +216,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="dialog" aria-modal="true" aria-labelledby="clinical-record-form-title" class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"><h2 id="clinical-record-form-title" class="text-xl font-bold">{{ clinicalRecord() ? 'Edit' : 'Create' }} consultation record</h2><p class="mt-2 text-slate-600">Only the title is required. Add clinically appropriate information available for this consultation.</p>
       <form [formGroup]="recordForm" (ngSubmit)="saveClinicalRecord()" class="mt-5 grid gap-4"><label class="font-bold">Title<input formControlName="title" maxlength="200" class="mt-2 block min-h-12 w-full rounded-xl border p-3" />@if (recordForm.controls.title.touched && recordForm.controls.title.invalid) { <span class="mt-1 block text-sm text-red-700">Enter a title of no more than 200 characters.</span> }</label><label class="font-bold">Summary <span class="font-normal text-slate-500">(optional)</span><textarea formControlName="summary" maxlength="4000" rows="3" class="mt-2 block w-full rounded-xl border p-3"></textarea></label>
       @for (field of consultationFormFields; track field.control) { <label class="font-bold">{{ field.label }} <span class="font-normal text-slate-500">(optional)</span><textarea [formControlName]="field.control" maxlength="10000" rows="4" class="mt-2 block w-full rounded-xl border p-3"></textarea></label> }
+      <app-clinical-smart-suggestions [context]="smartSuggestionContext()" (diagnosisChosen)="useSuggestedDiagnosis($event)" (itemChosen)="useSuggestedItem($event)" (referralChosen)="useSuggestedReferral($event)" />
       @if (recordMutationError()) { <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-900">{{ recordMutationError() }}</p> }
       <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" (click)="recordFormOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="recordPending() || recordForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ recordPending() ? 'Saving…' : 'Save draft' }}</button></div></form></section></div>
     }
@@ -348,6 +351,11 @@ export class ProviderCareAppointmentDetailPageComponent {
       },
     });
   }
+  smartSuggestionContext(){const v=this.recordForm.getRawValue();return {presentingComplaint:v.presentingComplaint,historyOfPresentingComplaint:v.historyOfPresentingComplaint,observations:v.observations,assessment:v.assessment,diagnosis:v.diagnosis};}
+  useSuggestedDiagnosis(name:string):void{const current=this.recordForm.controls.diagnosis.value.trim();if(!current)this.recordForm.controls.diagnosis.setValue(name);else if(!current.toLowerCase().includes(name.toLowerCase()))this.recordForm.controls.diagnosis.setValue(current+'\n'+name);this.recordForm.controls.diagnosis.markAsDirty();}
+  useSuggestedItem(item:ClinicalSuggestionItem):void{if(item.category==='MEDICATION'){this.feedback.set(`${item.name} is available in the Prescription section below. Review dose, frequency, duration and patient-specific suitability before issuing.`);return;}const action=item.category==='LAB_TEST'?'LABORATORY':'IMAGING';this.openNextAction(action);this.selectedInvestigations.set([{...item,description:null,subcategory:null,unitLabel:null,averageCostMinor:item.standardPriceMinor,markupBps:0,patientVisible:true,isActive:true,sortOrder:0}]);}
+  useSuggestedReferral(referral:string):void{this.openNextAction('REFERRAL');this.nextActionForm.controls.clinicalNote.setValue(`Referral to ${referral}: `);}
+
   openNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
     this.nextActionForm.reset({ clinicalNote: '', items: '' }); this.nextActionError.set(null); this.selectedInvestigations.set([]); this.investigationCatalogue.set([]); this.nextAction.set(action);
     if(action==='LABORATORY'||action==='IMAGING') this.searchInvestigations(action,'');
