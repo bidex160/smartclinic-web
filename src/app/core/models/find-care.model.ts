@@ -105,6 +105,7 @@ export interface FindCareProviderFilters {
   readonly city?: string;
   readonly deliveryMode?: CareDeliveryMode;
   readonly fastTrackOnly?: boolean;
+  readonly hostProviderReference?: string;
   readonly page?: number;
   readonly limit?: number;
 }
