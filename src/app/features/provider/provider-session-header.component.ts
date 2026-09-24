@@ -220,6 +220,14 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 
             <a routerLink="/provider/payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700">Payouts</a>
 
+            <a
+              routerLink="/provider/network"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700"
+            >
+              Grow my network
+            </a>
+
             @if (careProvider()) {
             <a
               routerLink="/provider/fasttrack"
@@ -800,6 +808,21 @@ Menu
               "
             >
               Payouts
+            </a>
+
+            <a
+              routerLink="/provider/network"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="
+                min-h-11 rounded-lg
+                px-3 py-3
+                font-semibold
+                text-slate-700
+                hover:bg-brand-50
+                hover:text-brand-900
+              "
+            >
+              Grow my network
             </a>
 
             <a
