@@ -126,6 +126,7 @@ export interface CreateCareRequest {
   readonly serviceCode: string;
   readonly deliveryMode: CareDeliveryMode;
   readonly preferredProviderReference?: string;
+  readonly hostProviderReference?: string;
   readonly countryCode?: string;
   readonly stateOrRegion?: string;
   readonly city?: string;
