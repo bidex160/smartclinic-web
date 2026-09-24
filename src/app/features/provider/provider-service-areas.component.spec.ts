@@ -181,7 +181,7 @@ function area() {
     stateOrRegion: 'Lagos',
     city: null,
     postalCode: null,
-    travelFeeMinor: 0,
+    travelFeeMinor: '0.00',
     priority: 100,
     originLatitude: null,
     originLongitude: null,
