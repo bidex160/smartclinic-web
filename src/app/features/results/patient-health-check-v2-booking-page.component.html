@@ -269,6 +269,12 @@
                     >{{ offering.fulfilmentMode.name }} · Fulfilment fee
                     {{ money(offering.fulfilmentMode.fulfilmentFeeMinor, offering.currency) }}</span
                   >
+                  @if (offering.travelFeeMinor > 0) {
+                    <span class="mt-1 block text-sm font-semibold text-brand-800">
+                      Includes {{ money(offering.travelFeeMinor, offering.currency) }} travel
+                      @if (offering.travelDistanceKm !== null) { · about {{ offering.travelDistanceKm }} km }
+                    </span>
+                  }
                 </button>
               }
             </div>
