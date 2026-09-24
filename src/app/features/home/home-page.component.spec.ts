@@ -59,7 +59,7 @@ describe('HomePageComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
     const text = element.textContent ?? '';
     expect(text).toContain('YOUR HEALTH, CONNECTED');
-    expect(text).toContain('How can we help you today?');
+    expect(text).toContain('What do you need today?');
     expect(text).toContain(
       'Check your health, find the right care, or connect to your hospital—all through one SmartClinic account.',
     );
