@@ -49,10 +49,10 @@ export class HomePageComponent {
     this.authState.isPatient() ? null : { returnUrl: '/me/prescriptions' },
   );
   readonly testRoute = computed(() =>
-    this.authState.isPatient() ? '/me/tests' : '/login',
+    this.authState.isPatient() ? '/me/lab-tests' : '/login',
   );
   readonly testQueryParams = computed(() =>
-    this.authState.isPatient() ? null : { returnUrl: '/me/tests' },
+    this.authState.isPatient() ? null : { returnUrl: '/me/lab-tests' },
   );
   readonly myHospitalRoute = computed(() =>
     this.authState.isPatient() ? '/me/providers/connect' : '/login',
