@@ -1,0 +1,5 @@
+import { HttpClient } from '@angular/common/http';import { inject,Injectable } from '@angular/core';import { Observable } from 'rxjs';import { API_CONFIG } from '../config/api-config.token';
+export type GrowthTarget='CLINIC'|'LABORATORY'|'PHARMACY';
+export interface GrowthInvite{reference:string;targetType:GrowthTarget;businessName:string;contactName:string|null;email:string|null;phone:string|null;countryCode:string;stateOrRegion:string;city:string;address:string|null;status:string;referrerSharePercent:number;createdAt:string;claimUrl?:string}
+export interface CreateGrowthInvite{targetType:GrowthTarget;businessName:string;contactName?:string;email?:string;phone?:string;countryCode:string;stateOrRegion:string;city:string;address?:string}
+@Injectable({providedIn:'root'})export class ProviderNetworkApiService{private http=inject(HttpClient);private base=inject(API_CONFIG).baseUrl;list():Observable<GrowthInvite[]>{return this.http.get<GrowthInvite[]>(this.base+'/provider/network/invites')}create(v:CreateGrowthInvite):Observable<GrowthInvite>{return this.http.post<GrowthInvite>(this.base+'/provider/network/invites',v)}}
