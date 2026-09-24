@@ -276,10 +276,14 @@ export class PatientHealthCheckV2BookingPageComponent {
         preferredDate: value.preferredDate,
         preferredTime: value.preferredTime,
         timezone: value.timezone,
-        countryCode: value.address.countryCode.toUpperCase(),
-        stateOrRegion: value.address.stateOrRegion,
-        city: value.address.city,
-        ...(value.address.postalCode && { postalCode: value.address.postalCode }),
+        ...(value.fulfilmentModeCode === 'HOME_VISIT'
+          ? {
+              countryCode: value.address.countryCode.toUpperCase(),
+              stateOrRegion: value.address.stateOrRegion,
+              city: value.address.city,
+              ...(value.address.postalCode && { postalCode: value.address.postalCode }),
+            }
+          : {}),
         page,
         limit: 10,
       })
