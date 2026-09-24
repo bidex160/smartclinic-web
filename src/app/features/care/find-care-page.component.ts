@@ -273,11 +273,8 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             <p role="status" class="mt-3 text-sm">Finding matching providers…</p>
           } @else if (providerSearchReady() && !providers().length) {
             <div class="mt-3 rounded-xl bg-slate-50 p-4">
-              <p>No providers currently match these filters.</p>
-              <p class="mt-1 text-sm text-slate-600">
-                Change the service or location, or keep “No preference” so SmartClinic can help
-                match your request.
-              </p>
+              <p class="font-bold">No matching clinician is available right now.</p>
+              <p class="mt-1 text-sm text-slate-600">@if(hostInstitutionReference()){This hospital has no approved virtual clinician matching this service at the moment. You can still send the request and SmartClinic will keep it in matching, or return to Hospitals & clinics to choose another option.} @else {You can still send the request with “No preference”. SmartClinic will keep matching instead of ending your care journey.}</p>
             </div>
           }
           @if (providersError()) {
@@ -628,6 +625,7 @@ export class FindCarePageComponent {
       .getProviders({
         serviceCode: v.serviceCode,
         ...(deliveryMode ? { deliveryMode } : {}),
+        ...(this.hostInstitutionReference() && deliveryMode === 'VIRTUAL' ? { hostProviderReference: this.hostInstitutionReference()! } : {}),
         ...(deliveryMode && deliveryMode !== 'VIRTUAL'
           ? {
               countryCode: v.countryCode,
