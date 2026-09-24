@@ -6,6 +6,8 @@ export interface ProviderServiceArea {
   readonly stateOrRegion: string;
   readonly city: string | null;
   readonly postalCode: string | null;
+  readonly travelFeeMinor: string;
+  readonly priority: number;
   readonly isActive: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -17,4 +19,6 @@ export interface ProviderServiceAreaRequest {
   readonly stateOrRegion: string;
   readonly city?: string | null;
   readonly postalCode?: string | null;
+  readonly travelFeeMinor?: number;
+  readonly priority?: number;
 }
