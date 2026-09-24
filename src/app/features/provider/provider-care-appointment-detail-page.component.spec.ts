@@ -7,6 +7,7 @@ import { ProviderCareServicesApiService } from '../../core/services/provider-car
 import { ProviderCareAppointmentDetailPageComponent } from './provider-care-appointment-detail-page.component';
 import { ClinicalRecord } from '../../core/models/clinical-record.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
 
 describe('ProviderCareAppointmentDetailPageComponent clinical records', () => {
   async function setup(record: ReturnType<typeof clinicalRecord> | null = clinicalRecord(), type: string | null = 'CONSULTATION', status: 'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' = 'IN_PROGRESS') {
@@ -15,7 +16,7 @@ describe('ProviderCareAppointmentDetailPageComponent clinical records', () => {
     const careServices = { getCatalogue: vi.fn(() => of([{ id: 'definition', code: 'GENERAL_CONSULTATION', name: 'General Consultation', description: null, isActive: true, clinicalRecordType: type }])) };
     const records = { getForProviderAppointment: vi.fn((_reference: string) => record ? of(record) : throwError(() => ({ status: 404 }))), createForProviderAppointment: vi.fn((_reference: string, _body: unknown) => of(clinicalRecord())), updateForProviderAppointment: vi.fn((_reference: string, _body: unknown) => of(clinicalRecord())), finalizeForProviderAppointment: vi.fn((_reference: string) => of({ ...clinicalRecord(), status: 'FINALIZED' })), uploadAttachment: vi.fn((_reference: string, _file: File) => of(attachment())), deleteAttachment: vi.fn(() => of({ deleted: true })), getProviderAttachmentAccess: vi.fn(() => of({ url: 'https://files.example.test/file', expiresAt: '2026-08-29T11:00:00Z' })) };
     const pharmacy = { listAppointmentOrders: vi.fn(() => of({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 })) };
-    await TestBed.configureTestingModule({ imports: [ProviderCareAppointmentDetailPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'SC-APT-1' } } } }, { provide: ProviderCareOperationsApiService, useValue: operations }, { provide: ProviderCareServicesApiService, useValue: careServices }, { provide: ClinicalRecordsApiService, useValue: records }, { provide: PharmacyFulfillmentApiService, useValue: pharmacy }] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [ProviderCareAppointmentDetailPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'SC-APT-1' } } } }, { provide: ProviderCareOperationsApiService, useValue: operations }, { provide: ProviderCareServicesApiService, useValue: careServices }, { provide: ClinicalRecordsApiService, useValue: records }, { provide: ServiceCatalogueApiService, useValue: { providerList: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }) } }, { provide: PharmacyFulfillmentApiService, useValue: pharmacy }] }).compileComponents();
     const fixture = TestBed.createComponent(ProviderCareAppointmentDetailPageComponent); fixture.detectChanges();
     return { fixture, operations, records };
   }
