@@ -231,12 +231,12 @@ describe('PatientDashboardPageComponent', () => {
     const nav = fixture.nativeElement.querySelector('[aria-labelledby="quick-access-heading"]');
     expect(
       [...nav.querySelectorAll('a')].map((a: HTMLAnchorElement) => [
-        a.textContent.replace(/→/g, '').trim(),
+        a.textContent.replace(/^[♥✚H]|^Rx|^T|^₦|→/g, '').trim(),
         a.getAttribute('href'),
       ]),
     ).toEqual([
       ['Book a Checkup', '/me/book'],
-      ['See a Doctor', '/me/request-care'],
+      ['See a Doctor', '/me/request-care?serviceCode=EMERGENCY_CONSULTATION&journey=doctor'],
       ['Visit a Hospital', '/me/providers'],
       ['Get Medicine', '/me/prescriptions'],
       ['Get a Test', '/me/lab-tests'],
