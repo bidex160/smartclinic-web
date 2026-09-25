@@ -37,7 +37,7 @@
                   }
                   · {{ area.countryCode }}
                 </p>
-                <p class="mt-1 font-semibold">{{ area.isActive ? 'Active' : 'Inactive' }} · Travel fee {{ (+area.travelFeeMinor / 100).toLocaleString('en-NG', { style: 'currency', currency: 'NGN' }) }} @if(area.maxRadiusKm){ · up to {{ area.maxRadiusKm }} km }</p>
+                <p class="mt-1 font-semibold">{{ area.isActive ? 'Active' : 'Inactive' }} @if(area.maxRadiusKm){ · up to {{ area.maxRadiusKm }} km }</p>
               </div>
               @if (editable()) {
                 <div class="flex gap-2">
