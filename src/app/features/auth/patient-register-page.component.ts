@@ -103,9 +103,11 @@ export class PatientRegisterPageComponent {
   });
 
   constructor() {
-    this.states = this.locationData.getStates(
-      this.form.controls.countryCode.value,
-    );
+    this.states = this.locationData.getStates(this.form.controls.countryCode.value);
+    void this.locationData.ready().then(() => {
+      this.states = this.locationData.getStates(this.form.controls.countryCode.value);
+      if (this.form.controls.stateOrRegion.value) this.onStateChange();
+    });
   }
 
   onCountryChange(): void {
