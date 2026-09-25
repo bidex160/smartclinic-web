@@ -99,6 +99,22 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     });
   });
 
+  it('hides raw 500 provider-discovery errors behind patient-safe copy', async () => {
+    const { component, fixture } = await setup({
+      discoveryResult: throwError(() => ({
+        status: 500,
+        error: { message: 'Internal server error' },
+      })),
+    });
+    setAppointment(component, 'HOME_VISIT');
+    component.discover(1);
+    fixture.detectChanges();
+    expect(component.discoveryError()).toBe(
+      'We couldn’t check availability right now. Please try again.',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('Internal server error');
+  });
+
   it('keeps an empty discovery on Appointment with a friendly state', async () => {
     const { component, fixture } = await setup({ offerings: [] });
     setAppointment(component, 'PROVIDER_LOCATION');
@@ -389,12 +405,14 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
       quote?: typeof providerQuote | typeof homeQuote;
       quoteError?: boolean;
       invitationResult?: Observable<ProviderRecruitmentInvitationResponse>;
+      discoveryResult?: Observable<unknown>;
     } = {},
   ) {
     const selectedQuote = options.quote ?? providerQuote;
     const packageApi = {
       getCatalogue: vi.fn(() => of([catalogue])),
       discoverProviders: vi.fn((_request: unknown) =>
+        options.discoveryResult ??
         of({
           items: options.offerings ?? [providerOffering],
           page: 1,
