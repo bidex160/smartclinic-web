@@ -164,9 +164,10 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       city: value.city.trim() || null,
       postalCode: value.postalCode.trim() || null,
       travelFeeMinor: Math.round(Number(value.travelFee || 0) * 100),
-      priority: Number(value.priority || 100),
-      originLatitude: value.originLatitude,
-      originLongitude: value.originLongitude,
+      // Matching priority and coordinates are system-managed for self-onboarding.
+      priority: 100,
+      originLatitude: null,
+      originLongitude: null,
       maxRadiusKm: value.maxRadiusKm,
     };
     const operation = this.editingId()
