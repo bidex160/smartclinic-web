@@ -383,6 +383,12 @@ export class PatientHealthCheckV2BookingPageComponent {
           ? { providerLocationReference: location.reference }
           : {}),
         fulfilmentModeCode: offering.fulfilmentMode.code,
+        ...(offering.fulfilmentMode.code === 'HOME_VISIT' ? {
+          countryCode: this.form.controls.address.controls.countryCode.value.toUpperCase(),
+          stateOrRegion: this.form.controls.address.controls.stateOrRegion.value,
+          city: this.form.controls.address.controls.city.value,
+          ...(this.form.controls.address.controls.postalCode.value && { postalCode: this.form.controls.address.controls.postalCode.value }),
+        } : {}),
         addonCodes: [...new Set(this.selectedAddons())],
       })
       .pipe(
