@@ -174,11 +174,6 @@
           />
         </div>
         <div>
-          <label for="area-travel-fee" class="font-bold">Home-visit / travel fee (₦)</label>
-          <input id="area-travel-fee" type="number" min="0" step="100" formControlName="travelFee" class="mt-2 min-h-12 w-full rounded-lg border px-3" />
-          <p class="mt-1 text-sm text-slate-500">Enter 0 if you do not charge an additional travel fee.</p>
-        </div>
-        <div>
           <label for="area-radius" class="font-bold">How far can you travel?</label>
           <select id="area-radius" formControlName="maxRadiusKm" class="mt-2 min-h-12 w-full rounded-lg border bg-white px-3">
             <option [ngValue]="null">Anywhere in the selected area</option>
@@ -187,7 +182,7 @@
             <option [ngValue]="10">10 km</option>
             <option [ngValue]="20">20 km</option>
           </select>
-          <p class="mt-1 text-sm text-slate-500">SmartClinic handles location and matching automatically.</p>
+          <p class="mt-1 text-sm text-slate-500">SmartClinic automatically handles location, distance, matching and travel pricing.</p>
         </div>
         @if (!homeVisitServices().length) {
           <p class="md:col-span-2 rounded-lg bg-amber-50 p-3">
