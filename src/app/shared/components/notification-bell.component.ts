@@ -67,7 +67,17 @@ export class NotificationBellComponent {
     });
   }
 
-  toggle(): void { this.state.togglePanel(); }
+  toggle(): void {
+    // On compact/mobile patient layouts, navigate to the dedicated notifications
+    // page instead of relying on an absolutely-positioned popover that can be
+    // clipped/covered by the sticky header and surrounding stacking contexts.
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      this.state.closePanel();
+      void this.router.navigate([this.notificationsRoute()]);
+      return;
+    }
+    this.state.togglePanel();
+  }
   close(): void { this.state.closePanel(); }
   markAll(): void { this.state.markAllRead(); }
 
