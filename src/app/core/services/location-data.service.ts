@@ -5,6 +5,8 @@ import { lastValueFrom } from 'rxjs';
 
 type NigeriaLocationCache = { states: Array<{ name: string; cities: string[] }> };
 
+const FCT_COMMON_AREAS = ['Asokoro', 'Dawaki', 'Jabi', 'Karsana', 'Life Camp', 'Wuye'];
+
 @Injectable({ providedIn: 'root' })
 export class LocationDataService {
   private readonly http = inject(HttpClient);
@@ -67,8 +69,9 @@ export class LocationDataService {
             ].sort(),
           })),
         };
-        this.writeCache(formatted);
-        return formatted;
+        const augmented = this.withFctCommonAreas(formatted);
+        this.writeCache(augmented);
+        return augmented;
       })
       .finally(() => {
         this.loading = null;
@@ -102,10 +105,20 @@ export class LocationDataService {
     try {
       const parsed = JSON.parse(value);
       const states = parsed?.states ?? parsed?.[0]?.states;
-      return Array.isArray(states) ? { states } : { states: [] };
+      return Array.isArray(states) ? this.withFctCommonAreas({ states }) : { states: [] };
     } catch {
       return { states: [] };
     }
+  }
+
+  private withFctCommonAreas(value: NigeriaLocationCache): NigeriaLocationCache {
+    return {
+      states: value.states.map((state) => {
+        const normalized = state.name.trim().toUpperCase();
+        if (normalized !== 'FCT' && normalized !== 'FEDERAL CAPITAL TERRITORY') return state;
+        return { ...state, cities: [...new Set([...state.cities, ...FCT_COMMON_AREAS])].sort() };
+      }),
+    };
   }
 
   private writeCache(value: NigeriaLocationCache): void {
