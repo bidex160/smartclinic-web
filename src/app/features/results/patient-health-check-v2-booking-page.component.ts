@@ -130,6 +130,8 @@ export class PatientHealthCheckV2BookingPageComponent {
   }
 
   private async loadLocations(): Promise<void> {
+    // Populate immediately from the bundled Nigeria fallback so slow/offline location loading never blocks checkup booking.
+    this.states.set(this.locations.getStates('NG'));
     try {
       await this.locations.ready();
       this.states.set(this.locations.getStates('NG'));
@@ -459,8 +461,9 @@ export class PatientHealthCheckV2BookingPageComponent {
                      const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
 
           this.createError.set(
-            error ||
-            'This option is no longer available. Return to Customise and confirm your choices again.',
+            typeof message === 'string' && error.status >= 400 && error.status < 500
+              ? message
+              : 'We could not create this checkup right now. Please try again or return to Options and confirm your choices.',
           );
           this.invalidateQuote();
           this.goToStep(3);
