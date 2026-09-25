@@ -163,17 +163,38 @@ readonly areaStateCode = new FormControl('', { nonNullable: true });
       stateOrRegion: value.stateOrRegion.trim(),
       city: value.city.trim() || null,
       postalCode: value.postalCode.trim() || null,
-      travelFeeMinor: Math.round(Number(value.travelFee || 0) * 100),
-      // Matching priority and coordinates are system-managed for self-onboarding.
+      // Travel pricing and matching priority are centrally managed by SmartClinic.
       priority: 100,
-      originLatitude: null,
-      originLongitude: null,
+      // Preserve known coordinates on edit. New coordinates can be captured with the
+      // browser location helper; never erase valid location intelligence silently.
+      originLatitude: value.originLatitude,
+      originLongitude: value.originLongitude,
       maxRadiusKm: value.maxRadiusKm,
     };
     const operation = this.editingId()
       ? this.areasApi.update(this.editingId()!, body)
       : this.areasApi.create(body);
     this.run(operation, this.editingId() ? 'Service area updated.' : 'Service area added.');
+  }
+
+  useCurrentLocation(): void {
+    if (!navigator.geolocation || this.mutating()) {
+      this.error.set('Current location is not available on this device. You can continue with your selected area.');
+      return;
+    }
+    this.status.set('Getting your location…');
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        this.form.patchValue({ originLatitude: coords.latitude, originLongitude: coords.longitude });
+        this.status.set('Location added. SmartClinic will use it for distance and matching.');
+        this.error.set(null);
+      },
+      () => {
+        this.status.set(null);
+        this.error.set('We could not use your current location. You can continue with your selected area.');
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+    );
   }
 
   toggle(area: ProviderServiceArea): void {
