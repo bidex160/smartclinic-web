@@ -41,7 +41,11 @@ describe('ProviderServiceAreasComponent', () => {
     });
     expect(JSON.stringify(create.mock.calls[0])).not.toContain('providerId');
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('whole state or region');
+    expect(text).toContain('All cities in selected state');
+    expect(text).toContain('How far can you travel?');
+    expect(text).not.toContain('Travel fee');
+    expect(text).not.toContain('Origin latitude');
+    expect(text).not.toContain('Matching priority');
     expect(text).not.toContain('provider ID');
   });
 
