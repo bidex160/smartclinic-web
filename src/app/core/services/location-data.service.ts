@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Country, ICountry, IState, ICity } from 'country-state-city';
+import { STATE_CITIES } from './state-and-cities';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
@@ -95,19 +96,29 @@ export class LocationDataService {
   private readCache(): NigeriaLocationCache {
     try {
       const cached = localStorage.getItem(this.cacheKey);
-      return cached ? this.parseCache(cached) : { states: [] };
+      if (cached) {
+        const parsed = this.parseCache(cached);
+        if (parsed.states.length) return parsed;
+      }
     } catch {
-      return { states: [] };
+      // Fall through to the bundled Nigeria dataset.
     }
+    return this.bundledNigeriaLocations();
+  }
+
+  private bundledNigeriaLocations(): NigeriaLocationCache {
+    return this.withFctCommonAreas({
+      states: STATE_CITIES.map((state) => ({ name: state.name, cities: [...state.cities] })),
+    });
   }
 
   private parseCache(value: string): NigeriaLocationCache {
     try {
       const parsed = JSON.parse(value);
       const states = parsed?.states ?? parsed?.[0]?.states;
-      return Array.isArray(states) ? this.withFctCommonAreas({ states }) : { states: [] };
+      return Array.isArray(states) && states.length ? this.withFctCommonAreas({ states }) : this.bundledNigeriaLocations();
     } catch {
-      return { states: [] };
+      return this.bundledNigeriaLocations();
     }
   }
 
