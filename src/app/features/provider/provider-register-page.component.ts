@@ -173,6 +173,7 @@ export class ProviderRegisterPageComponent {
 
   constructor() {
     this.loadRegisterCountry('NG');
+    void this.locationData.ready().then(() => this.loadRegisterCountry(this.form.controls.countryCode.value));
   }
 
   /**
