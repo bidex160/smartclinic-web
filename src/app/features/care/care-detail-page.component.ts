@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize, interval, startWith, switchMap } from 'rxjs';
+import { finalize, interval, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CareRequest, CareRequestFunding } from '../../core/models/find-care.model';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
@@ -327,7 +327,7 @@ export class CareDetailPageComponent {
   popup = new PaystackPop();
   constructor() {
     this.load();
-    interval(15000).pipe(startWith(0), switchMap(() => this.api.get(this.reference)), takeUntilDestroyed(this.destroyRef)).subscribe({
+    interval(15000).pipe(switchMap(() => this.api.get(this.reference)), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (r) => {
         const previous = this.request()?.status;
         this.request.set(r);

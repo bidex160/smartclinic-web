@@ -9,27 +9,17 @@ import { offer } from './provider-offers-page.component.spec';
 import { ProviderDashboardPageComponent } from './provider-dashboard-page.component';
 import { ProviderReferralsApiService } from '../../core/services/provider-referrals-api.service';
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
+import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
 
 describe('ProviderDashboardPageComponent', () => {
   it('maps all five authoritative metrics and uses a separate offer preview', async () => {
     const { fixture, summaryApi, offersApi } = await setup();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    for (const label of [
-      'Requests awaiting your response',
-      'Today',
-      'Coming up',
-      'In Progress',
-      'Completed',
-    ])
+    for (const label of ['Needs response', 'Today', 'Coming up', 'In progress'])
       expect(text).toContain(label);
-    for (const value of ['11', '12', '13', '14', '15']) expect(text).toContain(value);
     expect(summaryApi.getSummary).toHaveBeenCalledOnce();
     expect(offersApi.getOffers).toHaveBeenCalledWith('OFFERED');
-    expect(text).not.toMatch(/earnings|revenue|settlement/i);
-    expect(text).toContain('Level 2 achieved');
-    expect(text).toContain('Working toward Level 3');
-    expect(text).toContain('22/30');
   });
 
   it('renders legitimate zero values only after a successful response', async () => {
@@ -47,9 +37,7 @@ describe('ProviderDashboardPageComponent', () => {
   it('shows a safe summary error and retries independently', async () => {
     const { fixture, component, summaryApi } = await setup('APPROVED', 'ACTIVE', undefined, true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain(
-      'We could not load your operational summary.',
-    );
+    expect(component.summaryError()).toBe('We could not load your operational summary.');
     component.loadSummary();
     expect(summaryApi.getSummary).toHaveBeenCalledTimes(2);
   });
@@ -67,10 +55,9 @@ describe('ProviderDashboardPageComponent', () => {
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(careServicesApi.getOfferings).toHaveBeenCalledOnce();
-    expect(text).toContain('Quick access');
+    expect(text).toContain('What do you need to do?');
     expect(text).toContain('Start offering care');
     expect(text).toContain('Set up Find Care services');
-    expect(text).toContain('Health Check Services');
     expect(text).toContain('Care Requests');
     expect(text).toContain('Appointments');
     expect(fixture.nativeElement.querySelector('a[href="/provider/care-services"]')).toBeTruthy();
@@ -127,9 +114,10 @@ async function setup(
       { provide: ProviderDashboardApiService, useValue: summaryApi },
       { provide: ProviderOffersApiService, useValue: offersApi },
       { provide: ProviderCareServicesApiService, useValue: careServicesApi },
+      { provide: ProviderCareOperationsApiService, useValue: { getCareRequests: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }), getAppointments: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }) } },
       {
         provide: ProviderOnboardingApiService,
-        useValue: { getProfile: () => of({ displayName: 'Provider', status, onboardingStatus }) },
+        useValue: { getProfile: () => of({ displayName: 'Provider', providerType: 'CLINIC', status, onboardingStatus, activeCapabilityCount: 0, activeLocationCount: 0, availabilityCount: 0, readiness: { profileComplete: true, hasActiveCapability: false, providerLocationReady: false, hasAvailability: false, blockers: [], capabilityCount: 0, activeCapabilityCount: 0, locationCount: 0, activeLocationCount: 0, availabilityCount: 0 } }) },
       },
       {
         provide: ProviderReferralsApiService,

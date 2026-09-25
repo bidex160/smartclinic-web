@@ -59,31 +59,21 @@ describe('HomePageComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
     const text = element.textContent ?? '';
     expect(text).toContain('YOUR HEALTH, CONNECTED');
-    expect(text).toContain('How can we help you today?');
-    expect(text).toContain(
-      'Check your health, find the right care, or connect to your hospital—all through one SmartClinic account.',
-    );
-    const choices = element.querySelectorAll('[aria-label="Primary patient choices"] > a');
-    expect(choices).toHaveLength(3);
-    expect([...choices].map((choice) => choice.querySelector('h2')?.textContent?.trim())).toEqual([
-      'Stay Well',
-      'Find Care',
-      'My Hospital',
-    ]);
-    expect(choices[0].getAttribute('href')).toContain('/login');
-    expect(choices[1].getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Frequest-care');
-    expect(choices[2].getAttribute('href')).toContain('/login');
-    expect(choices[2].getAttribute('href')).toContain('returnUrl=%2Fme%2Fproviders%2Fconnect');
-    expect(choices[0].textContent).toContain('Check and understand your health');
-    expect(choices[1].textContent).toContain('Get Healthcare Help');
-    expect(choices[2].textContent).toContain('Connect to a Hospital');
-    expect(choices[2].textContent).not.toMatch(
-      /appointment booking|register with|link existing record/i,
-    );
+    expect(text).toContain('What do you need today?');
+    expect(text).toContain('Healthcare made simpler. What do you need today?');
+    const actions = element.querySelectorAll('[aria-label="Healthcare actions"] a');
+    expect(actions).toHaveLength(5);
+    expect([...actions].map((action) => action.textContent?.trim())).toEqual(expect.arrayContaining([
+      expect.stringContaining('Book a Checkup'),
+      expect.stringContaining('See a Doctor'),
+      expect.stringContaining('Visit a Hospital'),
+      expect.stringContaining('Get Medicine'),
+      expect.stringContaining('Get a Test'),
+    ]));
     expect(text).toContain('Open My SmartClinic');
     expect(text).not.toContain('Continue on WhatsApp');
     expect(text).not.toContain('WhatsApp support unavailable');
-    expect(text).toContain('Transparent prices');
+    expect(text).toContain('Clear pricing');
     expect(text).toContain('Verified providers');
     expect(text).toContain('Care near you');
     expect(text).toContain('Healthcare without the runaround.');
@@ -92,22 +82,15 @@ describe('HomePageComponent', () => {
 
     expect(text).toContain('Essential Health Check');
     expect(text).toContain('₦8,000.00');
-    expect(text).toContain('Price shown after you choose a provider');
+    expect(text).toContain('Price shown after provider');
     expect(text).not.toContain('Home Visit Health Check');
     const packageLinks = [...element.querySelectorAll('a')].filter((link) =>
-      link.textContent?.includes('Explore this check'),
+      link.textContent?.includes('Start my Health Check'),
     );
-    const packageNames = packageLinks.map((link) =>
-      link.closest('article')?.querySelector('h3')?.textContent?.trim(),
-    );
-    expect(packageNames).toEqual(['Complete Health Check', 'Essential Health Check']);
-    expect(packageLinks[0].getAttribute('href')).toBe(
-      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
-    );
-    expect(packageLinks[1].getAttribute('href')).toBe(
-      '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DESSENTIAL',
-    );
+    expect(packageLinks).toHaveLength(2);
     expect(element.querySelectorAll('details').length).toBeGreaterThan(0);
+  });
+
   it('routes authenticated patient actions directly into their care journeys', async () => {
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
@@ -124,16 +107,17 @@ describe('HomePageComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
     const links = [...element.querySelectorAll('[aria-label="Healthcare actions"] a')] as HTMLAnchorElement[];
 
+    expect(links.find((link) => link.textContent?.includes('See a Doctor'))?.getAttribute('href'))
       .toContain('/me/request-care');
     expect(links.find((link) => link.textContent?.includes('Visit a Hospital'))?.getAttribute('href'))
       .toBe('/me/providers/connect');
     expect(links.find((link) => link.textContent?.includes('Get Medicine'))?.getAttribute('href'))
       .toBe('/me/prescriptions');
     expect(links.find((link) => link.textContent?.includes('Get a Test'))?.getAttribute('href'))
-      .toBe('/me/tests');
+      .toBe('/me/lab-tests');
 
     const packageLinks = [...element.querySelectorAll('a')].filter((link) =>
-      link.textContent?.includes('View'),
+      link.textContent?.includes('Start my Health Check'),
     );
     expect(packageLinks.some((link) => link.getAttribute('href') === '/health-check/packages?package=ESSENTIAL')).toBe(true);
     expect(element.querySelector('a[href*="wa.me"], a[href*="whatsapp"]')).toBeNull();

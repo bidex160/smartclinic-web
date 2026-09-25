@@ -6,11 +6,10 @@ import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { formatMinor } from '../provider/care-money';
-import { CommunityLeaderboardComponent } from '../join/components/community-leaderboard/community-leaderboard.component';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink, CommunityLeaderboardComponent],
+  imports: [RouterLink],
   templateUrl: './home-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -49,10 +48,10 @@ export class HomePageComponent {
     this.authState.isPatient() ? null : { returnUrl: '/me/prescriptions' },
   );
   readonly testRoute = computed(() =>
-    this.authState.isPatient() ? '/me/tests' : '/login',
+    this.authState.isPatient() ? '/me/lab-tests' : '/login',
   );
   readonly testQueryParams = computed(() =>
-    this.authState.isPatient() ? null : { returnUrl: '/me/tests' },
+    this.authState.isPatient() ? null : { returnUrl: '/me/lab-tests' },
   );
   readonly myHospitalRoute = computed(() =>
     this.authState.isPatient() ? '/me/providers/connect' : '/login',

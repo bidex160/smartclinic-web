@@ -276,10 +276,14 @@ export class PatientHealthCheckV2BookingPageComponent {
         preferredDate: value.preferredDate,
         preferredTime: value.preferredTime,
         timezone: value.timezone,
-        countryCode: value.address.countryCode.toUpperCase(),
-        stateOrRegion: value.address.stateOrRegion,
-        city: value.address.city,
-        ...(value.address.postalCode && { postalCode: value.address.postalCode }),
+        ...(value.fulfilmentModeCode === 'HOME_VISIT'
+          ? {
+              countryCode: value.address.countryCode.toUpperCase(),
+              stateOrRegion: value.address.stateOrRegion,
+              city: value.address.city,
+              ...(value.address.postalCode && { postalCode: value.address.postalCode }),
+            }
+          : {}),
         page,
         limit: 10,
       })
@@ -311,14 +315,16 @@ export class PatientHealthCheckV2BookingPageComponent {
             this.goToStep(2);
           }
         },
-        error: (error) => {
-                     const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
-
+        error: (error: HttpErrorResponse) => {
           if (request !== this.discoveryRequest) return;
-          this.discoveryError.set(
-            message ||
-            'Available providers could not be loaded. Review your appointment and location, then try again.',
-          );
+          const backendMessage = Array.isArray(error.error?.message)
+            ? error.error.message.join(', ')
+            : error.error?.message;
+          const safeClientMessage =
+            error.status >= 400 && error.status < 500 && typeof backendMessage === 'string'
+              ? backendMessage
+              : 'We couldn’t check availability right now. Please try again.';
+          this.discoveryError.set(safeClientMessage);
           this.focusCurrentStep();
         },
       });

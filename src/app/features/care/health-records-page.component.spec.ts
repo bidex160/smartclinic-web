@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+
+// Explicit smoke registration keeps this suite discoverable in Angular's Vitest runner.
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';

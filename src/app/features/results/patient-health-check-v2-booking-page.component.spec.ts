@@ -7,14 +7,15 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 import { ProviderRecruitmentInvitationsApiService } from '../../core/services/provider-recruitment-invitations-api.service';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
+import { AssistedMatchingApiService } from '../../core/services/assisted-matching-api.service';
 import { PatientHealthCheckV2BookingPageComponent } from './patient-health-check-v2-booking-page.component';
 
 describe('PatientHealthCheckV2BookingPageComponent', () => {
-  it('starts on Appointment and renders the compact four-step progress UI', async () => {
+  it('starts on Your checkup and renders the compact four-step progress UI', async () => {
     const { component, fixture } = await setup();
     expect(component.currentStep()).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('Step 1 of 4');
-    for (const label of ['Appointment', 'Provider', 'Customise', 'Review & Pay'])
+    for (const label of ['Your checkup', 'Provider', 'Options', 'Review & Pay'])
       expect(fixture.nativeElement.textContent).toContain(label);
     expect(fixture.nativeElement.textContent).not.toContain('Choose a provider');
   });
@@ -59,7 +60,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(component.form.controls.address.controls.addressLine1.hasError('required')).toBe(true);
   });
 
-  it('discovers with geography only and advances only when providers are returned', async () => {
+  it('does not constrain provider-location discovery by patient geography and advances when a provider is returned', async () => {
     const { component, packageApi } = await setup();
     setAppointment(component, 'PROVIDER_LOCATION');
     component.discover(1);
@@ -69,16 +70,49 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
       preferredDate: '2026-09-10',
       preferredTime: '09:00',
       timezone: 'Africa/Lagos',
-      countryCode: 'NG',
-      stateOrRegion: 'Lagos',
-      city: 'Ikeja',
       page: 1,
       limit: 10,
     });
     expect(JSON.stringify(packageApi.discoverProviders.mock.calls[0][0])).not.toContain(
       'addressLine1',
     );
-    expect(component.currentStep()).toBe(2);
+    expect(component.currentStep()).toBe(3);
+    expect(component.selectedOffering()?.providerReference).toBe('SCPR-SAFE');
+    expect(component.selectedLocation()?.reference).toBe('SC-LOC-SAFE');
+  });
+
+  it('uses patient geography for HOME_VISIT discovery', async () => {
+    const { component, packageApi } = await setup({ offerings: [homeOffering] });
+    setAppointment(component, 'HOME_VISIT');
+    component.discover(1);
+    expect(packageApi.discoverProviders).toHaveBeenCalledWith({
+      packageCode: 'ESSENTIAL',
+      fulfilmentModeCode: 'HOME_VISIT',
+      preferredDate: '2026-09-10',
+      preferredTime: '09:00',
+      timezone: 'Africa/Lagos',
+      countryCode: 'NG',
+      stateOrRegion: 'Lagos',
+      city: 'Ikeja',
+      page: 1,
+      limit: 10,
+    });
+  });
+
+  it('hides raw 500 provider-discovery errors behind patient-safe copy', async () => {
+    const { component, fixture } = await setup({
+      discoveryResult: throwError(() => ({
+        status: 500,
+        error: { message: 'Internal server error' },
+      })),
+    });
+    setAppointment(component, 'HOME_VISIT');
+    component.discover(1);
+    fixture.detectChanges();
+    expect(component.discoveryError()).toBe(
+      'We couldn’t check availability right now. Please try again.',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('Internal server error');
   });
 
   it('keeps an empty discovery on Appointment with a friendly state', async () => {
@@ -87,7 +121,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     component.discover(1);
     fixture.detectChanges();
     expect(component.currentStep()).toBe(1);
-    expect(fixture.nativeElement.textContent).toContain('No providers available');
+    expect(fixture.nativeElement.textContent).toContain('No matching provider for this exact choice yet');
     expect(fixture.nativeElement.textContent).toContain('Invite a provider');
   });
 
@@ -250,7 +284,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
     expect(text).not.toContain('Get authoritative quote');
     expect(text).not.toContain('Final booking review');
     expect(text.match(/Review & Pay/g)?.length).toBeGreaterThanOrEqual(1);
-    expect(text).toContain('Price confirmed for this booking');
+    expect(text).toContain('Review & Pay');
     expect(text).toContain('₦9,000');
   });
 
@@ -371,12 +405,14 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
       quote?: typeof providerQuote | typeof homeQuote;
       quoteError?: boolean;
       invitationResult?: Observable<ProviderRecruitmentInvitationResponse>;
+      discoveryResult?: Observable<unknown>;
     } = {},
   ) {
     const selectedQuote = options.quote ?? providerQuote;
     const packageApi = {
       getCatalogue: vi.fn(() => of([catalogue])),
       discoverProviders: vi.fn((_request: unknown) =>
+        options.discoveryResult ??
         of({
           items: options.offerings ?? [providerOffering],
           page: 1,
@@ -408,6 +444,7 @@ describe('PatientHealthCheckV2BookingPageComponent', () => {
         { provide: HealthCheckPackagesApiService, useValue: packageApi },
         { provide: HealthCheckResultsApiService, useValue: bookingApi },
         { provide: ProviderRecruitmentInvitationsApiService, useValue: invitationApi },
+        { provide: AssistedMatchingApiService, useValue: { create: vi.fn(() => of({ reference: 'SC-AM-SAFE' })) } },
         { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [{ patientReference: 'SCP-AB12-CD34', firstName: 'Aisha', lastName: 'Okafor', displayName: 'Aisha Okafor', dateOfBirth: '2015-06-12', countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Ikeja', relationship: { type: 'MOTHER', role: 'GUARDIAN', isPrimary: true } }] }) } },
         {
           provide: LocationDataService,
@@ -455,6 +492,8 @@ const providerOffering = {
   packageCode: 'ESSENTIAL',
   basePackagePriceMinor: 800000,
   currency: 'NGN',
+  travelFeeMinor: 0,
+  travelDistanceKm: null,
   fulfilmentMode: {
     code: 'PROVIDER_LOCATION' as const,
     name: 'Provider location',
