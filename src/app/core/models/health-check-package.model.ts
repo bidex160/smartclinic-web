@@ -35,6 +35,12 @@ export interface HealthCheckConfigurationQuoteRequest {
   readonly providerReference: string;
   readonly providerLocationReference?: string;
   readonly fulfilmentModeCode: string;
+  readonly countryCode?: string;
+  readonly stateOrRegion?: string;
+  readonly city?: string;
+  readonly postalCode?: string;
+  readonly latitude?: number;
+  readonly longitude?: number;
   readonly addonCodes: readonly string[];
 }
 
