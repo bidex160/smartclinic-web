@@ -114,12 +114,14 @@ interface BillGroup {
                   <p class="mt-5 rounded-xl bg-emerald-50 p-4 font-bold text-emerald-800">Nothing to pay at this hospital ✓</p>
                 }
 
-                @if (!passes()[group.connection.reference] && group.companion.servicePass; as persistedPass) {
+                @if (group.companion.servicePass; as persistedPass) {
+                  @if (!passes()[group.connection.reference]) {
                   <div class="mt-5 rounded-2xl bg-emerald-50 p-5 text-emerald-950">
                     <p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Latest payment receipt</p>
                     <p class="mt-1 text-lg font-black">SmartClinic Service Pass {{ persistedPass.reference }}</p>
                     <p class="mt-1 text-sm">{{ money(persistedPass.amountMinor, persistedPass.currency) }} paid {{ persistedPass.paidAt ? 'and confirmed' : '' }}.</p>
                   </div>
+                  }
                 }
 
                 @if (passes()[group.connection.reference]; as pass) {
