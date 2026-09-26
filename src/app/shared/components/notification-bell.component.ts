@@ -12,9 +12,9 @@ import { NotificationRealtimeService } from '../../core/services/notification-re
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="relative" #host>
-      <button type="button" (click)="toggle()" [attr.aria-expanded]="state.open()"
+      <button type="button" (click)="toggle($event)" [attr.aria-expanded]="state.open()"
         aria-controls="notification-panel" [attr.aria-label]="bellLabel()"
-        class="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+        class="relative cursor-pointer inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
         <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
         </svg>
@@ -24,7 +24,9 @@ import { NotificationRealtimeService } from '../../core/services/notification-re
       </button>
 
       @if (state.open()) {
-        <section id="notification-panel" aria-label="Notifications" class="absolute right-0 top-12 z-50 w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+<section id="notification-panel" aria-label="Notifications"
+  class="fixed top-4 right-0 sm:absolute sm:top-[-420px] sm:right-auto z-50 w-auto sm:w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">        <!-- <section id="notification-panel" aria-label="Notifications" class="fixed inset-x-4 top-[-420px] sm:absolute sm:inset-x-auto sm:top-12 sm:right-0 z-50 w-auto sm:w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"> -->
+        <!-- <section id="notification-panel" aria-label="Notifications" class="absolute top-[-420px] z-50 w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"> -->
           <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <h2 class="font-bold text-slate-900">Notifications</h2>
             @if (state.unreadCount() > 0) {
@@ -67,18 +69,13 @@ export class NotificationBellComponent {
     });
   }
 
-  toggle(): void {
-    // On compact/mobile patient layouts, navigate to the dedicated notifications
-    // page instead of relying on an absolutely-positioned popover that can be
-    // clipped/covered by the sticky header and surrounding stacking contexts.
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
-      this.state.closePanel();
-      void this.router.navigate([this.notificationsRoute()]);
-      return;
-    }
-    this.state.togglePanel();
+toggle(event: MouseEvent): void {
+  event.stopPropagation();
+  this.state.togglePanel();
+}
+  close(): void { 
+    this.state.closePanel(); 
   }
-  close(): void { this.state.closePanel(); }
   markAll(): void { this.state.markAllRead(); }
 
   openNotification(item: Notification): void {
