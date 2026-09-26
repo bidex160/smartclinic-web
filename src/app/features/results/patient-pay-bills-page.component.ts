@@ -47,6 +47,13 @@ interface BillGroup {
           </section>
         }
 
+        @if (unavailableHospitalCount() > 0) {
+          <div role="alert" class="mt-6 rounded-2xl bg-amber-50 p-5 text-amber-950">
+            {{ unavailableHospitalCount() }} connected hospital{{ unavailableHospitalCount() === 1 ? '' : 's' }} could not be checked right now. The bills shown below are only from hospitals that responded successfully.
+            <button type="button" (click)="load()" class="ml-2 font-bold underline">Retry</button>
+          </div>
+        }
+
         @if (!groups().length) {
           <section class="mt-6 rounded-3xl border bg-white p-7 text-center">
             <h2 class="text-xl font-black text-brand-950">No hospital bills waiting</h2>
@@ -151,6 +158,7 @@ export class PatientPayBillsPageComponent {
   readonly settlingReference = signal<string | null>(null);
   readonly payingReference = signal<string | null>(null);
   readonly passes = signal<Record<string, HospitalWalletSettlementResponse>>({});
+  readonly unavailableHospitalCount = signal(0);
 
   popup = new PaystackPop();
 
@@ -163,6 +171,7 @@ export class PatientPayBillsPageComponent {
   load(): void {
     this.loading.set(true);
     this.error.set('');
+    this.unavailableHospitalCount.set(0);
     forkJoin({
       wallet: this.walletApi.mine().pipe(catchError(() => of(null))),
       connections: this.connectionsApi.listMine(1, 100),
@@ -178,7 +187,7 @@ export class PatientPayBillsPageComponent {
               catchError(() => of(null)),
             ),
           ),
-        ).pipe(map(items => items.filter((item): item is BillGroup => item !== null)));
+        ).pipe(map(items => { const available = items.filter((item): item is BillGroup => item !== null); this.unavailableHospitalCount.set(items.length - available.length); return available; }));
       }),
       finalize(() => this.loading.set(false)),
     ).subscribe({
