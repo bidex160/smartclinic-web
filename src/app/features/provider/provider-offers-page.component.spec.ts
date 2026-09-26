@@ -71,7 +71,7 @@ describe('ProviderOffersPageComponent', () => {
   }
 });
 
-export function offer(changes: Partial<ProviderOffer> = {}): ProviderOffer {
+function offer(changes: Partial<ProviderOffer> = {}): ProviderOffer {
   return {
     assignmentId: 'offer-id',
     status: 'OFFERED',
