@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
-import { offer } from './provider-offers-page.component.spec';
+import { offer } from './provider-offer.test-fixture';
 import { ProviderAppointmentsPageComponent } from './provider-appointments-page.component';
 
 describe('ProviderAppointmentsPageComponent', () => {
