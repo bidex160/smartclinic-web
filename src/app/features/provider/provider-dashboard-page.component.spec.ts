@@ -5,7 +5,7 @@ import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProviderDashboardApiService } from '../../core/services/provider-dashboard-api.service';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
-import { offer } from './provider-offers-page.component.spec';
+import { offer } from './provider-offer.test-fixture';
 import { ProviderDashboardPageComponent } from './provider-dashboard-page.component';
 import { ProviderReferralsApiService } from '../../core/services/provider-referrals-api.service';
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
