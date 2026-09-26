@@ -153,6 +153,12 @@ export const routes: Routes = [
           import('./features/care/find-care-page.component').then((c) => c.FindCarePageComponent),
       },
       {
+        path: 'insurance',
+        title: 'Health Insurance / HMO | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/results/patient-insurance-page.component').then((c) => c.PatientInsurancePageComponent),
+      },
+      {
         path: 'profile',
         title: 'My profile | SmartClinic',
         canActivate: [authenticatedUserGuard],
