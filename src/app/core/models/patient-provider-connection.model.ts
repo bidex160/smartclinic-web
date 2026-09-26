@@ -141,7 +141,14 @@ export interface HospitalCompanionView {
     readonly amountMinor: number | null;
     readonly currency: string | null;
   };
-  readonly servicePass: null;
+  readonly servicePass: null | {
+    readonly reference: string;
+    readonly status: 'VALID' | 'PARTIALLY_USED' | 'USED' | 'VOID';
+    readonly amountMinor: number;
+    readonly currency: string;
+    readonly paidAt: string;
+    readonly coveredServices: readonly { readonly orderReference: string; readonly fulfillmentReference: string | null; readonly amountMinor: number | null }[];
+  };
 }
 
 export interface HospitalWalletSettlementResponse { readonly settlementReference:string; readonly amountMinor:number; readonly currency:string; readonly walletBalanceMinor:number; readonly servicePass:{ readonly reference:string; readonly amountMinor:number; readonly currency:string; readonly paidAt:string; readonly verificationToken:string; readonly coveredServices:readonly { readonly orderReference:string; readonly fulfillmentReference:string|null; readonly amountMinor:number|null }[] }; }
