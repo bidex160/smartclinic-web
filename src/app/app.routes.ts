@@ -74,6 +74,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'healthy-families',
+    title: 'My Family Wellness | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () => import('./features/partners/family-wellness-home-page.component').then((c) => c.FamilyWellnessHomePageComponent),
+  },
+  {
     path: 'healthy-families/join/:token',
     title: 'Join Healthy Families | SmartClinic',
     canActivate: [authenticatedUserGuard],
