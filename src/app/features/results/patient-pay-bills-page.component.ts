@@ -86,7 +86,7 @@ interface BillGroup {
                             <p class="font-bold">{{ money(item.amountMinor, item.currency) }}</p>
                           }
                           <p class="text-xs font-semibold" [class.text-emerald-700]="item.paymentStatus === 'PAID'" [class.text-amber-700]="item.paymentStatus !== 'PAID'">
-                            {{ item.paymentStatus === 'PAID' ? 'Paid ✓' : item.paymentStatus === 'NOT_PRICED' ? 'Being prepared' : 'Payment needed' }}
+                            {{ paymentStatusLabel(item.paymentStatus) }}
                           </p>
                         </div>
                       </div>
@@ -250,6 +250,9 @@ export class PatientPayBillsPageComponent {
 
   requestLabel(type: string): string {
     return type === 'LABORATORY' ? 'Laboratory' : type === 'IMAGING' ? 'Imaging' : type === 'PRESCRIPTION' ? 'Medicine' : type === 'PROCEDURE' ? 'Procedure' : 'Referral';
+  }
+  paymentStatusLabel(status: string): string {
+    return status === 'PAID' ? 'Paid ✓' : status === 'NOT_PRICED' ? 'Being prepared' : status === 'CANCELLED' ? 'Cancelled' : status === 'REQUIRES_REFUND_REVIEW' ? 'Refund review' : 'Payment needed';
   }
   money(value: number, currency: string): string { return formatMinor(value, currency); }
 }
