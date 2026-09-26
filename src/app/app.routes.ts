@@ -883,6 +883,12 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
+        path: 'hmo-desk',
+        title: 'HMO Desk | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () => import('./features/admin/hmo-desk-page.component').then((c) => c.HmoDeskPageComponent),
+      },
+      {
         path: 'dashboard',
         title: 'Operations dashboard | SmartClinic',
         canActivate: [adminPricingGuard],
