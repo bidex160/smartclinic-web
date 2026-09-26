@@ -74,6 +74,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'healthy-families/join/:token',
+    title: 'Join Healthy Families | SmartClinic',
+    canActivate: [authenticatedUserGuard],
+    loadComponent: () => import('./features/partners/healthy-family-join-page.component').then((c) => c.HealthyFamilyJoinPageComponent),
+  },
+  {
     path: 'register',
    data: { preload: true },
     title: 'Create a patient account | SmartClinic',
