@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
-import { ProviderOffer } from '../../core/models/provider-offer.model';
+import { offer } from './provider-offer.test-fixture';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { ProviderOffersApiService } from '../../core/services/provider-offers-api.service';
 import { ProviderOffersPageComponent } from './provider-offers-page.component';
@@ -71,25 +71,3 @@ describe('ProviderOffersPageComponent', () => {
   }
 });
 
-export function offer(changes: Partial<ProviderOffer> = {}): ProviderOffer {
-  return {
-    assignmentId: 'offer-id',
-    status: 'OFFERED',
-    offeredAt: '2026-08-24T08:00:00Z',
-    expiresAt: '2026-08-24T08:30:00Z',
-    respondedAt: null,
-    acceptedAt: null,
-    bookingReference: 'SC-2026-ABCDEF123456',
-    healthCheckPackage: { code: 'ESSENTIAL', name: 'Essential Health Check' },
-    fulfilmentMode: { code: 'HOME_VISIT', name: 'Home visit' },
-    participant: { givenName: 'Ada', familyName: 'Okafor' },
-    preferredDate: '2026-08-24',
-    preferredTimeWindowStart: '09:00',
-    preferredTimeWindowEnd: '11:00',
-    preferredTimezone: 'Africa/Lagos',
-    confirmedSchedule: null,
-    visitAddress: null,
-    responseReason: null,
-    ...changes,
-  };
-}
