@@ -901,6 +901,12 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
+        path: 'partners',
+        title: 'Partner Control Centre | SmartClinic',
+        canActivate: [adminOnlyGuard],
+        loadComponent: () => import('./features/admin/partner-admin-page.component').then((c) => c.PartnerAdminPageComponent),
+      },
+      {
         path: 'hmo-desk',
         title: 'HMO Desk | SmartClinic',
         canActivate: [adminOnlyGuard],
