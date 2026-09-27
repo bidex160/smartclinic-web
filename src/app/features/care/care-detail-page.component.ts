@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, interval, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,6 +19,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
 import { formatMinor } from '../provider/care-money';
 import PaystackPop from '@paystack/inline-js';
 import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
+import { PartnerApiService, PartnerFamilySummary } from '../../core/services/partner-api.service';
+import { HmoApiService } from '../../core/services/hmo-api.service';
+import { PatientHmoCoverage } from '../../core/models/hmo.model';
 
 @Component({
   selector: 'app-care-detail-page',
@@ -21,19 +31,25 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
     <main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
       <a routerLink="/me/care" class="font-bold text-brand-700 underline">← My Care</a>
       @if (loading()) {
-        <p role="status" class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">Loading Care Request…</p>
+        <p role="status" class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          Loading Care Request…
+        </p>
       } @else if (error()) {
         <div role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
           We couldn't load this Care Request.
           <button type="button" (click)="load()" class="font-bold underline">Try again</button>
         </div>
       } @else if (request(); as r) {
-        <header class="relative mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
+        <header
+          class="relative mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+        >
+          <div
+            class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"
+          ></div>
           <div class="relative">
-          <p class="text-sm font-bold uppercase text-brand-600">Care Request {{ r.reference }}</p>
-          <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
-          <p class="mt-2 text-lg font-semibold text-slate-600">{{ label(r.status) }}</p>
+            <p class="text-sm font-bold uppercase text-brand-600">Care Request {{ r.reference }}</p>
+            <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
+            <p class="mt-2 text-lg font-semibold text-slate-600">{{ label(r.status) }}</p>
           </div>
         </header>
         <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -106,7 +122,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             aria-labelledby="care-payment-title"
           >
             <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Next step</p>
-            <h2 id="care-payment-title" class="mt-1 text-2xl font-black text-brand-950">{{ r.deliveryMode === 'VIRTUAL' ? 'Confirm your consultation' : 'Payment' }}</h2>
+            <h2 id="care-payment-title" class="mt-1 text-2xl font-black text-brand-950">
+              {{ r.deliveryMode === 'VIRTUAL' ? 'Confirm your consultation' : 'Payment' }}
+            </h2>
             @if (fundingLoading()) {
               <p role="status" class="mt-3 text-slate-600">Loading payment status…</p>
             } @else if (funding(); as payment) {
@@ -128,13 +146,93 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               </dl>
               @if (payment.fundingStatus === 'SATISFIED_FREE') {
                 <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">
-                  No payment required. SmartClinic is confirming your agreed appointment time.
+                  {{ postFundingMessage(r, true) }}
                 </p>
               } @else if (payment.fundingStatus === 'PAID') {
                 <p class="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-950">
-                  Payment confirmed. SmartClinic is confirming your agreed appointment time.
+                  {{ postFundingMessage(r, false) }}
                 </p>
               } @else if (r.status === 'PROVIDER_ACCEPTED' && payment.initializationAllowed) {
+                @if (coverages().length && payment.fundingRoute === 'SELF_PAY') {
+                  <label class="mt-5 block font-bold"
+                    >Use HMO coverage
+                    <select
+                      #hmoCoverage
+                      (change)="selectHmo(hmoCoverage.value)"
+                      class="mt-2 w-full rounded-xl border p-3"
+                    >
+                      <option value="">Choose verified coverage</option>
+                      @for (coverage of coverages(); track coverage.id) {
+                        <option [value]="coverage.id">
+                          {{ coverage.hmo?.name }} · {{ coverage.memberId }}
+                        </option>
+                      }
+                    </select>
+                  </label>
+                }
+                @if (programmes().length && payment.fundingRoute === 'SELF_PAY') {
+                  <label class="mt-5 block font-bold"
+                    >Payment relationship
+                    <select
+                      [value]="selectedPartnerFamilyId()"
+                      (change)="selectPartnerFamily($any($event.target).value)"
+                      [disabled]="payment.partnerFamilyId !== null"
+                      class="mt-2 w-full rounded-xl border p-3"
+                    >
+                      <option value="">Ordinary SmartClinic self-pay</option>
+                      @for (programme of programmes(); track programme.familyId) {
+                        <option [value]="programme.familyId">
+                          {{ programme.partner.name }} · {{ programme.program?.name }}
+                        </option>
+                      }
+                    </select>
+                  </label>
+                  <p class="mt-2 text-sm text-slate-600">
+                    Programme membership is optional for each encounter. It never blocks ordinary
+                    self-pay.
+                  </p>
+                }
+                @if (selectedProgramme(); as programme) {
+                  <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <p class="font-bold">Programme surcharge disclosed before checkout</p>
+                    <dl class="mt-2 grid gap-1 text-sm">
+                      <div class="flex justify-between">
+                        <dt>Clinical service</dt>
+                        <dd>
+                          {{
+                            formatPrice(
+                              payment.baseAmountMinor ?? payment.amountMinor ?? 0,
+                              payment.currency ?? 'NGN'
+                            )
+                          }}
+                        </dd>
+                      </div>
+                      <div class="flex justify-between">
+                        <dt>{{ programme.partner.name }} and wellness contribution</dt>
+                        <dd>
+                          {{
+                            formatPrice(
+                              programmeSurcharge(payment, programme),
+                              payment.currency ?? 'NGN'
+                            )
+                          }}
+                        </dd>
+                      </div>
+                      <div class="flex justify-between border-t pt-1 font-bold">
+                        <dt>Total</dt>
+                        <dd>
+                          {{
+                            formatPrice(
+                              (payment.baseAmountMinor ?? payment.amountMinor ?? 0) +
+                                programmeSurcharge(payment, programme),
+                              payment.currency ?? 'NGN'
+                            )
+                          }}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                }
                 <app-payment-contact-email />
                 <button
                   type="button"
@@ -142,8 +240,32 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   [disabled]="paymentPending()"
                   class="mt-4 min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60"
                 >
-                  {{ paymentPending() ? 'Preparing secure payment…' : (r.deliveryMode === 'VIRTUAL' ? 'Pay & confirm consultation →' : 'Pay now') }}
+                  {{
+                    paymentPending()
+                      ? 'Preparing secure payment…'
+                      : payment.fundingRoute === 'HMO'
+                        ? 'Pay approved co-pay →'
+                        : r.deliveryMode === 'VIRTUAL'
+                          ? 'Pay & confirm consultation →'
+                          : 'Pay now'
+                  }}
                 </button>
+              } @else if (r.status === 'PROVIDER_ACCEPTED' && payment.fundingRoute === 'HMO') {
+                <div class="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                  <p class="font-bold">HMO funding selected</p>
+                  <p class="mt-1 text-sm">
+                    Eligibility and authorization must be completed by the hospital/HMO before
+                    service or co-pay collection.
+                  </p>
+                  <button
+                    type="button"
+                    (click)="useSelfPay()"
+                    [disabled]="hmoPending()"
+                    class="mt-3 rounded-lg border border-blue-300 bg-white px-4 py-2 font-bold"
+                  >
+                    Use self-pay instead
+                  </button>
+                </div>
               }
             } @else if (r.status === 'PROVIDER_ACCEPTED') {
               <button
@@ -162,7 +284,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           </section>
         }
         @if (r.appointment; as a) {
-          <section class="mt-6 rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm">
+          <section
+            class="mt-6 rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm"
+          >
             <h2 class="text-xl font-bold">Your appointment</h2>
             <p class="mt-3 font-semibold">
               {{ deliveryModeLabel(a.deliveryMode) }} · {{ appointmentLabel(a.status) }}
@@ -214,7 +338,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <a
                 [routerLink]="['/me/care/appointments', a.reference]"
                 class="mt-4 inline-block font-bold text-brand-700 underline"
-              >View appointment →</a>
+                >View appointment →</a
+              >
             }
           </section>
         }
@@ -306,6 +431,8 @@ export class CareDetailPageComponent {
   private readonly chatApi = inject(CareChatApiService);
   private readonly find = inject(FindCareApiService);
   private readonly fast = inject(FastTrackApiService);
+  private readonly partnerApi = inject(PartnerApiService);
+  private readonly hmoApi = inject(HmoApiService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   readonly utils = inject(UtilsService);
@@ -324,18 +451,44 @@ export class CareDetailPageComponent {
   readonly fundingLoading = signal(false);
   readonly paymentPending = signal(false);
   readonly paymentError = signal<string | null>(null);
+  readonly programmes = signal<PartnerFamilySummary[]>([]);
+  readonly selectedPartnerFamilyId = signal('');
+  readonly coverages = signal<PatientHmoCoverage[]>([]);
+  readonly hmoPending = signal(false);
+  readonly hmoState = signal<any>(null);
   popup = new PaystackPop();
   constructor() {
     this.load();
-    interval(15000).pipe(switchMap(() => this.api.get(this.reference)), takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (r) => {
-        const previous = this.request()?.status;
-        this.request.set(r);
-        if (r.status === 'PROVIDER_ACCEPTED' && !this.fundingLoading()) this.loadFunding();
-        if (previous && previous !== r.status && ['SCHEDULED','IN_PROGRESS','COMPLETED','CANCELLED','DECLINED','UNFULFILLABLE'].includes(r.status)) this.paymentError.set(null);
-      },
-      error: () => undefined,
+    this.partnerApi.familyHome().subscribe({
+      next: (items) => this.programmes.set(items),
+      error: () => this.programmes.set([]),
     });
+    interval(15000)
+      .pipe(
+        switchMap(() => this.api.get(this.reference)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (r) => {
+          const previous = this.request()?.status;
+          this.request.set(r);
+          if (r.status === 'PROVIDER_ACCEPTED' && !this.fundingLoading()) this.loadFunding();
+          if (
+            previous &&
+            previous !== r.status &&
+            [
+              'SCHEDULED',
+              'IN_PROGRESS',
+              'COMPLETED',
+              'CANCELLED',
+              'DECLINED',
+              'UNFULFILLABLE',
+            ].includes(r.status)
+          )
+            this.paymentError.set(null);
+        },
+        error: () => undefined,
+      });
   }
   load() {
     this.loading.set(true);
@@ -343,6 +496,11 @@ export class CareDetailPageComponent {
     this.api.get(this.reference).subscribe({
       next: (r) => {
         this.request.set(r);
+        if (r.participant?.patientReference)
+          this.hmoApi.mine(r.participant.patientReference).subscribe({
+            next: (items) => this.coverages.set(items),
+            error: () => this.coverages.set([]),
+          });
         if (r.status === 'PROVIDER_ACCEPTED') this.loadFunding();
         else this.funding.set(r.funding ? this.summaryFunding(r) : null);
         this.loading.set(false);
@@ -372,7 +530,14 @@ export class CareDetailPageComponent {
       .getFunding(this.reference)
       .pipe(finalize(() => this.fundingLoading.set(false)))
       .subscribe({
-        next: (funding) => this.funding.set(funding),
+        next: (funding) => {
+          this.funding.set(funding);
+          if (funding.partnerFamilyId) this.selectedPartnerFamilyId.set(funding.partnerFamilyId);
+          if (funding.fundingRoute === 'HMO')
+            this.hmoApi
+              .encounter(this.reference)
+              .subscribe({ next: (state) => this.hmoState.set(state) });
+        },
         error: () =>
           this.paymentError.set('We could not load the authoritative payment status. Try again.'),
       });
@@ -390,8 +555,13 @@ export class CareDetailPageComponent {
       return;
     this.paymentPending.set(true);
     this.paymentError.set(null);
-    const initialization = paymentEmail
-      ? this.api.initializeFunding(this.reference, paymentEmail)
+    const relationship = this.selectedPartnerFamilyId();
+    const request = {
+      ...(paymentEmail ?? {}),
+      ...(relationship ? { partnerFamilyId: relationship } : {}),
+    };
+    const initialization = Object.keys(request).length
+      ? this.api.initializeFunding(this.reference, request)
       : this.api.initializeFunding(this.reference);
     initialization.pipe(finalize(() => this.paymentPending.set(false))).subscribe({
       next: (initialized) => {
@@ -454,6 +624,13 @@ export class CareDetailPageComponent {
     if (funding.fundingStatus === 'SATISFIED_FREE') return 'Free';
     return 'Awaiting payment';
   }
+  postFundingMessage(request: CareRequest, free: boolean): string {
+    const prefix = free ? 'No payment required.' : 'Payment confirmed.';
+    if (request.appointment) return `${prefix} Your appointment is ready.`;
+    if (request.preferredDate && request.preferredTime)
+      return `${prefix} SmartClinic is confirming your agreed appointment time.`;
+    return `${prefix} Your provider can now schedule your service.`;
+  }
   private refreshAfterPayment(): void {
     this.api.getFunding(this.reference).subscribe({ next: (value) => this.funding.set(value) });
     this.api.get(this.reference).subscribe({ next: (value) => this.request.set(value) });
@@ -463,6 +640,13 @@ export class CareDetailPageComponent {
       careRequestReference: request.reference,
       fundingRequired: request.funding?.status !== 'SATISFIED_FREE',
       amountMinor: request.service.price?.priceMinor ?? null,
+      baseAmountMinor: request.service.price?.priceMinor ?? null,
+      programmeSurchargeMinor: 0,
+      partnerFamilyId: null,
+      fundingRoute: 'SELF_PAY',
+      hmoCaseId: null,
+      hmoAuthorizationId: null,
+      hmoApprovedAmountMinor: null,
       currency: request.service.price?.currency ?? null,
       fundingStatus: request.funding?.status ?? null,
       paid: request.funding?.satisfied ?? false,
@@ -473,6 +657,49 @@ export class CareDetailPageComponent {
       accessCode: null,
       paidAt: null,
     };
+  }
+  selectPartnerFamily(familyId: string) {
+    this.selectedPartnerFamilyId.set(familyId);
+  }
+  selectHmo(coverageId: string) {
+    if (!coverageId || this.hmoPending()) return;
+    this.hmoPending.set(true);
+    this.paymentError.set(null);
+    this.hmoApi
+      .selectEncounter(this.reference, coverageId)
+      .pipe(finalize(() => this.hmoPending.set(false)))
+      .subscribe({
+        next: () => {
+          this.selectedPartnerFamilyId.set('');
+          this.loadFunding();
+        },
+        error: (error) => this.paymentError.set(this.paymentFailureMessage(error)),
+      });
+  }
+  useSelfPay() {
+    if (this.hmoPending()) return;
+    this.hmoPending.set(true);
+    this.hmoApi
+      .useSelfPay(this.reference)
+      .pipe(finalize(() => this.hmoPending.set(false)))
+      .subscribe({
+        next: () => {
+          this.hmoState.set(null);
+          this.loadFunding();
+        },
+      });
+  }
+  selectedProgramme() {
+    return (
+      this.programmes().find((item) => item.familyId === this.selectedPartnerFamilyId()) ?? null
+    );
+  }
+  programmeSurcharge(payment: CareRequestFunding, programme: PartnerFamilySummary) {
+    if (payment.partnerFamilyId === programme.familyId && payment.programmeSurchargeMinor)
+      return payment.programmeSurchargeMinor;
+    const base = payment.baseAmountMinor ?? payment.amountMinor ?? 0;
+    const bps = (programme.program?.partnerBps ?? 0) + (programme.program?.wellnessCreditBps ?? 0);
+    return Math.round((base * bps) / 10000);
   }
   private paymentFailureMessage(error: { status?: number; error?: { message?: unknown } }): string {
     const message = typeof error?.error?.message === 'string' ? error.error.message : '';

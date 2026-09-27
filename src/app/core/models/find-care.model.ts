@@ -186,6 +186,13 @@ export interface CareRequestFunding {
   readonly careRequestReference: string;
   readonly fundingRequired: boolean;
   readonly amountMinor: number | null;
+  readonly baseAmountMinor: number | null;
+  readonly programmeSurchargeMinor: number;
+  readonly partnerFamilyId: string | null;
+  readonly fundingRoute: 'SELF_PAY' | 'HMO';
+  readonly hmoCaseId: string | null;
+  readonly hmoAuthorizationId: string | null;
+  readonly hmoApprovedAmountMinor: number | null;
   readonly currency: string | null;
   readonly fundingStatus: CareRequestFundingStatus | null;
   readonly paid: boolean;

@@ -4,6 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import {
   ReferralHistoryItem,
+  ReferralEarning,
+  ReferralEarningBalance,
   ReferralSummary,
   ReferralTargetType,
 } from '../../core/models/referral.model';
@@ -37,6 +39,70 @@ import { UtilsService } from '../../core/services/utils.service';
       </div>
     }
     @if (summary(); as s) {
+      <section class="mt-8 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-6">
+        <h2 class="text-2xl font-bold text-emerald-950">Referral earnings</h2>
+        <p class="mt-2 text-sm text-emerald-900">
+          Money earned from eligible payments is separate from reward points.
+        </p>
+        @if (earningBalances().length) {
+          <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            @for (balance of earningBalances(); track balance.currency) {
+              <article class="rounded-xl bg-white p-4">
+                <p class="font-bold">{{ balance.currency }} total</p>
+                <p class="mt-1 text-2xl font-black">
+                  {{ moneyMinor(balance.totalMinor, balance.currency) }}
+                </p>
+                <dl class="mt-3 space-y-1 text-sm">
+                  <div class="flex justify-between">
+                    <dt>Held</dt>
+                    <dd>{{ moneyMinor(balance.heldMinor, balance.currency) }}</dd>
+                  </div>
+                  <div class="flex justify-between">
+                    <dt>Available</dt>
+                    <dd>{{ moneyMinor(balance.payableMinor, balance.currency) }}</dd>
+                  </div>
+                  <div class="flex justify-between">
+                    <dt>Settled</dt>
+                    <dd>{{ moneyMinor(balance.settledMinor, balance.currency) }}</dd>
+                  </div>
+                </dl>
+              </article>
+            }
+          </div>
+          <div class="mt-5 overflow-x-auto rounded-xl border bg-white">
+            <table class="min-w-[760px] w-full text-left">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="p-3">Payment/source</th>
+                  <th class="p-3">Gross</th>
+                  <th class="p-3">Applied %</th>
+                  <th class="p-3">Earning</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (earning of monetaryEarnings(); track earning.id) {
+                  <tr class="border-t">
+                    <td class="p-3">{{ earning.sourceReference }}</td>
+                    <td class="p-3">
+                      {{ moneyMinor(earning.grossAmountMinor, earning.currency) }}
+                    </td>
+                    <td class="p-3">{{ earning.referralBps / 100 }}%</td>
+                    <td class="p-3 font-bold">
+                      {{ moneyMinor(earning.referralAmountMinor, earning.currency) }}
+                    </td>
+                    <td class="p-3">{{ utils.formatDateTime(earning.createdAt) }}</td>
+                    <td class="p-3">{{ statusLabel(earning.status) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="mt-4 rounded-xl bg-white p-4">No monetary referral earnings yet.</p>
+        }
+      </section>
       <section
         class="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         aria-labelledby="balances-heading"
@@ -408,6 +474,8 @@ export class ReferralsPageComponent {
   readonly summary = signal<ReferralSummary | null>(null);
   readonly history = signal<ReferralHistoryItem[]>([]);
   readonly withdrawals = signal<RewardWithdrawal[]>([]);
+  readonly earningBalances = signal<ReferralEarningBalance[]>([]);
+  readonly monetaryEarnings = signal<ReferralEarning[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly requestOpen = signal(false);
@@ -465,6 +533,8 @@ export class ReferralsPageComponent {
       summary: this.api.summary(),
       history: this.api.history({ page: 1, limit: 20 }),
       withdrawals: this.withdrawalsApi.listMine(1, 20),
+      earningBalances: this.api.earningSummary(),
+      monetaryEarnings: this.api.earnings(),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
@@ -472,6 +542,8 @@ export class ReferralsPageComponent {
           this.summary.set(v.summary);
           this.history.set(v.history.items);
           this.withdrawals.set(v.withdrawals.items);
+          this.earningBalances.set(v.earningBalances);
+          this.monetaryEarnings.set(v.monetaryEarnings);
         },
         error: () => this.error.set('We could not load your referral information.'),
       });
@@ -606,5 +678,8 @@ export class ReferralsPageComponent {
   }
   statusLabel(s: string) {
     return s.charAt(0) + s.slice(1).toLowerCase();
+  }
+  moneyMinor(minor: string, currency: string) {
+    return this.utils.formatMoney((Number(minor) / 100).toFixed(2), currency);
   }
 }

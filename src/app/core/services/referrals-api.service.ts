@@ -5,6 +5,8 @@ import { API_CONFIG } from '../config/api-config.token';
 import {
   ReferralHistoryFilters,
   ReferralHistoryResponse,
+  ReferralEarning,
+  ReferralEarningBalance,
   ReferralImpact,
   ReferralLeaderboardPreference,
   ReferralSummary,
@@ -35,6 +37,24 @@ export class ReferralsApiService {
   summary(): Observable<ReferralSummary> {
     return this.http.get<ReferralSummary>(`${this.base}/me/referrals`);
   }
+  earningSummary(): Observable<ReferralEarningBalance[]> {
+    return this.http.get<ReferralEarningBalance[]>(`${this.base}/me/referral-earnings/summary`);
+  }
+  earnings(): Observable<ReferralEarning[]> {
+    return this.http.get<ReferralEarning[]>(`${this.base}/me/referral-earnings`);
+  }
+  adminEarnings(
+    filters: {
+      referrerUserId?: string;
+      status?: string;
+      currency?: string;
+      sourceType?: string;
+    } = {},
+  ): Observable<ReferralEarning[]> {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(filters)) if (value) params = params.set(key, value);
+    return this.http.get<ReferralEarning[]>(`${this.base}/admin/referral-earnings`, { params });
+  }
   history(filters: ReferralHistoryFilters): Observable<ReferralHistoryResponse> {
     return this.http.get<ReferralHistoryResponse>(`${this.base}/me/referrals/history`, {
       params: this.params(filters),
@@ -55,11 +75,9 @@ export class ReferralsApiService {
       publicLeaderboard,
     });
   }
-    getPublicLeaderboard() {
-  return this.http.get<PublicReferralLeaderboard>(
-    `${this.base}/public/referrals/leaderboard`,
-  );
-}
+  getPublicLeaderboard() {
+    return this.http.get<PublicReferralLeaderboard>(`${this.base}/public/referrals/leaderboard`);
+  }
   private params(filters: ReferralHistoryFilters): HttpParams {
     let p = new HttpParams().set('page', filters.page).set('limit', filters.limit);
     for (const key of [
@@ -72,5 +90,4 @@ export class ReferralsApiService {
       if (filters[key]) p = p.set(key, filters[key]!);
     return p;
   }
-
 }

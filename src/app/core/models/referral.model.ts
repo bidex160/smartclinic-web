@@ -3,6 +3,32 @@ export type ReferralCountMap = Record<Exclude<ReferralTargetType, 'INDIVIDUAL'>,
   readonly INDIVIDUAL?: number;
 };
 export type ReferralStatus = 'REGISTERED' | 'QUALIFIED' | 'REJECTED' | 'CANCELLED';
+export interface ReferralEarningBalance {
+  readonly currency: string;
+  readonly totalMinor: string;
+  readonly heldMinor: string;
+  readonly payableMinor: string;
+  readonly settledMinor: string;
+}
+export interface ReferralEarning {
+  readonly id: string;
+  readonly referralId: string;
+  readonly referralCodeSnapshot: string;
+  readonly referrerUserId: string;
+  readonly patientId: string;
+  readonly paymentTransactionId: string;
+  readonly sourceType: string;
+  readonly sourceReference: string;
+  readonly grossAmountMinor: string;
+  readonly referralBps: number;
+  readonly referralAmountMinor: string;
+  readonly currency: string;
+  readonly status: 'HELD' | 'PAYABLE' | 'SETTLED' | 'REVERSED';
+  readonly createdAt: string;
+  readonly payableAt: string | null;
+  readonly settledAt: string | null;
+  readonly reversedAt: string | null;
+}
 export interface ReferralProgress {
   readonly qualified: number;
   readonly required: number;

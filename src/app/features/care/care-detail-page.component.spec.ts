@@ -6,21 +6,122 @@ import { CareChatApiService } from '../../core/services/care-chat-api.service';
 import { CareRequestsApiService } from '../../core/services/care-requests-api.service';
 import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
+import { PartnerApiService } from '../../core/services/partner-api.service';
+import { HmoApiService } from '../../core/services/hmo-api.service';
 import { CareDetailPageComponent } from './care-detail-page.component';
 
 describe('CareDetailPageComponent funding', () => {
   const reference = 'SC-CARE-ABCDEF012345';
-  function request(status = 'PROVIDER_ACCEPTED', fundingStatus: CareRequest['funding'] = { status: 'PENDING', satisfied: false }, deliveryMode: CareRequest['deliveryMode'] = 'VIRTUAL'): CareRequest {
-    return { reference, status: status as CareRequest['status'], service: { code: 'GENERAL', name: 'General consultation', price: { priceMinor: 2000000, currency: 'NGN' } }, deliveryMode, geography: { countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Yaba' }, preferredProvider: null, assignedProvider: { providerReference: 'SCPR-ABCDEF0123456789', displayName: 'Yaba Clinic', providerType: 'CLINIC', location: { city: 'Yaba', stateOrRegion: 'Lagos', countryCode: 'NG' } }, preferredDate: null, preferredTime: null, contactMethod: 'EMAIL', notes: null, funding: fundingStatus, appointment: null, createdAt: '2026-08-28T00:00:00Z', updatedAt: '2026-08-28T00:00:00Z' };
+  function request(
+    status = 'PROVIDER_ACCEPTED',
+    fundingStatus: CareRequest['funding'] = { status: 'PENDING', satisfied: false },
+    deliveryMode: CareRequest['deliveryMode'] = 'VIRTUAL',
+  ): CareRequest {
+    return {
+      reference,
+      status: status as CareRequest['status'],
+      service: {
+        code: 'GENERAL',
+        name: 'General consultation',
+        price: { priceMinor: 2000000, currency: 'NGN' },
+      },
+      deliveryMode,
+      geography: { countryCode: 'NG', stateOrRegion: 'Lagos', city: 'Yaba' },
+      preferredProvider: null,
+      assignedProvider: {
+        providerReference: 'SCPR-ABCDEF0123456789',
+        displayName: 'Yaba Clinic',
+        providerType: 'CLINIC',
+        location: { city: 'Yaba', stateOrRegion: 'Lagos', countryCode: 'NG' },
+      },
+      preferredDate: null,
+      preferredTime: null,
+      contactMethod: 'EMAIL',
+      notes: null,
+      funding: fundingStatus,
+      appointment: null,
+      createdAt: '2026-08-28T00:00:00Z',
+      updatedAt: '2026-08-28T00:00:00Z',
+    };
   }
-  function funding(status: CareRequestFunding['fundingStatus'] = 'PENDING', amountMinor = 2000000): CareRequestFunding {
-    return { careRequestReference: reference, fundingRequired: amountMinor > 0, amountMinor, currency: 'NGN', fundingStatus: status, paid: status === 'PAID' || status === 'SATISFIED_FREE', initializationAllowed: true, paymentAttemptStatus: status === 'PAID' ? 'SUCCEEDED' : null, paymentReference: null, checkoutUrl: null, accessCode: status === 'PENDING' ? 'care-access-code' : null, paidAt: status === 'PAID' ? '2026-08-28T10:00:00Z' : null };
+  function funding(
+    status: CareRequestFunding['fundingStatus'] = 'PENDING',
+    amountMinor = 2000000,
+  ): CareRequestFunding {
+    return {
+      careRequestReference: reference,
+      fundingRequired: amountMinor > 0,
+      amountMinor,
+      baseAmountMinor: amountMinor,
+      programmeSurchargeMinor: 0,
+      partnerFamilyId: null,
+      fundingRoute: 'SELF_PAY',
+      hmoCaseId: null,
+      hmoAuthorizationId: null,
+      hmoApprovedAmountMinor: null,
+      currency: 'NGN',
+      fundingStatus: status,
+      paid: status === 'PAID' || status === 'SATISFIED_FREE',
+      initializationAllowed: true,
+      paymentAttemptStatus: status === 'PAID' ? 'SUCCEEDED' : null,
+      paymentReference: null,
+      checkoutUrl: null,
+      accessCode: status === 'PENDING' ? 'care-access-code' : null,
+      paidAt: status === 'PAID' ? '2026-08-28T10:00:00Z' : null,
+    };
   }
-  async function setup(status = 'PROVIDER_ACCEPTED', initialFunding = funding(), deliveryMode: CareRequest['deliveryMode'] = 'VIRTUAL') {
+  async function setup(
+    status = 'PROVIDER_ACCEPTED',
+    initialFunding = funding(),
+    deliveryMode: CareRequest['deliveryMode'] = 'VIRTUAL',
+    programmes: any[] = [],
+  ) {
     let authoritative = initialFunding;
-    let care = request(status, initialFunding.fundingStatus ? { status: initialFunding.fundingStatus, satisfied: initialFunding.paid } : null, deliveryMode);
-    const api = { get: vi.fn(() => of(care)), getFunding: vi.fn(() => of(authoritative)), initializeFunding: vi.fn(() => of({ ...authoritative, accessCode: 'care-access-code' })), verifyLatestFunding: vi.fn(() => { authoritative = funding('PAID'); care = request('PROVIDER_ACCEPTED', { status: 'PAID', satisfied: true }, deliveryMode); return of(authoritative); }), cancel: vi.fn() };
-    await TestBed.configureTestingModule({ imports: [CareDetailPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ reference }) } } }, { provide: CareRequestsApiService, useValue: api }, { provide: CareChatApiService, useValue: { getChat: vi.fn(() => of({ unreadCount: 1 })) } }, { provide: FindCareApiService, useValue: { getProvider: vi.fn(() => of({ services: [] })) } }, { provide: FastTrackApiService, useValue: { createForCareRequest: vi.fn() } }] }).compileComponents();
+    let care = request(
+      status,
+      initialFunding.fundingStatus
+        ? { status: initialFunding.fundingStatus, satisfied: initialFunding.paid }
+        : null,
+      deliveryMode,
+    );
+    const api = {
+      get: vi.fn(() => of(care)),
+      getFunding: vi.fn(() => of(authoritative)),
+      initializeFunding: vi.fn(() => of({ ...authoritative, accessCode: 'care-access-code' })),
+      verifyLatestFunding: vi.fn(() => {
+        authoritative = funding('PAID');
+        care = request('PROVIDER_ACCEPTED', { status: 'PAID', satisfied: true }, deliveryMode);
+        return of(authoritative);
+      }),
+      cancel: vi.fn(),
+    };
+    await TestBed.configureTestingModule({
+      imports: [CareDetailPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({ reference }) } },
+        },
+        { provide: CareRequestsApiService, useValue: api },
+        { provide: CareChatApiService, useValue: { getChat: vi.fn(() => of({ unreadCount: 1 })) } },
+        {
+          provide: FindCareApiService,
+          useValue: { getProvider: vi.fn(() => of({ services: [] })) },
+        },
+        { provide: FastTrackApiService, useValue: { createForCareRequest: vi.fn() } },
+        { provide: PartnerApiService, useValue: { familyHome: () => of(programmes) } },
+        {
+          provide: HmoApiService,
+          useValue: {
+            mine: vi.fn(() => of([])),
+            encounter: vi.fn(() => of(null)),
+            selectEncounter: vi.fn(() => of({})),
+            useSelfPay: vi.fn(() => of({})),
+          },
+        },
+      ],
+    }).compileComponents();
     const fixture = TestBed.createComponent(CareDetailPageComponent);
     const resume = vi.fn();
     fixture.componentInstance.popup.resumeTransaction = resume;
@@ -37,17 +138,29 @@ describe('CareDetailPageComponent funding', () => {
     expect(api.getFunding).toHaveBeenCalledWith(reference);
   });
   it('does not expose payment before provider acceptance', async () => {
-    const { fixture, api } = await setup('AWAITING_PROVIDER_RESPONSE', { ...funding(), initializationAllowed: false });
+    const { fixture, api } = await setup('AWAITING_PROVIDER_RESPONSE', {
+      ...funding(),
+      initializationAllowed: false,
+    });
     expect(fixture.nativeElement.textContent).not.toContain('Pay & confirm consultation');
     expect(api.getFunding).not.toHaveBeenCalled();
   });
-  it.each([['PAID', 'Paid'], ['SATISFIED_FREE', 'Free']] as const)('renders %s without initializing Paystack', async (status, label) => {
+  it.each([
+    ['PAID', 'Paid'],
+    ['SATISFIED_FREE', 'Free'],
+  ] as const)('renders %s without initializing Paystack', async (status, label) => {
     const value = funding(status, status === 'SATISFIED_FREE' ? 0 : 2000000);
     const { fixture, component, api } = await setup('PROVIDER_ACCEPTED', value);
     expect(fixture.nativeElement.textContent).toContain(label);
     expect(fixture.nativeElement.textContent).not.toContain('Pay & confirm consultation');
     component.payNow();
     expect(api.initializeFunding).not.toHaveBeenCalled();
+  });
+  it('does not promise automatic appointment confirmation when no time was requested', async () => {
+    const { fixture } = await setup('PROVIDER_ACCEPTED', funding('PAID'));
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Payment confirmed. Your provider can now schedule your service.');
+    expect(text).not.toContain('confirming your agreed appointment time');
   });
   it('initializes by reference only and verifies before showing Paid', async () => {
     const { fixture, component, api, resume } = await setup();
@@ -72,5 +185,42 @@ describe('CareDetailPageComponent funding', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('not completed');
     expect(fixture.nativeElement.textContent).toContain('Pay & confirm consultation');
+  });
+  it('keeps self-pay available and discloses a selected programme surcharge', async () => {
+    const programmes = [
+      {
+        familyId: 'family-1',
+        partner: { id: 'school-1', name: 'Demo Academy', type: 'SCHOOL' },
+        program: {
+          id: 'program-1',
+          name: 'Healthy Families',
+          partnerBps: 300,
+          wellnessCreditBps: 200,
+          currency: 'NGN',
+        },
+        nextWellnessAt: null,
+        wellnessCreditMinor: '0',
+        currency: 'NGN',
+      },
+    ];
+    const { fixture, component, api } = await setup(
+      'PROVIDER_ACCEPTED',
+      funding(),
+      'VIRTUAL',
+      programmes,
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Ordinary SmartClinic self-pay');
+    component.selectPartnerFamily('family-1');
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Programme surcharge disclosed before checkout');
+    expect(text).toContain('₦1,000');
+    expect(text).toContain('₦21,000');
+    component.payNow();
+    expect(api.initializeFunding).toHaveBeenCalledWith(
+      reference,
+      expect.objectContaining({ partnerFamilyId: 'family-1' }),
+    );
   });
 });

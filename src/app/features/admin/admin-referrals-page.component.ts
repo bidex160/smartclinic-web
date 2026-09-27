@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import {
+  ReferralEarning,
   ReferralHistoryItem,
   ReferralStatus,
   ReferralTargetType,
@@ -73,6 +74,67 @@ import { UtilsService } from '../../core/services/utils.service';
       </div>
     }
     @if (!loading() && !error()) {
+      <section class="mt-8" aria-labelledby="monetary-referrals-heading">
+        <h2 id="monetary-referrals-heading" class="text-2xl font-bold">
+          Monetary referral earnings
+        </h2>
+        <p class="mt-1 text-sm text-slate-600">
+          Read-only accounting; kept separate from reward points.
+        </p>
+        @if (monetaryEarnings().length) {
+          <div class="mt-4 overflow-x-auto rounded-2xl border bg-white">
+            <table class="min-w-[1100px] w-full text-left">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="p-3">Referrer</th>
+                  <th class="p-3">Referral/code</th>
+                  <th class="p-3">Patient/source</th>
+                  <th class="p-3">Transaction</th>
+                  <th class="p-3">Gross</th>
+                  <th class="p-3">BPS</th>
+                  <th class="p-3">Earning</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">Dates</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (earning of monetaryEarnings(); track earning.id) {
+                  <tr class="border-t">
+                    <td class="p-3">{{ earning.referrerUserId }}</td>
+                    <td class="p-3">
+                      {{ earning.referralId }}<br /><span class="text-xs">{{
+                        earning.referralCodeSnapshot
+                      }}</span>
+                    </td>
+                    <td class="p-3">
+                      {{ earning.patientId }}<br /><span class="text-xs"
+                        >{{ earning.sourceType }} · {{ earning.sourceReference }}</span
+                      >
+                    </td>
+                    <td class="p-3">{{ earning.paymentTransactionId }}</td>
+                    <td class="p-3">
+                      {{ moneyMinor(earning.grossAmountMinor, earning.currency) }}
+                    </td>
+                    <td class="p-3">{{ earning.referralBps }}</td>
+                    <td class="p-3 font-bold">
+                      {{ moneyMinor(earning.referralAmountMinor, earning.currency) }}
+                    </td>
+                    <td class="p-3">{{ statusLabel(earning.status) }}</td>
+                    <td class="p-3 text-xs">
+                      Created {{ utils.formatDateTime(earning.createdAt) }}<br />Payable
+                      {{ utils.formatDateTime(earning.payableAt) }}<br />Settled
+                      {{ utils.formatDateTime(earning.settledAt) }}<br />Reversed
+                      {{ utils.formatDateTime(earning.reversedAt) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="mt-4 rounded-xl border bg-white p-6">No monetary referral earnings.</p>
+        }
+      </section>
       @if (items().length) {
         <div class="mt-5 overflow-x-auto rounded-2xl border bg-white">
           <table class="min-w-[650px] w-full text-left">
@@ -109,6 +171,7 @@ export class AdminReferralsPageComponent {
   private readonly fb = inject(FormBuilder).nonNullable;
   readonly utils = inject(UtilsService);
   readonly items = signal<ReferralHistoryItem[]>([]);
+  readonly monetaryEarnings = signal<ReferralEarning[]>([]);
   readonly loading = signal(false);
   readonly error = signal(false);
   readonly form = this.fb.group({
@@ -126,8 +189,8 @@ export class AdminReferralsPageComponent {
     const v = this.form.getRawValue();
     this.loading.set(true);
     this.error.set(false);
-    this.api
-      .adminHistory({
+    forkJoin({
+      referrals: this.api.adminHistory({
         page: 1,
         limit: 20,
         ...(v.targetType && { targetType: v.targetType as ReferralTargetType }),
@@ -135,9 +198,17 @@ export class AdminReferralsPageComponent {
         ...(v.referrerEmail.trim() && { referrerEmail: v.referrerEmail.trim() }),
         ...(v.qualifiedFrom && { qualifiedFrom: v.qualifiedFrom }),
         ...(v.qualifiedTo && { qualifiedTo: v.qualifiedTo }),
-      })
+      }),
+      earnings: this.api.adminEarnings(),
+    })
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({ next: (r) => this.items.set(r.items), error: () => this.error.set(true) });
+      .subscribe({
+        next: (r) => {
+          this.items.set(r.referrals.items);
+          this.monetaryEarnings.set(r.earnings);
+        },
+        error: () => this.error.set(true),
+      });
   }
   clear() {
     this.form.reset();
@@ -150,11 +221,14 @@ export class AdminReferralsPageComponent {
         CLINIC: 'Clinic',
         LABORATORY: 'Laboratory',
         PHARMACY: 'Pharmacy',
-         INDIVIDUAL: 'Individuals',
+        INDIVIDUAL: 'Individuals',
       } as const
     )[t];
   }
   statusLabel(s: string) {
     return s.charAt(0) + s.slice(1).toLowerCase();
+  }
+  moneyMinor(minor: string, currency: string) {
+    return this.utils.formatMoney((Number(minor) / 100).toFixed(2), currency);
   }
 }

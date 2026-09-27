@@ -71,6 +71,11 @@ export class NotificationBellComponent {
 
 toggle(event: MouseEvent): void {
   event.stopPropagation();
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+    this.state.closePanel();
+    void this.router.navigate([this.notificationsRoute()]);
+    return;
+  }
   this.state.togglePanel();
 }
   close(): void { 
