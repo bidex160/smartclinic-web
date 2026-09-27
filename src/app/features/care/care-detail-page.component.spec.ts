@@ -1,3 +1,4 @@
+import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -8,6 +9,7 @@ import { FastTrackApiService } from '../../core/services/fasttrack-api.service';
 import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { PartnerApiService } from '../../core/services/partner-api.service';
 import { HmoApiService } from '../../core/services/hmo-api.service';
+import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
 import { CareDetailPageComponent } from './care-detail-page.component';
 
 describe('CareDetailPageComponent funding', () => {
@@ -185,6 +187,20 @@ describe('CareDetailPageComponent funding', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('not completed');
     expect(fixture.nativeElement.textContent).toContain('Pay & confirm consultation');
+  });
+  it('preserves the selected payment rail during an authoritative background refresh', async () => {
+    const { fixture, component } = await setup();
+    const before = fixture.debugElement.query(By.directive(PaymentContactEmailComponent))
+      .componentInstance as PaymentContactEmailComponent;
+    before.provider = 'PAYSTACK';
+
+    component.loadFunding();
+    fixture.detectChanges();
+
+    const after = fixture.debugElement.query(By.directive(PaymentContactEmailComponent))
+      .componentInstance as PaymentContactEmailComponent;
+    expect(after).toBe(before);
+    expect(after.request()).toEqual({ paymentProvider: 'PAYSTACK' });
   });
   it('keeps self-pay available and discloses a selected programme surcharge', async () => {
     const programmes = [

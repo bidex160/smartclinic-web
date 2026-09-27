@@ -129,6 +129,53 @@ interface DashboardNextStep {
           </div>
         </nav>
 
+        <section class="mt-7" aria-labelledby="coverage-programmes-heading">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-700">
+              Your relationships
+            </p>
+            <h2 id="coverage-programmes-heading" class="mt-1 text-xl font-bold text-brand-950">
+              Coverage &amp; programmes
+            </h2>
+            <p class="mt-1 text-sm leading-6 text-slate-600">
+              Keep one SmartClinic account and connect the funding or community relationships that
+              apply to you.
+            </p>
+          </div>
+          <div class="mt-3 grid gap-3 sm:grid-cols-3">
+            <a
+              routerLink="/me/insurance"
+              class="rounded-2xl border border-blue-200 bg-blue-50 p-5 text-brand-950"
+            >
+              <span class="text-xs font-bold uppercase tracking-wider text-blue-700">Insurance</span>
+              <h3 class="mt-2 font-bold">Health Insurance / HMO</h3>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Add existing membership or request help getting HMO coverage.
+              </p>
+              <span class="mt-3 inline-block text-sm font-bold text-blue-700">Manage HMO →</span>
+            </a>
+            <a
+              routerLink="/healthy-families"
+              class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-brand-950"
+            >
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">School &amp; community</span>
+              <h3 class="mt-2 font-bold">Healthy Families</h3>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                View programmes already connected through a valid school or partner invitation.
+              </p>
+              <span class="mt-3 inline-block text-sm font-bold text-emerald-700">View programmes →</span>
+            </a>
+            <article class="rounded-2xl border border-slate-200 bg-slate-100 p-5 text-slate-700">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Not yet available</span>
+              <h3 class="mt-2 font-bold">SmartClinic subscription</h3>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Subscription is a future funding option. Pay-as-you-go, wallet and eligible HMO
+                routes remain available.
+              </p>
+            </article>
+          </div>
+        </section>
+
         <section class="mt-7" aria-labelledby="your-care-heading">
           <div class="flex items-center justify-between gap-3">
             <div>

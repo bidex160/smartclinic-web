@@ -282,6 +282,20 @@ describe('PatientDashboardPageComponent', () => {
     expect(section.querySelector('a[href="/me/health-passport"]')).not.toBeNull();
   });
 
+  it('makes HMO and invited programmes discoverable without claiming subscription exists', async () => {
+    const { fixture } = await setup();
+    const section = fixture.nativeElement
+      .querySelector('#coverage-programmes-heading')
+      .closest('section');
+
+    expect(section.querySelector('a[href="/me/insurance"]')).not.toBeNull();
+    expect(section.querySelector('a[href="/healthy-families"]')).not.toBeNull();
+    expect(section.textContent).toContain('Add existing membership');
+    expect(section.textContent).toContain('valid school or partner invitation');
+    expect(section.textContent).toContain('Subscription is a future funding option');
+    expect(section.querySelectorAll('a')).toHaveLength(2);
+  });
+
   it('shows compact authoritative community impact and routes to full Impact details', async () => {
     const { fixture, referralsApi } = await setup();
     const section = fixture.nativeElement.querySelector('#impact-heading').closest('section');

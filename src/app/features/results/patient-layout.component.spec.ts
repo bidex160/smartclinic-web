@@ -137,6 +137,13 @@ describe('PatientLayoutComponent', () => {
       },
       { label: 'Hospitals', links: [['My Providers', '/me/providers']] },
       {
+        label: 'Coverage & programmes',
+        links: [
+          ['Health Insurance / HMO', '/me/insurance'],
+          ['Healthy Families', '/healthy-families'],
+        ],
+      },
+      {
         label: 'Impact',
         links: [
           ['My Impact', '/me/impact'],
@@ -145,6 +152,15 @@ describe('PatientLayoutComponent', () => {
       },
       { label: 'Account', links: [['Family & Dependants', '/me/family'], ['Profile', '/me/profile']] },
     ]);
+  });
+
+  it('exposes HMO and Healthy Families in desktop and mobile patient navigation', async () => {
+    const fixture = await setup();
+    fixture.componentInstance.menuOpen.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('a[href="/me/insurance"]')).toHaveLength(2);
+    expect(fixture.nativeElement.querySelectorAll('a[href="/healthy-families"]')).toHaveLength(2);
   });
 
   it('preserves backend-authoritative My Reviews navigation visibility', async () => {

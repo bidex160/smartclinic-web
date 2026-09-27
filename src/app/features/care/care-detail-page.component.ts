@@ -125,7 +125,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
             <h2 id="care-payment-title" class="mt-1 text-2xl font-black text-brand-950">
               {{ r.deliveryMode === 'VIRTUAL' ? 'Confirm your consultation' : 'Payment' }}
             </h2>
-            @if (fundingLoading()) {
+            @if (fundingLoading() && !funding()) {
               <p role="status" class="mt-3 text-slate-600">Loading payment status…</p>
             } @else if (funding(); as payment) {
               <dl class="mt-4 grid gap-4 sm:grid-cols-2">
