@@ -124,6 +124,13 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                   formControlName="expiresAt"
                   class="mt-1 block min-h-11 w-full rounded-lg border px-3"
               /></label>
+              <fieldset class="rounded-xl border p-4">
+                <legend class="font-bold">How can the patient receive the medicine?</legend>
+                <p class="mt-1 text-sm text-slate-600">Select every option your pharmacy can actually fulfil. Delivery fees are shown separately to the patient.</p>
+                <label class="mt-3 flex items-center gap-3"><input type="checkbox" formControlName="pickup" /> Pharmacy pickup</label>
+                <div class="mt-3 grid gap-3 sm:grid-cols-2"><label class="flex items-center gap-3"><input type="checkbox" formControlName="hospitalDelivery" /> Deliver to hospital</label><label>Hospital delivery fee<input inputmode="decimal" formControlName="hospitalDeliveryFee" class="mt-1 block min-h-11 w-full rounded-lg border px-3" /></label></div>
+                <div class="mt-3 grid gap-3 sm:grid-cols-2"><label class="flex items-center gap-3"><input type="checkbox" formControlName="homeDelivery" /> Home delivery</label><label>Home delivery fee<input inputmode="decimal" formControlName="homeDeliveryFee" class="mt-1 block min-h-11 w-full rounded-lg border px-3" /></label></div>
+              </fieldset>
               <div formArrayName="items">
                 @for (row of quoteItems.controls; track $index) {
                   <fieldset [formGroupName]="$index" class="mt-4 rounded-xl border p-4">
@@ -261,6 +268,11 @@ export class ProviderPharmacyOrderDetailPageComponent {
   readonly quoteForm = this.fb.group({
     currency: ['NGN', [Validators.required, Validators.pattern(/^[A-Z]{3}$/)]],
     expiresAt: ['', Validators.required],
+    pickup: [true],
+    hospitalDelivery: [false],
+    hospitalDeliveryFee: ['0', Validators.pattern(/^\d+(\.\d{1,2})?$/)],
+    homeDelivery: [false],
+    homeDeliveryFee: ['0', Validators.pattern(/^\d+(\.\d{1,2})?$/)],
     items: new FormArray<FormGroup>([]),
   });
   get quoteItems() {
@@ -365,7 +377,13 @@ export class ProviderPharmacyOrderDetailPageComponent {
       currency: v.currency!,
       expiresAt: new Date(v.expiresAt!).toISOString(),
       items,
+      fulfillmentOptions: [
+        ...(v.pickup ? [{ method: 'PICKUP' as const, feeMinor: 0 }] : []),
+        ...(v.hospitalDelivery ? [{ method: 'HOSPITAL_DELIVERY' as const, feeMinor: this.minor(v.hospitalDeliveryFee!)! }] : []),
+        ...(v.homeDelivery ? [{ method: 'HOME_DELIVERY' as const, feeMinor: this.minor(v.homeDeliveryFee!)! }] : []),
+      ],
     };
+    if (!body.fulfillmentOptions.length) { this.error.set('Select at least one pickup or delivery option.'); return; }
     const editing = this.editingQuoteReference();
     this.run(
       editing ? this.api.updateQuote(editing, body) : this.api.createQuote(this.reference, body),
@@ -380,6 +398,11 @@ export class ProviderPharmacyOrderDetailPageComponent {
     this.quoteForm.patchValue({
       currency: q.currency,
       expiresAt: new Date(q.expiresAt).toISOString().slice(0, 16),
+      pickup: q.fulfillmentOptions.some((option) => option.method === 'PICKUP'),
+      hospitalDelivery: q.fulfillmentOptions.some((option) => option.method === 'HOSPITAL_DELIVERY'),
+      hospitalDeliveryFee: this.major(q.fulfillmentOptions.find((option) => option.method === 'HOSPITAL_DELIVERY')?.feeMinor ?? 0),
+      homeDelivery: q.fulfillmentOptions.some((option) => option.method === 'HOME_DELIVERY'),
+      homeDeliveryFee: this.major(q.fulfillmentOptions.find((option) => option.method === 'HOME_DELIVERY')?.feeMinor ?? 0),
     });
     for (const [index, item] of q.items.entries()) {
       this.quoteItems.at(index)?.patchValue({

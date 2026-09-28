@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
@@ -18,6 +18,20 @@ import { ClinicalDocumentationViewComponent } from '../../shared/clinical-docume
 import { ClinicalSmartSuggestionsComponent } from '../../shared/clinical-smart-suggestions.component';
 import { ClinicalSuggestionItem } from '../../core/models/clinical-decision-support.model';
 type Decision = 'complete' | 'no-show' | 'cancel' | null;
+type QuickConsultControl = 'presentingComplaint' | 'observations' | 'diagnosis' | 'plan' | 'followUpInstructions';
+interface SpeechRecognitionResultLike { readonly [index: number]: { readonly transcript: string } | undefined; }
+interface SpeechRecognitionEventLike { readonly results: ArrayLike<SpeechRecognitionResultLike>; }
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 @Component({
   selector: 'app-provider-care-appointment-detail-page',
   imports: [RouterLink, ReactiveFormsModule, ProviderPrescriptionSectionComponent, ClinicalDocumentationFormComponent, ClinicalDocumentationViewComponent, ClinicalSmartSuggestionsComponent],
@@ -100,16 +114,19 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Your next step</p>
           <h2 class="mt-2 text-2xl font-bold text-slate-950">Video consultation</h2>
           <p class="mt-2 font-semibold text-slate-800">{{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}</p>
-          @if (safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">Payment and appointment are confirmed. The secure consultation room is ready.</p>
+          @if (isActive(a.status) && safeMeetingUrl(a.meetingUrl); as url) {
+            <p class="mt-2 text-slate-600">Payment and appointment are confirmed. The consultation room is ready.</p>
             <div class="mt-4 flex flex-wrap gap-3">
               <a [href]="url" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-6 py-3 font-bold text-white shadow-sm transition hover:bg-brand-800">Join video consultation</a>
+              <a [routerLink]="['/provider/care-requests', a.careRequestReference, 'chat']" class="inline-flex min-h-12 items-center rounded-xl border border-brand-300 bg-white px-5 py-3 font-bold text-brand-800">Message patient</a>
               @if (a.status === 'SCHEDULED' || a.status === 'CONFIRMED') {
                 <button type="button" (click)="start()" [disabled]="pending()" class="min-h-12 rounded-xl border border-brand-300 bg-white px-5 py-3 font-bold text-brand-800">Start clinical appointment</button>
               }
             </div>
-          } @else {
+          } @else if (isActive(a.status)) {
             <p class="mt-2 rounded-xl bg-amber-50 p-4 text-amber-950">Payment is confirmed, but the video room is not ready yet. Refresh this appointment shortly. You do not need to create or send a meeting link.</p>
+          } @else {
+            <p class="mt-2 rounded-xl bg-slate-50 p-4 text-slate-700">This consultation room is no longer available.</p>
           }
         </section>
       }
@@ -213,12 +230,17 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
       </section></div>
     }
     @if (recordFormOpen()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="dialog" aria-modal="true" aria-labelledby="clinical-record-form-title" class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"><h2 id="clinical-record-form-title" class="text-xl font-bold">{{ clinicalRecord() ? 'Edit' : 'Create' }} consultation record</h2><p class="mt-2 text-slate-600">Only the title is required. Add clinically appropriate information available for this consultation.</p>
-      <form [formGroup]="recordForm" (ngSubmit)="saveClinicalRecord()" class="mt-5 grid gap-4"><label class="font-bold">Title<input formControlName="title" maxlength="200" class="mt-2 block min-h-12 w-full rounded-xl border p-3" />@if (recordForm.controls.title.touched && recordForm.controls.title.invalid) { <span class="mt-1 block text-sm text-red-700">Enter a title of no more than 200 characters.</span> }</label><label class="font-bold">Summary <span class="font-normal text-slate-500">(optional)</span><textarea formControlName="summary" maxlength="4000" rows="3" class="mt-2 block w-full rounded-xl border p-3"></textarea></label>
-      @for (field of consultationFormFields; track field.control) { <label class="font-bold">{{ field.label }} <span class="font-normal text-slate-500">(optional)</span><textarea [formControlName]="field.control" maxlength="10000" rows="4" class="mt-2 block w-full rounded-xl border p-3"></textarea></label> }
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="dialog" aria-modal="true" aria-labelledby="clinical-record-form-title" class="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"><p class="text-xs font-bold uppercase tracking-[.16em] text-brand-700">Quick Consult</p><h2 id="clinical-record-form-title" class="mt-1 text-2xl font-bold">Record the consultation</h2><p class="mt-2 text-slate-600">Capture the essentials first. Add more detail only when it improves the clinical record.</p>
+      <form data-quick-consult [formGroup]="recordForm" (ngSubmit)="saveClinicalRecord()" class="mt-5 grid gap-4">
+      @for (field of quickConsultationFormFields; track field.control) { <label class="font-bold"><span class="flex flex-wrap items-center justify-between gap-2"><span>{{ field.label }} <span class="font-normal text-slate-500">(optional)</span></span>@if (supportsVoiceInput) { <button type="button" (click)="toggleDictation(field.control)" [attr.aria-pressed]="listeningField() === field.control" class="rounded-lg border border-brand-200 bg-white px-3 py-1.5 text-sm font-bold text-brand-800">{{ listeningField() === field.control ? 'Stop listening' : 'Speak now' }}</button> }</span><textarea [formControlName]="field.control" maxlength="10000" rows="2" [placeholder]="field.placeholder" class="mt-2 block w-full rounded-xl border p-3"></textarea></label> }
+      @if (supportsVoiceInput) { <p class="rounded-xl bg-blue-50 p-3 text-xs leading-5 text-slate-700">SmartClinic does not store the audio. Speech recognition is supplied by your browser and may use its speech service. Confirm your organisation permits it, avoid unnecessary identifiers, and review every word before saving.</p> }
+      @if (voiceInputError()) { <p role="alert" class="rounded-xl bg-amber-50 p-3 text-sm text-amber-950">{{ voiceInputError() }}</p> }
+      <details class="rounded-xl border border-slate-200 bg-slate-50 p-4"><summary class="cursor-pointer font-bold text-brand-800">More clinical detail</summary><div class="mt-4 grid gap-4"><label class="font-bold">Record title<input formControlName="title" maxlength="200" class="mt-2 block min-h-12 w-full rounded-xl border bg-white p-3" />@if (recordForm.controls.title.touched && recordForm.controls.title.invalid) { <span class="mt-1 block text-sm text-red-700">Enter a title of no more than 200 characters.</span> }</label><label class="font-bold">Summary <span class="font-normal text-slate-500">(optional)</span><textarea formControlName="summary" maxlength="4000" rows="2" class="mt-2 block w-full rounded-xl border bg-white p-3"></textarea></label>@for (field of additionalConsultationFormFields; track field.control) { <label class="font-bold">{{ field.label }} <span class="font-normal text-slate-500">(optional)</span><textarea [formControlName]="field.control" maxlength="10000" rows="2" class="mt-2 block w-full rounded-xl border bg-white p-3"></textarea></label> }</div></details>
       <app-clinical-smart-suggestions [context]="smartSuggestionContext()" (diagnosisChosen)="useSuggestedDiagnosis($event)" (itemChosen)="useSuggestedItem($event)" (referralChosen)="useSuggestedReferral($event)" />
+      @if (suggestionFeedback()) { <p aria-live="polite" class="rounded-xl bg-green-50 p-3 text-sm text-green-950">{{ suggestionFeedback() }}</p> }
+      <p class="text-xs leading-5 text-slate-500">Smart suggestions are optional. The clinician remains responsible for every diagnosis, prescription, investigation and referral.</p>
       @if (recordMutationError()) { <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-900">{{ recordMutationError() }}</p> }
-      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" (click)="recordFormOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="recordPending() || recordForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ recordPending() ? 'Saving…' : 'Save draft' }}</button></div></form></section></div>
+      <div class="sticky bottom-0 -mx-2 flex flex-col-reverse gap-3 border-t bg-white/95 px-2 pt-4 backdrop-blur sm:flex-row sm:justify-end"><button type="button" (click)="recordFormOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Cancel</button><button type="submit" [disabled]="recordPending() || recordForm.invalid" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ recordPending() ? 'Saving…' : 'Save quick note' }}</button></div></form></section></div>
     }
     @if (finalizeOpen()) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="alertdialog" aria-modal="true" aria-labelledby="finalize-record-title" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 id="finalize-record-title" class="text-xl font-bold">Finalize clinical record?</h2><p class="mt-2 text-slate-600">Once finalized, this clinical record can no longer be edited.</p>@if (recordMutationError()) { <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ recordMutationError() }}</p> }<div class="mt-5 flex justify-end gap-3"><button type="button" (click)="finalizeOpen.set(false)" [disabled]="recordPending()" class="rounded-xl border px-5 py-3 font-bold">Keep draft</button><button type="button" (click)="finalizeClinicalRecord()" [disabled]="recordPending()" class="rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">{{ recordPending() ? 'Finalizing…' : 'Finalize record' }}</button></div></section></div> }
     @if (attachmentToDelete(); as attachment) { <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><section role="alertdialog" aria-modal="true" aria-labelledby="delete-attachment-title" class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 id="delete-attachment-title" class="text-xl font-bold">Delete supporting file?</h2><p class="mt-2 break-words text-slate-600">Remove {{ attachment.originalName }} from this draft clinical record?</p><div class="mt-5 flex justify-end gap-3"><button type="button" (click)="attachmentToDelete.set(null)" [disabled]="attachmentDeleting()" class="rounded-xl border px-5 py-3 font-bold">Keep file</button><button type="button" (click)="deleteAttachment(attachment)" [disabled]="attachmentDeleting()" class="rounded-xl bg-red-700 px-5 py-3 font-bold text-white">{{ attachmentDeleting() ? 'Deleting…' : 'Delete file' }}</button></div></section></div> }
@@ -269,7 +291,7 @@ type Decision = 'complete' | 'no-show' | 'cancel' | null;
     }
   </main>`,
 })
-export class ProviderCareAppointmentDetailPageComponent {
+export class ProviderCareAppointmentDetailPageComponent implements OnDestroy {
   private readonly api = inject(ProviderCareOperationsApiService);
   private readonly careServicesApi = inject(ProviderCareServicesApiService);
   private readonly clinicalRecordsApi = inject(ClinicalRecordsApiService);
@@ -297,6 +319,12 @@ export class ProviderCareAppointmentDetailPageComponent {
   readonly finalizeOpen = signal(false);
   readonly recordPending = signal(false);
   readonly recordMutationError = signal<string | null>(null);
+  readonly suggestionFeedback = signal<string | null>(null);
+  readonly listeningField = signal<QuickConsultControl | null>(null);
+  readonly voiceInputError = signal<string | null>(null);
+  readonly supportsVoiceInput = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+  readonly prescriptionSection = viewChild(ProviderPrescriptionSectionComponent);
+  private recognition: SpeechRecognitionLike | null = null;
   readonly selectedFile = signal<File | null>(null);
   readonly attachmentUploading = signal(false);
   readonly attachmentDeleting = signal(false);
@@ -318,6 +346,17 @@ export class ProviderCareAppointmentDetailPageComponent {
     { control: 'presentingComplaint', label: 'Presenting complaint' }, { control: 'historyOfPresentingComplaint', label: 'History of presenting complaint' },
     { control: 'observations', label: 'Clinical observations' }, { control: 'assessment', label: 'Assessment' }, { control: 'diagnosis', label: 'Diagnosis' },
     { control: 'plan', label: 'Plan' }, { control: 'followUpInstructions', label: 'Follow-up instructions' },
+  ] as const;
+  readonly quickConsultationFormFields = [
+    { control: 'presentingComplaint', label: 'Patient concern', placeholder: 'Main complaint and duration' },
+    { control: 'observations', label: 'Key findings', placeholder: 'Relevant examination, vitals or observations' },
+    { control: 'diagnosis', label: 'Diagnosis / impression', placeholder: 'Working or confirmed diagnosis' },
+    { control: 'plan', label: 'Plan', placeholder: 'Treatment, tests, prescription or referral plan' },
+    { control: 'followUpInstructions', label: 'Follow-up', placeholder: 'When to review and safety-net advice' },
+  ] as const;
+  readonly additionalConsultationFormFields = [
+    { control: 'historyOfPresentingComplaint', label: 'History of presenting complaint' },
+    { control: 'assessment', label: 'Assessment' },
   ] as const;
   constructor() {
     this.load();
@@ -353,7 +392,7 @@ export class ProviderCareAppointmentDetailPageComponent {
   }
   smartSuggestionContext(){const v=this.recordForm.getRawValue();return {presentingComplaint:v.presentingComplaint,historyOfPresentingComplaint:v.historyOfPresentingComplaint,observations:v.observations,assessment:v.assessment,diagnosis:v.diagnosis};}
   useSuggestedDiagnosis(name:string):void{const current=this.recordForm.controls.diagnosis.value.trim();if(!current)this.recordForm.controls.diagnosis.setValue(name);else if(!current.toLowerCase().includes(name.toLowerCase()))this.recordForm.controls.diagnosis.setValue(current+'\n'+name);this.recordForm.controls.diagnosis.markAsDirty();}
-  useSuggestedItem(item:ClinicalSuggestionItem):void{if(item.category==='MEDICATION'){this.feedback.set(`${item.name} is available in the Prescription section below. Review dose, frequency, duration and patient-specific suitability before issuing.`);return;}const action=item.category==='LAB_TEST'?'LABORATORY':'IMAGING';this.openNextAction(action);this.selectedInvestigations.set([{...item,description:null,subcategory:null,unitLabel:null,averageCostMinor:item.standardPriceMinor,markupBps:0,patientVisible:true,isActive:true,sortOrder:0}]);}
+  useSuggestedItem(item:ClinicalSuggestionItem):void{if(item.category==='MEDICATION'){const added=this.prescriptionSection()?.addSuggestedMedication(item.name)??false;this.suggestionFeedback.set(added?`${item.name} was added to the prescription draft below. You must still review and enter the dose, frequency, duration, instructions and patient-specific suitability before issuing.`:'This medicine could not be added. Review the Prescription section below.');return;}const action=item.category==='LAB_TEST'?'LABORATORY':'IMAGING';this.openNextAction(action);this.selectedInvestigations.set([{...item,description:null,subcategory:null,unitLabel:null,averageCostMinor:item.standardPriceMinor,markupBps:0,patientVisible:true,isActive:true,sortOrder:0}]);}
   useSuggestedReferral(referral:string):void{this.openNextAction('REFERRAL');this.nextActionForm.controls.clinicalNote.setValue(`Referral to ${referral}: `);}
 
   openNextAction(action: 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE'): void {
@@ -378,8 +417,36 @@ export class ProviderCareAppointmentDetailPageComponent {
   }
   openRecordForm(): void {
     const record = this.clinicalRecord(); const c = record?.consultation;
-    this.recordForm.reset({ title: record?.title ?? '', summary: record?.summary ?? '', presentingComplaint: c?.presentingComplaint ?? '', historyOfPresentingComplaint: c?.historyOfPresentingComplaint ?? '', observations: c?.observations ?? '', assessment: c?.assessment ?? '', diagnosis: c?.diagnosis ?? '', plan: c?.plan ?? '', followUpInstructions: c?.followUpInstructions ?? '' });
-    this.recordMutationError.set(null); this.recordFormOpen.set(true);
+    this.recordForm.reset({ title: record?.title ?? `${this.appointment()?.service.name ?? 'Consultation'} clinical record`, summary: record?.summary ?? '', presentingComplaint: c?.presentingComplaint ?? '', historyOfPresentingComplaint: c?.historyOfPresentingComplaint ?? '', observations: c?.observations ?? '', assessment: c?.assessment ?? '', diagnosis: c?.diagnosis ?? '', plan: c?.plan ?? '', followUpInstructions: c?.followUpInstructions ?? '' });
+    this.recordMutationError.set(null); this.suggestionFeedback.set(null); this.voiceInputError.set(null); this.recordFormOpen.set(true);
+  }
+
+  toggleDictation(control: QuickConsultControl): void {
+    if (this.listeningField() === control) { this.stopDictation(); return; }
+    this.stopDictation(); this.voiceInputError.set(null);
+    const Recognition = this.speechRecognitionConstructor();
+    if (!Recognition) { this.voiceInputError.set('Voice input is not available in this browser. You can continue typing.'); return; }
+    const recognition = new Recognition(); this.recognition = recognition;
+    recognition.lang = typeof navigator !== 'undefined' ? navigator.language || 'en-NG' : 'en-NG';
+    recognition.continuous = false; recognition.interimResults = false;
+    recognition.onresult = event => {
+      const transcript = Array.from({ length: event.results.length }, (_, index) => event.results[index]?.[0]?.transcript ?? '').join(' ').trim();
+      if (!transcript) return;
+      const field = this.recordForm.controls[control]; const current = field.value.trim();
+      field.setValue(current ? `${current} ${transcript}` : transcript); field.markAsDirty();
+    };
+    recognition.onerror = () => this.voiceInputError.set('Voice input stopped before text was captured. Check microphone permission or continue typing.');
+    recognition.onend = () => { if (this.recognition === recognition) { this.recognition = null; this.listeningField.set(null); } };
+    this.listeningField.set(control);
+    try { recognition.start(); } catch { this.recognition = null; this.listeningField.set(null); this.voiceInputError.set('Voice input could not start. Check microphone permission or continue typing.'); }
+  }
+
+  stopDictation(): void { const current=this.recognition; this.recognition=null; this.listeningField.set(null); current?.stop(); }
+  ngOnDestroy(): void { this.stopDictation(); this.closePreview(); }
+  private speechRecognitionConstructor(): SpeechRecognitionConstructor | null {
+    if (typeof window === 'undefined') return null;
+    const speechWindow = window as unknown as { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor };
+    return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
   }
   saveClinicalRecord(): void {
     if (this.recordForm.invalid || this.recordPending()) { this.recordForm.markAllAsTouched(); return; }
@@ -496,6 +563,9 @@ export class ProviderCareAppointmentDetailPageComponent {
     } catch {
       return null;
     }
+  }
+  isActive(status: string) {
+    return status === 'SCHEDULED' || status === 'CONFIRMED' || status === 'IN_PROGRESS';
   }
   label(s: string) {
     return s === 'IN_PROGRESS'

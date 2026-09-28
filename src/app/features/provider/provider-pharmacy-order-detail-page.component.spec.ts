@@ -13,7 +13,7 @@ describe('ProviderPharmacyOrderDetailPageComponent authorization boundary', () =
       fulfiller: { providerReference: 'SCPR-2', displayName: 'Prime', serviceUnitReference: 'SC-PSU-1', serviceUnitName: 'Prime Pharmacy' },
       recommendedServiceUnit: null, acceptedAt: new Date().toISOString(), cancelledAt: null,
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      funding: { status: 'PAID', amountMinor: 200000, currency: 'NGN', satisfied: true },
+      funding: { status: 'PAID', amountMinor: 204000, medicineAmountMinor:200000,deliveryFeeMinor:0,doctorCoordinationFeeMinor:2000,hospitalCoordinationFeeMinor:2000,fulfillmentMethod:'PICKUP',currency: 'NGN', satisfied: true },
       dispensing: { status: 'READY_TO_DISPENSE', fulfillmentMethod: 'PICKUP', startedAt: null, readyAt: null, completedAt: null },
     };
     const api = {

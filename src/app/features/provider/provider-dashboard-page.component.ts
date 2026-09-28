@@ -97,6 +97,7 @@ export class ProviderDashboardPageComponent {
       { title: 'New patient requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
       { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
       { title: 'Your payments', helper: 'See what patients have paid and what is due to you.', route: '/provider/earnings' },
+      { title: 'Prescription earnings', helper: 'Track held and available Smart Prescription coordination fees.', route: '/provider/pharmacy-coordination-earnings' },
       { title: 'Grow my network', helper: 'Recommend trusted pharmacies, labs and clinics and grow your impact.', route: '/provider/network' },
       { title: 'Services', helper: 'Choose the consultations patients can book.', route: '/provider/care-services', status: 'findCare' },
       { title: 'Availability', helper: 'Set when patients can book you.', route: '/provider/profile', fragment: 'availability', status: 'availability' },

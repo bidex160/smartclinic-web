@@ -669,6 +669,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pharmacy-coordination-earnings',
+        title: 'Smart Prescription Earnings | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-pharmacy-coordination-earnings-page.component').then((c) => c.ProviderPharmacyCoordinationEarningsPageComponent),
+      },
+      {
         path: 'diagnostic-orders/:reference',
         title: 'Diagnostic Request | SmartClinic',
         canActivate: [providerGuard],

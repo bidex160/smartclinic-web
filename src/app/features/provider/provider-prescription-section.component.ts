@@ -19,6 +19,7 @@ import {
 
 import {
   ClinicalOrder,
+  FulfillmentDirectoryItem,
   UpsertPrescriptionRequest,
 } from '../../core/models/pharmacy-fulfillment.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
@@ -363,6 +364,25 @@ import { SmartClinicServiceCatalogueItem } from '../../core/models/service-catal
             </tbody>
           </table>
         </div>
+        @if (o.status === 'ISSUED') {
+          <section class="mt-6 rounded-2xl border border-brand-100 bg-brand-50/40 p-5" aria-labelledby="pharmacy-handoff-title">
+            <p class="text-xs font-bold uppercase tracking-[.14em] text-brand-700">Smart Pharmacy Handoff</p>
+            <h3 id="pharmacy-handoff-title" class="mt-1 text-xl font-bold text-brand-950">Help the patient get this medicine</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Recommend a participating pharmacy while the patient is with you. The patient still confirms the pharmacy, availability, price and payment before anything is dispensed.</p>
+            @if (o.fulfillment; as fulfillment) {
+              <p class="mt-4 rounded-xl bg-white p-4 font-semibold text-slate-800">Handoff {{ fulfillment.status === 'PROPOSED' ? 'recommended — patient confirmation needed' : fulfillment.status.toLowerCase() }}.</p>
+              <div class="mt-4 flex flex-wrap gap-3"><a [href]="patientPrescriptionUrl(o.reference)" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-4 py-2 font-bold text-white">Open patient link</a><button type="button" (click)="sharePatientLink(o.reference)" class="min-h-11 rounded-xl border border-brand-300 bg-white px-4 py-2 font-bold text-brand-800">Share with patient</button></div>
+            } @else {
+              <button type="button" (click)="openPharmacyHandoff()" [disabled]="handoffPending()" class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Find an available pharmacy</button>
+              @if (handoffOpen()) {
+                <label class="mt-4 block font-bold">Search participating pharmacies<input type="search" #handoffSearch (input)="searchHandoffPharmacies(handoffSearch.value)" placeholder="Pharmacy or location" class="mt-2 block min-h-11 w-full rounded-xl border bg-white px-3" /></label>
+                @if (handoffLoading()) { <p role="status" class="mt-3 text-sm text-slate-600">Finding pharmacies…</p> }
+                @if (handoffPharmacies().length) { <div class="mt-3 grid gap-2">@for (pharmacy of handoffPharmacies(); track pharmacy.providerServiceUnitReference) { <article class="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white p-4"><div><strong>{{ pharmacy.displayName }}</strong><p class="text-sm text-slate-600">{{ pharmacy.unitName }} · {{ pharmacy.location.city }}, {{ pharmacy.location.stateOrRegion }}</p></div><button type="button" (click)="recommendPharmacy(o.reference, pharmacy)" [disabled]="handoffPending()" class="rounded-lg border border-brand-300 px-3 py-2 text-sm font-bold text-brand-800">Recommend</button></article> }</div> }
+              }
+            }
+            @if (handoffFeedback()) { <p aria-live="polite" class="mt-4 rounded-xl bg-white p-3 text-sm font-semibold text-slate-800">{{ handoffFeedback() }}</p> }
+          </section>
+        }
       }
     </section>
 
@@ -430,6 +450,11 @@ export class ProviderPrescriptionSectionComponent {
   readonly mutationError = signal<string | null>(null);
 
   readonly issueOpen = signal(false);
+  readonly handoffOpen = signal(false);
+  readonly handoffLoading = signal(false);
+  readonly handoffPending = signal(false);
+  readonly handoffPharmacies = signal<readonly FulfillmentDirectoryItem[]>([]);
+  readonly handoffFeedback = signal<string | null>(null);
 
   /**
    * Local-only state.
@@ -594,6 +619,47 @@ export class ProviderPrescriptionSectionComponent {
 
   searchMedicines(q:string):void{const term=q.trim().toLowerCase();this.catalogueApi.providerList('MEDICATION').subscribe({next:items=>this.medicineCatalogue.set(items.filter(item=>!term||item.name.toLowerCase().includes(term)||item.code.toLowerCase().includes(term)).slice(0,20)),error:()=>{this.medicineCatalogue.set([]);this.mutationError.set('The medicine catalogue could not be loaded. Please try again.');}});}
   addCatalogueMedicine(medicine:SmartClinicServiceCatalogueItem):void{const g=this.itemGroup();g.controls.medicationName.setValue(medicine.name);this.items.push(g);this.medicineCatalogue.set([]);}
+
+  addSuggestedMedication(medicationName: string): boolean {
+    if (this.appointmentStatus() !== 'IN_PROGRESS' || this.order()?.status === 'ISSUED') return false;
+    if (!this.order() && !this.creatingPrescription()) this.startPrescription();
+
+    const blank = this.items.controls.find(row => !row.controls.medicationName.value?.trim());
+    const row = blank ?? this.itemGroup();
+    if (!blank) this.items.push(row);
+    row.controls.medicationName.setValue(medicationName);
+    row.controls.medicationName.markAsDirty();
+    return true;
+  }
+
+  openPharmacyHandoff(): void { this.handoffOpen.set(true); this.handoffFeedback.set(null); this.searchHandoffPharmacies(''); }
+  searchHandoffPharmacies(query: string): void {
+    this.handoffLoading.set(true);
+    this.api.searchFulfillmentProvidersForProvider('PRESCRIPTION', { q: query.trim(), page: 1, limit: 10 }).pipe(finalize(() => this.handoffLoading.set(false))).subscribe({
+      next: page => this.handoffPharmacies.set(page.items),
+      error: () => { this.handoffPharmacies.set([]); this.handoffFeedback.set('Participating pharmacies could not be loaded. Try again.'); },
+    });
+  }
+  recommendPharmacy(orderReference: string, pharmacy: FulfillmentDirectoryItem): void {
+    if (this.handoffPending()) return;
+    this.handoffPending.set(true); this.handoffFeedback.set(null);
+    this.api.recommendPharmacy(orderReference, pharmacy.providerServiceUnitReference).pipe(finalize(() => this.handoffPending.set(false))).subscribe({
+      next: () => { this.handoffFeedback.set(`${pharmacy.displayName} was recommended. The patient must confirm before the pharmacy can accept and quote.`); this.load(); },
+      error: () => this.handoffFeedback.set('The pharmacy could not be recommended. Refresh and try again.'),
+    });
+  }
+  patientPrescriptionUrl(orderReference: string): string {
+    const path = `/me/prescriptions/${encodeURIComponent(orderReference)}`;
+    return typeof window === 'undefined' ? path : new URL(path, window.location.origin).toString();
+  }
+  async sharePatientLink(orderReference: string): Promise<void> {
+    const url = this.patientPrescriptionUrl(orderReference);
+    try {
+      if (navigator.share) await navigator.share({ title: 'SmartClinic prescription', text: 'Open your prescription, confirm the pharmacy and review the price before payment.', url });
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(url); this.handoffFeedback.set('Patient link copied. Send it only to the intended patient.'); }
+      else this.handoffFeedback.set(`Share this secure patient link: ${url}`);
+    } catch { this.handoffFeedback.set('The patient link was not shared. You can try again.'); }
+  }
 
   addItem(): void {
     this.items.push(this.itemGroup());

@@ -6,6 +6,16 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { PatientRegisterPageComponent } from './patient-register-page.component';
 
 describe('PatientRegisterPageComponent', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
   it('submits only patient registration identity and does not authenticate locally', async () => {
     const register = vi.fn(() =>
       of({

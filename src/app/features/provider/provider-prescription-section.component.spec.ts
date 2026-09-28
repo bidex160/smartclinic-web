@@ -41,4 +41,36 @@ describe('ProviderPrescriptionSectionComponent form UX', () => {
     expect(catalogue.providerList).toHaveBeenCalledWith('MEDICATION');
     expect(fixture.componentInstance.medicineCatalogue()[0]?.name).toBe('Amoxicillin 500 mg');
   });
+
+  it('prefills a suggested medication locally without saving or issuing it', async () => {
+    const api = {
+      listAppointmentOrders: vi.fn(() => of({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 })),
+      createPrescription: vi.fn(() => of({})),
+    };
+    await TestBed.configureTestingModule({ imports: [ProviderPrescriptionSectionComponent], providers: [{ provide: PharmacyFulfillmentApiService, useValue: api }, { provide: ServiceCatalogueApiService, useValue: { providerList: vi.fn(() => of([])) } }] }).compileComponents();
+    const fixture = TestBed.createComponent(ProviderPrescriptionSectionComponent); fixture.componentRef.setInput('appointmentReference','SC-APT-1'); fixture.componentRef.setInput('appointmentStatus','IN_PROGRESS'); fixture.detectChanges();
+    expect(fixture.componentInstance.addSuggestedMedication('Amoxicillin 500 mg')).toBe(true);
+    expect(fixture.componentInstance.creatingPrescription()).toBe(true);
+    expect(fixture.componentInstance.items.at(0).controls.medicationName.value).toBe('Amoxicillin 500 mg');
+    expect(api.createPrescription).not.toHaveBeenCalled();
+  });
+
+  it('lets the doctor recommend a pharmacy without selecting or paying for the patient', async () => {
+    const recommended = { reference: 'SC-ORF-1', status: 'PROPOSED' as const };
+    const api = {
+      listAppointmentOrders: vi.fn()
+        .mockReturnValueOnce(of({ items: [issuedPrescription(null)], page: 1, limit: 20, total: 1, totalPages: 1 }))
+        .mockReturnValueOnce(of({ items: [issuedPrescription(recommended)], page: 1, limit: 20, total: 1, totalPages: 1 })),
+      searchFulfillmentProvidersForProvider: vi.fn(() => of({ items: [pharmacy()], page: 1, limit: 10, total: 1, totalPages: 1 })),
+      recommendPharmacy: vi.fn(() => of(recommended)),
+    };
+    await TestBed.configureTestingModule({ imports: [ProviderPrescriptionSectionComponent], providers: [{ provide: PharmacyFulfillmentApiService, useValue: api }, { provide: ServiceCatalogueApiService, useValue: { providerList: vi.fn(() => of([])) } }] }).compileComponents();
+    const fixture = TestBed.createComponent(ProviderPrescriptionSectionComponent); fixture.componentRef.setInput('appointmentReference','SC-APT-1'); fixture.componentRef.setInput('appointmentStatus','IN_PROGRESS'); fixture.detectChanges();
+    const component=fixture.componentInstance; component.openPharmacyHandoff(); expect(api.searchFulfillmentProvidersForProvider).toHaveBeenCalledWith('PRESCRIPTION',{q:'',page:1,limit:10});
+    component.recommendPharmacy('SC-ORD-1', pharmacy()); expect(api.recommendPharmacy).toHaveBeenCalledWith('SC-ORD-1','SC-PSU-1'); expect(component.order()?.fulfillment).toEqual(recommended);
+    expect(component.patientPrescriptionUrl('SC-ORD-1')).toContain('/me/prescriptions/SC-ORD-1');
+  });
 });
+
+function pharmacy(){return {providerReference:'SCPR-1',displayName:'Prime Pharmacy',providerType:'PHARMACY',providerServiceUnitReference:'SC-PSU-1',unitName:'Main Pharmacy',capabilityType:'PHARMACY' as const,location:{city:'Abuja',stateOrRegion:'FCT',countryCode:'NG'}};}
+function issuedPrescription(fulfillment:{reference:string;status:'PROPOSED'}|null){return {reference:'SC-ORD-1',type:'PRESCRIPTION' as const,status:'ISSUED' as const,clinicalNote:null,orderingProvider:{providerReference:'SCPR-HOSPITAL',displayName:'Hospital'},careRequestReference:'SC-CARE-1',careAppointmentReference:'SC-APT-1',issuedAt:'2026-09-28T00:00:00Z',cancelledAt:null,cancellationReason:null,prescription:{notes:null,items:[{medicationName:'Amoxicillin',strength:'500 mg',dosage:'1 capsule',frequency:'three times daily',duration:'5 days',quantity:'15',route:'Oral',instructions:null,sortOrder:0}]},createdAt:'2026-09-28T00:00:00Z',updatedAt:'2026-09-28T00:00:00Z',fulfillment};}
