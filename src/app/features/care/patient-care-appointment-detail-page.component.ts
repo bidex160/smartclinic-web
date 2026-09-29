@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -90,21 +89,30 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
-          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Secure video care</p>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Video care</p>
           <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
-          @if (safeMeetingUrl(a.meetingUrl); as url) {
+          @if (isActive(a.status) && safeMeetingUrl(a.meetingUrl); as url) {
             <p class="mt-2 text-slate-600">
-              Your private consultation room is ready. You do not need to copy or enter a meeting link.
+              Your consultation room is ready. You do not need to copy or enter a meeting link.
             </p>
-            <a
-              [href]="url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-              >Join consultation</a
-            >
+            <div class="mt-4 flex flex-wrap gap-3">
+              <a
+                [href]="url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+                >Join consultation</a
+              >
+              <a
+                [routerLink]="['/me/care', a.careRequestReference, 'chat']"
+                class="inline-flex min-h-12 items-center rounded-xl border border-brand-300 bg-white px-5 py-3 font-bold text-brand-800"
+                >Message provider</a
+              >
+            </div>
+          } @else if (isActive(a.status)) {
+            <p class="mt-2 text-slate-600">Your consultation room is being prepared. Refresh this page shortly.</p>
           } @else {
-            <p class="mt-2 text-slate-600">Your secure consultation room is being prepared. Refresh this page shortly.</p>
+            <p class="mt-2 text-slate-600">This consultation room is no longer available.</p>
           }
         </section>
       }
@@ -190,7 +198,6 @@ export class PatientCareAppointmentDetailPageComponent {
   readonly orders = signal<readonly ClinicalOrder[]>([]);
   readonly ordersLoading = signal(false);
   private readonly fb = inject(FormBuilder);
-  private readonly sanitizer = inject(DomSanitizer);
   readonly utils = inject(UtilsService);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference') ?? '';
   readonly appointment = signal<CareAppointment | null>(null);
@@ -264,6 +271,9 @@ export class PatientCareAppointmentDetailPageComponent {
       )[s] ?? 'Check this page for the latest appointment status.'
     );
   }
+  isActive(status: string) {
+    return status === 'SCHEDULED' || status === 'CONFIRMED' || status === 'IN_PROGRESS';
+  }
   loadOrders(appointmentReference: string) {
     this.ordersLoading.set(true);
     this.ordersApi.listPatientOrdersForAppointment(appointmentReference).pipe(finalize(() => this.ordersLoading.set(false))).subscribe({
@@ -286,17 +296,6 @@ export class PatientCareAppointmentDetailPageComponent {
     return o.type === 'IMAGING' ? 'Imaging requested by your doctor' : 'Test requested by your doctor';
   }
   orderAction(o: ClinicalOrder): string { return o.type === 'PRESCRIPTION' ? 'Get medicine' : o.type === 'IMAGING' ? 'Book scan' : o.type === 'REFERRAL' ? 'Choose specialist' : o.type === 'PROCEDURE' ? 'Arrange physical follow-up' : 'Complete test'; }
-  isEmbeddableConsultation(value: string) {
-    try {
-      const host = new URL(value).hostname.toLowerCase();
-      return host === 'meet.jit.si' || host.endsWith('.meet.jit.si');
-    } catch {
-      return false;
-    }
-  }
-  trustedMeetingUrl(value: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(value);
-  }
   safeMeetingUrl(value: string | null) {
     if (!value) return null;
     try {

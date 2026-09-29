@@ -8,12 +8,12 @@ import { AuthStateService } from '../../core/services/auth-state.service';
   imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fieldset class="mt-4 rounded-xl border bg-white p-4">
-      <legend class="font-semibold">Choose how you'd like to pay</legend>
+    <fieldset class="rounded-xl border border-slate-200 bg-white p-4">
+      <legend class="px-2 text-sm font-bold text-brand-950">Choose how you'd like to pay</legend>
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
       
         <label
-          class="flex cursor-pointer items-start gap-3 rounded-xl border p-3"
+          class="flex min-h-16 cursor-pointer items-center gap-3 rounded-xl border p-3"
           [class.border-brand-700]="provider === 'OPAY'"
           ><input
             type="radio"
@@ -28,7 +28,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           ></label
         >
           <label
-          class="flex cursor-pointer items-start gap-3 rounded-xl border p-3"
+          class="flex min-h-16 cursor-pointer items-center gap-3 rounded-xl border p-3"
           [class.border-brand-700]="provider === 'PAYSTACK'"
           ><input
             type="radio"

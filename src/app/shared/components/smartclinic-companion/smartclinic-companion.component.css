@@ -46,4 +46,11 @@
 .guide button:focus-visible, .guide input:focus-visible, .guide a:focus-visible, .guide summary:focus-visible { outline: 3px solid #f7c948; outline-offset: 2px; }
 @keyframes guide-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-4px) rotate(2deg); } }
 @media (max-width: 420px) { .guide { right: .6rem; bottom: .6rem; } .guide__panel { width: calc(100vw - 1.2rem); } }
+@media (max-width: 1023px) {
+  .guide { right: .75rem; bottom: calc(5rem + env(safe-area-inset-bottom)); }
+  .guide__launcher { width: 3.4rem; height: 3.4rem; justify-content: center; padding: .25rem; }
+  .guide__launcher-face { width: 2.85rem; height: 2.85rem; }
+  .guide__launcher > span:last-child { display: none; }
+  .guide__panel { max-height: calc(100dvh - 11rem - env(safe-area-inset-bottom)); }
+}
 @media (prefers-reduced-motion: reduce) { .guide__launcher-face { animation: none; } }

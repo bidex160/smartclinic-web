@@ -30,6 +30,10 @@ describe('PatientDashboardPageComponent', () => {
       getDashboard: vi.fn(() =>
         options.dashboardError ? throwError(() => ({ status: 500 })) : of(value),
       ),
+      getDailyRoutines: vi.fn(() => of({ items: [] })),
+      createDailyRoutine: vi.fn(),
+      updateDailyRoutine: vi.fn(),
+      deleteDailyRoutine: vi.fn(),
     };
     const healthChecksApi = {
       getMyHealthChecks: vi.fn(() =>
@@ -244,6 +248,30 @@ describe('PatientDashboardPageComponent', () => {
     ]);
   });
 
+  it('adds a small optional Today layer without displacing clinical priority or quick actions', async () => {
+    const { fixture } = await setup({
+      dashboard: {
+        todayRoutines: [{
+          reference: 'SC-RTE-ABCDEF123456',
+          type: 'MEDICATION',
+          label: 'Take my evening medicine',
+          instructions: 'Follow the prescription label.',
+          scheduledLocalTime: '19:00',
+          timezone: 'Africa/Lagos',
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          enabled: true,
+          source: 'PATIENT',
+        }],
+      },
+    });
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Small things that keep you well');
+    expect(text).toContain('Take my evening medicine');
+    expect(text).toContain('19:00 · Personal medication');
+    expect(text.indexOf('Your next step')).toBeLessThan(text.indexOf('Small things that keep you well'));
+    expect(text.indexOf('Small things that keep you well')).toBeLessThan(text.indexOf('What do you need today?'));
+  });
+
   it('keeps configured WhatsApp help above the mobile patient navigation', async () => {
     const { fixture } = await setup({ supportUrl: 'https://wa.me/2348000000000' });
     const help = fixture.nativeElement.querySelector('a[href="https://wa.me/2348000000000"]');
@@ -280,6 +308,21 @@ describe('PatientDashboardPageComponent', () => {
     expect(section.textContent).toContain('Your health story, wherever you go.');
     expect(section.textContent).not.toContain('120/80');
     expect(section.querySelector('a[href="/me/health-passport"]')).not.toBeNull();
+  });
+
+  it('makes HMO and invited programmes discoverable without claiming subscription exists', async () => {
+    const { fixture } = await setup();
+    const section = fixture.nativeElement
+      .querySelector('#coverage-programmes-heading')
+      .closest('section');
+
+    expect(section.querySelector('a[href="/me/insurance"]')).not.toBeNull();
+    expect(section.querySelector('a[href="/healthy-families"]')).not.toBeNull();
+    expect(section.querySelector('a[href="/me/pay-bills"]')).not.toBeNull();
+    expect(section.textContent).toContain('Add existing cover');
+    expect(section.textContent).toContain('valid invitation');
+    expect(section.textContent).toContain('subscription is a future option');
+    expect(section.querySelectorAll('a')).toHaveLength(3);
   });
 
   it('shows compact authoritative community impact and routes to full Impact details', async () => {

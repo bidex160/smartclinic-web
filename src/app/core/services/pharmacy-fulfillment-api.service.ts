@@ -30,6 +30,9 @@ export class PharmacyFulfillmentApiService {
       `${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders`,
     );
   }
+  getCoordinationEarnings() {
+    return this.http.get<import('../models/pharmacy-fulfillment.model').PharmacyCoordinationEarnings>(`${this.base}/provider/pharmacy-coordination-earnings`);
+  }
   createDiagnosticOrder(appointment:string,type:'LABORATORY'|'IMAGING',clinicalNote:string,items:readonly {name:string;code?:string|null;instructions?:string|null}[]) {
     return this.http.post<ClinicalOrder>(`${this.base}/provider/care-appointments/${this.enc(appointment)}/clinical-orders/diagnostics`,{type,clinicalNote,items});
   }
@@ -106,6 +109,22 @@ export class PharmacyFulfillmentApiService {
       if (v !== undefined && v !== '') p = p.set(k, String(v));
     return this.http.get<FulfillmentDirectoryPage>(
       `${this.base}/me/clinical-order-fulfillment-providers`,
+      { params: p },
+    );
+  }
+  searchFulfillmentProvidersForProvider(orderType: 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING', query: {
+    q?: string;
+    country?: string;
+    stateOrRegion?: string;
+    city?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    let p = new HttpParams().set('orderType', orderType).set('page', query.page ?? 1).set('limit', query.limit ?? 20);
+    for (const [key, value] of Object.entries(query))
+      if (value !== undefined && value !== '') p = p.set(key, String(value));
+    return this.http.get<FulfillmentDirectoryPage>(
+      `${this.base}/provider/clinical-order-fulfillment-providers`,
       { params: p },
     );
   }
@@ -186,10 +205,10 @@ export class PharmacyFulfillmentApiService {
       null,
     );
   }
-  acceptQuote(ref: string, acknowledgeUnavailableItems: boolean) {
+  acceptQuote(ref: string, body: { acknowledgeUnavailableItems: boolean; fulfillmentMethod: import('../models/pharmacy-fulfillment.model').PharmacyFulfillmentMethod; deliveryAddress?: { addressLine1:string;addressLine2?:string;city:string;stateOrRegion:string;countryCode:string;contactPhone:string } }) {
     return this.http.post<PatientOrderFulfillment>(
       `${this.base}/me/pharmacy-quotes/${this.enc(ref)}/accept`,
-      { acknowledgeUnavailableItems },
+      body,
     );
   }
   getFunding(ref: string) {

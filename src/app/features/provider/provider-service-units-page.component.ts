@@ -14,7 +14,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
     <div class="flex flex-wrap justify-between gap-4">
       <div>
         <p class="text-sm font-bold uppercase text-brand-600">Provider setup</p>
-        <h1 class="mt-2 text-3xl font-bold">Service areas</h1>
+        <h1 class="mt-2 text-3xl font-bold">Service units</h1>
         <p class="mt-2 text-slate-600">
           Set up the parts of your facility that will receive and fulfil patient orders, such as your pharmacy, laboratory or radiology unit.
         </p>
@@ -24,14 +24,14 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       </button>
     </div>
     @if (loading()) {
-      <p role="status" class="mt-8 rounded-2xl border p-6">Loading service areas…</p>
+      <p role="status" class="mt-8 rounded-2xl border p-6">Loading service units…</p>
     } @else if (error()) {
       <p role="alert" class="mt-8 rounded-2xl bg-red-50 p-6">
         {{ error() }} <button (click)="load()" class="font-bold underline">Try again</button>
       </p>
     } @else if (!items().length) {
       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
-        <h2 class="text-xl font-bold">No service areas configured yet.</h2>
+        <h2 class="text-xl font-bold">No service units configured yet.</h2>
       </section>
     } @else {
       <div class="mt-8 grid gap-4 sm:grid-cols-2">
@@ -157,7 +157,7 @@ export class ProviderServiceUnitsPageComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (p) => this.items.set(p.items),
-        error: () => this.error.set('Service areas could not be loaded.'),
+        error: () => this.error.set('Service units could not be loaded.'),
       });
   }
   open(u: ProviderServiceUnit | null = null) {

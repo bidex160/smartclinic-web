@@ -34,10 +34,11 @@
         }
       </div>
       @if (current.onboardingStatus === 'SUBMITTED') {
-        <h3 class="mt-4 font-bold text-amber-950">Awaiting SmartClinic review</h3>
-        <p class="mt-4 rounded-lg bg-amber-50 p-4">
-          Your application has been submitted and is pending SmartClinic review. An account and
-          PROVIDER role do not mean the provider is operationally active.
+        <h3 class="mt-4 font-bold text-blue-950">Provisionally approved — final verification pending</h3>
+        <p class="mt-4 rounded-lg bg-blue-50 p-4 text-blue-950">
+          You can continue setting up your workspace now. SmartClinic will complete final verification
+          in the background. Patient matching, regulated clinical work and settlement remain restricted
+          until final approval.
         </p>
       } @else if (current.onboardingStatus === 'REJECTED') {
         <p class="mt-4 rounded-lg bg-amber-50 p-4">
@@ -67,31 +68,43 @@
           <dt>Profile complete</dt>
           <dd class="font-bold">{{ current.readiness.profileComplete ? 'Yes' : 'No' }}</dd>
         </div>
-        <div>
-          <dt>Services configured</dt>
-          <dd class="font-bold">{{ current.readiness.hasActiveCapability ? 'Yes' : 'No' }}</dd>
-        </div>
-        <div>
-          <dt>Care location ready</dt>
-          <dd class="font-bold">{{ current.readiness.providerLocationReady ? 'Yes' : 'No' }}</dd>
-        </div>
-        <div>
-          <dt>Availability set</dt>
-          <dd class="font-bold">{{ current.readiness.hasAvailability ? 'Yes' : 'No' }}</dd>
-        </div>
+        @if (usesHealthCheckSetup(current)) {
+          <div>
+            <dt>Health Check services configured</dt>
+            <dd class="font-bold">{{ current.readiness.hasActiveCapability ? 'Yes' : 'Not yet' }}</dd>
+          </div>
+          <div>
+            <dt>Health Check location ready</dt>
+            <dd class="font-bold">{{ current.readiness.providerLocationReady ? 'Yes' : 'Not yet' }}</dd>
+          </div>
+          <div>
+            <dt>Health Check availability set</dt>
+            <dd class="font-bold">{{ current.readiness.hasAvailability ? 'Yes' : 'Not yet' }}</dd>
+          </div>
+        } @else {
+          <div class="sm:col-span-2">
+            <dt>Specialist service setup</dt>
+            <dd class="font-semibold text-slate-700">
+              Continue through Service units for pharmacy, laboratory or imaging services. Health Check setup is not required.
+            </dd>
+            <a routerLink="/provider/service-units" class="mt-3 inline-flex min-h-11 items-center rounded-lg border border-brand-300 bg-white px-4 font-bold text-brand-800">
+              Configure service units →
+            </a>
+          </div>
+        }
       </dl>
-      @if (current.readiness.blockers.length) {
+      @if (visibleBlockers(current).length) {
         <div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
-          <h3 class="font-bold">Still to complete</h3>
+          <h3 class="font-bold">Additional setup</h3>
           <ul class="mt-2 list-disc pl-5">
-            @for (blocker of current.readiness.blockers; track blocker) {
+            @for (blocker of visibleBlockers(current); track blocker) {
               <li>{{ blockerLabel(blocker) }}</li>
             }
           </ul>
         </div>
       } @else {
         <p class="mt-5 rounded-xl bg-brand-50 p-4 font-semibold">
-          Your basic setup is ready. Submit your details for SmartClinic review when you are satisfied with them.
+          Your basic account setup is ready. You can continue while final verification is completed.
         </p>
       }
     </section>
@@ -257,9 +270,9 @@
             Submit provider profile for review?
           </h2>
           <p class="mt-2">
-            SmartClinic operations will review the saved provider identity. Submission does not
-            activate the provider. Find Care and Health Check services can be configured separately
-            based on what you choose to offer.
+            Your workspace will become provisionally active immediately. You can continue configuration
+            while SmartClinic completes final verification. Patient matching, regulated clinical work
+            and settlement remain restricted until final approval.
           </p>
           <div class="mt-4 flex gap-3">
             <button

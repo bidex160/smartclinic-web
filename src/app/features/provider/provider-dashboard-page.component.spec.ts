@@ -50,6 +50,22 @@ describe('ProviderDashboardPageComponent', () => {
     expect(offersApi.getOffers).not.toHaveBeenCalled();
   });
 
+  it('shows provisional access without calling operational APIs before final approval', async () => {
+    const { fixture, summaryApi, offersApi } = await setup('SUBMITTED', 'ACTIVE');
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Provisionally active');
+    expect(text).toContain('Continue provider setup');
+    expect(summaryApi.getSummary).not.toHaveBeenCalled();
+    expect(offersApi.getOffers).not.toHaveBeenCalled();
+  });
+
+  it('gives a provisional specialist Provider a direct service-unit setup path', async () => {
+    const { fixture } = await setup('SUBMITTED', 'ACTIVE', undefined, false, [], 'PHARMACY');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href="/provider/service-units"]')).toBeTruthy();
+  });
+
   it('shows primary actions and the Find Care setup callout when no active offerings exist', async () => {
     const { fixture, careServicesApi } = await setup();
     fixture.detectChanges();
@@ -100,6 +116,7 @@ async function setup(
   },
   failSummary = false,
   findCareOfferings: readonly { isActive: boolean }[] = [],
+  providerType = 'CLINIC',
 ) {
   const summaryApi = {
     getSummary: vi.fn(() => (failSummary ? throwError(() => new Error('raw')) : of(summary))),
@@ -117,7 +134,7 @@ async function setup(
       { provide: ProviderCareOperationsApiService, useValue: { getCareRequests: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }), getAppointments: () => of({ items: [], page: 1, limit: 100, total: 0, totalPages: 0 }) } },
       {
         provide: ProviderOnboardingApiService,
-        useValue: { getProfile: () => of({ displayName: 'Provider', providerType: 'CLINIC', status, onboardingStatus, activeCapabilityCount: 0, activeLocationCount: 0, availabilityCount: 0, readiness: { profileComplete: true, hasActiveCapability: false, providerLocationReady: false, hasAvailability: false, blockers: [], capabilityCount: 0, activeCapabilityCount: 0, locationCount: 0, activeLocationCount: 0, availabilityCount: 0 } }) },
+        useValue: { getProfile: () => of({ displayName: 'Provider', providerType, status, onboardingStatus, activeCapabilityCount: 0, activeLocationCount: 0, availabilityCount: 0, readiness: { profileComplete: true, hasActiveCapability: false, providerLocationReady: false, hasAvailability: false, blockers: [], capabilityCount: 0, activeCapabilityCount: 0, locationCount: 0, activeLocationCount: 0, availabilityCount: 0 } }) },
       },
       {
         provide: ProviderReferralsApiService,

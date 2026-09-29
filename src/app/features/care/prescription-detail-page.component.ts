@@ -7,6 +7,7 @@ import {
   ClinicalOrder,
   FulfillmentDirectoryItem,
   PatientOrderFulfillment,
+  PharmacyFulfillmentMethod,
   ProviderOrderFulfillment,
 } from '../../core/models/pharmacy-fulfillment.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
@@ -83,6 +84,22 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             <strong>{{ f.pharmacy.displayName }}</strong> · {{ f.pharmacy.serviceUnitName }}
           </p>
           <p class="mt-2">{{ status(f.status) }}</p>
+          @if (f.status === 'PROPOSED') {
+            <div class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4">
+              <p class="font-semibold text-brand-950">
+                Your clinician recommended this pharmacy. Confirm it before the pharmacy can accept
+                the prescription and send a price.
+              </p>
+              <button
+                type="button"
+                (click)="confirmRecommendedPharmacy(f)"
+                [disabled]="pending()"
+                class="mt-3 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+              >
+                Confirm this pharmacy
+              </button>
+            </div>
+          }
           @if (f.quote; as q) {
             <div class="mt-5 border-t pt-5">
               <h3 class="font-bold">Your medicine price</h3>
@@ -106,6 +123,19 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                     ></label
                   >
                 }
+                <form [formGroup]="fulfillmentForm" class="mt-5 rounded-xl border bg-slate-50 p-4">
+                  <label class="font-bold">How would you like to receive it?<select formControlName="method" class="mt-2 block min-h-12 w-full rounded-xl border bg-white px-3">@for (option of q.fulfillmentOptions; track option.method) { <option [value]="option.method">{{ methodLabel(option.method) }}{{ option.feeMinor ? ' · ' + money(option.feeMinor, q.currency) : ' · Free' }}</option> }</select></label>
+                  @if (fulfillmentForm.controls.method.value === 'HOME_DELIVERY') {
+                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                      <label class="font-bold sm:col-span-2">Delivery address<input formControlName="addressLine1" class="mt-1 block min-h-11 w-full rounded-lg border bg-white px-3" /></label>
+                      <label>Additional address<input formControlName="addressLine2" class="mt-1 block min-h-11 w-full rounded-lg border bg-white px-3" /></label>
+                      <label>City<input formControlName="city" class="mt-1 block min-h-11 w-full rounded-lg border bg-white px-3" /></label>
+                      <label>State / region<input formControlName="stateOrRegion" class="mt-1 block min-h-11 w-full rounded-lg border bg-white px-3" /></label>
+                      <label>Country code<input formControlName="countryCode" maxlength="2" class="mt-1 block min-h-11 w-full rounded-lg border bg-white px-3" /></label>
+                      <label>Contact phone<input formControlName="contactPhone" class="mt-1 block min-h-11 w-full rounded-lg border bg-white px-3" /></label>
+                    </div>
+                  }
+                </form>
                 <app-payment-contact-email />
                 <button
                   type="button"
@@ -121,7 +151,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           @if (f.funding; as funding) {
             <div class="mt-5 rounded-xl bg-slate-50 p-4">
               <strong>Payment: {{ fundingLabel(funding.status) }}</strong>
-              <p>{{ money(funding.amountMinor, funding.currency) }}</p>
+              <dl class="mt-3 grid gap-2 text-sm"><div class="flex justify-between"><dt>Medicine</dt><dd>{{ money(funding.medicineAmountMinor, funding.currency) }}</dd></div>@if (funding.deliveryFeeMinor) { <div class="flex justify-between"><dt>Delivery</dt><dd>{{ money(funding.deliveryFeeMinor, funding.currency) }}</dd></div> }@if (funding.doctorCoordinationFeeMinor) { <div class="flex justify-between"><dt>Doctor coordination</dt><dd>{{ money(funding.doctorCoordinationFeeMinor, funding.currency) }}</dd></div> }@if (funding.hospitalCoordinationFeeMinor) { <div class="flex justify-between"><dt>Hospital coordination</dt><dd>{{ money(funding.hospitalCoordinationFeeMinor, funding.currency) }}</dd></div> }<div class="flex justify-between border-t pt-2 text-base font-bold"><dt>Total</dt><dd>{{ money(funding.amountMinor, funding.currency) }}</dd></div></dl>
               @if (funding.status === 'PENDING') {
                 <button
                   type="button"
@@ -140,7 +170,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <p class="mt-2">{{ dispensingLabel(d.status) }}</p>
             </div>
           }
-          @if (f.status !== 'ACCEPTED' && !f.funding?.satisfied) {
+          @if (!f.funding?.satisfied) {
             <button
               type="button"
               (click)="changePharmacy(f.reference)"
@@ -218,6 +248,7 @@ export class PrescriptionDetailPageComponent {
   readonly pharmacies = signal<readonly FulfillmentDirectoryItem[]>([]);
   readonly acknowledge = signal(false);
   readonly searchForm = this.fb.nonNullable.group({ q: '' });
+  readonly fulfillmentForm = this.fb.nonNullable.group({ method: 'PICKUP' as PharmacyFulfillmentMethod,addressLine1:'',addressLine2:'',city:'',stateOrRegion:'',countryCode:'NG',contactPhone:'' });
   popup = new PaystackPop();
   constructor() {
     this.load();
@@ -232,7 +263,7 @@ export class PrescriptionDetailPageComponent {
           this.order.set(o);
           if (o.fulfillment?.reference) {
             this.api.getPatientFulfillment(o.fulfillment.reference).subscribe({
-              next: (f) => this.fulfillment.set(f),
+              next: (f) => { this.fulfillment.set(f); const method=f.quote?.fulfillmentOptions[0]?.method; if(method)this.fulfillmentForm.controls.method.setValue(method); },
               error: () => this.error.set('Your pharmacy state could not be loaded.'),
             });
           } else {
@@ -265,6 +296,21 @@ export class PrescriptionDetailPageComponent {
         error: () => this.error.set('The pharmacy could not be selected. Refresh and try again.'),
       });
   }
+  confirmRecommendedPharmacy(f: PatientOrderFulfillment) {
+    this.pending.set(true);
+    this.error.set(null);
+    this.api
+      .selectPharmacy(this.reference, f.pharmacy.serviceUnitReference)
+      .pipe(finalize(() => this.pending.set(false)))
+      .subscribe({
+        next: (x: any) =>
+          this.api.getPatientFulfillment(x.reference).subscribe({
+            next: (selected) => this.fulfillment.set(selected),
+            error: () => this.error.set('The confirmed pharmacy state could not be loaded.'),
+          }),
+        error: () => this.error.set('The recommended pharmacy could not be confirmed. Refresh and try again.'),
+      });
+  }
   changePharmacy(ref: string) {
     if (confirm('Cancel this selection and choose another pharmacy?'))
       this.api.cancelPatientFulfillment(ref).subscribe({
@@ -274,8 +320,11 @@ export class PrescriptionDetailPageComponent {
   }
   acceptQuote(ref: string) {
     this.pending.set(true);
+    const method=this.fulfillmentForm.controls.method.value;
+    const raw=this.fulfillmentForm.getRawValue();
+    if(method==='HOME_DELIVERY'&&(!raw.addressLine1.trim()||!raw.city.trim()||!raw.stateOrRegion.trim()||!raw.contactPhone.trim())){this.error.set('Enter the delivery address, city, state and contact phone.');this.pending.set(false);return;}
     this.api
-      .acceptQuote(ref, this.acknowledge())
+      .acceptQuote(ref, {acknowledgeUnavailableItems:this.acknowledge(),fulfillmentMethod:method,...(method==='HOME_DELIVERY'?{deliveryAddress:{addressLine1:raw.addressLine1.trim(),addressLine2:raw.addressLine2.trim()||undefined,city:raw.city.trim(),stateOrRegion:raw.stateOrRegion.trim(),countryCode:raw.countryCode.trim().toUpperCase(),contactPhone:raw.contactPhone.trim()}}:{})})
       .pipe(finalize(() => this.pending.set(false)))
       .subscribe({
         next: (f) => this.fulfillment.set(f),
@@ -403,4 +452,5 @@ export class PrescriptionDetailPageComponent {
       )[s] || s
     );
   }
+  methodLabel(method:PharmacyFulfillmentMethod){return ({PICKUP:'Collect from pharmacy',HOSPITAL_DELIVERY:'Deliver to my hospital',HOME_DELIVERY:'Deliver to my home'})[method];}
 }

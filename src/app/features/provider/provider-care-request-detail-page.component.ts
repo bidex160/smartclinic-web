@@ -142,7 +142,7 @@ import { formatMinor } from './care-money';
         <p
           class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 font-semibold text-amber-950"
         >
-          Time accepted ✓ · Waiting for payment. Once payment is confirmed, SmartClinic will book this appointment automatically.
+          Time accepted ✓ · Waiting for payment. Once payment is confirmed, choose the appointment time to schedule the visit.
         </p>
       }
       @if (chatAvailable()) {

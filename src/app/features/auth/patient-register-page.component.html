@@ -128,7 +128,7 @@
   type="tel"
   formControlName="phone"
   autocomplete="tel"
-  placeholder="e.g. +234 800 000 0000"
+  [placeholder]="phonePlaceholder"
   maxlength="30"
   [attr.aria-invalid]="invalid('phone')"
   class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:ring-4 focus:ring-brand-100"

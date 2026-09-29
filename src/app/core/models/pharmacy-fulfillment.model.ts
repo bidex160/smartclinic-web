@@ -14,6 +14,7 @@ export type PharmacyDispensingStatus =
   | 'COMPLETED'
   | 'CANCELLED'
   | 'REQUIRES_REFUND_REVIEW';
+export type PharmacyFulfillmentMethod = 'PICKUP' | 'HOSPITAL_DELIVERY' | 'HOME_DELIVERY';
 export type ProviderServiceUnitType =
   'GENERAL' | 'PHARMACY' | 'LABORATORY' | 'RADIOLOGY' | 'PROCEDURE' | 'SPECIALIST' | 'OTHER';
 
@@ -152,6 +153,7 @@ export interface PharmacyQuote {
   readonly reference: string;
   readonly status: PharmacyQuoteStatus;
   readonly totalMinor: number;
+  readonly fulfillmentOptions: readonly { readonly method: PharmacyFulfillmentMethod; readonly feeMinor: number }[];
   readonly currency: string;
   readonly expiresAt: string;
   readonly submittedAt: string | null;
@@ -175,6 +177,7 @@ export interface UpsertPharmacyQuoteRequest {
     readonly unitPriceMinor: number;
     readonly note?: string | null;
   }[];
+  readonly fulfillmentOptions: readonly { readonly method: PharmacyFulfillmentMethod; readonly feeMinor: number }[];
 }
 export interface PatientOrderFulfillment {
   readonly reference: string;
@@ -204,12 +207,17 @@ export interface PatientOrderFulfillment {
 export interface FulfillmentFundingSummary {
   readonly status: PharmacyFundingStatus;
   readonly amountMinor: number;
+  readonly medicineAmountMinor: number;
+  readonly deliveryFeeMinor: number;
+  readonly doctorCoordinationFeeMinor: number;
+  readonly hospitalCoordinationFeeMinor: number;
+  readonly fulfillmentMethod: PharmacyFulfillmentMethod;
   readonly currency: string;
   readonly satisfied: boolean;
 }
 export interface FulfillmentDispensingSummary {
   readonly status: PharmacyDispensingStatus;
-  readonly fulfillmentMethod: 'PICKUP';
+  readonly fulfillmentMethod: PharmacyFulfillmentMethod;
   readonly startedAt: string | null;
   readonly readyAt: string | null;
   readonly completedAt: string | null;
@@ -219,12 +227,21 @@ export interface PharmacyFundingResponse {
   readonly quoteReference: string;
   readonly fundingRequired: boolean;
   readonly amountMinor: number;
+  readonly medicineAmountMinor: number;
+  readonly deliveryFeeMinor: number;
+  readonly doctorCoordinationFeeMinor: number;
+  readonly hospitalCoordinationFeeMinor: number;
+  readonly fulfillmentMethod: PharmacyFulfillmentMethod;
   readonly currency: string;
   readonly fundingStatus: PharmacyFundingStatus;
   readonly paid: boolean;
   readonly attemptStatus: string | null;
   readonly checkoutUrl: string | null;
   readonly accessCode: string | null;
+}
+export interface PharmacyCoordinationEarnings {
+  readonly totals: readonly { readonly currency:string;readonly total:number;readonly held:number;readonly payable:number;readonly settled:number;readonly reversed:number }[];
+  readonly items: readonly { readonly id:string;readonly type:'DOCTOR'|'HOSPITAL';readonly sourceOrderReference:string;readonly sourceFulfillmentReference:string;readonly basisAmountMinor:number;readonly bpsSnapshot:number;readonly amountMinor:number;readonly currency:string;readonly status:'HELD'|'PAYABLE'|'SETTLED'|'REVERSED';readonly payableAt:string|null;readonly settledAt:string|null;readonly reversedAt:string|null;readonly createdAt:string }[];
 }
 
 export interface ProviderServiceUnit {

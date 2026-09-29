@@ -22,6 +22,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'rw',
+    title: 'SmartClinic Rwanda | One connected health journey',
+    loadComponent: () =>
+      import('./features/localisation/rwanda-entry-page.component').then(
+        (component) => component.RwandaEntryPageComponent,
+      ),
+  },
+  {
     path: 'join',
     data: { preload: true },
     title: 'Choose a Smart Health Check | SmartClinic',
@@ -667,6 +675,12 @@ export const routes: Routes = [
           import('./features/provider/provider-pharmacy-orders-page.component').then(
             (c) => c.ProviderPharmacyOrdersPageComponent,
           ),
+      },
+      {
+        path: 'pharmacy-coordination-earnings',
+        title: 'Smart Prescription Earnings | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/provider-pharmacy-coordination-earnings-page.component').then((c) => c.ProviderPharmacyCoordinationEarningsPageComponent),
       },
       {
         path: 'diagnostic-orders/:reference',

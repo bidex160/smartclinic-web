@@ -276,6 +276,13 @@ export class PatientLayoutComponent implements OnInit {
         items: [{ label: 'My Providers', route: '/me/providers', exact: false }],
       },
       {
+        label: 'Coverage & programmes',
+        items: [
+          { label: 'Health Insurance / HMO', route: '/me/insurance', exact: true },
+          { label: 'Healthy Families', route: '/healthy-families', exact: true },
+        ],
+      },
+      {
         label: 'Impact',
         items: [
           { label: 'My Impact', route: '/me/impact', exact: true },

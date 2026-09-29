@@ -1,4 +1,33 @@
 export type PatientDashboardMode = 'GETTING_STARTED' | 'ESTABLISHED';
+export type PatientDailyRoutineType =
+  | 'HYDRATION'
+  | 'MOVEMENT'
+  | 'BREAK'
+  | 'SLEEP'
+  | 'VITAMIN'
+  | 'MEDICATION';
+
+export interface PatientDailyRoutine {
+  readonly reference: string;
+  readonly type: PatientDailyRoutineType;
+  readonly label: string;
+  readonly instructions: string | null;
+  readonly scheduledLocalTime: string;
+  readonly timezone: string;
+  readonly daysOfWeek: readonly number[];
+  readonly enabled: boolean;
+  readonly source: 'PATIENT' | 'PRESCRIPTION';
+}
+
+export interface CreatePatientDailyRoutineRequest {
+  readonly type: PatientDailyRoutineType;
+  readonly label: string;
+  readonly instructions?: string | null;
+  readonly scheduledLocalTime: string;
+  readonly timezone: string;
+  readonly daysOfWeek: readonly number[];
+  readonly medicationSafetyAcknowledged?: boolean;
+}
 export type PatientDashboardRecommendedAction =
   | 'COMPLETE_PROFILE'
   | 'CONNECT_PROVIDER'
@@ -58,6 +87,8 @@ export interface PatientDashboard {
   /** Optional only for compatibility during a staggered backend/frontend deployment. */
   readonly recommendedActionDetail?: PatientDashboardRecommendedActionDetail;
   readonly dashboardMode: PatientDashboardMode;
+  /** Optional during a staggered API/Web deployment. */
+  readonly todayRoutines?: readonly PatientDailyRoutine[];
 }
 
 export interface PatientPortalProfile {

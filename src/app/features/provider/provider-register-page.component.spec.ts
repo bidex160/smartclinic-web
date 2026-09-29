@@ -68,14 +68,29 @@ describe('ProviderRegisterPageComponent', () => {
     expect(component.registrationStateCode.value).toBe('');
     expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
   });
+  it('defaults Rwanda provider onboarding and preserves market context through navigation', async () => {
+    const { component, fixture } = await setup(() => of(profile()), { market: 'RW', lang: 'rw' });
+    expect(component.form.controls.countryCode.value).toBe('RW');
+    expect(component.phonePlaceholder).toContain('+250');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('header a').getAttribute('href')).toBe('/rw');
+    component.result.set(profile() as any);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href^="/login"]').getAttribute('href')).toBe('/login?market=RW&lang=rw');
+    expect(component.registerStates.map((state) => state.name)).toEqual([
+      'City of Kigali', 'Eastern Province', 'Northern Province', 'Southern Province', 'Western Province',
+    ]);
+  });
   async function setup(register = () => of(profile()), query: Record<string,string> = {}) {
     const api = { register: vi.fn(register) };
     await TestBed.configureTestingModule({
       imports: [ProviderRegisterPageComponent],
       providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(query) } } }, { provide: ProviderOnboardingApiService, useValue: api }],
     }).compileComponents();
+    const fixture = TestBed.createComponent(ProviderRegisterPageComponent);
     return {
-      component: TestBed.createComponent(ProviderRegisterPageComponent).componentInstance,
+      fixture,
+      component: fixture.componentInstance,
       api,
     };
   }
@@ -97,7 +112,7 @@ function profile() {
   return {
     ...valid(),
     professionalReference: null,
-    status: 'PENDING',
+    status: 'ACTIVE',
     onboardingStatus: 'SUBMITTED',
     submittedAt: '2026-08-22',
     reviewedAt: null,

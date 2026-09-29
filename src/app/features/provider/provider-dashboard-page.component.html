@@ -103,26 +103,35 @@
 
           <div class="min-w-0">
             <p class="text-sm font-bold uppercase tracking-wide text-blue-700">
-              Under review
+              Provisionally active
             </p>
 
             <h2 class="mt-1 text-xl font-bold text-blue-950">
-              Your provider profile has been submitted
+              You can continue setup while final verification is completed
             </h2>
 
             <p class="mt-2 max-w-2xl text-sm leading-6 text-blue-950">
-              SmartClinic is reviewing your provider profile. We'll notify you
-              when your account has been approved or if any changes are required.
+              Your workspace is available now. SmartClinic is reviewing your provider profile in the
+              background. Patient matching, regulated clinical work and settlement remain restricted
+              until final approval.
             </p>
 
-            <a
-              routerLink="/provider/profile"
-              class="mt-4 inline-flex min-h-11 items-center justify-center
-                     rounded-lg border border-blue-300 bg-white px-5
-                     font-bold text-blue-800 hover:bg-blue-50"
-            >
-              View submitted profile
-            </a>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <a
+                routerLink="/provider/profile"
+                class="inline-flex min-h-11 items-center justify-center rounded-lg border border-blue-300 bg-white px-5 font-bold text-blue-800 hover:bg-blue-50"
+              >
+                Continue provider setup
+              </a>
+              @if (current.providerType === 'PHARMACY' || current.providerType === 'DIAGNOSTIC_CENTRE') {
+                <a
+                  routerLink="/provider/service-units"
+                  class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 font-bold text-white hover:bg-blue-800"
+                >
+                  Configure service units
+                </a>
+              }
+            </div>
           </div>
         </div>
       </section>

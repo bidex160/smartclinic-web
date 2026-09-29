@@ -177,9 +177,7 @@ if (p.countryCode && p.stateOrRegion) {
     const current = this.profile();
     if (
       current &&
-      this.profileEditable(current) &&
-      !this.form.invalid &&
-      !this.mutating()
+      this.canSubmitForReview(current)
     )
       this.confirmingSubmit.set(true);
     else this.form.markAllAsTouched();
@@ -188,7 +186,7 @@ if (p.countryCode && p.stateOrRegion) {
     if (!this.confirmingSubmit() || this.mutating()) return;
     this.run(
       this.api.submit(),
-      'Your provider configuration has been submitted for SmartClinic review.',
+      'Provisional access is ready. Continue your setup while SmartClinic completes final verification.',
     );
   }
   logout(): void {
@@ -214,7 +212,6 @@ if (p.countryCode && p.stateOrRegion) {
   }
   configurationEditable(profile: ProviderOnboardingProfile): boolean {
     return (
-      profile.onboardingStatus !== 'SUBMITTED' &&
       profile.status !== 'SUSPENDED' &&
       profile.status !== 'INACTIVE'
     );
@@ -222,7 +219,6 @@ if (p.countryCode && p.stateOrRegion) {
 profileEditable(profile: ProviderOnboardingProfile): boolean {
   return (
     profile.onboardingStatus !== 'APPROVED' &&
-    profile.onboardingStatus !== 'SUBMITTED' &&
     profile.status !== 'SUSPENDED' &&
     profile.status !== 'INACTIVE'
   );
@@ -231,18 +227,27 @@ profileEditable(profile: ProviderOnboardingProfile): boolean {
   canSubmitForReview(profile: ProviderOnboardingProfile): boolean {
     return (
       this.profileEditable(profile) &&
+      profile.onboardingStatus !== 'SUBMITTED' &&
       !this.form.invalid &&
       !this.mutating()
     );
   }
+  usesHealthCheckSetup(profile: ProviderOnboardingProfile): boolean {
+    return profile.providerType !== 'PHARMACY' && profile.providerType !== 'DIAGNOSTIC_CENTRE';
+  }
+  visibleBlockers(profile: ProviderOnboardingProfile): readonly ProviderOnboardingBlocker[] {
+    return this.usesHealthCheckSetup(profile)
+      ? profile.readiness.blockers
+      : profile.readiness.blockers.filter((blocker) => blocker === 'PROFILE_INCOMPLETE');
+  }
   blockerLabel(blocker: ProviderOnboardingBlocker): string {
     const labels: Record<ProviderOnboardingBlocker, string> = {
       PROFILE_INCOMPLETE: 'Complete your provider profile',
-      NO_ACTIVE_CAPABILITY: 'Add at least one active Health Check service',
+      NO_ACTIVE_CAPABILITY: 'Add a Health Check service if you want to offer Health Checks',
       PROVIDER_LOCATION_WITHOUT_LOCATION:
-        'Configure a location for your in-person Health Check service',
-      HOME_VISIT_WITHOUT_SERVICE_AREA: 'Configure Home Visit coverage for your Health Check services',
-      NO_WEEKLY_AVAILABILITY: 'Add weekly availability for your Health Check services',
+        'Configure a location for any in-person Health Check service',
+      HOME_VISIT_WITHOUT_SERVICE_AREA: 'Configure coverage for any Home Visit Health Check service',
+      NO_WEEKLY_AVAILABILITY: 'Add availability for any Health Check service you activate',
     };
     return labels[blocker];
   }
