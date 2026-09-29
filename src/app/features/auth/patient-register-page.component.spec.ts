@@ -112,4 +112,23 @@ describe('PatientRegisterPageComponent', () => {
       '/login?returnUrl=%2Fhealth-check%2Fpackages%3Fpackage%3DCOMPLETE',
     );
   });
+
+  it('uses Rwanda as an entry default while preserving the normal global patient account', async () => {
+    const register = vi.fn(() => of({}));
+    await TestBed.configureTestingModule({
+      imports: [PatientRegisterPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ market: 'RW', lang: 'fr' }) } } },
+        { provide: AuthApiService, useValue: { register } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PatientRegisterPageComponent); fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.controls.countryCode.value).toBe('RW');
+    expect(fixture.componentInstance.phonePlaceholder).toContain('+250');
+    expect(fixture.componentInstance.countries.map(country => country.isoCode)).toEqual(['NG', 'RW']);
+    const login = fixture.nativeElement.querySelector('a[href^="/login"]');
+    expect(login.getAttribute('href')).toBe('/login?market=RW&lang=fr');
+  });
 });

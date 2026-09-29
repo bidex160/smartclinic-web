@@ -68,6 +68,14 @@ describe('ProviderRegisterPageComponent', () => {
     expect(component.registrationStateCode.value).toBe('');
     expect(component.form.getRawValue()).toMatchObject({ stateOrRegion: '', city: '' });
   });
+  it('defaults Rwanda provider onboarding to Rwanda and a +250 phone example', async () => {
+    const { component } = await setup(() => of(profile()), { market: 'RW', lang: 'rw' });
+    expect(component.form.controls.countryCode.value).toBe('RW');
+    expect(component.phonePlaceholder).toContain('+250');
+    expect(component.registerStates.map((state) => state.name)).toEqual([
+      'City of Kigali', 'Eastern Province', 'Northern Province', 'Southern Province', 'Western Province',
+    ]);
+  });
   async function setup(register = () => of(profile()), query: Record<string,string> = {}) {
     const api = { register: vi.fn(register) };
     await TestBed.configureTestingModule({

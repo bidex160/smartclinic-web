@@ -17,6 +17,7 @@ import { FindCareApiService } from '../../core/services/find-care-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
+import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 
 @Component({
   selector: 'app-find-care-page',
@@ -396,6 +397,9 @@ export class FindCarePageComponent {
   private readonly locations = inject(LocationDataService);
   private readonly dependantsApi = inject(DependantsApiService);
   private readonly route = inject(ActivatedRoute);
+  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
+  readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
+  readonly marketConfiguration = SMARTCLINIC_MARKETS[this.market];
   readonly countries = this.locations.getCountries();
   readonly states = signal<ReturnType<LocationDataService['getStates']>>([]);
   readonly cities = signal<ReturnType<LocationDataService['getCities']>>([]);
@@ -423,7 +427,7 @@ export class FindCarePageComponent {
   readonly dependantsError = signal(false);
   readonly participant = signal<HealthCheckParticipantSelection>({ kind: 'SELF' });
   readonly form = this.fb.nonNullable.group({
-    countryCode: ['NG'],
+    countryCode: this.fb.nonNullable.control<string>(this.market),
     stateOrRegion: [''],
     city: [''],
     serviceCode: ['', Validators.required],
@@ -479,7 +483,7 @@ export class FindCarePageComponent {
       this.requestedServiceCode.set(this.readRequestedServiceCode(params.get('serviceCode')));
       this.applyRequestedServiceCode();
     });
-    this.states.set(this.locations.getStates('NG'));
+    this.states.set(this.locations.getStates(this.market));
     this.loadServices();
     this.dependantsApi
       .getDependants()
@@ -626,7 +630,9 @@ export class FindCarePageComponent {
         serviceCode: v.serviceCode,
         ...(deliveryMode ? { deliveryMode } : {}),
         ...(this.hostInstitutionReference() && deliveryMode === 'VIRTUAL' ? { hostProviderReference: this.hostInstitutionReference()! } : {}),
-        ...(deliveryMode && deliveryMode !== 'VIRTUAL'
+        ...(deliveryMode === 'VIRTUAL' && this.market === 'RW'
+          ? { countryCode: this.market }
+          : deliveryMode && deliveryMode !== 'VIRTUAL'
           ? {
               countryCode: v.countryCode,
               stateOrRegion: v.stateOrRegion,
@@ -718,7 +724,7 @@ export class FindCarePageComponent {
         : {}),
       ...(v.preferredDate ? { preferredDate: v.preferredDate } : {}),
       ...(v.preferredTime ? { preferredTime: v.preferredTime } : {}),
-      ...(v.preferredDate && v.preferredTime ? { preferredTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lagos' } : {}),
+      ...(v.preferredDate && v.preferredTime ? { preferredTimezone: this.market === 'RW' ? this.marketConfiguration.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone || this.marketConfiguration.timezone } : {}),
       contactMethod: v.contactMethod,
       ...(v.notes.trim() ? { notes: v.notes.trim() } : {}),
       ...this.participantRequest(),
@@ -733,7 +739,12 @@ export class FindCarePageComponent {
     const request = this.request();
     if (!this.auth.authenticated() || !this.auth.isPatient()) {
       this.intent.save(request);
-      void this.router.navigate(['/login'], { queryParams: { returnUrl: '/me/request-care' } });
+      void this.router.navigate(['/login'], {
+        queryParams: {
+          returnUrl: '/me/request-care',
+          ...(this.market === 'RW' ? { market: 'RW', lang: this.marketLanguage } : {}),
+        },
+      });
       return;
     }
     this.submitting.set(true);

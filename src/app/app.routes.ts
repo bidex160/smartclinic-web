@@ -22,6 +22,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'rw',
+    title: 'SmartClinic Rwanda | One connected health journey',
+    loadComponent: () =>
+      import('./features/localisation/rwanda-entry-page.component').then(
+        (component) => component.RwandaEntryPageComponent,
+      ),
+  },
+  {
     path: 'join',
     data: { preload: true },
     title: 'Choose a Smart Health Check | SmartClinic',

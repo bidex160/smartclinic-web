@@ -18,6 +18,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
 import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
+import { requestedMarket, rwandaLocale } from '../../core/config/market-context';
 
 @Component({
   selector: 'app-patient-register-page',
@@ -30,6 +31,9 @@ export class PatientRegisterPageComponent {
   private readonly api = inject(AuthApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly locationData = inject(LocationDataService);
+  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
+  readonly defaultCountryCode = this.market;
+  readonly phonePlaceholder = this.market === 'RW' ? 'e.g. +250 7XX XXX XXX' : 'e.g. +234 800 000 0000';
 
   private readonly referralCode =
     this.route.snapshot.queryParamMap.get('ref')?.trim() || null;
@@ -39,10 +43,11 @@ export class PatientRegisterPageComponent {
   );
 
   readonly loginQueryParams =
-    this.returnUrl || this.referralCode
+    this.returnUrl || this.referralCode || this.market === 'RW'
       ? {
           ...(this.returnUrl && { returnUrl: this.returnUrl }),
           ...(this.referralCode && { ref: this.referralCode }),
+          ...(this.market === 'RW' && { market: 'RW', lang: rwandaLocale(this.route.snapshot.queryParamMap.get('lang')) }),
         }
       : null;
 
@@ -69,7 +74,7 @@ export class PatientRegisterPageComponent {
     phone: ['', [Validators.maxLength(30)]],
 
     countryCode: [
-      'NG',
+      this.defaultCountryCode,
       [
         Validators.required,
         Validators.pattern(/^[A-Za-z]{2}$/),
@@ -192,13 +197,13 @@ export class PatientRegisterPageComponent {
             familyName: '',
             email: '',
             phone: '',
-            countryCode: 'NG',
+            countryCode: this.defaultCountryCode,
             stateOrRegion: '',
             city: '',
             password: '',
           });
 
-          this.states = this.locationData.getStates('NG');
+          this.states = this.locationData.getStates(this.defaultCountryCode);
           this.cities = [];
 
           this.success.set(true);

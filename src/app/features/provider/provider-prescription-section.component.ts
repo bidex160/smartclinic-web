@@ -618,7 +618,51 @@ export class ProviderPrescriptionSectionComponent {
   }
 
   searchMedicines(q:string):void{const term=q.trim().toLowerCase();this.catalogueApi.providerList('MEDICATION').subscribe({next:items=>this.medicineCatalogue.set(items.filter(item=>!term||item.name.toLowerCase().includes(term)||item.code.toLowerCase().includes(term)).slice(0,20)),error:()=>{this.medicineCatalogue.set([]);this.mutationError.set('The medicine catalogue could not be loaded. Please try again.');}});}
-  addCatalogueMedicine(medicine:SmartClinicServiceCatalogueItem):void{const g=this.itemGroup();g.controls.medicationName.setValue(medicine.name);this.items.push(g);this.medicineCatalogue.set([]);}
+  addCatalogueMedicine(medicine: SmartClinicServiceCatalogueItem): void {
+    this.addSuggestedMedication(medicine.name);
+    this.medicineCatalogue.set([]);
+  }
+
+  addSuggestedMedication(medicationName: string): boolean {
+    if (this.appointmentStatus() !== 'IN_PROGRESS' || this.order()?.status === 'ISSUED') return false;
+    if (!this.order() && !this.creatingPrescription()) this.startPrescription();
+
+    const blank = this.items.controls.find(row => !row.controls.medicationName.value?.trim());
+    const row = blank ?? this.itemGroup();
+    if (!blank) this.items.push(row);
+    row.controls.medicationName.setValue(medicationName);
+    row.controls.medicationName.markAsDirty();
+    return true;
+  }
+
+  openPharmacyHandoff(): void { this.handoffOpen.set(true); this.handoffFeedback.set(null); this.searchHandoffPharmacies(''); }
+  searchHandoffPharmacies(query: string): void {
+    this.handoffLoading.set(true);
+    this.api.searchFulfillmentProvidersForProvider('PRESCRIPTION', { q: query.trim(), page: 1, limit: 10 }).pipe(finalize(() => this.handoffLoading.set(false))).subscribe({
+      next: page => this.handoffPharmacies.set(page.items),
+      error: () => { this.handoffPharmacies.set([]); this.handoffFeedback.set('Participating pharmacies could not be loaded. Try again.'); },
+    });
+  }
+  recommendPharmacy(orderReference: string, pharmacy: FulfillmentDirectoryItem): void {
+    if (this.handoffPending()) return;
+    this.handoffPending.set(true); this.handoffFeedback.set(null);
+    this.api.recommendPharmacy(orderReference, pharmacy.providerServiceUnitReference).pipe(finalize(() => this.handoffPending.set(false))).subscribe({
+      next: () => { this.handoffFeedback.set(`${pharmacy.displayName} was recommended. The patient must confirm before the pharmacy can accept and quote.`); this.load(); },
+      error: () => this.handoffFeedback.set('The pharmacy could not be recommended. Refresh and try again.'),
+    });
+  }
+  patientPrescriptionUrl(orderReference: string): string {
+    const path = `/me/prescriptions/${encodeURIComponent(orderReference)}`;
+    return typeof window === 'undefined' ? path : new URL(path, window.location.origin).toString();
+  }
+  async sharePatientLink(orderReference: string): Promise<void> {
+    const url = this.patientPrescriptionUrl(orderReference);
+    try {
+      if (navigator.share) await navigator.share({ title: 'SmartClinic prescription', text: 'Open your prescription, confirm the pharmacy and review the price before payment.', url });
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(url); this.handoffFeedback.set('Patient link copied. Send it only to the intended patient.'); }
+      else this.handoffFeedback.set(`Share this secure patient link: ${url}`);
+    } catch { this.handoffFeedback.set('The patient link was not shared. You can try again.'); }
+  }
 
   addSuggestedMedication(medicationName: string): boolean {
     if (this.appointmentStatus() !== 'IN_PROGRESS' || this.order()?.status === 'ISSUED') return false;

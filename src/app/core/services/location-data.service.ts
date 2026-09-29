@@ -7,6 +7,13 @@ import { lastValueFrom } from 'rxjs';
 type NigeriaLocationCache = { states: Array<{ name: string; cities: string[] }> };
 
 const FCT_COMMON_AREAS = ['Asokoro', 'Dawaki', 'Jabi', 'Karsana', 'Life Camp', 'Wuye'];
+const RWANDA_PROVINCES = [
+  { name: 'City of Kigali', districts: ['Gasabo', 'Kicukiro', 'Nyarugenge'] },
+  { name: 'Eastern Province', districts: ['Bugesera', 'Gatsibo', 'Kayonza', 'Kirehe', 'Ngoma', 'Nyagatare', 'Rwamagana'] },
+  { name: 'Northern Province', districts: ['Burera', 'Gakenke', 'Gicumbi', 'Musanze', 'Rulindo'] },
+  { name: 'Southern Province', districts: ['Gisagara', 'Huye', 'Kamonyi', 'Muhanga', 'Nyamagabe', 'Nyanza', 'Nyaruguru', 'Ruhango'] },
+  { name: 'Western Province', districts: ['Karongi', 'Ngororero', 'Nyabihu', 'Nyamasheke', 'Rubavu', 'Rusizi', 'Rutsiro'] },
+] as const;
 
 @Injectable({ providedIn: 'root' })
 export class LocationDataService {
@@ -17,7 +24,7 @@ export class LocationDataService {
   private loading: Promise<NigeriaLocationCache> | null = null;
 
   getCountries(): ICountry[] {
-    return Country.getAllCountries().filter((country) => country.isoCode === 'NG');
+    return Country.getAllCountries().filter((country) => ['NG', 'RW'].includes(country.isoCode));
   }
 
   async getStatesApi(): Promise<NigeriaLocationCache[]> {
@@ -30,6 +37,9 @@ export class LocationDataService {
   }
 
   getStates(countryCode: string): IState[] {
+    if (countryCode === 'RW') return RWANDA_PROVINCES.map((province) => ({
+      name: province.name, isoCode: province.name, countryCode: 'RW',
+    }));
     if (countryCode !== 'NG') return [];
     return this.readCache().states.map((state) => ({
       name: state.name,
@@ -39,6 +49,10 @@ export class LocationDataService {
   }
 
   getCities(countryCode: string, stateCode: string): ICity[] {
+    if (countryCode === 'RW' && stateCode) {
+      const province = RWANDA_PROVINCES.find((item) => item.name === stateCode);
+      return (province?.districts ?? []).map((name) => ({ name, stateCode, countryCode: 'RW' }));
+    }
     if (countryCode !== 'NG' || !stateCode) return [];
     const state = this.readCache().states.find((item) => item.name === stateCode);
     return (state?.cities ?? []).map((name) => ({

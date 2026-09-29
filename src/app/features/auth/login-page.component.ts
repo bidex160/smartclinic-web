@@ -7,6 +7,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-panel.component';
+import { requestedMarket, rwandaLocale } from '../../core/config/market-context';
 @Component({
   selector: 'app-login-page',
   standalone: true,
@@ -85,7 +86,7 @@ import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-pa
             type="text"
             formControlName="identifier"
             autocomplete="username"
-            placeholder="you@example.com or +234 801 234 5678"
+            [placeholder]="identifierPlaceholder"
             class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
           />
 
@@ -235,7 +236,7 @@ import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-pa
       </section>
 
       <div class="mt-6 text-center">
-        <a routerLink="/" class="text-sm font-bold text-brand-700 underline underline-offset-4">
+        <a [routerLink]="marketHomeRoute" class="text-sm font-bold text-brand-700 underline underline-offset-4">
           Back to SmartClinic
         </a>
       </div>
@@ -261,6 +262,12 @@ export class LoginPageComponent {
   readonly showPassword = signal(false);
   readonly registrationQueryParams = this.authFlowQueryParams();
   readonly hasReferral = Boolean(this.route.snapshot.queryParamMap.get('ref')?.trim());
+  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
+  readonly identifierPlaceholder = this.market === 'RW'
+    ? 'you@example.com or +250 7XX XXX XXX'
+    : 'you@example.com or +234 801 234 5678';
+  readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
+  readonly marketHomeRoute = this.market === 'RW' ? '/rw' : '/';
 
   readonly form = this.fb.nonNullable.group({
     identifier: ['', Validators.required],
@@ -271,8 +278,10 @@ export class LoginPageComponent {
   private authFlowQueryParams(): Record<string, string> | null {
     const returnUrl = safeInternalReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
     const referralCode = this.route.snapshot.queryParamMap.get('ref')?.trim();
-    return returnUrl || referralCode
-      ? { ...(returnUrl && { returnUrl }), ...(referralCode && { ref: referralCode }) }
+    const market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
+    const language = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
+    return returnUrl || referralCode || market === 'RW'
+      ? { ...(returnUrl && { returnUrl }), ...(referralCode && { ref: referralCode }), ...(market === 'RW' && { market, lang: language }) }
       : null;
   }
 
@@ -319,6 +328,12 @@ export class LoginPageComponent {
             }
             if (user?.networkRole === 'BUILDER' || user?.networkRole === 'AMBASSADOR') {
               void this.router.navigate(['/builder/dashboard']);
+              return;
+            }
+            if (this.market === 'RW') {
+              void this.router.navigate(['/me/dashboard'], {
+                queryParams: { market: 'RW', lang: this.marketLanguage },
+              });
               return;
             }
             void this.router.navigate(['/me/dashboard']);

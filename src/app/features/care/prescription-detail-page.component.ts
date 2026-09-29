@@ -84,6 +84,22 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             <strong>{{ f.pharmacy.displayName }}</strong> · {{ f.pharmacy.serviceUnitName }}
           </p>
           <p class="mt-2">{{ status(f.status) }}</p>
+          @if (f.status === 'PROPOSED') {
+            <div class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4">
+              <p class="font-semibold text-brand-950">
+                Your clinician recommended this pharmacy. Confirm it before the pharmacy can accept
+                the prescription and send a price.
+              </p>
+              <button
+                type="button"
+                (click)="confirmRecommendedPharmacy(f)"
+                [disabled]="pending()"
+                class="mt-3 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
+              >
+                Confirm this pharmacy
+              </button>
+            </div>
+          }
           @if (f.quote; as q) {
             <div class="mt-5 border-t pt-5">
               <h3 class="font-bold">Your medicine price</h3>
@@ -278,6 +294,21 @@ export class PrescriptionDetailPageComponent {
         next: (x: any) =>
           this.api.getPatientFulfillment(x.reference).subscribe((f) => this.fulfillment.set(f)),
         error: () => this.error.set('The pharmacy could not be selected. Refresh and try again.'),
+      });
+  }
+  confirmRecommendedPharmacy(f: PatientOrderFulfillment) {
+    this.pending.set(true);
+    this.error.set(null);
+    this.api
+      .selectPharmacy(this.reference, f.pharmacy.serviceUnitReference)
+      .pipe(finalize(() => this.pending.set(false)))
+      .subscribe({
+        next: (x: any) =>
+          this.api.getPatientFulfillment(x.reference).subscribe({
+            next: (selected) => this.fulfillment.set(selected),
+            error: () => this.error.set('The confirmed pharmacy state could not be loaded.'),
+          }),
+        error: () => this.error.set('The recommended pharmacy could not be confirmed. Refresh and try again.'),
       });
   }
   changePharmacy(ref: string) {

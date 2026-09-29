@@ -11,6 +11,8 @@ describe('LoginPageComponent', () => {
     options: {
       returnUrl?: string | null;
       referralCode?: string | null;
+      market?: string | null;
+      language?: string | null;
       roles?: ('USER' | 'ADMIN' | 'OPERATIONS' | 'PROVIDER')[];
     } = {},
   ) {
@@ -39,7 +41,11 @@ describe('LoginPageComponent', () => {
                     ? (options.returnUrl ?? null)
                     : key === 'ref'
                       ? (options.referralCode ?? null)
-                      : null,
+                      : key === 'market'
+                        ? (options.market ?? null)
+                        : key === 'lang'
+                          ? (options.language ?? null)
+                          : null,
               },
             },
           },
@@ -100,6 +106,14 @@ describe('LoginPageComponent', () => {
     component.submit();
     expect(auth.accessToken()).toBe('token');
     expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard']);
+  });
+  it('carries Rwanda entry context through login without creating a separate identity flow', async () => {
+    const { component, fixture, router } = await setup(false, { market: 'RW', language: 'fr' });
+    expect(fixture.nativeElement.querySelector('#identifier').placeholder).toContain('+250');
+    expect(fixture.nativeElement.querySelector('a[href^="/register"]').getAttribute('href')).toBe('/register?market=RW&lang=fr');
+    component.form.setValue({ identifier: '+250788000000', password: 'existing-password' });
+    component.submit();
+    expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard'], { queryParams: { market: 'RW', lang: 'fr' } });
   });
   it('honors a safe internal returnUrl and preserves its package query parameter', async () => {
     const destination = '/health-check/packages?package=ESSENTIAL';

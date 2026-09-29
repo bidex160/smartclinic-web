@@ -45,6 +45,7 @@ describe('FindCarePageComponent', () => {
     serviceCode: string | null = null,
     serviceResponse: Observable<typeof services> = of(services),
     doctorJourney = false,
+    market: 'NG' | 'RW' = 'NG',
   ) {
     const find = {
       getServices: vi.fn(() => serviceResponse),
@@ -84,16 +85,18 @@ describe('FindCarePageComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { queryParamMap: convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}) }) },
-            queryParamMap: of(convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}) })),
+            snapshot: { queryParamMap: convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}), ...(market === 'RW' ? { market: 'RW', lang: 'rw' } : {}) }) },
+            queryParamMap: of(convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}), ...(market === 'RW' ? { market: 'RW', lang: 'rw' } : {}) })),
           },
         },
         { provide: FindCareApiService, useValue: find },
         {
           provide: LocationDataService,
           useValue: {
-            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }],
-            getStates: () => [
+            getCountries: () => [{ name: 'Nigeria', isoCode: 'NG' }, { name: 'Rwanda', isoCode: 'RW' }],
+            getStates: (countryCode: string) => countryCode === 'RW' ? [
+              { name: 'City of Kigali', isoCode: '01', countryCode: 'RW' },
+            ] : [
               { name: 'Lagos', isoCode: 'LA', countryCode: 'NG' },
               { name: 'Oyo', isoCode: 'Oyo', countryCode: 'NG' },
             ],
@@ -233,6 +236,18 @@ describe('FindCarePageComponent', () => {
     expect(nav).toHaveBeenCalledWith(['/login'], {
       queryParams: { returnUrl: '/me/request-care' },
     });
+  });
+  it('country-scopes Rwanda virtual discovery, uses Kigali time, and preserves market through login', async () => {
+    const { fixture, find, router } = await setup(false, [], null, of(services), false, 'RW');
+    const nav = vi.spyOn(router, 'navigate');
+    const component = fixture.componentInstance;
+    expect(component.form.controls.countryCode.value).toBe('RW');
+    component.form.patchValue({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', preferredDate: '2026-10-01', preferredTime: '09:00' });
+    component.discoverProviders();
+    expect(find.getProviders).toHaveBeenLastCalledWith({ serviceCode: 'DENTAL', deliveryMode: 'VIRTUAL', countryCode: 'RW', limit: 50 });
+    expect(component.request()).toEqual(expect.objectContaining({ preferredTimezone: 'Africa/Kigali' }));
+    component.submit();
+    expect(nav).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/me/request-care', market: 'RW', lang: 'rw' } });
   });
   it.each(['IN_PERSON', 'HOME_VISIT'] as const)(
     'requires geography and sends it for %s provider discovery and submission',

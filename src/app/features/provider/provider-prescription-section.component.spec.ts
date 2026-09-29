@@ -42,6 +42,20 @@ describe('ProviderPrescriptionSectionComponent form UX', () => {
     expect(fixture.componentInstance.medicineCatalogue()[0]?.name).toBe('Amoxicillin 500 mg');
   });
 
+  it('adds a catalogue medicine into the existing blank row instead of creating an invalid extra row', async () => {
+    const api = { listAppointmentOrders: vi.fn(() => of({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 })) };
+    await TestBed.configureTestingModule({ imports: [ProviderPrescriptionSectionComponent], providers: [{ provide: PharmacyFulfillmentApiService, useValue: api }, { provide: ServiceCatalogueApiService, useValue: { providerList: vi.fn(() => of([])) } }] }).compileComponents();
+    const fixture = TestBed.createComponent(ProviderPrescriptionSectionComponent); fixture.componentRef.setInput('appointmentReference','SC-APT-1'); fixture.componentRef.setInput('appointmentStatus','IN_PROGRESS'); fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.startPrescription();
+    expect(component.items.length).toBe(1);
+    component.addCatalogueMedicine({ code: 'MED_PARACETAMOL_500', name: 'Paracetamol 500 mg', requiresPrescription: false } as any);
+
+    expect(component.items.length).toBe(1);
+    expect(component.items.at(0).controls.medicationName.value).toBe('Paracetamol 500 mg');
+  });
+
   it('prefills a suggested medication locally without saving or issuing it', async () => {
     const api = {
       listAppointmentOrders: vi.fn(() => of({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 })),
