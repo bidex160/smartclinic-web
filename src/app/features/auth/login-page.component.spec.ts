@@ -111,6 +111,7 @@ describe('LoginPageComponent', () => {
     const { component, fixture, router } = await setup(false, { market: 'RW', language: 'fr' });
     expect(fixture.nativeElement.querySelector('#identifier').placeholder).toContain('+250');
     expect(fixture.nativeElement.querySelector('a[href^="/register"]').getAttribute('href')).toBe('/register?market=RW&lang=fr');
+    expect(fixture.nativeElement.querySelector('a[href^="/provider/register"]').getAttribute('href')).toBe('/provider/register?market=RW&lang=fr');
     component.form.setValue({ identifier: '+250788000000', password: 'existing-password' });
     component.submit();
     expect(router.navigate).toHaveBeenCalledWith(['/me/dashboard'], { queryParams: { market: 'RW', lang: 'fr' } });

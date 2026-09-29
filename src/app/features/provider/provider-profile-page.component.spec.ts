@@ -50,24 +50,47 @@ describe('ProviderProfilePageComponent', () => {
     const { fixture, component, api } = await setup(value);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Setup progress');
-    expect(fixture.nativeElement.textContent).toContain('Add at least one active Health Check service');
-    expect(fixture.nativeElement.textContent).toContain('Configure a location for your in-person Health Check service');
-    expect(fixture.nativeElement.textContent).toContain('Add weekly availability for your Health Check services');
-    expect(fixture.nativeElement.textContent).toContain('Configure Home Visit coverage for your Health Check services');
+    expect(fixture.nativeElement.textContent).toContain('Add a Health Check service if you want to offer Health Checks');
+    expect(fixture.nativeElement.textContent).toContain('Configure a location for any in-person Health Check service');
+    expect(fixture.nativeElement.textContent).toContain('Add availability for any Health Check service you activate');
+    expect(fixture.nativeElement.textContent).toContain('Configure coverage for any Home Visit Health Check service');
     expect(component.canSubmitForReview(value)).toBe(true);
     component.requestSubmit();
     expect(component.confirmingSubmit()).toBe(true);
     component.submit();
     expect(api.submit).toHaveBeenCalledOnce();
   });
-  it('keeps submitted configuration read-only and prevents duplicate submission', async () => {
+  it('keeps submitted providers editable for provisional setup and prevents duplicate submission', async () => {
     const { fixture, component, api } = await setup(profile('SUBMITTED'));
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Awaiting SmartClinic review');
+    expect(fixture.nativeElement.textContent).toContain('Provisionally approved');
+    expect(component.form.enabled).toBe(true);
+    expect(component.configurationEditable(profile('SUBMITTED'))).toBe(true);
     component.requestSubmit();
     component.submit();
     component.submit();
     expect(api.submit).not.toHaveBeenCalled();
+  });
+  it('does not require Health Check setup for pharmacy or diagnostic providers', async () => {
+    const base = profile('SUBMITTED');
+    const value = {
+      ...base,
+      providerType: 'PHARMACY' as const,
+      status: 'ACTIVE' as const,
+      readiness: {
+        ...base.readiness,
+        hasActiveCapability: false,
+        providerLocationReady: false,
+        hasAvailability: false,
+        blockers: ['NO_ACTIVE_CAPABILITY', 'NO_WEEKLY_AVAILABILITY'] as const,
+      },
+    };
+    const { fixture, component } = await setup(value);
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Health Check setup is not required');
+    expect(text).not.toContain('Add a Health Check service');
+    expect(component.visibleBlockers(value)).toEqual([]);
   });
   it('translates persisted state name to UI code without clearing the existing city', async () => {
     const { component } = await setup({
@@ -172,7 +195,7 @@ function profile(
     countryCode: 'NG',
     stateOrRegion: 'Lagos',
     city: 'Ikeja',
-    status: 'PENDING' as const,
+    status: onboardingStatus === 'SUBMITTED' || onboardingStatus === 'APPROVED' ? 'ACTIVE' as const : 'PENDING' as const,
     onboardingStatus,
     submittedAt: '2026-08-22',
     reviewedAt: null,

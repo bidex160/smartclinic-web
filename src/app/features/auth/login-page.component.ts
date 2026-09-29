@@ -199,7 +199,7 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Healthcare provider?</p>
         <h2 id="provider-access-heading" class="mt-2 text-xl font-bold text-brand-900">Join or access your provider workspace.</h2>
         <p class="mt-2 text-sm leading-6 text-slate-600">For clinics, pharmacies, laboratories, hospitals and health professionals.</p>
-        <a routerLink="/provider/register" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-700">Join SmartClinic as a provider →</a>
+        <a routerLink="/provider/register" [queryParams]="registrationQueryParams" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-700">Join SmartClinic as a provider →</a>
       </section>
 
       <section
