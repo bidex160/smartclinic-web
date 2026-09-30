@@ -13,7 +13,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
     geography: { countryCode: 'NG', stateOrRegion: 'Oyo', city: 'Ibadan' },
     preferredProvider: null,
     assignedProvider: null,
-    preferredDate: '2026-09-01',
+    preferredDate: '2099-09-01',
     preferredTime: '10:30',
     contactMethod: 'EMAIL',
     notes: 'Wheelchair access',
@@ -104,7 +104,7 @@ describe('ProviderCareRequestDetailPageComponent', () => {
   });
   it('schedules accepted care with public location reference and authoritative refetch', async () => {
     const { fixture, api } = await setup('PROVIDER_ACCEPTED');
-    expect(fixture.nativeElement.textContent).toContain('Payment confirmed');
+    expect(fixture.nativeElement.textContent).toContain('Care funding confirmed');
     const c = fixture.componentInstance;
     c.scheduleOpen.set(true);
     c.scheduleForm.setValue({
@@ -132,7 +132,11 @@ describe('ProviderCareRequestDetailPageComponent', () => {
     TestBed.resetTestingModule();
     const free = await setup('PROVIDER_ACCEPTED', false, false, 'VIRTUAL', 'SATISFIED_FREE');
     expect(free.fixture.nativeElement.textContent).toContain('Free — no payment required');
-    expect(free.fixture.nativeElement.textContent).toContain('Payment confirmed');
+    expect(free.fixture.nativeElement.textContent).toContain('Care funding confirmed');
+    expect(free.fixture.nativeElement.textContent).toContain('Confirm and schedule requested time');
+    free.fixture.componentInstance.openSchedule(free.fixture.componentInstance.request()!);
+    expect(free.fixture.componentInstance.scheduleForm.controls.scheduledDate.value).toBe('2099-09-01');
+    expect(free.fixture.componentInstance.scheduleForm.controls.scheduledTimeFrom.value).toBe('10:30');
   });
   it('validates interval and preserves scheduling values after overlap conflict', async () => {
     const { fixture, api } = await setup('PROVIDER_ACCEPTED', false, true);

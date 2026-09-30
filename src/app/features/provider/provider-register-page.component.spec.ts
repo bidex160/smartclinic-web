@@ -6,6 +6,16 @@ import { ProviderOnboardingApiService } from '../../core/services/provider-onboa
 import { ProviderRegisterPageComponent } from './provider-register-page.component';
 
 describe('ProviderRegisterPageComponent', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
   it('validates and submits only the public provider registration contract without authenticating', async () => {
     const { component, api } = await setup();
     component.form.setValue({

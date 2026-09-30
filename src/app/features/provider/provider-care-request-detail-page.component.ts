@@ -124,18 +124,18 @@ import { formatMinor } from './care-money';
           </button>
         </section>
       }
-      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && !r.preferredDate) {
+      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && !r.appointment) {
         <button
           type="button"
           (click)="openSchedule(r)"
           class="mt-6 min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
         >
-          Choose appointment time
+          {{ r.preferredDate ? 'Confirm and schedule requested time' : 'Choose appointment time' }}
         </button>
       }
-      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && r.preferredDate) {
+      @if (r.status === 'PROVIDER_ACCEPTED' && fundingSatisfied(r) && r.preferredDate && !r.appointment) {
         <p class="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 font-semibold text-green-950">
-          Payment confirmed ✓ · SmartClinic is confirming the agreed appointment time automatically.
+          Care funding confirmed ✓ · Review the requested time and schedule the appointment.
         </p>
       }
       @if (r.status === 'PROVIDER_ACCEPTED' && !fundingSatisfied(r)) {

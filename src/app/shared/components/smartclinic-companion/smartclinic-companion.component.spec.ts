@@ -54,4 +54,18 @@ describe('SmartClinicCompanionComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Get urgent help now');
     expect(fixture.nativeElement.textContent).toContain('not an emergency service');
   });
+
+  it('routes test questions to Tests & Referrals instead of Stay Well', () => {
+    const fixture = TestBed.createComponent(SmartClinicCompanionComponent);
+    const component = fixture.componentInstance;
+    component.finishIntroduction();
+    component.query.set('How do I request a test?');
+    component.ask();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('To request a test, scan, or medicine');
+    expect(fixture.nativeElement.textContent).not.toContain('Stay Well helps you understand your health');
+    const link = fixture.nativeElement.querySelector('.guide__answer a') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Forders');
+  });
 });
