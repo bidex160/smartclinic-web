@@ -9,4 +9,5 @@ export class DependantsApiService {
   getDependants(){return this.http.get<DependantListResponse>(`${this.base}/me/dependants`);}
   getDependant(patientReference:string){return this.http.get<Dependant>(`${this.base}/me/dependants/${encodeURIComponent(patientReference)}`);}
   createDependant(payload:CreateDependantRequest){return this.http.post<Dependant>(`${this.base}/me/dependants`,payload);}
+  removeDependant(patientReference:string){return this.http.delete<void>(`${this.base}/me/dependants/${encodeURIComponent(patientReference)}`);}
 }

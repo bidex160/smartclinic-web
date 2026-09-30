@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { describe, expect, it, vi } from 'vitest';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { FamilyDependantsPageComponent } from './family-dependants-page.component';
 
@@ -32,6 +33,20 @@ describe('FamilyDependantsPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Aisha Okafor');
     expect(fixture.nativeElement.textContent).toContain('You are their mother');
     expect(fixture.nativeElement.textContent).not.toContain('Aisha — Mother');
+  });
+  it('removes the guardian relationship from the displayed list without deleting the patient identity', async () => {
+    const removeDependant = vi.fn((_reference: string) => of(void 0));
+    vi.stubGlobal('confirm', vi.fn(() => true));
+    await TestBed.configureTestingModule({
+      imports: [FamilyDependantsPageComponent],
+      providers: [provideRouter([]), { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [dependant] }), removeDependant } }],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(FamilyDependantsPageComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.remove(dependant as any);
+    expect(removeDependant).toHaveBeenCalledWith(dependant.patientReference);
+    expect(fixture.componentInstance.dependants()).toEqual([]);
+    vi.unstubAllGlobals();
   });
   it('submits canonical geography and updates the list without contact fields', async () => {
     const createDependant = vi.fn((_payload: unknown) => of(dependant));

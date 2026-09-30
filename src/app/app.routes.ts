@@ -403,6 +403,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/care/patient-service-catalogue-page.component').then(m => m.PatientServiceCataloguePageComponent),
       },
       {
+        path: 'tests',
+        redirectTo: 'orders',
+        pathMatch: 'full',
+      },
+      {
         path: 'orders',
         title: 'Tests & Referrals | SmartClinic',
         canActivate: [authenticatedUserGuard],

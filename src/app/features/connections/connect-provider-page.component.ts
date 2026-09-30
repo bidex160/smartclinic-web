@@ -128,6 +128,11 @@ import { formatMinor } from '../provider/care-money';
                 {{ money(p.existingPatientLink.feeMinor, p.existingPatientLink.currency) }}</span
               ></label
             >
+          } @else {
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-600">
+              <strong class="block text-slate-800">Yes — connect my existing record</strong>
+              <span class="mt-1 block text-sm">This hospital has not enabled existing patient connections yet. Choose the new patient option or contact the hospital directly.</span>
+            </div>
           }
         </fieldset>
         @if (form.controls.path.value === 'EXISTING_PATIENT_LINK') {

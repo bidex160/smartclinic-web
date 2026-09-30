@@ -142,7 +142,7 @@ export class ProviderServiceUnitsPageComponent {
   readonly editing = signal<ProviderServiceUnit | null>(null);
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(160)]],
-    code: ['', [Validators.required, Validators.pattern(/^[A-Z][A-Z0-9_]{1,79}$/)]],
+    code: ['', [Validators.required, Validators.pattern(/^[A-Z][A-Z0-9_]{1,79}$/i)]],
     type: ['PHARMACY' as ProviderServiceUnitType, Validators.required],
     description: ['', [Validators.maxLength(4000)]],
   });
@@ -171,6 +171,7 @@ export class ProviderServiceUnitsPageComponent {
     this.editor.set(true);
   }
   save() {
+    this.form.controls.code.setValue(this.form.controls.code.value.trim().toUpperCase());
     if (this.form.invalid) return;
     this.pending.set(true);
     const v = this.form.getRawValue(),
