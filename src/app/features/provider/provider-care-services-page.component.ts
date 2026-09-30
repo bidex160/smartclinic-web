@@ -21,8 +21,9 @@ import { ProviderClinicalDocumentationComponent } from './provider-clinical-docu
       <p class="text-sm font-bold uppercase text-brand-600">Find Care configuration</p>
       <h1 class="mt-2 text-3xl font-bold">Care Services</h1>
       <p class="mt-2 max-w-3xl text-slate-600">
-        Configure the General Care services patients can find you for. These offerings are separate
-        from Health Check services.
+        Configure appointment services patients can find you for. Individual lab and imaging tests use
+        the Tests & Referrals workflow and receive their own prices per request. These offerings
+        are separate from Health Check services.
       </p>
     </header>
     @if (feedback()) {
@@ -513,7 +514,7 @@ export class ProviderCareServicesPageComponent {
   });
   readonly availableDefinitions = computed(() => {
     const configured = new Set(this.offerings().map((x) => x.careServiceDefinitionId));
-    return this.catalogue().filter((x) => x.isActive && !configured.has(x.id));
+    return this.catalogue().filter((x) => x.isActive && !configured.has(x.id) && !['LAB_RESULT', 'IMAGING_RESULT', 'PHARMACY'].includes(x.clinicalRecordType ?? '') && !/\b(lab(oratory)? test|imaging test)\b/i.test(`${x.code} ${x.name}`));
   });
   constructor() {
     this.load();

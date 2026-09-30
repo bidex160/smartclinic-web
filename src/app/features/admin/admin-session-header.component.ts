@@ -356,6 +356,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
             Providers
           </a>
 
+          <a routerLink="/admin/partner-facility-demand" routerLinkActive="!bg-brand-700 !text-white" class="mt-1 flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 focus:ring-brand-700">Facility Demand</a>
+
           @if (authState.currentUser()?.roles?.includes('ADMIN')) {
             <p
               class="
@@ -784,6 +786,8 @@ import { AuthStateService } from '../../core/services/auth-state.service';
           >
             Providers
           </a>
+
+          <a routerLink="/admin/partner-facility-demand" routerLinkActive="bg-brand-100 text-brand-900" (click)="closeMobileMenu(mobileMenu)" class="mt-1 min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900">Facility Demand</a>
 
           @if (authState.currentUser()?.roles?.includes('ADMIN')) {
             <p

@@ -20,6 +20,7 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
             <p class="mt-2 max-w-2xl text-brand-50">Open a connected hospital to see supported care, requests, bills and records in one place.</p>
           </div>
           <a routerLink="/me/providers/connect" class="min-h-12 rounded-xl bg-white px-5 py-3 font-bold text-brand-900 shadow-sm">Connect a hospital</a>
+          <a routerLink="/me/partner-facilities" class="min-h-12 rounded-xl border border-white/70 px-5 py-3 font-bold text-white">Find hospitals, pharmacies and labs</a>
         </div>
       </header>
 

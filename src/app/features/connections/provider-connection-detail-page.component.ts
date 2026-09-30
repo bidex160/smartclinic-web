@@ -56,9 +56,9 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                       <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="request.resultReady ? 'bg-emerald-50 text-emerald-800' : request.paymentStatus === 'PAID' ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'">{{ request.resultReady ? 'Result ready' : request.paymentStatus === 'PAID' ? 'Paid ✓' : request.paymentStatus === 'NOT_PRICED' ? 'Being prepared' : 'Payment needed' }}</span>
                     </div>
                     @if (request.amountMinor !== null && request.currency) { <p class="mt-3 font-extrabold text-slate-900">{{ money(request.amountMinor, request.currency) }}</p> }
-                    @if (request.resultReady) { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">View result →</a> }
+                    @if (request.resultReady) { <a [routerLink]="['/me/orders', request.orderReference]" class="mt-3 inline-flex font-bold text-brand-700">View result →</a> }
                     @else if (request.type === 'PRESCRIPTION') { <a routerLink="/me/prescriptions" class="mt-3 inline-flex font-bold text-brand-700">Open prescription →</a> }
-                    @else { <a routerLink="/me/tests" class="mt-3 inline-flex font-bold text-brand-700">Open request →</a> }
+                    @else { <a [routerLink]="['/me/orders', request.orderReference]" class="mt-3 inline-flex font-bold text-brand-700">Open request →</a> }
                   </article>
                 }
               </div>
@@ -341,7 +341,8 @@ export class ProviderConnectionDetailPageComponent {
       });
   }
   canCancel(c: PatientProviderConnection) {
-    return !['CONNECTED', 'REJECTED', 'CANCELLED'].includes(c.status);
+    const alreadyPaid = this.funding()?.fundings.some((item) => item.fundingStatus === 'PAID') ?? false;
+    return !alreadyPaid && !['CONNECTED', 'REJECTED', 'CANCELLED'].includes(c.status);
   }
   path(v: string) {
     return v === 'NEW_PATIENT_REGISTRATION' ? 'New patient registration' : 'Existing patient link';
