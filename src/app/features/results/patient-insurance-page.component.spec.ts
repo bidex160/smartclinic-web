@@ -18,20 +18,22 @@ describe('PatientInsurancePageComponent', () => {
         },
         {
           provide: HmoApiService,
-          useValue: { listHmos: () => of([]), createEnrollmentLead },
+          useValue: { listHmos: () => of([]), listPlans: () => of([]), createEnrollmentLead },
         },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientInsurancePageComponent);
     const component = fixture.componentInstance;
+    component.enrollmentConsent.set(true);
 
-    component.submitInterest('hmo-1', '  Acme Ltd  ', '  Call after 4pm  ');
+    component.submitInterest('hmo-1', '', '  Acme Ltd  ', '  Call after 4pm  ');
 
     expect(createEnrollmentLead).toHaveBeenCalledWith('SCP-123', {
+      consentAcknowledged: true,
       preferredHmoId: 'hmo-1',
       employerOrganisation: 'Acme Ltd',
       notes: 'Call after 4pm',
     });
-    expect(component.feedback()).toContain('remain self-pay and Unverified');
+    expect(component.feedback()).toContain('no payment was taken');
   });
 });

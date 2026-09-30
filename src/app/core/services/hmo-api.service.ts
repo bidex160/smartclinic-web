@@ -6,6 +6,7 @@ import {
   HmoCase,
   HmoEnrollmentLead,
   HmoFunnel,
+  HmoPlan,
   PatientHmoCoverage,
 } from '../models/hmo.model';
 @Injectable({ providedIn: 'root' })
@@ -25,7 +26,7 @@ export class HmoApiService {
   }
   createEnrollmentLead(
     patientReference: string,
-    d: { preferredHmoId?: string; employerOrganisation?: string; notes?: string },
+    d: { preferredHmoId?: string; planId?: string; employerOrganisation?: string; notes?: string; consentAcknowledged: boolean },
   ) {
     return this.http.post<HmoEnrollmentLead>(
       `${this.base}/hmo/me/enrollment-leads/${encodeURIComponent(patientReference)}`,
@@ -50,6 +51,11 @@ export class HmoApiService {
   listHmos() {
     return this.http.get<Hmo[]>(`${this.base}/hmo`);
   }
+  listPlans(hmoId?: string) {
+    let params = new HttpParams();
+    if (hmoId) params = params.set('hmoId', hmoId);
+    return this.http.get<HmoPlan[]>(`${this.base}/hmo/plans`, { params });
+  }
   coverages(patientId: string) {
     return this.http.get<PatientHmoCoverage[]>(`${this.base}/hmo/admin/coverages`, {
       params: new HttpParams().set('patientId', patientId),
@@ -64,6 +70,8 @@ export class HmoApiService {
   funnel() {
     return this.http.get<HmoFunnel>(`${this.base}/hmo/admin/funnel`);
   }
+  enrollmentLeads() { return this.http.get<readonly HmoEnrollmentLead[]>(`${this.base}/hmo/admin/enrollment-leads`); }
+  updateEnrollmentLead(id: string, status: 'CONTACTED' | 'CLOSED') { return this.http.patch(`${this.base}/hmo/admin/enrollment-leads/${encodeURIComponent(id)}`, { status }); }
   verify(ref: string, d: any) {
     return this.http.post(`${this.base}/hmo/admin/cases/${encodeURIComponent(ref)}/eligibility`, d);
   }
