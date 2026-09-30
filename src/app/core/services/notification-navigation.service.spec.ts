@@ -11,8 +11,11 @@ describe('NotificationNavigationService', () => {
     expect(mapper.destination(item('CARE_REQUEST'), 'USER')).toEqual(['/me/care', 'CR-1']);
     expect(mapper.destination(item('CARE_REQUEST'), 'PROVIDER')).toEqual(['/provider/care-requests', 'CR-1']);
   });
-  it('does not guess routes for unknown entities or roles', () => {
+  it('keeps patient notifications actionable with safe fallbacks', () => {
     expect(mapper.destination(item('CARE_REQUEST'), null)).toBeNull();
-    expect(mapper.destination(item('FUTURE_ENTITY'), 'USER')).toBeNull();
+    expect(mapper.destination(item('HEALTH_CHECK'), 'USER')).toEqual(['/me/health-checks', 'CR-1']);
+    expect(mapper.destination(item('PATIENT_ORDER'), 'USER')).toEqual(['/me/orders', 'CR-1']);
+    expect(mapper.destination(item('PROVIDER_CONNECTION'), 'USER')).toEqual(['/me/providers', 'CR-1']);
+    expect(mapper.destination(item('FUTURE_ENTITY'), 'USER')).toEqual(['/me/notifications']);
   });
 });
