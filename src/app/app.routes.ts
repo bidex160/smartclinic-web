@@ -29,6 +29,14 @@ export const routes: Routes = [
       import('./features/join/join.component').then((component) => component.JoinComponent),
   },
 
+    {
+    path: 'ahts',
+    data: { preload: true },
+    title: 'Choose a Smart Health Check | SmartClinic',
+    loadComponent: () =>
+      import('./features/ahts/ahts.component').then((component) => component.Ahtsomponent),
+  },
+
   {
     path: 'health-check/packages',
     title: 'Choose a Smart Health Check | SmartClinic',
