@@ -1,0 +1,17 @@
+@reference "../../../../ahts";
+
+:host {
+  @apply block min-h-screen bg-[#f1f1f1] font-sans text-ink;
+}
+
+@layer components {
+  /* Big call-to-action button used inside the panels */
+  .btn {
+    @apply mt-3.5 block w-full cursor-pointer rounded-xl px-3 py-3.5 text-center font-extrabold no-underline;
+  }
+
+  /* Inputs, select and textarea in the dark lead form */
+  .field {
+    @apply mb-2.5 mt-1.5 w-full rounded-[9px] border-0 bg-white p-[13px] font-[inherit] text-ink;
+  }
+}
