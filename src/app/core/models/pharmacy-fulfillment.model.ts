@@ -35,6 +35,7 @@ export interface PrescriptionDetail {
 }
 export interface ClinicalOrder {
   readonly reference: string;
+  readonly patient?: { readonly patientReference: string; readonly displayName: string };
   readonly type: ClinicalOrderType;
   readonly status: ClinicalOrderStatus;
   readonly clinicalNote: string | null;

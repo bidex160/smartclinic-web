@@ -87,11 +87,13 @@ export class ProviderDashboardPageComponent {
       { title: 'Your payments', helper: 'See patient payments and settlements.', route: '/provider/earnings' },
       { title: 'Grow my network', helper: 'Recommend trusted providers and grow your impact.', route: '/provider/network' },
       { title: 'Pharmacy setup', helper: 'Keep your pharmacy details and service units up to date.', route: '/provider/profile' },
+      { title: 'Patient interest', helper: 'See how many patients have asked SmartClinic to contact your pharmacy.', route: '/provider/facility-demand' },
     ];
     if (type === 'DIAGNOSTIC_CENTRE') return [
       { title: 'Test & scan requests', helper: 'Accept requests, send prices and upload patient results.', route: '/provider/pharmacy-orders' },
       { title: 'Your payments', helper: 'See patient payments and settlements.', route: '/provider/earnings' },
       { title: 'Diagnostic setup', helper: 'Keep your laboratory or diagnostic centre details up to date.', route: '/provider/profile' },
+      { title: 'Patient interest', helper: 'See how many patients have asked SmartClinic to contact your facility.', route: '/provider/facility-demand' },
     ];
     return [
       { title: 'New patient requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
@@ -99,6 +101,7 @@ export class ProviderDashboardPageComponent {
       { title: 'Your payments', helper: 'See what patients have paid and what is due to you.', route: '/provider/earnings' },
       { title: 'Prescription earnings', helper: 'Track held and available Smart Prescription coordination fees.', route: '/provider/pharmacy-coordination-earnings' },
       { title: 'Grow my network', helper: 'Recommend trusted pharmacies, labs and clinics and grow your impact.', route: '/provider/network' },
+      { title: 'Patient interest', helper: 'See aggregate demand for your facility from the SmartClinic directory.', route: '/provider/facility-demand' },
       { title: 'Services', helper: 'Choose the consultations patients can book.', route: '/provider/care-services', status: 'findCare' },
       { title: 'Availability', helper: 'Set when patients can book you.', route: '/provider/profile', fragment: 'availability', status: 'availability' },
       { title: 'Locations', helper: 'Manage where you see patients in person.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },

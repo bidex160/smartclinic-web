@@ -286,12 +286,30 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'partner-facility-demand',
+        title: 'Facility Demand | SmartClinic',
+        canActivate: [adminPricingGuard],
+        loadComponent: () =>
+          import('./features/admin/partner-facility-demand-page.component').then(
+            (c) => c.PartnerFacilityDemandPageComponent,
+          ),
+      },
+      {
         path: 'providers/connect',
         title: 'Connect to a Provider | SmartClinic',
         canActivate: [authenticatedUserGuard],
         loadComponent: () =>
           import('./features/connections/connect-provider-page.component').then(
             (c) => c.ConnectProviderPageComponent,
+          ),
+      },
+      {
+        path: 'partner-facilities',
+        title: 'Find a Facility | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/connections/partner-facility-directory-page.component').then(
+            (c) => c.PartnerFacilityDirectoryPageComponent,
           ),
       },
       {
@@ -391,6 +409,11 @@ export const routes: Routes = [
       {
         path: 'medicines',
         loadComponent: () => import('./features/care/patient-service-catalogue-page.component').then(m => m.PatientServiceCataloguePageComponent),
+      },
+      {
+        path: 'tests',
+        redirectTo: 'orders',
+        pathMatch: 'full',
       },
       {
         path: 'orders',
@@ -586,6 +609,16 @@ export const routes: Routes = [
     path: 'provider',
     component: ProviderLayoutComponent,
     children: [
+      {
+        path: 'facility-demand',
+        title: 'Patient Interest | SmartClinic',
+        canActivate: [providerGuard],
+        data: { scope: 'provider' },
+        loadComponent: () =>
+          import('./features/admin/partner-facility-demand-page.component').then(
+            (c) => c.PartnerFacilityDemandPageComponent,
+          ),
+      },
       {
         path: 'network',
         title: 'Grow My Network | SmartClinic',
