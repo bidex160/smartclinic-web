@@ -663,7 +663,6 @@ export class ProviderPrescriptionSectionComponent {
       else this.handoffFeedback.set(`Share this secure patient link: ${url}`);
     } catch { this.handoffFeedback.set('The patient link was not shared. You can try again.'); }
   }
- 
 
   addItem(): void {
     this.items.push(this.itemGroup());

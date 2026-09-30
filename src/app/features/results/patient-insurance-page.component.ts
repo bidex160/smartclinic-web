@@ -7,26 +7,30 @@ import { Hmo } from '../../core/models/hmo.model';
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <p class="text-sm font-bold uppercase tracking-widest text-brand-700">Coverage</p>
     <h1 class="mt-2 text-3xl font-black text-slate-950">Health Insurance / HMO</h1>
-    <p class="mt-3 text-slate-600">
-      Tell SmartClinic how you plan to use health insurance. Insurance coverage is verified before
-      it is used for care.
-    </p>
+    <p class="mt-3 max-w-2xl text-slate-600">Choose the option that describes you. SmartClinic will ask only for the details needed for that path.</p>
+    <h2 class="mt-8 text-xl font-black text-brand-950">Do you already have HMO coverage?</h2>
     <section class="mt-8 grid gap-5 md:grid-cols-2">
       <button
         type="button"
         (click)="mode.set('existing')"
-        class="rounded-3xl border-2 border-brand-200 bg-white p-6 text-left hover:border-brand-600"
+        [class.border-brand-700]="mode() === 'existing'"
+        [class.bg-violet-50]="mode() === 'existing'"
+        [attr.aria-pressed]="mode() === 'existing'"
+        class="rounded-3xl border-2 border-slate-200 bg-white p-5 text-left transition hover:border-brand-600"
       >
-        <div class="text-xl font-black">I already have HMO</div>
+        <div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-xl bg-blue-100 font-black text-blue-700" aria-hidden="true">✓</span><span class="text-xl font-black">Yes, I have HMO</span></div>
         <p class="mt-2 text-sm text-slate-600">
           Add your HMO and member details so eligibility can be verified for an encounter.
         </p></button
       ><button
         type="button"
         (click)="mode.set('interest')"
-        class="rounded-3xl border-2 border-slate-200 bg-white p-6 text-left hover:border-brand-600"
+        [class.border-brand-700]="mode() === 'interest'"
+        [class.bg-violet-50]="mode() === 'interest'"
+        [attr.aria-pressed]="mode() === 'interest'"
+        class="rounded-3xl border-2 border-slate-200 bg-white p-5 text-left transition hover:border-brand-600"
       >
-        <div class="text-xl font-black">I want HMO coverage</div>
+        <div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-xl bg-emerald-100 font-black text-emerald-700" aria-hidden="true">+</span><span class="text-xl font-black">No, help me get coverage</span></div>
         <p class="mt-2 text-sm text-slate-600">
           Register your interest. This does not activate insurance until an HMO confirms enrollment.
         </p>
@@ -66,14 +70,13 @@ import { Hmo } from '../../core/models/hmo.model';
     }
     @if (mode() === 'interest') {
       <section class="mt-6 rounded-3xl border border-slate-200 bg-white p-6">
-        <h2 class="text-xl font-black">Get HMO coverage</h2>
+        <h2 class="text-xl font-black">Request help getting HMO coverage</h2>
         <p class="mt-3 text-slate-600">
           SmartClinic will capture an enrollment lead and route it to a participating HMO. You
           remain self-pay until enrollment is confirmed.
         </p>
-        <div class="mt-5 rounded-2xl bg-amber-50 p-4 text-sm text-amber-950">
-          <strong>Important:</strong> submitting interest is not proof of insurance and will never
-          mark you Eligible.
+        <div class="mt-5 flex gap-3 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+          <span aria-hidden="true">ℹ</span><span><strong>This is an enrollment request.</strong> You will continue as self-pay until an HMO confirms your coverage.</span>
         </div>
         <label class="mt-5 block text-sm font-bold"
           >Preferred HMO (optional)<select #preferredHmo class="mt-2 w-full rounded-xl border p-3">
@@ -82,26 +85,21 @@ import { Hmo } from '../../core/models/hmo.model';
               <option [value]="x.id">{{ x.name }}</option>
             }
           </select></label
-        ><label class="mt-4 block text-sm font-bold"
-          >Employer or organisation (optional)<input
-            #employer
-            class="mt-2 w-full rounded-xl border p-3"
-            placeholder="Organisation name"
-        /></label>
-        <label class="mt-4 block text-sm font-bold"
-          >Additional information (optional)<textarea
-            #notes
-            class="mt-2 w-full rounded-xl border p-3"
-            rows="3"
-          ></textarea>
-        </label>
+        >
+        <button type="button" (click)="moreInterestDetails.update(value => !value)" [attr.aria-expanded]="moreInterestDetails()" class="mt-4 min-h-11 font-bold text-brand-700 underline">
+          {{ moreInterestDetails() ? 'Hide additional details' : 'Add employer or other details (optional)' }}
+        </button>
+        <div class="mt-2 rounded-2xl bg-slate-50 p-4" [class.hidden]="!moreInterestDetails()">
+          <label class="block text-sm font-bold">Employer or organisation (optional)<input #employer class="mt-2 w-full rounded-xl border bg-white p-3" placeholder="Organisation name" /></label>
+          <label class="mt-4 block text-sm font-bold">Anything else we should know? (optional)<textarea #notes class="mt-2 w-full rounded-xl border bg-white p-3" rows="3" placeholder="Keep this brief"></textarea></label>
+        </div>
         <button
           type="button"
           [disabled]="saving() || !patientReference()"
           (click)="submitInterest(preferredHmo.value, employer.value, notes.value)"
-          class="mt-5 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50"
+          class="mt-5 min-h-12 w-full rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50 sm:w-auto"
         >
-          {{ saving() ? 'Submitting…' : 'Submit enrollment interest' }}
+          {{ saving() ? 'Submitting…' : 'Request HMO help' }}
         </button>
         @if (feedback()) {
           <p role="status" class="mt-3 text-sm font-semibold">{{ feedback() }}</p>
@@ -119,6 +117,7 @@ export class PatientInsurancePageComponent {
   feedback = signal('');
   hmos = signal<Hmo[]>([]);
   mode = signal<'existing' | 'interest' | null>(null);
+  moreInterestDetails = signal(false);
   constructor() {
     this.profileApi
       .getMyProfile()

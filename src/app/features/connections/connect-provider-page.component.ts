@@ -60,28 +60,21 @@ import { formatMinor } from '../provider/care-money';
         } @else if (!providers().length) {
           <p class="mt-4 rounded-xl bg-slate-50 p-4">No hospitals match this search.</p>
         } @else {
-          <div class="mt-5 grid gap-3">
+          <div class="mt-5 grid gap-4 sm:grid-cols-2">
             @for (p of providers(); track p.providerReference) {
-              <button type="button" (click)="choose(p)" class="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md">
-                <span class="flex items-center gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-xl">🏥</span><span class="block text-lg font-black text-brand-950">{{ p.displayName }}</span></span
-                ><span class="mt-2 block text-sm text-slate-600">{{ location(p) }}</span
-                >
+              <button type="button" (click)="choose(p)" class="group overflow-hidden rounded-3xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-700">
+                <span class="block h-2 bg-gradient-to-r from-brand-700 via-violet-500 to-emerald-500" aria-hidden="true"></span>
+                <span class="block p-5">
+                <span class="flex items-start gap-3"><span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-violet-100 font-black text-violet-800">{{ initials(p.displayName) }}</span><span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wider text-brand-700">{{ providerType(p.providerType) }}</span><span class="mt-1 block text-lg font-black leading-tight text-brand-950">{{ p.displayName }}</span></span></span>
+                <span class="mt-4 flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-600"><span aria-hidden="true">⌖</span><span>{{ location(p) }}</span></span>
                 @if (p.newPatientRegistration.enabled) {
-                  <span class="mt-2 block"
-                    >Register as a new patient:
-                    {{
-                      money(p.newPatientRegistration.feeMinor, p.newPatientRegistration.currency)
-                    }}</span
-                  >
+                  <span class="mt-3 flex items-center justify-between gap-3 text-sm"><span>New patient connection</span><strong class="text-brand-950">{{ money(p.newPatientRegistration.feeMinor, p.newPatientRegistration.currency) }}</strong></span>
                 }
                 @if (p.existingPatientLink.enabled) {
-                  <span class="block"
-                    >Connect existing record:
-                    {{
-                      money(p.existingPatientLink.feeMinor, p.existingPatientLink.currency)
-                    }}</span
-                  >
+                  <span class="mt-2 flex items-center justify-between gap-3 text-sm"><span>Connect existing record</span><strong class="text-brand-950">{{ money(p.existingPatientLink.feeMinor, p.existingPatientLink.currency) }}</strong></span>
                 }
+                <span class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm font-bold text-brand-700"><span>Choose hospital</span><span class="transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+                </span>
               </button>
             }
           </div>
@@ -309,6 +302,12 @@ export class ConnectProviderPageComponent {
   }
   money(v: number | null, c: string | null) {
     return v == null || !c ? 'Unavailable' : formatMinor(v, c);
+  }
+  initials(name: string): string {
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'H';
+  }
+  providerType(value: string): string {
+    return value === 'HOSPITAL' ? 'Hospital' : value.split('_').map(part => part[0] + part.slice(1).toLowerCase()).join(' ');
   }
   location(p: PatientProviderConnectionDirectoryItem) {
     return [p.location.city, p.location.stateOrRegion, p.location.countryCode]

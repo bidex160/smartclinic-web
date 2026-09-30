@@ -43,7 +43,7 @@ interface BillGroup {
             <p class="text-xs font-bold uppercase tracking-wider text-violet-200">SmartClinic Wallet</p>
             <p class="mt-2 text-3xl font-black">{{ money(w.balanceMinor, w.currency) }}</p>
             <p class="mt-1 text-sm text-violet-100">Available balance</p>
-            <app-payment-contact-email />
+            <p class="mt-4 max-w-xl text-sm leading-6 text-violet-100">Payment options will appear only after you choose a bill that is ready to pay.</p>
           </section>
         }
 
@@ -63,14 +63,17 @@ interface BillGroup {
         } @else {
           <div class="mt-6 grid gap-5">
             @for (group of groups(); track group.connection.reference) {
-              <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div class="h-2 bg-gradient-to-r from-brand-700 via-violet-500 to-emerald-500" aria-hidden="true"></div>
+                <div class="p-5 sm:p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Connected hospital</p>
-                    <h2 class="mt-1 text-xl font-black text-brand-950">{{ group.connection.provider.displayName }}</h2>
-                    @if (group.connection.externalPatientReference) {
-                      <p class="mt-1 text-sm text-slate-600">Hospital ID {{ group.connection.externalPatientReference }}</p>
-                    }
+                  <div class="flex min-w-0 gap-3">
+                    <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-100 font-black text-brand-800" aria-hidden="true">{{ providerInitials(group.connection.provider.displayName) }}</span>
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-2"><p class="text-xs font-bold uppercase tracking-wider text-brand-700">Connected hospital</p><span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800">Connected ✓</span></div>
+                      <h2 class="mt-1 text-xl font-black text-brand-950">{{ group.connection.provider.displayName }}</h2>
+                      <p class="mt-1 text-sm text-slate-600">{{ providerTypeLabel(group.connection.provider.providerType) }}@if (group.connection.externalPatientReference) { · Hospital ID {{ group.connection.externalPatientReference }}}</p>
+                    </div>
                   </div>
                   @if (group.companion.consolidatedPayment.itemCount > 0 && group.companion.consolidatedPayment.amountMinor !== null && group.companion.consolidatedPayment.currency) {
                     <div class="text-right">
@@ -112,10 +115,21 @@ interface BillGroup {
                       {{ settlingReference() === group.connection.reference ? 'Confirming payment…' : 'Pay all from Wallet' }}
                     </button>
                     @if (!canWalletPay(group)) {
-                      <button type="button" (click)="paySecurely(group)" [disabled]="payingReference() === group.connection.reference" class="rounded-xl bg-brand-950 px-5 py-3 font-bold text-white disabled:opacity-50">{{ payingReference() === group.connection.reference ? 'Preparing payment…' : 'Pay securely' }}</button>
-                      <p class="w-full text-sm text-slate-600">We will fund your SmartClinic Wallet with the exact shortfall, then you can complete the hospital payment without paying twice.</p>
+                      <button type="button" (click)="togglePaymentOptions(group.connection.reference)" [disabled]="payingReference() === group.connection.reference" class="rounded-xl bg-brand-950 px-5 py-3 font-bold text-white disabled:opacity-50">{{ choosingPaymentReference() === group.connection.reference ? 'Close payment options' : 'Choose payment method' }}</button>
+                      <p class="w-full text-sm text-slate-600">Review the payment provider only when you are ready. SmartClinic will fund the exact wallet shortfall and settle this hospital once.</p>
+                      @if (choosingPaymentReference() === group.connection.reference) {
+                        <section class="w-full rounded-2xl border border-brand-100 bg-violet-50/50 p-4" aria-label="Payment options">
+                          <app-payment-contact-email />
+                          <button type="button" (click)="paySecurely(group)" [disabled]="payingReference() === group.connection.reference" class="mt-4 min-h-12 w-full rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ payingReference() === group.connection.reference ? 'Preparing secure payment…' : 'Continue to secure payment' }}</button>
+                        </section>
+                      }
                     }
                     <a [routerLink]="['/me/providers', group.connection.reference]" class="font-bold text-brand-700 underline">Open hospital</a>
+                  </div>
+                } @else if (hasPendingPricing(group)) {
+                  <div class="mt-5 rounded-2xl bg-amber-50 p-4 text-amber-950">
+                    <p class="font-bold">Price pending</p>
+                    <p class="mt-1 text-sm leading-6">The hospital or pharmacy is preparing your quote. We’ll show the amount and payment options when it is ready.</p>
                   </div>
                 } @else {
                   <p class="mt-5 rounded-xl bg-emerald-50 p-4 font-bold text-emerald-800">Nothing to pay at this hospital ✓</p>
@@ -138,6 +152,7 @@ interface BillGroup {
                     <p class="mt-1 text-sm">The hospital can verify that the covered bills are paid.</p>
                   </div>
                 }
+                </div>
               </section>
             }
           </div>
@@ -157,6 +172,7 @@ export class PatientPayBillsPageComponent {
   readonly groups = signal<readonly BillGroup[]>([]);
   readonly settlingReference = signal<string | null>(null);
   readonly payingReference = signal<string | null>(null);
+  readonly choosingPaymentReference = signal<string | null>(null);
   readonly passes = signal<Record<string, HospitalWalletSettlementResponse>>({});
   readonly unavailableHospitalCount = signal(0);
 
@@ -201,6 +217,14 @@ export class PatientPayBillsPageComponent {
     const total = group.companion.consolidatedPayment.amountMinor;
     const currency = group.companion.consolidatedPayment.currency;
     return !!wallet && total !== null && !!currency && wallet.currency === currency && wallet.balanceMinor >= total;
+  }
+
+  togglePaymentOptions(connectionReference: string): void {
+    this.choosingPaymentReference.update(current => current === connectionReference ? null : connectionReference);
+  }
+
+  hasPendingPricing(group: BillGroup): boolean {
+    return group.companion.requests.some(item => item.paymentStatus === 'NOT_PRICED');
   }
 
   paySecurely(group: BillGroup): void {
@@ -271,7 +295,9 @@ export class PatientPayBillsPageComponent {
     return type === 'LABORATORY' ? 'Laboratory' : type === 'IMAGING' ? 'Imaging' : type === 'PRESCRIPTION' ? 'Medicine' : type === 'PROCEDURE' ? 'Procedure' : 'Referral';
   }
   paymentStatusLabel(status: string): string {
-    return status === 'PAID' ? 'Paid ✓' : status === 'NOT_PRICED' ? 'Being prepared' : status === 'CANCELLED' ? 'Cancelled' : status === 'REQUIRES_REFUND_REVIEW' ? 'Refund review' : 'Payment needed';
+    return status === 'PAID' ? 'Paid ✓' : status === 'NOT_PRICED' ? 'Price pending' : status === 'CANCELLED' ? 'Cancelled' : status === 'REQUIRES_REFUND_REVIEW' ? 'Refund review' : 'Payment needed';
   }
+  providerInitials(name: string): string { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'H'; }
+  providerTypeLabel(type: string): string { return type === 'HOSPITAL' ? 'Hospital' : type.split('_').map(value => value[0] + value.slice(1).toLowerCase()).join(' '); }
   money(value: number, currency: string): string { return formatMinor(value, currency); }
 }

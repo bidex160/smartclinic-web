@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
@@ -7,6 +8,8 @@ import {
   PatientDashboard,
   PatientDashboardRecommendedAction,
   PatientDashboardRecommendedActionDetail,
+  PatientDailyRoutine,
+  PatientDailyRoutineType,
 } from '../../core/models/patient-dashboard.model';
 import { PatientHealthCheckHistoryResponse } from '../../core/models/patient-health-check-history.model';
 import { ReferralImpact } from '../../core/models/referral.model';
@@ -24,7 +27,7 @@ interface DashboardNextStep {
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink],
+  imports: [RouterLink, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="sc-page mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
@@ -88,6 +91,84 @@ interface DashboardNextStep {
           >
         </section>
 
+        <section class="mt-5 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-5 shadow-[0_10px_28px_rgba(6,95,70,0.07)]" aria-labelledby="today-care-heading">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Today</p>
+              <h2 id="today-care-heading" class="mt-1 text-xl font-bold text-brand-950">Small things that keep you well</h2>
+              <p class="mt-1 text-sm leading-6 text-slate-600">Optional routines you choose. Clinical actions above always remain the priority.</p>
+            </div>
+            <button type="button" (click)="toggleRoutineManager()" class="shrink-0 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-bold text-emerald-800">
+              {{ routineManagerOpen() ? 'Close' : 'Manage' }}
+            </button>
+          </div>
+
+          @if ((value.todayRoutines ?? []).length) {
+            <ul class="mt-4 grid gap-2 sm:grid-cols-3">
+              @for (routine of value.todayRoutines ?? []; track routine.reference) {
+                <li class="rounded-2xl bg-white p-4 ring-1 ring-emerald-100">
+                  <div class="flex items-center gap-2">
+                    <span class="grid size-9 place-items-center rounded-xl bg-emerald-100 text-lg" aria-hidden="true">{{ routineIcon(routine.type) }}</span>
+                    <div><p class="font-bold text-brand-950">{{ routine.label }}</p><p class="text-xs text-slate-500">{{ routine.scheduledLocalTime }} · {{ routineTypeLabel(routine.type) }}</p></div>
+                  </div>
+                  @if (routine.instructions) { <p class="mt-2 text-xs leading-5 text-slate-600">{{ routine.instructions }}</p> }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="mt-4 rounded-2xl bg-white p-4 text-sm text-slate-600 ring-1 ring-emerald-100">No routine added yet. Add only what would genuinely help you.</p>
+          }
+
+          @if (routineManagerOpen()) {
+            <div class="mt-4 grid gap-4 border-t border-emerald-200 pt-4 lg:grid-cols-[1fr_1.1fr]">
+              <form [formGroup]="routineForm" (ngSubmit)="createRoutine()" class="grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                <h3 class="font-bold text-brand-950">Add a routine</h3>
+                <label class="text-sm font-semibold">Type
+                  <select formControlName="type" class="mt-1 min-h-11 w-full rounded-xl border px-3">
+                    @for (type of routineTypes; track type) { <option [value]="type">{{ routineTypeLabel(type) }}</option> }
+                  </select>
+                </label>
+                <label class="text-sm font-semibold">What should SmartClinic show you?
+                  <input formControlName="label" maxlength="120" placeholder="e.g. Take my evening medicine" class="mt-1 min-h-11 w-full rounded-xl border px-3" />
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                  <label class="text-sm font-semibold">Time<input type="time" formControlName="scheduledLocalTime" class="mt-1 min-h-11 w-full rounded-xl border px-3" /></label>
+                  <label class="text-sm font-semibold">Time zone<input formControlName="timezone" readonly class="mt-1 min-h-11 w-full rounded-xl border bg-slate-50 px-3 text-xs" /></label>
+                </div>
+                <label class="text-sm font-semibold">Helpful note (optional)<input formControlName="instructions" maxlength="300" placeholder="Keep it short" class="mt-1 min-h-11 w-full rounded-xl border px-3" /></label>
+                @if (routineForm.controls.type.value === 'MEDICATION') {
+                  <label class="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">
+                    <input type="checkbox" formControlName="medicationSafetyAcknowledged" class="mt-1" />
+                    <span>I will follow the prescription or clinician’s instructions. This personal reminder does not replace medical advice.</span>
+                  </label>
+                }
+                <p class="text-xs leading-5 text-slate-500">Shown every day. You can pause or remove it anytime. Hydration needs differ; follow any fluid restriction given by your clinician.</p>
+                @if (routineError()) { <p role="alert" class="text-sm font-semibold text-red-700">{{ routineError() }}</p> }
+                <button [disabled]="routineForm.invalid || routineSaving()" class="min-h-11 rounded-xl bg-emerald-700 px-4 font-bold text-white disabled:opacity-50">{{ routineSaving() ? 'Saving…' : 'Add routine' }}</button>
+              </form>
+
+              <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                <h3 class="font-bold text-brand-950">Your routines</h3>
+                @if (routinesLoading()) { <p role="status" class="mt-3 text-sm">Loading routines…</p> }
+                @else if (!allRoutines().length) { <p class="mt-3 text-sm text-slate-600">You have no saved routines.</p> }
+                @else {
+                  <ul class="mt-3 divide-y">
+                    @for (routine of allRoutines(); track routine.reference) {
+                      <li class="flex items-center justify-between gap-3 py-3">
+                        <div><p class="text-sm font-bold text-brand-950">{{ routine.label }}</p><p class="text-xs text-slate-500">{{ routine.scheduledLocalTime }} · {{ routine.enabled ? 'Active' : 'Paused' }}</p></div>
+                        <div class="flex gap-2">
+                          <button type="button" (click)="toggleRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-bold text-brand-700 underline">{{ routine.enabled ? 'Pause' : 'Resume' }}</button>
+                          @if (routine.source === 'PATIENT') { <button type="button" (click)="deleteRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-bold text-red-700 underline">Remove</button> }
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+          }
+        </section>
+
         <nav class="mt-9" aria-labelledby="quick-access-heading">
           <div class="mb-3">
             <p class="text-sm font-bold uppercase tracking-wider text-brand-700">SmartClinic</p>
@@ -131,51 +212,28 @@ interface DashboardNextStep {
 
         <section class="mt-7" aria-labelledby="coverage-programmes-heading">
           <div>
-            <p class="text-xs font-bold uppercase tracking-wider text-brand-700">
-              Your relationships
-            </p>
-            <h2 id="coverage-programmes-heading" class="mt-1 text-xl font-bold text-brand-950">
-              Coverage &amp; programmes
-            </h2>
-            <p class="mt-1 text-sm leading-6 text-slate-600">
-              Keep one SmartClinic account and connect the funding or community relationships that
-              apply to you.
-            </p>
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Your relationships</p>
+            <h2 id="coverage-programmes-heading" class="mt-1 text-xl font-bold text-brand-950">How you access and pay for care</h2>
+            <p class="mt-1 text-sm leading-6 text-slate-600">Use one SmartClinic account. Add only the coverage or programme that applies to you.</p>
           </div>
-          <div class="mt-3 grid gap-3 sm:grid-cols-3">
-            <a
-              routerLink="/me/insurance"
-              queryParamsHandling="preserve"
-              class="rounded-2xl border border-blue-200 bg-blue-50 p-5 text-brand-950"
-            >
-              <span class="text-xs font-bold uppercase tracking-wider text-blue-700">Insurance</span>
-              <h3 class="mt-2 font-bold">Health Insurance / HMO</h3>
-              <p class="mt-1 text-sm leading-6 text-slate-600">
-                Add existing membership or request help getting HMO coverage.
-              </p>
-              <span class="mt-3 inline-block text-sm font-bold text-blue-700">Manage HMO →</span>
+          <div class="mt-3 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="group flex min-h-20 items-center gap-4 border-b border-slate-100 p-4 transition hover:bg-violet-50/60 sm:p-5">
+              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-violet-100 font-black text-violet-700" aria-hidden="true">₦</span>
+              <span class="min-w-0 flex-1"><strong class="block text-brand-950">Self-pay &amp; SmartClinic Wallet</strong><span class="mt-1 block text-sm text-slate-600">Available for eligible bills and services</span></span>
+              <span class="shrink-0 text-sm font-bold text-violet-700">View <span aria-hidden="true">→</span></span>
             </a>
-            <a
-              routerLink="/healthy-families"
-              queryParamsHandling="preserve"
-              class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-brand-950"
-            >
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">School &amp; community</span>
-              <h3 class="mt-2 font-bold">Healthy Families</h3>
-              <p class="mt-1 text-sm leading-6 text-slate-600">
-                View programmes already connected through a valid school or partner invitation.
-              </p>
-              <span class="mt-3 inline-block text-sm font-bold text-emerald-700">View programmes →</span>
+            <a routerLink="/me/insurance" queryParamsHandling="preserve" class="group flex min-h-20 items-center gap-4 border-b border-slate-100 p-4 transition hover:bg-blue-50/70 sm:p-5">
+              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-blue-100 font-black text-blue-700" aria-hidden="true">H</span>
+              <span class="min-w-0 flex-1"><strong class="block text-brand-950">Health Insurance / HMO</strong><span class="mt-1 block text-sm text-slate-600">Add existing cover or request enrollment help</span></span>
+              <span class="shrink-0 text-sm font-bold text-blue-700">Manage <span aria-hidden="true">→</span></span>
             </a>
-            <article class="rounded-2xl border border-slate-200 bg-slate-100 p-5 text-slate-700">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Not yet available</span>
-              <h3 class="mt-2 font-bold">SmartClinic subscription</h3>
-              <p class="mt-1 text-sm leading-6 text-slate-600">
-                Subscription is a future funding option. Pay-as-you-go, wallet and eligible HMO
-                routes remain available.
-              </p>
-            </article>
+            <a routerLink="/healthy-families" queryParamsHandling="preserve" class="group flex min-h-20 items-center gap-4 p-4 transition hover:bg-emerald-50/70 sm:p-5">
+              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-emerald-100 font-black text-emerald-700" aria-hidden="true">F</span>
+              <span class="min-w-0 flex-1"><strong class="block text-brand-950">School, employer &amp; family programmes</strong><span class="mt-1 block text-sm text-slate-600">View relationships connected by a valid invitation</span></span>
+              <span class="shrink-0 text-sm font-bold text-emerald-700">View <span aria-hidden="true">→</span></span>
+            </a>
           </div>
+          <p class="mt-2 px-1 text-xs leading-5 text-slate-500">SmartClinic subscription is a future option and is not currently active.</p>
         </section>
 
         <section class="mt-7" aria-labelledby="your-care-heading">
@@ -295,6 +353,7 @@ interface DashboardNextStep {
   `,
 })
 export class PatientDashboardPageComponent {
+  private readonly formBuilder = inject(FormBuilder);
   private readonly api = inject(PatientDashboardApiService);
   private readonly healthChecksApi = inject(HealthCheckResultsApiService);
   private readonly referralsApi = inject(ReferralsApiService);
@@ -312,6 +371,20 @@ export class PatientDashboardPageComponent {
   readonly passport = signal<HealthPassportOverview | null>(null);
   readonly copyFeedback = signal('');
   readonly referralFeedback = signal('');
+  readonly routineManagerOpen = signal(false);
+  readonly allRoutines = signal<PatientDailyRoutine[]>([]);
+  readonly routinesLoading = signal(false);
+  readonly routineSaving = signal(false);
+  readonly routineError = signal('');
+  readonly routineTypes: readonly PatientDailyRoutineType[] = ['HYDRATION', 'MOVEMENT', 'BREAK', 'SLEEP', 'VITAMIN', 'MEDICATION'];
+  readonly routineForm = this.formBuilder.nonNullable.group({
+    type: this.formBuilder.nonNullable.control<PatientDailyRoutineType>('HYDRATION'),
+    label: ['', [Validators.required, Validators.maxLength(120)]],
+    scheduledLocalTime: ['09:00', Validators.required],
+    timezone: [Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lagos', Validators.required],
+    instructions: ['', Validators.maxLength(300)],
+    medicationSafetyAcknowledged: false,
+  });
   readonly supportWhatsappUrl = this.publicSiteConfig?.whatsappUrl?.trim() || null;
   readonly healthCheckSummary = computed(() => {
     const items = this.healthChecks()?.items ?? [];
@@ -339,6 +412,58 @@ export class PatientDashboardPageComponent {
       .getDashboard()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({ next: (value) => this.dashboard.set(value), error: () => this.error.set(true) });
+  }
+  toggleRoutineManager(): void {
+    this.routineManagerOpen.update((open) => !open);
+    if (this.routineManagerOpen()) this.loadRoutines();
+  }
+  loadRoutines(): void {
+    this.routinesLoading.set(true);
+    this.routineError.set('');
+    this.api.getDailyRoutines().pipe(finalize(() => this.routinesLoading.set(false))).subscribe({
+      next: ({ items }) => this.allRoutines.set(items),
+      error: () => this.routineError.set('Routines are unavailable right now.'),
+    });
+  }
+  createRoutine(): void {
+    if (this.routineForm.invalid || this.routineSaving()) return;
+    const value = this.routineForm.getRawValue();
+    if (value.type === 'MEDICATION' && !value.medicationSafetyAcknowledged) {
+      this.routineError.set('Please confirm the medication safety note.');
+      return;
+    }
+    this.routineSaving.set(true);
+    this.routineError.set('');
+    this.api.createDailyRoutine({ ...value, daysOfWeek: [0, 1, 2, 3, 4, 5, 6], instructions: value.instructions.trim() || null }).pipe(finalize(() => this.routineSaving.set(false))).subscribe({
+      next: () => {
+        this.routineForm.patchValue({ label: '', instructions: '', medicationSafetyAcknowledged: false });
+        this.loadRoutines();
+        this.load();
+      },
+      error: () => this.routineError.set('We could not save this routine. Check the details and try again.'),
+    });
+  }
+  toggleRoutine(routine: PatientDailyRoutine): void {
+    if (this.routineSaving()) return;
+    this.routineSaving.set(true);
+    this.api.updateDailyRoutine(routine.reference, { enabled: !routine.enabled }).pipe(finalize(() => this.routineSaving.set(false))).subscribe({
+      next: () => { this.loadRoutines(); this.load(); },
+      error: () => this.routineError.set('We could not update this routine.'),
+    });
+  }
+  deleteRoutine(routine: PatientDailyRoutine): void {
+    if (this.routineSaving()) return;
+    this.routineSaving.set(true);
+    this.api.deleteDailyRoutine(routine.reference).pipe(finalize(() => this.routineSaving.set(false))).subscribe({
+      next: () => { this.loadRoutines(); this.load(); },
+      error: () => this.routineError.set('We could not remove this routine.'),
+    });
+  }
+  routineTypeLabel(type: PatientDailyRoutineType): string {
+    return ({ HYDRATION: 'Hydration', MOVEMENT: 'Movement', BREAK: 'Take a break', SLEEP: 'Wind-down / sleep', VITAMIN: 'Vitamin', MEDICATION: 'Personal medication' } as const)[type];
+  }
+  routineIcon(type: PatientDailyRoutineType): string {
+    return ({ HYDRATION: '◉', MOVEMENT: '↗', BREAK: '☕', SLEEP: '☾', VITAMIN: 'V', MEDICATION: 'Rx' } as const)[type];
   }
   loadHealthChecks(): void {
     if (this.healthChecksLoading()) return;

@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { API_CONFIG } from '../config/api-config.token';
 import {
   PatientDashboard,
+  CreatePatientDailyRoutineRequest,
+  PatientDailyRoutine,
   PatientPortalProfile,
   UpdatePatientPortalProfileRequest,
 } from '../models/patient-dashboard.model';
@@ -22,5 +24,21 @@ export class PatientDashboardApiService {
 
   updateProfile(request: UpdatePatientPortalProfileRequest) {
     return this.http.patch<PatientPortalProfile>(`${this.base}/me/profile`, request);
+  }
+
+  getDailyRoutines() {
+    return this.http.get<{ items: PatientDailyRoutine[] }>(`${this.base}/me/daily-care/routines`);
+  }
+
+  createDailyRoutine(request: CreatePatientDailyRoutineRequest) {
+    return this.http.post<PatientDailyRoutine>(`${this.base}/me/daily-care/routines`, request);
+  }
+
+  updateDailyRoutine(reference: string, request: { enabled: boolean }) {
+    return this.http.patch<PatientDailyRoutine>(`${this.base}/me/daily-care/routines/${encodeURIComponent(reference)}`, request);
+  }
+
+  deleteDailyRoutine(reference: string) {
+    return this.http.delete<void>(`${this.base}/me/daily-care/routines/${encodeURIComponent(reference)}`);
   }
 }
