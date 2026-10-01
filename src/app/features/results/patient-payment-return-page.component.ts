@@ -12,6 +12,8 @@ import { PatientProviderConnectionFundingResponse } from '../../core/models/pati
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 import { PharmacyFundingResponse } from '../../core/models/pharmacy-fulfillment.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { HospitalBillPayment } from '../../core/models/hospital-bill-payment.model';
+import { HospitalBillPaymentsApiService } from '../../core/services/hospital-bill-payments-api.service';
 
 @Component({
   selector: 'app-patient-payment-return-page',
@@ -185,6 +187,30 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
           >
         </section>
       }
+      @if (billPayment(); as payment) {
+        <section class="mt-6 rounded-2xl border bg-white p-7">
+          @if (payment.status === 'PAID') {
+            <h1 class="text-2xl font-bold text-green-900">Payment successful</h1>
+            <p class="mt-2">Your hospital invoice has been updated.</p>
+          } @else if (payment.status === 'PAYMENT_RECEIVED_HOSPITAL_PENDING') {
+            <h1 class="text-2xl font-bold text-amber-900">Payment received</h1>
+            <p class="mt-2">The hospital system has not confirmed the invoice update yet. Do not pay again.</p>
+          } @else if (payment.status === 'FAILED') {
+            <h1 class="text-2xl font-bold text-red-900">Payment could not be completed</h1>
+          } @else {
+            <h1 class="text-2xl font-bold">Payment pending</h1>
+            <p class="mt-2">We are still waiting for authoritative confirmation.</p>
+            <button type="button" (click)="verify()" [disabled]="verifying()" class="mt-4 rounded-xl border border-brand-700 px-5 py-3 font-bold text-brand-700">Try verification again</button>
+          }
+          <dl class="mt-6 grid gap-4 sm:grid-cols-2">
+            <div><dt class="text-sm text-slate-500">Payment reference</dt><dd class="font-semibold">{{ payment.reference }}</dd></div>
+            <div><dt class="text-sm text-slate-500">Invoice</dt><dd class="font-semibold">{{ payment.invoiceReference }}</dd></div>
+            <div><dt class="text-sm text-slate-500">Amount</dt><dd class="font-semibold">{{ payment.amount }} {{ payment.currency }}</dd></div>
+            <div><dt class="text-sm text-slate-500">Hospital</dt><dd class="font-semibold">{{ payment.hospitalCode }}</dd></div>
+          </dl>
+          <a routerLink="/me/pay-bills" class="mt-6 inline-flex rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">Back to Pay Bills</a>
+        </section>
+      }
     </main>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -201,6 +227,7 @@ export class PatientPaymentReturnPageComponent {
   readonly careFunding = signal<CareRequestFunding | null>(null);
   readonly connectionFunding = signal<PatientProviderConnectionFundingResponse | null>(null);
   readonly pharmacyFunding = signal<PharmacyFundingResponse | null>(null);
+  readonly billPayment = signal<HospitalBillPayment | null>(null);
   constructor() {
     this.verify();
   }
@@ -209,6 +236,12 @@ export class PatientPaymentReturnPageComponent {
     this.verifying.set(true);
     this.error.set(false);
     this.status.set(null);
+    if (this.reference.startsWith('SC-HBP-')) {
+      this.injector.get(HospitalBillPaymentsApiService).verifyPayment(this.reference)
+        .pipe(finalize(() => this.verifying.set(false)))
+        .subscribe({ next: (payment) => this.billPayment.set(payment), error: () => this.error.set(true) });
+      return;
+    }
     if (this.reference.startsWith('SC-FT-')) {
       const fastTrack = this.injector.get(FastTrackApiService);
       fastTrack

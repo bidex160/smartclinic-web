@@ -113,10 +113,10 @@ interface DashboardNextStep {
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m9 3-5 9h6l-2 9 8-11h-6l3-7H9Z"/></svg></span>
               <span>Get a lab test</span>
             </a>
-            <button type="button" disabled aria-disabled="true" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-slate-50 px-1.5 py-3 text-center text-xs font-bold text-slate-500 ring-1 ring-slate-200 sm:text-sm">
+            <a routerLink="/me/pay-bills" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path stroke-linecap="round" d="M3 10h18m-4 5h2"/></svg></span>
               <span>Pay bills<small class="block text-[10px] font-medium text-slate-500">Coming soon</small></span>
-            </button>
+      </a>
             <a routerLink="/me/health-passport" class="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl bg-white px-1.5 py-3 text-center text-xs font-bold text-brand-900 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:text-sm">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700" aria-hidden="true"><svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h9l3 3v15H6zM15 3v4h4M9 12h6m-6 4h6"/></svg></span>
               <span>View health records</span>

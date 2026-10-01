@@ -145,6 +145,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/notifications/notifications-page.component').then((c) => c.NotificationsPageComponent),
       },
       {
+        path: 'pay-bills',
+        title: 'Pay Bills | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/care/pay-bills-page.component').then((c) => c.PayBillsPageComponent),
+      },
+      {
         path: 'request-care',
         title: 'Find Care | SmartClinic',
         loadComponent: () =>

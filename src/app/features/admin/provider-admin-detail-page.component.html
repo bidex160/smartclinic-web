@@ -418,6 +418,18 @@
               class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
             />
           </div>
+
+          <div>
+            <label for="edit-reference" class="font-bold"
+              >Hospital Code
+              <span class="font-normal text-slate-500">*</span></label
+            ><input
+              id="edit-reference"
+              placeholder="etc AKTH"
+              formControlName="hospitalCode"
+              class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:outline-none focus:ring-4 focus:ring-brand-200"
+            />
+          </div>
           <button
             type="submit"
             [disabled]="mutating()"

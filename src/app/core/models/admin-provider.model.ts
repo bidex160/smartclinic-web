@@ -23,6 +23,7 @@ export interface AdminProviderListItem {
   readonly email: string | null;
   readonly phone: string | null;
   readonly professionalReference: string | null;
+  readonly hospitalCode: string | null;
   readonly status: ProviderStatus;
   readonly providerType: ProviderType;
   readonly countryCode: string | null;
@@ -64,6 +65,7 @@ export interface CreateAdminProviderRequest {
   readonly email: string;
   readonly phone?: string | null;
   readonly professionalReference?: string;
+  readonly hospitalCode?: string;
   readonly providerType: ProviderType;
   readonly countryCode: string;
   readonly stateOrRegion: string;

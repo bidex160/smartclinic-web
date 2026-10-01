@@ -73,6 +73,7 @@ export class ProviderAdminDetailPageComponent {
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
     phone: ['', [Validators.minLength(7), Validators.maxLength(32)]],
     professionalReference: ['', Validators.maxLength(200)],
+    hospitalCode: ['',[Validators.required, Validators.maxLength(200)]],
     providerType: this.formBuilder.control<'INDIVIDUAL' | 'CLINIC' | 'HOSPITAL' | 'DIAGNOSTIC_CENTRE' | 'PHARMACY' | 'OTHER'>(
       'INDIVIDUAL',
     ),
@@ -220,6 +221,7 @@ readonly editStateCode = new FormControl<string>('', {
             countryCode: provider.countryCode ?? '',
             stateOrRegion: provider.stateOrRegion ?? '',
             city: provider.city ?? '',
+            hospitalCode: provider.hospitalCode ?? ''
           });
           this.initializeProfileGeography(provider);
         },
@@ -239,6 +241,7 @@ readonly editStateCode = new FormControl<string>('', {
         displayName: value.displayName.trim(),
         phone: value.phone.trim() || null,
         professionalReference: value.professionalReference.trim(),
+        hospitalCode: value.hospitalCode.trim(),
         providerType: value.providerType,
         countryCode: value.countryCode.trim().toUpperCase(),
         stateOrRegion: value.stateOrRegion.trim(),
@@ -374,6 +377,7 @@ readonly editStateCode = new FormControl<string>('', {
   countryCode: provider.countryCode ?? '',
   stateOrRegion: provider.stateOrRegion ?? '',
   city: provider.city ?? '',
+  hospitalCode: provider.hospitalCode ?? '',
 });
 
 this.initializeProfileGeography(provider);
