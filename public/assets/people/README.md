@@ -1,7 +1,8 @@
 # SmartClinic photography slots
 
-Drop the photos below into this folder using these exact file names. Each slot
-falls back to an existing photo (or hides itself) until its file is present.
+Each slot falls back to an existing photo (or hides itself) if its file is
+missing. The current files were cropped, resized and stripped of EXIF/GPS
+metadata from the originals on the `Photos` branch (1 Oct 2026).
 
 | File | Used on | Notes |
 |---|---|---|
