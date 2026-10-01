@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { API_CONFIG } from '../../core/config/api-config.token';
 import { of } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
@@ -11,7 +14,7 @@ describe('ProviderSessionHeaderComponent', () => {
     const authSession = { logout: vi.fn(() => of(true)) };
     await TestBed.configureTestingModule({
       imports: [ProviderSessionHeaderComponent],
-      providers: [provideRouter([]), { provide: AuthSessionService, useValue: authSession }],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), { provide: API_CONFIG, useValue: { baseUrl: '/api/v1' } }, { provide: AuthSessionService, useValue: authSession }],
     }).compileComponents();
     const fixture = TestBed.createComponent(ProviderSessionHeaderComponent);
     const state = TestBed.inject(AuthStateService);
@@ -35,7 +38,7 @@ describe('ProviderSessionHeaderComponent', () => {
     const authSession = { logout: vi.fn(() => of(true)) };
     await TestBed.configureTestingModule({
       imports: [ProviderSessionHeaderComponent],
-      providers: [provideRouter([]), { provide: AuthSessionService, useValue: authSession }],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), { provide: API_CONFIG, useValue: { baseUrl: '/api/v1' } }, { provide: AuthSessionService, useValue: authSession }],
     }).compileComponents();
     const fixture = TestBed.createComponent(ProviderSessionHeaderComponent);
     fixture.componentRef.setInput('operational', false);
