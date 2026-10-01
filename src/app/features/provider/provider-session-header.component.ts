@@ -16,6 +16,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { ProviderOnboardingProfile } from '../../core/models/provider-onboarding.model';
 import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
 
+import { ProviderMembershipService } from '../../core/services/provider-membership.service';
 @Component({
   selector: 'app-provider-session-header',
   imports: [
@@ -125,7 +126,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Work
             </p>
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
+            @if (membership.canSendRequests()) {
             <a
               routerLink="/provider/send-request"
               routerLinkActive="!bg-white !text-brand-900"
@@ -134,6 +136,8 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               + New request
             </a>
+            }
+            @if (membership.canSendRequests()) {
             <a
               routerLink="/provider/sent-requests"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -141,6 +145,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               Sent requests
             </a>
+            }
             <a
               routerLink="/provider/offers"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -225,6 +230,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 
             }
 
+            @if (membership.seesMoney()) {
             <a
               routerLink="/provider/earnings"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -232,8 +238,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             >
               Payments
             </a>
+            }
 
+            @if (membership.seesMoney()) {
             <a routerLink="/provider/payouts" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700">Payouts</a>
+            }
 
             <a
               routerLink="/provider/network"
@@ -243,7 +252,11 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               Grow my network
             </a>
 
-            @if (careProvider()) {
+            @if (membership.canManageTeam()) {
+            <a routerLink="/provider/team" routerLinkActive="!bg-brand-700 !text-white" class="flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 ml-2 focus:ring-brand-700" data-nav-team>Team</a>
+            }
+
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -264,7 +277,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               FastTrack
             </a>
             }
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
   routerLink="/provider/health-record-access"
   routerLinkActive="!bg-brand-700 !text-white"
@@ -287,7 +300,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 </a>
             }
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -312,7 +325,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             <!-- Exact match is important here.
                  Otherwise /provider/patient-connections/configuration
                  also activates this menu item. -->
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -335,7 +348,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             </a>
             }
 
-            @if (orderProvider()) {
+            @if (orderProvider() || membership.worksOrders()) {
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="!bg-brand-700 !text-white"
@@ -358,6 +371,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             }
           }
 
+          @if (membership.canManageTeam()) {
           <!-- =====================================================
                SETUP
           ====================================================== -->
@@ -415,7 +429,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             Service units
           </a>
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
             <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="!bg-brand-700 !text-white"
@@ -438,7 +452,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           </a>
             }
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
           <a
             routerLink="/provider/profile"
             fragment="configuration"
@@ -461,7 +475,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           </a>
           }
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/care-services"
             routerLinkActive="!bg-brand-700 !text-white"
@@ -483,7 +497,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           </a>
             }
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -526,6 +540,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           >
             Home visit area
           </a>
+          }
         </div>
       </nav>
 
@@ -730,7 +745,8 @@ Menu
               Work
             </p>
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
+            @if (membership.canSendRequests()) {
             <a
               routerLink="/provider/send-request"
               routerLinkActive="ring-2 ring-brand-900"
@@ -738,6 +754,8 @@ Menu
             >
               + New request
             </a>
+            }
+            @if (membership.canSendRequests()) {
             <a
               routerLink="/provider/sent-requests"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -745,6 +763,7 @@ Menu
             >
               Sent requests
             </a>
+            }
             <a
               routerLink="/provider/offers"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -809,6 +828,7 @@ Menu
 
             }
 
+            @if (membership.seesMoney()) {
             <a
               routerLink="/provider/earnings"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -823,7 +843,9 @@ Menu
             >
               Payments
             </a>
+            }
 
+            @if (membership.seesMoney()) {
             <a
               routerLink="/provider/payouts"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -838,6 +860,7 @@ Menu
             >
               Payouts
             </a>
+            }
 
             <a
               routerLink="/provider/network"
@@ -854,6 +877,11 @@ Menu
               Grow my network
             </a>
 
+            @if (membership.canManageTeam()) {
+            <a routerLink="/provider/team" routerLinkActive="bg-brand-100 text-brand-900" class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900" data-nav-team>Team</a>
+            }
+
+            @if (membership.seesMoney()) {
             <a
               routerLink="/provider/payout-accounts"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -868,8 +896,9 @@ Menu
             >
               Settlement account
             </a>
+            }
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/fasttrack"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -886,7 +915,7 @@ Menu
             </a>
             }
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/health-record-access"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -903,7 +932,7 @@ Menu
             </a>
             }
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/shared-health-records"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -920,7 +949,7 @@ Menu
             </a>
             }
 
-            @if (careProvider()) {
+            @if (careProvider() && membership.seesCareWork()) {
             <a
               routerLink="/provider/patient-connections"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -938,7 +967,7 @@ Menu
             </a>
             }
 
-            @if (orderProvider()) {
+            @if (orderProvider() || membership.worksOrders()) {
             <a
               routerLink="/provider/pharmacy-orders"
               routerLinkActive="bg-brand-100 text-brand-900"
@@ -956,6 +985,7 @@ Menu
             }
           }
 
+          @if (membership.canManageTeam()) {
           <!-- =================================================
                SETUP
           ================================================== -->
@@ -1002,7 +1032,7 @@ Menu
             Service units
           </a>
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
             <a
             routerLink="/provider/patient-connections/configuration"
             routerLinkActive="bg-brand-100 text-brand-900"
@@ -1020,7 +1050,7 @@ Menu
           </a>
             }
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
           <a
             routerLink="/provider/profile"
             fragment="configuration"
@@ -1038,7 +1068,7 @@ Menu
           </a>
           }
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
             <a
             routerLink="/provider/care-services"
             routerLinkActive="bg-brand-100 text-brand-900"
@@ -1055,6 +1085,7 @@ Menu
           </a>
             }
 
+          @if (membership.seesMoney()) {
           <a
             routerLink="/provider/payout-accounts"
             routerLinkActive="bg-brand-100 text-brand-900"
@@ -1069,8 +1100,9 @@ Menu
           >
             Settlement account
           </a>
+          }
 
-          @if (careProvider()) {
+          @if (careProvider() && membership.seesCareWork()) {
           <a
             routerLink="/provider/profile"
             fragment="availability"
@@ -1104,6 +1136,8 @@ Menu
             Home visit area
           </a>
 
+          }
+
           <div class="my-3 border-t border-slate-200"></div>
 
           <button
@@ -1136,6 +1170,7 @@ export class ProviderSessionHeaderComponent {
   private readonly authSession = inject(AuthSessionService);
 
   readonly authState = inject(AuthStateService);
+  readonly membership = inject(ProviderMembershipService);
 
   readonly operational = input(true);
   readonly providerType = input<ProviderOnboardingProfile['providerType'] | null>(null);

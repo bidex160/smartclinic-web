@@ -624,6 +624,12 @@ export const routes: Routes = [
   },
 
   {
+    // Outside the provider layout: the person may not have provider access yet.
+    path: 'provider/join/:token',
+    title: 'Join your team | SmartClinic',
+    loadComponent: () => import('./features/provider/team/provider-join-page.component').then((c) => c.ProviderJoinPageComponent),
+  },
+  {
     path: 'provider',
     component: ProviderLayoutComponent,
     children: [
@@ -636,6 +642,12 @@ export const routes: Routes = [
           import('./features/admin/partner-facility-demand-page.component').then(
             (c) => c.PartnerFacilityDemandPageComponent,
           ),
+      },
+      {
+        path: 'team',
+        title: 'Team | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/team/provider-team-page.component').then((c) => c.ProviderTeamPageComponent),
       },
       {
         path: 'send-request',

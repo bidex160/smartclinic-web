@@ -9,6 +9,7 @@ import { ProviderOnboardingProfile } from "../../core/models/provider-onboarding
 import { UtilsService } from "../../core/services/utils.service";
 import { ProviderOffer } from "../../core/models/provider-offer.model";
 
+import { ProviderMembershipService } from '../../core/services/provider-membership.service';
 @Component({
   selector: 'app-provider-layout',
   imports: [RouterOutlet, ProviderSessionHeaderComponent],
@@ -30,6 +31,7 @@ export class ProviderLayoutComponent {
   private readonly offersApi = inject(ProviderOffersApiService);
   private readonly profileApi = inject(ProviderOnboardingApiService);
   readonly utils = inject(UtilsService);
+  private readonly membership = inject(ProviderMembershipService);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly profile = signal<ProviderOnboardingProfile | null>(null);
@@ -40,6 +42,7 @@ export class ProviderLayoutComponent {
   );
     constructor() {
     this.load();
+    this.membership.load();
   }
 
     load(): void {
