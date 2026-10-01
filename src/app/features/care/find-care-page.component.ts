@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -121,7 +121,45 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
         >
       </section>
     } @else {
-      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 grid gap-5" novalidate>
+      @if (showIntentChooser()) {
+        <section class="mt-6" aria-labelledby="care-intent-heading" data-care-intent>
+          <h2 id="care-intent-heading" class="font-display text-2xl font-semibold text-ink">What’s going on?</h2>
+          <p class="mt-1 text-sm text-ink-muted">Choose what fits best — SmartClinic will guide you from there.</p>
+          <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+            <li>
+              <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
+                <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-clay-50 text-clay-500" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v5a4 4 0 0 0 8 0V3M10 12v3a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="9" r="2"/></svg></span>
+                <span><strong class="block text-ink">I’m feeling unwell</strong><span class="text-sm text-ink-muted">See a doctor online or at a hospital</span></span>
+              </a>
+            </li>
+            <li>
+              <a routerLink="/me/lab-tests" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
+                <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9"/></svg></span>
+                <span><strong class="block text-ink">I need a test or scan</strong><span class="text-sm text-ink-muted">Lab tests, imaging and your results</span></span>
+              </a>
+            </li>
+            <li>
+              <a routerLink="/me/prescriptions" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
+                <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 7ZM7 10l7 7"/></svg></span>
+                <span><strong class="block text-ink">I need medicine</strong><span class="text-sm text-ink-muted">Your prescriptions and pharmacy</span></span>
+              </a>
+            </li>
+            <li>
+              <a routerLink="/me/fasttrack/new" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
+                <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-ochre-50 text-ochre-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4ZM8 3v6M16 3v6M4 10h16"/></svg></span>
+                <span><strong class="block text-ink">I already have an appointment</strong><span class="text-sm text-ink-muted">Ask for FastTrack handling</span></span>
+              </a>
+            </li>
+            <li class="sm:col-span-2">
+              <button type="button" (click)="intentChosen.set(true)" class="sc-tile flex min-h-16 w-full items-center gap-4 rounded-[1.25rem] border border-dashed border-ink/15 bg-sand-50 p-4 text-left">
+                <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-white text-ink-soft" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                <span><strong class="block text-ink">Something else</strong><span class="text-sm text-ink-muted">Choose a care service yourself — dental, eye care, follow-ups and more</span></span>
+              </button>
+            </li>
+          </ul>
+        </section>
+      }
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 grid gap-5" [class.hidden]="showIntentChooser()" novalidate>
         <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
           @if (servicesLoading()) {
@@ -423,6 +461,12 @@ export class FindCarePageComponent {
   readonly servicesLoading = signal(true);
   readonly servicesError = signal(false);
   readonly requestedServiceCode = signal<string | null>(null);
+  /** "Something else" chosen on the intent step: show the full service form. */
+  readonly intentChosen = signal(false);
+  /** Start with "What's going on?" unless a journey or service was already chosen. */
+  readonly showIntentChooser = computed(
+    () => !this.intentChosen() && !this.doctorJourney() && !this.requestedServiceCode() && !this.hostInstitutionReference(),
+  );
   readonly doctorJourney = signal(false);
   readonly hostInstitutionReference = signal<string | null>(null);
   readonly doctorMode = signal<'NOW' | 'LATER' | 'HOSPITAL' | null>(null);

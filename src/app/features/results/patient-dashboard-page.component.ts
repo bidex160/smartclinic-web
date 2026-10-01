@@ -20,6 +20,7 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
 import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
 import { DailyCheckInComponent } from './daily-check-in.component';
+import { VisitDayCardComponent } from './visit-day-card.component';
 import { tipForDate } from './daily-tips';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
@@ -61,7 +62,7 @@ interface DashboardNextStep {
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent],
+  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-6xl px-4 pb-10 pt-5 sm:px-8 sm:pt-8 lg:pt-10">
@@ -88,14 +89,17 @@ interface DashboardNextStep {
           </div>
           <div class="flex items-center gap-2 rounded-full border border-ink/[0.08] bg-white py-1.5 pl-4 pr-1.5 shadow-card">
             <p class="text-sm text-ink-soft">
-              SmartClinic ID: <strong class="font-mono font-semibold tracking-wide text-ink">{{ value.patient.patientReference }}</strong>
+              <span class="sr-only sm:not-sr-only">SmartClinic ID: </span><strong class="whitespace-nowrap font-mono font-semibold tracking-wide text-ink">{{ value.patient.patientReference }}</strong>
             </p>
-            <button type="button" (click)="copyPatientId()" class="min-h-9 rounded-full bg-sand-100 px-3.5 text-xs font-semibold text-ink transition hover:bg-sand-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+            <button type="button" (click)="copyPatientId()" class="min-h-9 whitespace-nowrap rounded-full bg-sand-100 px-3.5 text-xs font-semibold text-ink transition hover:bg-sand-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
               Copy ID
             </button>
+            <a routerLink="/me/card" class="inline-flex min-h-9 items-center rounded-full bg-ink px-3.5 text-xs font-semibold text-white transition hover:bg-brand-900" data-card-shortcut>Card</a>
           </div>
           <p aria-live="polite" class="w-full text-sm font-medium text-leaf-700 empty:hidden">{{ copyFeedback() }}</p>
         </header>
+
+        <app-visit-day-card />
 
         @if (value.dashboardMode === 'GETTING_STARTED') {
           <section class="sc-card mt-5 p-5" aria-labelledby="getting-started-heading">

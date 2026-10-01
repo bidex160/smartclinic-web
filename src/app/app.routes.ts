@@ -195,6 +195,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'card',
+        title: 'My SmartClinic card | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/smartclinic-card-page.component').then(
+            (c) => c.SmartClinicCardPageComponent,
+          ),
+      },
+      {
         path: 'health',
         title: 'Your health | SmartClinic',
         canActivate: [authenticatedUserGuard],
