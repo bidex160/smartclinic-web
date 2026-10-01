@@ -123,7 +123,7 @@ export class ProviderSentRequestsPageComponent {
   }
 
   status(order: DirectOrder): StatusView {
-    const place = order.type === 'PRESCRIPTION' ? 'pharmacy' : 'lab';
+    const place = order.type === 'PRESCRIPTION' ? 'pharmacy' : order.type === 'REFERRAL' ? 'specialist' : 'lab';
     if (order.status === 'CANCELLED') return { label: order.patientResponse === 'DECLINED' ? 'Declined by patient' : 'Cancelled', tone: 'stop' };
     if (this.hasResults(order) && (order.diagnosticItems ?? []).every((item) => item.resultedAt)) return { label: 'Results ready', tone: 'done' };
     if (this.hasResults(order)) return { label: 'Some results ready', tone: 'done' };
@@ -159,10 +159,11 @@ export class ProviderSentRequestsPageComponent {
   }
 
   typeLabel(type: string): string {
-    return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging' : 'Lab tests';
+    return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging' : type === 'REFERRAL' ? 'Referral' : 'Lab tests';
   }
 
   itemSummary(order: DirectOrder): string {
+    if (order.type === 'REFERRAL') return order.clinicalNote ?? '';
     const names = order.type === 'PRESCRIPTION' ? (order.prescription?.items ?? []).map((i) => i.medicationName) : (order.diagnosticItems ?? []).map((i) => i.name);
     return names.join(', ');
   }

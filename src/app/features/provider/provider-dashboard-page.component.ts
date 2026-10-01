@@ -30,7 +30,7 @@ type PrimaryAction = {
 const ROLE_ACTIONS: Record<ProviderMemberRole, readonly PrimaryAction[]> = {
   DOCTOR: [
     { title: 'New request', helper: 'Send a prescription or test to a patient by SmartClinic ID.', route: '/provider/send-request' },
-    { title: 'Sent requests', helper: 'Follow your prescriptions and tests, and see results.', route: '/provider/sent-requests' },
+    { title: 'Sent requests', helper: 'Follow your prescriptions, tests and referrals, and see results.', route: '/provider/sent-requests' },
     { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
     { title: 'Patient requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
     { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
@@ -44,10 +44,12 @@ const ROLE_ACTIONS: Record<ProviderMemberRole, readonly PrimaryAction[]> = {
   LAB_SCIENTIST: [
     { title: 'Test requests', helper: 'Accept lab and imaging requests, send prices and enter results.', route: '/provider/diagnostic-orders' },
     { title: 'All patient orders', helper: 'Every request sent to your facility, with its status.', route: '/provider/pharmacy-orders' },
+    { title: 'Referred out', helper: 'Tests you passed to another lab, and their results.', route: '/provider/referred-out' },
     { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
   ],
   PHARMACIST: [
     { title: 'Prescriptions', helper: 'Accept prescriptions, send prices and prepare medicines.', route: '/provider/pharmacy-orders' },
+    { title: 'Referred out', helper: 'Prescriptions you passed to another pharmacy.', route: '/provider/referred-out' },
     { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
   ],
   FRONT_DESK: [
@@ -133,6 +135,7 @@ export class ProviderDashboardPageComponent {
     const type = this.profile()?.providerType;
     if (type === 'PHARMACY') return [
       { title: 'Patient prescriptions', helper: 'Accept prescriptions, send prices and prepare medicines.', route: '/provider/pharmacy-orders' },
+      { title: 'Referred out', helper: 'Prescriptions you passed to another pharmacy, and where they are now.', route: '/provider/referred-out' },
       { title: 'Your payments', helper: 'See patient payments and settlements.', route: '/provider/earnings' },
       { title: 'Grow my network', helper: 'Recommend trusted providers and grow your impact.', route: '/provider/network' },
       { title: 'Pharmacy setup', helper: 'Keep your pharmacy details and service units up to date.', route: '/provider/profile' },
@@ -140,6 +143,7 @@ export class ProviderDashboardPageComponent {
     ];
     if (type === 'DIAGNOSTIC_CENTRE') return [
       { title: 'Test & scan requests', helper: 'Accept requests, send prices and upload patient results.', route: '/provider/pharmacy-orders' },
+      { title: 'Referred out', helper: 'Tests you passed to another lab, and their results.', route: '/provider/referred-out' },
       { title: 'Your payments', helper: 'See patient payments and settlements.', route: '/provider/earnings' },
       { title: 'Diagnostic setup', helper: 'Keep your laboratory or diagnostic centre details up to date.', route: '/provider/profile' },
       { title: 'Patient interest', helper: 'See how many patients have asked SmartClinic to contact your facility.', route: '/provider/facility-demand' },
