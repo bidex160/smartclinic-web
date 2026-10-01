@@ -16,6 +16,9 @@ import { PatientDashboardApiService } from '../../core/services/patient-dashboar
 import { CareAppointmentsApiService } from '../../core/services/care-appointments-api.service';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { PatientDashboardPageComponent } from './patient-dashboard-page.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { API_CONFIG } from '../../core/config/api-config.token';
 
 describe('PatientDashboardPageComponent', () => {
   async function setup(
@@ -65,6 +68,9 @@ describe('PatientDashboardPageComponent', () => {
       imports: [PatientDashboardPageComponent],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: API_CONFIG, useValue: { baseUrl: '/api/v1' } },
         { provide: PatientDashboardApiService, useValue: api },
         { provide: HealthCheckResultsApiService, useValue: healthChecksApi },
         { provide: ReferralsApiService, useValue: referralsApi },
@@ -391,6 +397,9 @@ describe('PatientDashboardPageComponent', () => {
       imports: [PatientDashboardPageComponent],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: API_CONFIG, useValue: { baseUrl: '/api/v1' } },
         { provide: PatientDashboardApiService, useValue: { getDashboard: () => pending } },
         {
           provide: HealthCheckResultsApiService,

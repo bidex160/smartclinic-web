@@ -1,17 +1,26 @@
+import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthSessionService } from '../../core/services/auth-session.service';
+import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
 import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-self-check-operations-api.service';
 import { PatientLayoutComponent } from './patient-layout.component';
 
 describe('PatientLayoutComponent', () => {
+  const calls: string[] = [];
+  const device = {
+    syncPush: vi.fn(async () => false),
+    disconnectPush: vi.fn(async () => { calls.push('disconnect'); }),
+  };
+
   async function setup(reviewAccess: boolean | 401 | 403 = false) {
     await TestBed.configureTestingModule({
       imports: [PatientLayoutComponent],
       providers: [
         provideRouter([]),
-        { provide: AuthSessionService, useValue: { logout: () => of(undefined) } },
+        { provide: AuthSessionService, useValue: { logout: () => { calls.push('logout'); return of(true); } } },
+        { provide: DeviceNotificationsService, useValue: device },
         {
           provide: GuidedSelfCheckOperationsApiService,
           useValue: {
@@ -208,5 +217,14 @@ describe('PatientLayoutComponent', () => {
 
     expect(dashboard.getAttribute('routerlinkactive')).toBe('bg-white/15');
     expect(fixture.nativeElement.querySelector('aside button').textContent).toContain('Sign out');
+  });
+
+  it('keeps this browser subscribed on load and stops push before signing out', async () => {
+    calls.length = 0;
+    device.syncPush.mockClear();
+    const fixture = await setup();
+    expect(device.syncPush).toHaveBeenCalledTimes(1);
+    await fixture.componentInstance.logout();
+    expect(calls).toEqual(['disconnect', 'logout']);
   });
 });

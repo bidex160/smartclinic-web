@@ -13,6 +13,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
+import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-self-check-operations-api.service';
 import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
@@ -179,6 +180,7 @@ export class PatientLayoutComponent implements OnInit {
   readonly authState = inject(AuthStateService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly deviceNotifications = inject(DeviceNotificationsService);
 
   private readonly guidedSelfCheckOperationsApi = inject(GuidedSelfCheckOperationsApiService);
 
@@ -317,6 +319,8 @@ export class PatientLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClinicalReviewAccess();
+    // Keeps reminders reaching this browser when SmartClinic is closed; never prompts.
+    void this.deviceNotifications.syncPush();
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -375,7 +379,9 @@ export class PatientLayoutComponent implements OnInit {
       });
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    // Stop reminders reaching this browser before the session ends, in case it is shared.
+    await this.deviceNotifications.disconnectPush();
     this.session.logout().subscribe();
   }
 }
