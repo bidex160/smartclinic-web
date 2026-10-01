@@ -11,6 +11,9 @@ describe('NotificationNavigationService', () => {
     expect(mapper.destination(item('CARE_REQUEST'), 'USER')).toEqual(['/me/care', 'CR-1']);
     expect(mapper.destination(item('CARE_REQUEST'), 'PROVIDER')).toEqual(['/provider/care-requests', 'CR-1']);
   });
+  it('opens a request a provider sent to the patient', () => {
+    expect(mapper.destination(item('CLINICAL_ORDER'), 'USER')).toEqual(['/me/orders', 'CR-1']);
+  });
   it('does not guess routes for unknown entities or roles', () => {
     expect(mapper.destination(item('CARE_REQUEST'), null)).toBeNull();
     expect(mapper.destination(item('FUTURE_ENTITY'), 'USER')).toBeNull();

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { DirectOrdersApiService } from '../../core/services/direct-orders-api.service';
 import { PrescriptionDetailPageComponent } from './prescription-detail-page.component';
 
 describe('PrescriptionDetailPageComponent reload state', () => {
@@ -27,6 +28,7 @@ describe('PrescriptionDetailPageComponent reload state', () => {
       imports: [PrescriptionDetailPageComponent],
       providers: [
         { provide: PharmacyFulfillmentApiService, useValue: api },
+        { provide: DirectOrdersApiService, useValue: { decline: vi.fn() } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'SC-ORD-1' } } } },
       ],
     }).compileComponents();
@@ -62,6 +64,7 @@ describe('PrescriptionDetailPageComponent reload state', () => {
       imports: [PrescriptionDetailPageComponent],
       providers: [
         { provide: PharmacyFulfillmentApiService, useValue: api },
+        { provide: DirectOrdersApiService, useValue: { decline: vi.fn() } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'SC-ORD-1' } } } },
       ],
     }).compileComponents();

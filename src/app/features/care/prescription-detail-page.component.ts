@@ -12,9 +12,10 @@ import {
 } from '../../core/models/pharmacy-fulfillment.model';
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
 import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
+import { DirectRequestBannerComponent } from './direct-request-banner.component';
 @Component({
   selector: 'app-prescription-detail-page',
-  imports: [RouterLink, ReactiveFormsModule, PaymentContactEmailComponent],
+  imports: [RouterLink, ReactiveFormsModule, PaymentContactEmailComponent, DirectRequestBannerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
     <a routerLink="/me/prescriptions" class="font-bold text-brand-700 underline">← Get Medicine</a>
@@ -32,6 +33,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           {{ o.orderingProvider.displayName }} · {{ date(o.issuedAt) }} · {{ o.status }}
         </p>
       </header>
+      <app-direct-request-banner [order]="o" (changed)="order.set($event)" />
       @if (o.status === 'CANCELLED') {
         <p class="mt-5 rounded-xl bg-red-50 p-4 font-bold">
           Prescription Cancelled

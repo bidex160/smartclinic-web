@@ -13,7 +13,7 @@ export type NotificationType =
   | 'PROVIDER_REJECTED'
   | (string & {});
 
-export type NotificationEntityType = 'CARE_REQUEST' | 'CARE_APPOINTMENT' | 'PROVIDER_PROFILE' | (string & {});
+export type NotificationEntityType = 'CARE_REQUEST' | 'CARE_APPOINTMENT' | 'PROVIDER_PROFILE' | 'CLINICAL_ORDER' | (string & {});
 export type NotificationActionType = 'VIEW' | (string & {});
 
 export interface Notification {

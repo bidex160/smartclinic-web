@@ -11,6 +11,8 @@ export class NotificationNavigationService {
       switch (notification.entityType) {
         case 'CARE_REQUEST': return reference ? ['/me/care', reference] : ['/me/care'];
         case 'CARE_APPOINTMENT': return reference ? ['/me/care/appointments', reference] : ['/me/appointments'];
+        // Tests open in place; prescriptions are redirected to their medicines page there.
+        case 'CLINICAL_ORDER': return reference ? ['/me/orders', reference] : ['/me/orders'];
         default: return null;
       }
     }
