@@ -1,37 +1,71 @@
 /** @type {import('tailwindcss').Config} */
+// SmartClinic design tokens.
+// Royal purple carries the brand; warm sand neutrals, ochre, clay and leaf
+// give the product its West African warmth without leaning on one locale.
 module.exports = {
   content: ['./src/**/*.{html,ts}'],
   theme: {
     extend: {
       colors: {
-        // brand: {
-        //   50: '#f5f3ff', // very light tint
-        //   100: '#ede9fe', // light tint
-        //   200: '#ddd6fe', // light
-        //   300: '#c4b5fd', // lighter mid
-        //   400: '#a78bfa', // mid-light
-        //   500: '#8b5cf6', // mid
-        //   600: '#7c3aed', // mid-dark
-        //   700: '#7139d6', // primary
-        //   800: '#5b21b6', // dark
-        //   900: '#4c1d95', // darkest
-        // },
         brand: {
-  50: '#f5f3ff',
-  100: '#ede9fe',
-  200: '#ddd6fe',
-  300: '#c4b5fd',
-  400: '#a78bfa',
-  500: '#8b5cf6',
-  600: '#7c3aed',
-  700: '#7139d6',
-  800: '#5b21b6',
-  900: '#4c1d95',
-  950: '#2e1065',
-},
-        ink: '#17342f',
+          50: '#f6f3fd',
+          100: '#ece6fb',
+          200: '#dacdf6',
+          300: '#bfa8ee',
+          400: '#9c79e2',
+          500: '#7d52d3',
+          600: '#6a3cc4',
+          700: '#5a2fae',
+          800: '#4a268e',
+          900: '#3b1f70',
+          950: '#241345',
+        },
+        // Aubergine-black used for body text and premium dark surfaces.
+        ink: {
+          DEFAULT: '#1d1530',
+          soft: '#4a4358',
+          muted: '#6f6880',
+        },
+        // Warm paper neutrals instead of cold greys.
+        sand: {
+          50: '#fbf8f3',
+          100: '#f5efe5',
+          200: '#ebe2d3',
+          300: '#dccdb4',
+          400: '#bfa985',
+        },
+        // Sahel sunlight: rewards, highlights, the "today" accent.
+        ochre: {
+          50: '#fdf7ea',
+          100: '#fbedd0',
+          300: '#f0c46b',
+          500: '#d99a2b',
+          700: '#94600f',
+        },
+        // Terracotta: attention without alarm.
+        clay: {
+          50: '#fcf1ed',
+          100: '#f8e1d8',
+          500: '#c2553a',
+          700: '#8f3a25',
+        },
+        // Wellbeing and completed states.
+        leaf: {
+          50: '#eef7f2',
+          100: '#d6eee2',
+          300: '#8fcbae',
+          500: '#2e8a64',
+          700: '#1f6149',
+        },
       },
-      boxShadow: { soft: '0 18px 45px -24px rgba(15, 76, 69, 0.28)' },
+      fontFamily: {
+        display: ['Fraunces', 'Georgia', 'Cambria', 'serif'],
+      },
+      boxShadow: {
+        soft: '0 18px 45px -24px rgba(36, 19, 69, 0.28)',
+        card: '0 1px 2px rgba(29, 21, 48, 0.04), 0 8px 24px -12px rgba(29, 21, 48, 0.12)',
+        lift: '0 2px 4px rgba(29, 21, 48, 0.04), 0 18px 40px -18px rgba(36, 19, 69, 0.32)',
+      },
     },
   },
 };

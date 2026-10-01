@@ -127,6 +127,13 @@
     </section>
   }
 
+  @if (teaserVisible()) {
+    <div class="guide__teaser" role="status">
+      <p><strong>Hi, I’m {{ character().name }}.</strong> Tap me any time you need help finding your way.</p>
+      <button type="button" class="guide__link" (click)="skipIntroduction()">Not now</button>
+    </div>
+  }
+
   <button
     type="button"
     class="guide__launcher"

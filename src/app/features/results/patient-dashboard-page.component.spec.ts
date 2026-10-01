@@ -71,7 +71,7 @@ describe('PatientDashboardPageComponent', () => {
   it('places authoritative identity and one backend-driven next step before secondary content', async () => {
     const { fixture } = await setup();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Welcome, Ada');
+    expect(text).toMatch(/Good (morning|afternoon|evening), Ada/);
     expect(text).toContain('SmartClinic ID: SCP-8K4M-27QD');
     expect(text).toContain('Your next step');
     expect(text).toContain('Complete your profile');

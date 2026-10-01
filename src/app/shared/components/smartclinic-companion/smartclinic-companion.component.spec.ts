@@ -15,8 +15,13 @@ describe('SmartClinicCompanionComponent', () => {
     const fixture = TestBed.createComponent(SmartClinicCompanionComponent);
     fixture.detectChanges();
 
+    expect(fixture.nativeElement.querySelector('.guide__panel')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.guide__teaser').textContent).toContain('Not now');
+
+    fixture.componentInstance.toggle();
+    fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Choose a friendly guide');
-    expect(fixture.nativeElement.textContent).toContain('Not now');
+    expect(fixture.nativeElement.querySelector('.guide__teaser')).toBeNull();
   });
 
   it('explains the three main patient journeys', () => {
