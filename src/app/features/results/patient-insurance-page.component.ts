@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { HmoApiService } from '../../core/services/hmo-api.service';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
-import { Hmo } from '../../core/models/hmo.model';
+import { Hmo, HmoPlan } from '../../core/models/hmo.model';
 @Component({
   selector: 'app-patient-insurance-page',
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
@@ -79,13 +79,16 @@ import { Hmo } from '../../core/models/hmo.model';
           <span aria-hidden="true">ℹ</span><span><strong>This is an enrollment request.</strong> You will continue as self-pay until an HMO confirms your coverage.</span>
         </div>
         <label class="mt-5 block text-sm font-bold"
-          >Preferred HMO (optional)<select #preferredHmo class="mt-2 w-full rounded-xl border p-3">
+          >Preferred HMO (optional)<select #preferredHmo class="mt-2 w-full rounded-xl border p-3" (change)="loadPlans(preferredHmo.value)">
             <option value="">No preference</option>
             @for (x of hmos(); track x.id) {
               <option [value]="x.id">{{ x.name }}</option>
             }
           </select></label
         >
+        @if (preferredHmoId()) { <label class="mt-4 block text-sm font-bold">Priced plan<select class="mt-2 w-full rounded-xl border p-3" (change)="selectedPlanId.set($any($event.target).value)"><option value="">Select a plan</option>@for (plan of plans(); track plan.id) {<option [value]="plan.id">{{ plan.name }} — {{ money(plan.amountMinor, plan.currency) }} / {{ period(plan.billingPeriod) }}</option>}</select></label>
+          @if (!plans().length) { <p class="mt-2 text-sm text-slate-600">This HMO has not published a priced plan yet. Choose another HMO or submit a general contact request below.</p> }
+        }
         <button type="button" (click)="moreInterestDetails.update(value => !value)" [attr.aria-expanded]="moreInterestDetails()" class="mt-4 min-h-11 font-bold text-brand-700 underline">
           {{ moreInterestDetails() ? 'Hide additional details' : 'Add employer or other details (optional)' }}
         </button>
@@ -93,13 +96,14 @@ import { Hmo } from '../../core/models/hmo.model';
           <label class="block text-sm font-bold">Employer or organisation (optional)<input #employer class="mt-2 w-full rounded-xl border bg-white p-3" placeholder="Organisation name" /></label>
           <label class="mt-4 block text-sm font-bold">Anything else we should know? (optional)<textarea #notes class="mt-2 w-full rounded-xl border bg-white p-3" rows="3" placeholder="Keep this brief"></textarea></label>
         </div>
+        <label class="mt-4 flex items-start gap-3 text-sm"><input type="checkbox" class="mt-1" [checked]="enrollmentConsent()" (change)="enrollmentConsent.set($any($event.target).checked)"><span>I agree that SmartClinic may share my contact details and selected plan request with the HMO and contact me to discuss enrolment. This does not authorize sharing my medical records.</span></label>
         <button
           type="button"
-          [disabled]="saving() || !patientReference()"
-          (click)="submitInterest(preferredHmo.value, employer.value, notes.value)"
+          [disabled]="saving() || !patientReference() || !enrollmentConsent()"
+          (click)="submitInterest(preferredHmo.value, selectedPlanId(), employer.value, notes.value)"
           class="mt-5 min-h-12 w-full rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-50 sm:w-auto"
         >
-          {{ saving() ? 'Submitting…' : 'Request HMO help' }}
+          {{ saving() ? 'Submitting…' : 'Request plan enrolment help' }}
         </button>
         @if (feedback()) {
           <p role="status" class="mt-3 text-sm font-semibold">{{ feedback() }}</p>
@@ -116,6 +120,10 @@ export class PatientInsurancePageComponent {
   saving = signal(false);
   feedback = signal('');
   hmos = signal<Hmo[]>([]);
+  plans = signal<HmoPlan[]>([]);
+  preferredHmoId = signal('');
+  selectedPlanId = signal('');
+  enrollmentConsent = signal(false);
   mode = signal<'existing' | 'interest' | null>(null);
   moreInterestDetails = signal(false);
   constructor() {
@@ -145,16 +153,28 @@ export class PatientInsurancePageComponent {
       },
     });
   }
-  submitInterest(preferredHmoId: string, employerOrganisation: string, notes: string) {
+  loadPlans(hmoId: string) {
+    this.preferredHmoId.set(hmoId);
+    this.selectedPlanId.set('');
+    this.plans.set([]);
+    if (hmoId) this.api.listPlans(hmoId).subscribe({ next: rows => this.plans.set(rows) });
+  }
+  submitInterest(preferredHmoId: string, planId: string, employerOrganisation: string, notes: string) {
     const patientReference = this.patientReference();
     if (!patientReference) {
       this.feedback.set('Your patient profile is still loading. Please retry.');
       return;
     }
+    if (!this.enrollmentConsent()) {
+      this.feedback.set('Please consent before SmartClinic shares your enrolment request with an HMO.');
+      return;
+    }
     this.saving.set(true);
     this.feedback.set('');
     const payload = {
+      consentAcknowledged: true,
       ...(preferredHmoId ? { preferredHmoId } : {}),
+      ...(planId ? { planId } : {}),
       ...(employerOrganisation.trim() ? { employerOrganisation: employerOrganisation.trim() } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
     };
@@ -162,7 +182,7 @@ export class PatientInsurancePageComponent {
       next: () => {
         this.saving.set(false);
         this.feedback.set(
-          'Enrollment interest recorded. You remain self-pay and Unverified until an HMO confirms coverage.',
+          'Your plan request is in the SmartClinic follow-up queue. The displayed price is recorded for the team; no payment was taken and cover is not active until the HMO confirms enrolment.',
         );
       },
       error: () => {
@@ -171,4 +191,6 @@ export class PatientInsurancePageComponent {
       },
     });
   }
+  money(minor: string | null, currency: string) { return new Intl.NumberFormat('en-NG', { style: 'currency', currency }).format(Number(minor ?? 0) / 100); }
+  period(value: string) { return value.toLowerCase(); }
 }

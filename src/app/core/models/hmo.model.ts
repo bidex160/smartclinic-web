@@ -11,6 +11,10 @@ export interface HmoPlan {
   name: string;
   code: string;
   active: boolean;
+  amountMinor: string | null;
+  currency: string;
+  billingPeriod: 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | string;
+  hmo?: Hmo;
 }
 export interface PatientHmoCoverage {
   id: string;
@@ -39,6 +43,12 @@ export interface HmoEnrollmentLead {
   status: 'NEW' | 'CONTACTED' | 'ENROLLED' | 'CLOSED';
   createdAt: string;
   updatedAt: string;
+  quotedAmountMinor?: string | null;
+  quotedCurrency?: string | null;
+  consentCapturedAt?: string | null;
+  plan?: HmoPlan | null;
+  preferredHmo?: Hmo | null;
+  patient?: { patientReference: string; givenName: string; familyName: string; phone: string | null; email: string | null };
 }
 export interface HmoCase {
   reference: string;
