@@ -187,10 +187,10 @@ export class PatientLayoutComponent implements OnInit {
 
   readonly bottomNavigation = [
     { key: 'home', label: 'Home', route: '/me/dashboard' },
+    { key: 'health', label: 'Health', route: '/me/health' },
     { key: 'care', label: 'Care', route: '/me/care' },
     { key: 'hospitals', label: 'Hospitals', route: '/me/providers' },
-    { key: 'impact', label: 'Impact', route: '/me/impact' },
-    { key: 'account', label: 'Account', route: '/me/profile' },
+    { key: 'me', label: 'Me', route: '/me/profile' },
   ] as const;
 
   readonly initials = computed(() => {
@@ -203,12 +203,13 @@ export class PatientLayoutComponent implements OnInit {
     home: ['m3 11 9-8 9 8', 'M5 10v10h14V10M9 20v-6h6v6'],
     care: ['M12 21s-7-4.35-9.25-8.45C.9 9.2 2.48 5 6.5 5c2.1 0 3.2 1.2 3.9 2.2C11.1 6.2 12.2 5 14.5 5c4.02 0 5.6 4.2 3.75 7.55C16 16.65 12 21 12 21Z'],
     hospitals: ['M4 21V5h10v16M14 9h6v12M2 21h20', 'M8 9h2M8 13h2M8 17h2M17 13h1M17 17h1', 'M9 2v4M7 4h4'],
-    impact: ['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z', 'M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'],
-    account: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z', 'M4 21a8 8 0 0 1 16 0'],
+    health: ['M3 12h4l2-5 4 10 2-5h6'],
+    me: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z', 'M4 21a8 8 0 0 1 16 0'],
   };
 
   private readonly navIcons: Record<string, readonly string[]> = {
     '/me/dashboard': ['m3 11 9-8 9 8', 'M5 10v10h14V10'],
+    '/me/health': ['M3 12h4l2-5 4 10 2-5h6'],
     '/me/health-passport': ['M5 3h11l3 3v15H5Z', 'M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0', 'M8 18h8'],
     '/me/self-checks': ['M9 11l2 2 4-4', 'M5 4h14v16H5Z'],
     '/me/health-checks': ['M3 12h4l2-5 4 10 2-5h6'],
@@ -245,7 +246,13 @@ export class PatientLayoutComponent implements OnInit {
 
   readonly navigationGroups = computed(() => {
     const groups = [
-      { label: 'Home', items: [{ label: 'Dashboard', route: '/me/dashboard', exact: true }] },
+      {
+        label: 'Home',
+        items: [
+          { label: 'Dashboard', route: '/me/dashboard', exact: true },
+          { label: 'My Health', route: '/me/health', exact: true },
+        ],
+      },
       {
         label: 'Stay Well',
         items: [
@@ -320,20 +327,27 @@ export class PatientLayoutComponent implements OnInit {
 
   isBottomNavActive(key: (typeof this.bottomNavigation)[number]['key']): boolean {
     const path = this.currentUrl().split(/[?#]/, 1)[0];
+    const within = (...roots: string[]) => roots.some((root) => path === root || path.startsWith(`${root}/`));
 
     switch (key) {
       case 'home':
         return path === '/me/dashboard';
-      case 'care':
-        return path === '/me/request-care' || path === '/me/care' || path.startsWith('/me/care/');
-      case 'hospitals':
-        return path === '/me/providers' || path.startsWith('/me/providers/');
-      case 'impact':
-        return (
-          path === '/me/impact' || path === '/me/referrals' || path.startsWith('/me/referrals/')
+      case 'health':
+        return within(
+          '/me/health',
+          '/me/health-journey',
+          '/me/health-passport',
+          '/me/health-records',
+          '/me/health-checks',
+          '/me/self-checks',
+          '/me/book',
         );
-      case 'account':
-        return path === '/me/profile';
+      case 'care':
+        return path === '/me/request-care' || within('/me/care');
+      case 'hospitals':
+        return within('/me/providers', '/me/partner-facilities');
+      case 'me':
+        return within('/me/profile', '/me/family', '/me/impact', '/me/referrals', '/me/insurance', '/me/notifications');
     }
   }
 

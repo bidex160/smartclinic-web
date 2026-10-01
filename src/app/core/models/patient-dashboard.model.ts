@@ -22,10 +22,33 @@ export interface PatientDailyRoutine {
 }
 
 /** Self-reported daily routine ticks. Never clinical adherence data. */
+export interface DailyCheckInScores {
+  /** 1 = very low … 5 = great. */
+  readonly mood: number;
+  readonly energy: number | null;
+  readonly sleep: number | null;
+}
+
+export interface DailyCheckIn extends DailyCheckInScores {
+  readonly localDate: string;
+}
+
+export interface UpsertDailyCheckInRequest {
+  readonly mood: number;
+  readonly energy?: number | null;
+  readonly sleep?: number | null;
+  readonly timezone: string;
+}
+
 export interface DailyCareProgress {
   readonly localDate: string;
   readonly completedReferences: readonly string[];
   readonly streakDays: number;
+  /** Optional during a staggered API/Web deployment. */
+  readonly bestStreak?: number;
+  readonly todayCheckIn?: DailyCheckInScores | null;
+  /** The last 7 local days, oldest first, ending today. */
+  readonly week?: readonly { readonly localDate: string; readonly active: boolean }[];
 }
 
 export interface CreatePatientDailyRoutineRequest {

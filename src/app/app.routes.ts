@@ -195,6 +195,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'health',
+        title: 'Your health | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () =>
+          import('./features/results/patient-health-hub-page.component').then(
+            (c) => c.PatientHealthHubPageComponent,
+          ),
+      },
+      {
         path: 'health-journey',
         title: 'Start your health journey | SmartClinic',
         canActivate: [authenticatedUserGuard],

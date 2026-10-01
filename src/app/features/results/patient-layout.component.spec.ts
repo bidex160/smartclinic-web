@@ -39,21 +39,27 @@ describe('PatientLayoutComponent', () => {
     expect(nav.getAttribute('aria-label')).toBe('Patient navigation');
     expect(links).toEqual([
       { label: 'Home', route: '/me/dashboard' },
+      { label: 'Health', route: '/me/health' },
       { label: 'Care', route: '/me/care' },
       { label: 'Hospitals', route: '/me/providers' },
-      { label: 'Impact', route: '/me/impact' },
-      { label: 'Account', route: '/me/profile' },
+      { label: 'Me', route: '/me/profile' },
     ]);
   });
 
   it.each([
     ['/me/dashboard', 'Home'],
+    ['/me/health', 'Health'],
+    ['/me/health-passport', 'Health'],
+    ['/me/self-checks/SC-1', 'Health'],
+    ['/me/health-records/HR-1', 'Health'],
     ['/me/care/CR-123', 'Care'],
     ['/me/request-care', 'Care'],
     ['/me/providers/connect', 'Hospitals'],
-    ['/me/referrals', 'Impact'],
-    ['/me/referrals/history', 'Impact'],
-    ['/me/profile', 'Account'],
+    ['/me/partner-facilities', 'Hospitals'],
+    ['/me/referrals', 'Me'],
+    ['/me/referrals/history', 'Me'],
+    ['/me/impact', 'Me'],
+    ['/me/profile', 'Me'],
   ])('marks %s as %s without requiring an exact child-route match', async (url, label) => {
     const fixture = await setup();
     fixture.componentInstance.currentUrl.set(url);
@@ -65,10 +71,10 @@ describe('PatientLayoutComponent', () => {
     expect(active?.textContent.trim()).toBe(label);
   });
 
-  it('does not classify Stay Well and secondary clinical pages as Care', async () => {
+  it('does not mark unrelated pages as an active tab', async () => {
     const fixture = await setup();
 
-    for (const url of ['/me/health-journey', '/me/health-passport', '/me/self-checks/SC-1']) {
+    for (const url of ['/me/notifications-settings', '/healthy-families', '/me/fasttrack']) {
       fixture.componentInstance.currentUrl.set(url);
       fixture.detectChanges();
       expect(
@@ -114,7 +120,7 @@ describe('PatientLayoutComponent', () => {
     );
 
     expect(groups).toEqual([
-      { label: 'Home', links: [['Dashboard', '/me/dashboard']] },
+      { label: 'Home', links: [['Dashboard', '/me/dashboard'], ['My Health', '/me/health']] },
       {
         label: 'Stay Well',
         links: [

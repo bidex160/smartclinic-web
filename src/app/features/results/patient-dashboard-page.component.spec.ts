@@ -32,6 +32,8 @@ describe('PatientDashboardPageComponent', () => {
       ),
       getDailyRoutines: vi.fn(() => of({ items: [] })),
       createDailyRoutine: vi.fn(() => of({})),
+      saveTodayCheckIn: vi.fn(),
+      getCheckIns: vi.fn(() => of({ items: [{ localDate: '2026-10-04', mood: 4, energy: null, sleep: null }, { localDate: '2026-10-03', mood: 5, energy: null, sleep: null }] })),
       updateDailyRoutine: vi.fn(),
       deleteDailyRoutine: vi.fn(),
       completeRoutineToday: vi.fn((reference: string) =>
@@ -501,6 +503,67 @@ describe('PatientDashboardPageComponent', () => {
       const nextStep = fixture.nativeElement.querySelector('#next-step-heading');
       expect(section.compareDocumentPosition(nextStep) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(section.querySelector('a[href="/me/providers/connect"]')).not.toBeNull();
+    });
+  });
+
+  describe('habit loop', () => {
+    const week = (activeFlags: boolean[], end = '2026-10-01') =>
+      activeFlags.map((active, index) => {
+        const date = new Date(`${end}T12:00:00Z`);
+        date.setUTCDate(date.getUTCDate() - (6 - index));
+        return { localDate: date.toISOString().slice(0, 10), active };
+      });
+
+    it('shows the 7-day strip, earned badges, the next badge and the daily check-in', async () => {
+      const { fixture } = await setup({
+        dashboard: {
+          dailyCare: { localDate: '2026-10-01', completedReferences: [], streakDays: 4, bestStreak: 8, todayCheckIn: null, week: week([false, false, false, true, true, true, true]) },
+        },
+      });
+      const element: HTMLElement = fixture.nativeElement;
+      const days = [...element.querySelectorAll('[data-week-strip] li > span:first-child')];
+      expect(days).toHaveLength(7);
+      expect(days.filter((day) => day.textContent?.includes('✓'))).toHaveLength(4);
+      expect(days[6].getAttribute('aria-label')).toBe('Thursday: active');
+      const badges = element.querySelector('[data-badges]')!.textContent!.replace(/\s+/g, ' ');
+      expect(badges).toContain('Spark');
+      expect(badges).toContain('One week strong');
+      expect(badges).not.toContain('30-day rhythm Next');
+      expect(badges).toContain('Next: One week strong in 3 days');
+      expect(element.querySelector('app-daily-check-in')).not.toBeNull();
+      expect(element.querySelector('[data-celebration]')).toBeNull();
+    });
+
+    it('celebrates a milestone reached today', async () => {
+      const { fixture } = await setup({
+        dashboard: {
+          dailyCare: { localDate: '2026-10-01', completedReferences: [], streakDays: 7, bestStreak: 7, todayCheckIn: { mood: 5, energy: null, sleep: null }, week: week([true, true, true, true, true, true, true]) },
+        },
+      });
+      expect(fixture.nativeElement.querySelector('[data-celebration]').textContent).toContain('7-day streak');
+    });
+
+    it('shows a weekly recap on Sunday with check-in mood', async () => {
+      const { fixture, api } = await setup({
+        dashboard: {
+          dailyCare: { localDate: '2026-10-04', completedReferences: [], streakDays: 2, bestStreak: 5, todayCheckIn: null, week: week([true, false, true, false, true, true, true], '2026-10-04') },
+        },
+      });
+      fixture.detectChanges();
+      expect(api.getCheckIns).toHaveBeenCalledWith(7, expect.any(String));
+      const recap = fixture.nativeElement.querySelector('[data-week-recap]').textContent.replace(/\s+/g, ' ');
+      expect(recap).toContain('Active 5 of 7 days');
+      expect(recap).toContain('2 check-ins');
+      expect(recap).toContain('mostly feeling great');
+      expect(recap).toContain('best streak 5 days');
+    });
+
+    it('hides the habit loop when the API does not report it yet, but always shows a tip', async () => {
+      const { fixture } = await setup({ dashboard: { dailyCare: { localDate: '2026-10-01', completedReferences: [], streakDays: 0 } } });
+      const element: HTMLElement = fixture.nativeElement;
+      expect(element.querySelector('[data-week-strip]')).toBeNull();
+      expect(element.querySelector('app-daily-check-in')).toBeNull();
+      expect(element.querySelector('[data-daily-tip]')?.textContent).toContain('Tip of the day');
     });
   });
 });

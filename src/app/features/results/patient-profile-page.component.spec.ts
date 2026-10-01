@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { PatientProfilePageComponent } from './patient-profile-page.component';
@@ -12,7 +13,7 @@ describe('PatientProfilePageComponent', () => {
   async function render(email: string | null) {
     await TestBed.configureTestingModule({
       imports: [PatientProfilePageComponent],
-      providers: [{ provide: HealthCheckResultsApiService, useValue: { getMyProfile: () => of(profile(email)) } }],
+      providers: [provideRouter([]), { provide: HealthCheckResultsApiService, useValue: { getMyProfile: () => of(profile(email)) } }],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientProfilePageComponent);
     fixture.detectChanges();
@@ -31,5 +32,13 @@ describe('PatientProfilePageComponent', () => {
     const text = await render('ada@example.test');
     expect(text).toContain('ada@example.test');
     expect(text).not.toContain('Not provided');
+  });
+
+  it('gathers family, impact, insurance and notifications under Me', async () => {
+    const text = await render('ada@example.test');
+    expect(text).toContain('More for you');
+    for (const label of ['Family & dependants', 'My Impact & referrals', 'Health Insurance / HMO', 'Notifications']) {
+      expect(text).toContain(label);
+    }
   });
 });
