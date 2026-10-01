@@ -13,6 +13,7 @@ import { ReferralImpact } from '../../core/models/referral.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { CareAppointmentsApiService } from '../../core/services/care-appointments-api.service';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
 import { PatientDashboardPageComponent } from './patient-dashboard-page.component';
 
@@ -68,6 +69,7 @@ describe('PatientDashboardPageComponent', () => {
         { provide: HealthCheckResultsApiService, useValue: healthChecksApi },
         { provide: ReferralsApiService, useValue: referralsApi },
         { provide: HealthPassportApiService, useValue: passportApi },
+        { provide: CareAppointmentsApiService, useValue: { list: () => of({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 }) } },
         { provide: PUBLIC_SITE_CONFIG, useValue: { whatsappUrl: options.supportUrl ?? null } },
       ],
     }).compileComponents();

@@ -121,6 +121,36 @@ describe('FindCarePageComponent', () => {
     fixture.detectChanges();
     return { fixture, find, care, router: TestBed.inject(Router) };
   }
+  it('starts with "What’s going on?" and reveals the service form for "Something else"', async () => {
+    const { fixture } = await setup();
+    const element: HTMLElement = fixture.nativeElement;
+    const intent = element.querySelector('[data-care-intent]') as HTMLElement;
+    expect(intent.textContent).toContain('What’s going on?');
+    const links = [...intent.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(links).toEqual([
+      '/me/request-care?serviceCode=EMERGENCY_CONSULTATION&journey=doctor',
+      '/me/lab-tests',
+      '/me/prescriptions',
+      '/me/fasttrack/new',
+    ]);
+    expect(element.querySelector('form')!.classList).toContain('hidden');
+
+    (intent.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(element.querySelector('[data-care-intent]')).toBeNull();
+    expect(element.querySelector('form')!.classList).not.toContain('hidden');
+  });
+
+  it('skips the intent step when a doctor journey or service is already chosen', async () => {
+    let { fixture } = await setup(true, [], null, undefined, true);
+    expect(fixture.nativeElement.querySelector('[data-care-intent]')).toBeNull();
+
+    TestBed.resetTestingModule();
+    ({ fixture } = await setup(true, [], 'DENTAL'));
+    expect(fixture.nativeElement.querySelector('[data-care-intent]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('form').classList).not.toContain('hidden');
+  });
+
   it('shows emergency guidance before the form, with a callable emergency number', async () => {
     const { fixture } = await setup();
     const element: HTMLElement = fixture.nativeElement;
