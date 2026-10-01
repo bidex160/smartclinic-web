@@ -9,6 +9,8 @@ import { ProviderOffersApiService } from '../../core/services/provider-offers-ap
 import { ProviderDashboardApiService } from '../../core/services/provider-dashboard-api.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { UtilsService } from '../../core/services/utils.service';
+import { ProviderMembershipService } from '../../core/services/provider-membership.service';
+import { ProviderMemberRole } from '../../core/models/provider-team.model';
 import {
   ProviderReferralSummary,
   ProviderReferralsApiService,
@@ -24,6 +26,45 @@ type PrimaryAction = {
   readonly fragment?: string;
   readonly status?: 'findCare' | 'healthChecks' | 'availability' | 'locations';
 };
+/** What each staff role sees first. The facility owner keeps the full set of actions. */
+const ROLE_ACTIONS: Record<ProviderMemberRole, readonly PrimaryAction[]> = {
+  DOCTOR: [
+    { title: 'New request', helper: 'Send a prescription or test to a patient by SmartClinic ID.', route: '/provider/send-request' },
+    { title: 'Sent requests', helper: 'Follow your prescriptions and tests, and see results.', route: '/provider/sent-requests' },
+    { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
+    { title: 'Patient requests', helper: 'Accept new patient appointment requests.', route: '/provider/care-requests' },
+    { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
+  ],
+  NURSE: [
+    { title: 'Appointments', helper: 'See today and upcoming patient appointments.', route: '/provider/care-appointments' },
+    { title: 'Patient requests', helper: 'New patient appointment requests.', route: '/provider/care-requests' },
+    { title: 'Health checks', helper: 'Health check visits assigned to your facility.', route: '/provider/appointments' },
+    { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
+  ],
+  LAB_SCIENTIST: [
+    { title: 'Test requests', helper: 'Accept lab and imaging requests, send prices and enter results.', route: '/provider/diagnostic-orders' },
+    { title: 'All patient orders', helper: 'Every request sent to your facility, with its status.', route: '/provider/pharmacy-orders' },
+    { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
+  ],
+  PHARMACIST: [
+    { title: 'Prescriptions', helper: 'Accept prescriptions, send prices and prepare medicines.', route: '/provider/pharmacy-orders' },
+    { title: 'Shared records', helper: 'Health records patients have shared with your facility.', route: '/provider/shared-health-records' },
+  ],
+  FRONT_DESK: [
+    { title: 'Appointments', helper: 'Today’s and upcoming visits, for check-in.', route: '/provider/care-appointments' },
+    { title: 'Patient requests', helper: 'New patient appointment requests.', route: '/provider/care-requests' },
+    { title: 'Patient connections', helper: 'Verify patients linking their SmartClinic ID to your facility.', route: '/provider/patient-connections' },
+    { title: 'Health checks', helper: 'Health check visits assigned to your facility.', route: '/provider/appointments' },
+  ],
+  ADMIN: [
+    { title: 'Team', helper: 'Invite staff and set what each person can see.', route: '/provider/team' },
+    { title: 'Services', helper: 'Choose the consultations patients can book.', route: '/provider/care-services', status: 'findCare' },
+    { title: 'Availability', helper: 'Set when patients can book you.', route: '/provider/profile', fragment: 'availability', status: 'availability' },
+    { title: 'Locations', helper: 'Manage where you see patients in person.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
+    { title: 'Patient interest', helper: 'See demand for your facility from the SmartClinic directory.', route: '/provider/facility-demand' },
+  ],
+};
+
 @Component({
   selector: 'app-provider-dashboard-page',
   imports: [RouterLink],
@@ -38,6 +79,7 @@ export class ProviderDashboardPageComponent {
   private readonly careServicesApi = inject(ProviderCareServicesApiService);
   private readonly careOperationsApi = inject(ProviderCareOperationsApiService);
   readonly utils = inject(UtilsService);
+  readonly membership = inject(ProviderMembershipService);
   readonly profileLoading = signal(true);
   readonly profileError = signal<string | null>(null);
   readonly profile = signal<ProviderOnboardingProfile | null>(null);
@@ -81,6 +123,13 @@ export class ProviderDashboardPageComponent {
   }
 
   readonly primaryActions = computed<readonly PrimaryAction[]>(() => {
+    const role = this.membership.role();
+    if (role) return ROLE_ACTIONS[role];
+    const team: PrimaryAction = { title: 'Team', helper: 'Give your staff their own logins and roles.', route: '/provider/team' };
+    return [...this.ownerActions(), team];
+  });
+
+  private ownerActions(): readonly PrimaryAction[] {
     const type = this.profile()?.providerType;
     if (type === 'PHARMACY') return [
       { title: 'Patient prescriptions', helper: 'Accept prescriptions, send prices and prepare medicines.', route: '/provider/pharmacy-orders' },
@@ -106,7 +155,7 @@ export class ProviderDashboardPageComponent {
       { title: 'Availability', helper: 'Set when patients can book you.', route: '/provider/profile', fragment: 'availability', status: 'availability' },
       { title: 'Locations', helper: 'Manage where you see patients in person.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
     ];
-  });
+  }
 
   constructor() {
     this.load();

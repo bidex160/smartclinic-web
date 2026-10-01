@@ -1,3 +1,4 @@
+import { ProviderMembershipService } from '../../core/services/provider-membership.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -10,6 +11,8 @@ import { ProviderDashboardPageComponent } from './provider-dashboard-page.compon
 import { ProviderReferralsApiService } from '../../core/services/provider-referrals-api.service';
 import { ProviderCareServicesApiService } from '../../core/services/provider-care-services-api.service';
 import { ProviderCareOperationsApiService } from '../../core/services/provider-care-operations-api.service';
+
+const ownerMembership: Record<string, unknown> = { membership: () => null, role: () => null, isStaff: () => false, canSendRequests: () => true, canManageTeam: () => true, seesMoney: () => true, worksOrders: () => false, seesCareWork: () => true, load: () => undefined };
 
 describe('ProviderDashboardPageComponent', () => {
   it('maps all five authoritative metrics and uses a separate offer preview', async () => {
@@ -79,6 +82,27 @@ describe('ProviderDashboardPageComponent', () => {
     expect(fixture.nativeElement.querySelector('a[href="/provider/care-services"]')).toBeTruthy();
   });
 
+  it('gives a lab scientist their test queue first, without doctor-only or money actions', async () => {
+    const owner = { ...ownerMembership };
+    Object.assign(ownerMembership, {
+      membership: () => ({ isOwner: false, role: 'LAB_SCIENTIST', roleLabel: 'Lab scientist', canManageTeam: false, canSendRequests: false, provider: { providerReference: 'SCPR-1', displayName: 'Lagoon Hospital', providerType: 'HOSPITAL' } }),
+      role: () => 'LAB_SCIENTIST', isStaff: () => true, canSendRequests: () => false, canManageTeam: () => false, seesMoney: () => false, worksOrders: () => true, seesCareWork: () => false,
+    });
+    try {
+      const { fixture } = await setup();
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('[data-role-badge]')?.textContent).toContain('Lab scientist · Lagoon Hospital');
+      expect(el.querySelector('a[href="/provider/diagnostic-orders"]')).toBeTruthy();
+      expect(el.querySelector('[data-send-request-hero]')).toBeNull();
+      expect(el.textContent).not.toContain('Grow your impact');
+      expect(el.querySelector('a[href="/provider/earnings"]')).toBeNull();
+      expect(el.textContent).not.toContain('What needs you now');
+    } finally {
+      Object.assign(ownerMembership, owner);
+    }
+  });
+
   it('counts only active Find Care offerings and suppresses the first-time callout', async () => {
     const { fixture } = await setup('APPROVED', 'ACTIVE', undefined, false, [
       { isActive: true },
@@ -128,6 +152,7 @@ async function setup(
     providers: [
       provideRouter([]),
       { provide: AuthSessionService, useValue: { logout: () => of(true) } },
+      { provide: ProviderMembershipService, useValue: ownerMembership },
       { provide: ProviderDashboardApiService, useValue: summaryApi },
       { provide: ProviderOffersApiService, useValue: offersApi },
       { provide: ProviderCareServicesApiService, useValue: careServicesApi },

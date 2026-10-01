@@ -4,6 +4,11 @@
     <div class="relative">
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Provider workspace</p>
       <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Provider Dashboard</h1>
+      @if (membership.membership(); as me) {
+        @if (!me.isOwner) {
+          <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800 ring-1 ring-brand-100" data-role-badge>{{ me.roleLabel }} · {{ me.provider.displayName }}</p>
+        }
+      }
       <p class="mt-2 max-w-2xl text-slate-600">Manage patient requests, appointments, services and the work that needs your attention.</p>
     </div>
   </header>
@@ -168,7 +173,7 @@
 
   }
 } @else {
-      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE' && !findCareLoading() && findCareLoaded() && !findCareError() && activeFindCareServiceCount() === 0) {
+      @if (!membership.isStaff() && current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE' && !findCareLoading() && findCareLoaded() && !findCareError() && activeFindCareServiceCount() === 0) {
         <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6" aria-labelledby="start-care-heading">
           <h2 id="start-care-heading" class="text-xl font-bold text-brand-900">Start offering care</h2>
           <p class="mt-2 text-slate-700">
@@ -180,7 +185,7 @@
           </a>
         </section>
       }
-      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE' && membership.canSendRequests()) {
         <section class="relative mt-6 overflow-hidden rounded-[2rem] bg-ink p-6 text-white shadow-lift sm:p-8" aria-labelledby="send-request-heading" data-send-request-hero>
           <div class="sc-motif pointer-events-none absolute inset-0 opacity-[0.07]" aria-hidden="true"></div>
           <div class="relative flex flex-wrap items-end justify-between gap-5">
@@ -196,7 +201,7 @@
           </div>
         </section>
       }
-      <section class="mt-8 overflow-hidden rounded-[2rem] bg-brand-900 p-6 text-white shadow-sm sm:p-7"><p class="text-xs font-bold uppercase tracking-[.2em] text-brand-100">Your network can work for you</p><div class="mt-2 flex flex-wrap items-end justify-between gap-4"><div><h2 class="text-2xl font-black">Grow your impact. Grow your earnings.</h2><p class="mt-2 max-w-2xl text-sm text-brand-50">Recommend pharmacies, laboratories and clinics you already trust. SmartClinic handles verification and onboarding; eligible completed business can contribute to your network earnings.</p></div><a routerLink="/provider/network" class="inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900">Grow my network →</a></div></section>
+      @if (!membership.isStaff()) {<section class="mt-8 overflow-hidden rounded-[2rem] bg-brand-900 p-6 text-white shadow-sm sm:p-7"><p class="text-xs font-bold uppercase tracking-[.2em] text-brand-100">Your network can work for you</p><div class="mt-2 flex flex-wrap items-end justify-between gap-4"><div><h2 class="text-2xl font-black">Grow your impact. Grow your earnings.</h2><p class="mt-2 max-w-2xl text-sm text-brand-50">Recommend pharmacies, laboratories and clinics you already trust. SmartClinic handles verification and onboarding; eligible completed business can contribute to your network earnings.</p></div><a routerLink="/provider/network" class="inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900">Grow my network →</a></div></section>}
       <section class="mt-8" aria-labelledby="primary-actions-heading">
         <h2 id="primary-actions-heading" class="text-xl font-bold text-brand-900">What do you need to do?</h2>
       <div
@@ -272,7 +277,7 @@
   }
 </div>
       </section>
-      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE' && membership.seesCareWork()) {
       <section class="mt-8" aria-labelledby="provider-summary-heading">
         <div class="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -314,7 +319,7 @@
       </section>
       }
 
-      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE') {
+      @if (current.providerType !== 'PHARMACY' && current.providerType !== 'DIAGNOSTIC_CENTRE' && membership.seesCareWork()) {
       <section class="mt-10" aria-labelledby="offers-preview-heading">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
