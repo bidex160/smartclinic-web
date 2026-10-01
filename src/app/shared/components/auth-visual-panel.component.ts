@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+import { useImageFallback } from '../image-fallback';
+
 @Component({
   selector: 'app-auth-visual-panel',
   standalone: true,
@@ -23,7 +25,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
       <div class="relative my-8 flex flex-1 items-center justify-center">
         <div class="relative h-72 w-56 overflow-hidden rounded-t-[7rem] rounded-b-[1.5rem] bg-brand-800 ring-1 ring-white/10">
-          <img src="/assets/valerie.jpeg" alt="" class="h-full w-full object-cover object-[50%_18%]" />
+          <img src="/assets/people/clinician-purple.jpg" (error)="photoFallback($event, '/assets/valerie.jpeg')" alt="" class="h-full w-full object-cover object-[50%_15%]" />
           <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink/70 to-transparent"></div>
         </div>
 
@@ -53,6 +55,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   `,
 })
 export class AuthVisualPanelComponent {
+  readonly photoFallback = useImageFallback;
+
   readonly eyebrow = input('SmartClinic');
 
   readonly title = input('Healthcare access built around you.');

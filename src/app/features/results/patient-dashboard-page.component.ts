@@ -114,19 +114,41 @@ interface DashboardNextStep {
               <h2 id="today-care-heading" class="font-display mt-1.5 text-[1.45rem] font-semibold text-ink">Small things that keep you well</h2>
               <p class="mt-1 text-sm leading-6 text-ink-muted">Optional routines you choose. Clinical actions above always remain the priority.</p>
             </div>
-            <button type="button" (click)="toggleRoutineManager()" class="shrink-0 rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-sand-100">
-              {{ routineManagerOpen() ? 'Close' : 'Manage' }}
-            </button>
+            <div class="flex shrink-0 items-center gap-2">
+              @if (value.dailyCare; as care) {
+                @if (care.streakDays > 0) {
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-ochre-50 px-3 py-1.5 text-sm font-semibold text-ochre-700 ring-1 ring-ochre-100" data-streak>
+                    <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.7 7-7 0-3.5-2.5-6.5-4-8-.5 2-1.5 3.5-3 4.5C12 8 11 4.5 8.5 2 9 6 5 9 5 15c0 4.3 3 7 7 7Z"/></svg>
+                    {{ care.streakDays }}-day streak
+                  </span>
+                }
+              }
+              <button type="button" (click)="toggleRoutineManager()" class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-sand-100">
+                {{ routineManagerOpen() ? 'Close' : 'Manage' }}
+              </button>
+            </div>
           </div>
+
+          @if (value.dailyCare && (value.todayRoutines ?? []).length) {
+            <div class="mt-4 flex items-center gap-3" data-today-progress>
+              <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100" role="progressbar" aria-label="Routines done today" [attr.aria-valuenow]="doneToday(value)" aria-valuemin="0" [attr.aria-valuemax]="(value.todayRoutines ?? []).length">
+                <div class="h-full rounded-full bg-gradient-to-r from-leaf-500 to-ochre-500 transition-all duration-500" [style.width.%]="(doneToday(value) / (value.todayRoutines ?? []).length) * 100"></div>
+              </div>
+              <p class="shrink-0 text-sm font-medium text-ink-soft">{{ doneToday(value) }} of {{ (value.todayRoutines ?? []).length }} done today</p>
+            </div>
+            @if (doneToday(value) === (value.todayRoutines ?? []).length) {
+              <p class="mt-3 rounded-2xl bg-leaf-50 px-4 py-3 text-sm font-medium text-leaf-700" role="status">All done for today — well done, {{ value.patient.firstName }}. Come back tomorrow to keep your streak going.</p>
+            }
+          }
 
           @if ((value.todayRoutines ?? []).length) {
             <ol class="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               @for (routine of value.todayRoutines ?? []; track routine.reference) {
-                <li class="relative flex gap-3 rounded-2xl p-4 ring-1 transition {{ routine.reference === nextRoutineReference() ? 'bg-ochre-50 ring-ochre-300' : 'bg-sand-50 ring-ink/[0.06]' }}">
+                <li class="relative flex gap-3 rounded-2xl p-4 ring-1 transition {{ routine.completedToday ? 'bg-leaf-50 ring-leaf-300' : routine.reference === nextRoutineReference() ? 'bg-ochre-50 ring-ochre-300' : 'bg-sand-50 ring-ink/[0.06]' }}">
                   <span class="grid size-10 shrink-0 place-items-center rounded-xl {{ routineTone(routine.type) }}" aria-hidden="true">
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of routineIconPaths(routine.type); track $index) { <path [attr.d]="d" /> }</svg>
                   </span>
-                  <div class="min-w-0">
+                  <div class="min-w-0 flex-1">
                     <p class="font-semibold leading-snug text-ink">{{ routine.label }}</p>
                     <div class="mt-0.5 flex flex-wrap items-center gap-2">
                       <p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ routineTypeLabel(routine.type) }}</p>
@@ -136,10 +158,23 @@ interface DashboardNextStep {
                     </div>
                     @if (routine.instructions) { <p class="mt-1.5 text-xs leading-5 text-ink-soft">{{ routine.instructions }}</p> }
                   </div>
+                  @if (value.dailyCare) {
+                    <button
+                      type="button"
+                      (click)="toggleDone(routine)"
+                      [disabled]="tickingReference() === routine.reference"
+                      [attr.aria-pressed]="routine.completedToday ? 'true' : 'false'"
+                      [attr.aria-label]="(routine.completedToday ? 'Undo done: ' : 'Mark done: ') + routine.label"
+                      class="grid size-10 shrink-0 place-items-center self-center rounded-full ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-60 {{ routine.completedToday ? 'bg-leaf-500 text-white ring-leaf-500' : 'bg-white text-ink-muted ring-ink/15 hover:text-leaf-700 hover:ring-leaf-300' }}"
+                    >
+                      <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg>
+                    </button>
+                  }
 
                 </li>
               }
             </ol>
+            @if (routineError() && !routineManagerOpen()) { <p role="alert" class="mt-3 text-sm font-semibold text-clay-700">{{ routineError() }}</p> }
           } @else {
             <div class="mt-5 flex items-center gap-4 rounded-2xl border border-dashed border-sand-300 bg-sand-50 p-5">
               <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-leaf-100 text-leaf-700" aria-hidden="true">
@@ -382,6 +417,7 @@ export class PatientDashboardPageComponent {
   readonly routinesLoading = signal(false);
   readonly routineSaving = signal(false);
   readonly routineError = signal('');
+  readonly tickingReference = signal<string | null>(null);
   readonly routineTypes: readonly PatientDailyRoutineType[] = ['HYDRATION', 'MOVEMENT', 'BREAK', 'SLEEP', 'VITAMIN', 'MEDICATION'];
   readonly routineForm = this.formBuilder.nonNullable.group({
     type: this.formBuilder.nonNullable.control<PatientDailyRoutineType>('HYDRATION'),
@@ -398,7 +434,7 @@ export class PatientDashboardPageComponent {
     const now = new Date();
     const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     return [...routines]
-      .filter((routine) => routine.enabled && routine.scheduledLocalTime.slice(0, 5) >= current)
+      .filter((routine) => routine.enabled && !routine.completedToday && routine.scheduledLocalTime.slice(0, 5) >= current)
       .sort((a, b) => a.scheduledLocalTime.localeCompare(b.scheduledLocalTime))[0]?.reference ?? null;
   });
   readonly icons = {
@@ -465,6 +501,35 @@ export class PatientDashboardPageComponent {
         this.load();
       },
       error: () => this.routineError.set('We could not save this routine. Check the details and try again.'),
+    });
+  }
+  doneToday(value: PatientDashboard): number {
+    return (value.todayRoutines ?? []).filter((routine) => routine.completedToday).length;
+  }
+  toggleDone(routine: PatientDailyRoutine): void {
+    if (this.tickingReference()) return;
+    this.tickingReference.set(routine.reference);
+    this.routineError.set('');
+    const request = routine.completedToday
+      ? this.api.undoRoutineToday(routine.reference)
+      : this.api.completeRoutineToday(routine.reference);
+    request.pipe(finalize(() => this.tickingReference.set(null))).subscribe({
+      next: (progress) => {
+        const done = new Set(progress.completedReferences);
+        this.dashboard.update((value) =>
+          value
+            ? {
+                ...value,
+                dailyCare: progress,
+                todayRoutines: (value.todayRoutines ?? []).map((item) => ({
+                  ...item,
+                  completedToday: done.has(item.reference),
+                })),
+              }
+            : value,
+        );
+      },
+      error: () => this.routineError.set('We could not update today’s routine. Please try again.'),
     });
   }
   toggleRoutine(routine: PatientDailyRoutine): void {

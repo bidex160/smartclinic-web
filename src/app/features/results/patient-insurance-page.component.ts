@@ -87,7 +87,7 @@ import { Hmo, HmoPlan } from '../../core/models/hmo.model';
           </select></label
         >
         @if (preferredHmoId()) { <label class="mt-4 block text-sm font-bold">Priced plan<select class="mt-2 w-full rounded-xl border p-3" (change)="selectedPlanId.set($any($event.target).value)"><option value="">Select a plan</option>@for (plan of plans(); track plan.id) {<option [value]="plan.id">{{ plan.name }} — {{ money(plan.amountMinor, plan.currency) }} / {{ period(plan.billingPeriod) }}</option>}</select></label>
-          @if (!plans().length) { <p class="mt-2 text-sm text-slate-600">This HMO has not published a priced plan yet. Choose another HMO or submit a general contact request below.</p> }
+          @if (!plans().length) { <p class="mt-2 text-sm text-ink-soft">This HMO has not published a priced plan yet. Choose another HMO or submit a general contact request below.</p> }
         }
         <button type="button" (click)="moreInterestDetails.update(value => !value)" [attr.aria-expanded]="moreInterestDetails()" class="mt-4 min-h-11 font-bold text-brand-700 underline">
           {{ moreInterestDetails() ? 'Hide additional details' : 'Add employer or other details (optional)' }}

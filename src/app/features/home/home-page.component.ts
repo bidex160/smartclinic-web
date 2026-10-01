@@ -6,6 +6,7 @@ import { PUBLIC_SITE_CONFIG } from '../../core/config/public-site-config.token';
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { HealthCheckPackagesApiService } from '../../core/services/health-check-packages-api.service';
 import { formatMinor } from '../provider/care-money';
+import { useImageFallback } from '../../shared/image-fallback';
 
 @Component({
   selector: 'app-home-page',
@@ -95,6 +96,8 @@ export class HomePageComponent {
         'Sign in to review your current care activity. WhatsApp assistance will appear here when an authoritative support contact is configured.',
     },
   ] as const;
+
+  readonly photoFallback = useImageFallback;
 
   readonly whatsappUrl = this.publicSiteConfig?.whatsappUrl?.trim() || null;
 
