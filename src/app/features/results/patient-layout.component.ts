@@ -141,7 +141,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 
     <div
       data-patient-content
-      class="min-h-screen bg-sand-50 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:ml-[17rem] lg:pb-0"
+      class="min-h-screen bg-sand-50 pb-[calc(9rem+env(safe-area-inset-bottom))] lg:ml-[17rem] lg:pb-24"
     >
       <router-outlet />
     </div>

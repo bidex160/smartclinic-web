@@ -25,6 +25,7 @@
       </button>
     }
   </nav>
+  @if (showFilters()) {
   <section
     class="mt-6 rounded-2xl border border-brand-100 bg-white p-5"
     aria-labelledby="filters-heading"
@@ -92,6 +93,7 @@
       </div>
     </form>
   </section>
+  }
   @if (loading()) {
     <p role="status" class="mt-6 rounded-xl bg-brand-50 p-5">Loading your Health Checks…</p>
   }

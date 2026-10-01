@@ -2,6 +2,7 @@
   class="guide"
   [class.guide--large]="preferences().largeText"
   [class.guide--still]="preferences().reducedMotion"
+  [class.guide--tucked]="typing() && !open()"
   aria-label="SmartClinic guide"
 >
   @if (open()) {

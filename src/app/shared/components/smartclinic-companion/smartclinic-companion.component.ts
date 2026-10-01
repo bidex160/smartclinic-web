@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthStateService } from '../../../core/services/auth-state.service';
@@ -53,6 +53,8 @@ export class SmartClinicCompanionComponent {
   readonly preferences = signal(this.loadPreferences());
   readonly open = signal(false);
   readonly settingsOpen = signal(false);
+  /** True while the patient types in a page form, so the launcher never covers the field. */
+  readonly typing = signal(false);
   readonly teaserVisible = computed(() => !this.open() && !this.preferences().introduced);
   readonly listening = signal(false);
   readonly speaking = signal(false);
@@ -77,6 +79,16 @@ export class SmartClinicCompanionComponent {
   constructor() {
     // First visit: invite gently with a small bubble instead of covering the page.
     if (!this.preferences().introduced) this.settingsOpen.set(true);
+  }
+
+  @HostListener('document:focusin', ['$event'])
+  onFocusIn(event: FocusEvent): void {
+    this.typing.set(isPageFormField(event.target));
+  }
+
+  @HostListener('document:focusout')
+  onFocusOut(): void {
+    this.typing.set(false);
   }
 
   toggle(): void {
@@ -330,4 +342,9 @@ interface SpeechRecognitionLike {
   onerror: () => void;
   onend: () => void;
   start(): void;
+}
+
+function isPageFormField(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement) || target.closest('.guide')) return false;
+  return target.matches('input:not([type=checkbox]):not([type=radio]), textarea, select');
 }

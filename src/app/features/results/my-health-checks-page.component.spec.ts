@@ -110,6 +110,20 @@ describe('MyHealthChecksPageComponent', () => {
     expect(fixture.nativeElement.textContent).not.toContain('addressLine1');
   });
 
+  it('hides filters until there is something to filter', async () => {
+    let { fixture, component } = await setup(response([]));
+    expect(fixture.nativeElement.querySelector('#filters-heading')).toBeNull();
+
+    component.filterForm.setValue({ bookingStatus: 'COMPLETED', encounterStatus: '', limit: 20 });
+    component.applyFilters();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#filters-heading')).not.toBeNull();
+
+    TestBed.resetTestingModule();
+    ({ fixture } = await setup(response([item('HAS-ONE')])));
+    expect(fixture.nativeElement.querySelector('#filters-heading')).not.toBeNull();
+  });
+
   it('applies and clears explicit filters', async () => {
     const { component, api } = await setup(response([]));
     component.filterForm.setValue({

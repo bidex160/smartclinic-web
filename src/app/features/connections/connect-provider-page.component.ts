@@ -58,7 +58,18 @@ import { formatMinor } from '../provider/care-money';
             </button>
           </p>
         } @else if (!providers().length) {
-          <p class="mt-4 rounded-xl bg-sand-50 p-4">No hospitals match this search.</p>
+          @if (searchedTerm()) {
+            <p class="mt-4 rounded-xl bg-sand-50 p-4">No connected hospitals match “{{ searchedTerm() }}”.</p>
+          } @else {
+            <p class="mt-4 rounded-xl bg-sand-50 p-4">No hospitals are connected to SmartClinic near you yet.</p>
+          }
+          <a routerLink="/me/partner-facilities" class="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-white p-4 ring-1 ring-ink/[0.08] transition hover:bg-sand-50" data-directory-fallback>
+            <span>
+              <strong class="block text-ink">Can’t find your hospital?</strong>
+              <span class="text-sm text-ink-muted">Search the wider hospital directory and ask SmartClinic to help arrange an appointment.</span>
+            </span>
+            <span class="text-brand-700" aria-hidden="true">→</span>
+          </a>
         } @else {
           <div class="mt-5 grid gap-4 sm:grid-cols-2">
             @for (p of providers(); track p.providerReference) {
@@ -171,6 +182,8 @@ export class ConnectProviderPageComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly search = new FormControl('', { nonNullable: true });
+  /** The term the current results were loaded with (not what is being typed). */
+  readonly searchedTerm = signal('');
   readonly providers = signal<readonly PatientProviderConnectionDirectoryItem[]>([]);
   readonly selected = signal<PatientProviderConnectionDirectoryItem | null>(null);
   readonly loading = signal(false);
@@ -199,6 +212,7 @@ export class ConnectProviderPageComponent {
     if (page < 1 || this.loading() || this.targeted()) return;
     this.loading.set(true);
     this.directoryError.set(false);
+    this.searchedTerm.set(this.search.value.trim());
     this.api
       .directory(this.search.value, page, 10)
       .pipe(finalize(() => this.loading.set(false)))

@@ -8,7 +8,7 @@ import { HospitalCompanionView, HospitalWalletSettlementResponse, PatientProvide
 import { PatientWalletView } from '../../core/models/patient-wallet.model';
 import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
 import { PatientWalletApiService } from '../../core/services/patient-wallet-api.service';
-import { formatMinor } from '../provider/care-money';
+import { formatMinor, minorToMajor } from '../provider/care-money';
 
 interface BillGroup {
   readonly connection: PatientProviderConnection;
@@ -41,7 +41,7 @@ interface BillGroup {
         @if (wallet(); as w) {
           <section class="mt-6 rounded-3xl sc-hero p-6 text-white">
             <p class="text-xs font-bold uppercase tracking-wider text-violet-200">SmartClinic Wallet</p>
-            <p class="mt-2 text-3xl font-black">{{ money(w.balanceMinor, w.currency) }}</p>
+            <p class="mt-2 text-3xl font-black">{{ balance(w.balanceMinor, w.currency) }}</p>
             <p class="mt-1 text-sm text-violet-100">Available balance</p>
             <p class="mt-4 max-w-xl text-sm leading-6 text-violet-100">Payment options will appear only after you choose a bill that is ready to pay.</p>
           </section>
@@ -300,4 +300,8 @@ export class PatientPayBillsPageComponent {
   providerInitials(name: string): string { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'H'; }
   providerTypeLabel(type: string): string { return type === 'HOSPITAL' ? 'Hospital' : type.split('_').map(value => value[0] + value.slice(1).toLowerCase()).join(' '); }
   money(value: number, currency: string): string { return formatMinor(value, currency); }
+  /** A wallet balance is never "Free": show ₦0.00 rather than the price formatter's zero label. */
+  balance(value: number, currency: string): string {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency }).format(Number(minorToMajor(value, currency)));
+  }
 }
