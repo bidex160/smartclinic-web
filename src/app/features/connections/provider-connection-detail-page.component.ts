@@ -23,8 +23,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (connection(); as c) {
-      <header class="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-800 to-violet-600 p-7 text-white shadow-xl shadow-brand-950/10">
-        <div class="flex items-start gap-4"><div class="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/20">🏥</div><div><p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">Your hospital companion</p><h1 class="mt-1 text-3xl font-black">{{ c.provider.displayName }}</h1><p class="mt-2 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold">{{ label(c.status) }}{{ c.status === 'CONNECTED' ? ' ✓' : '' }}</p></div></div>
+      <header class="mt-6 overflow-hidden rounded-[2rem] sc-hero p-7 text-white shadow-xl shadow-brand-950/10">
+        <div class="flex items-start gap-4"><div class="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/20" aria-hidden="true"><svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5h10v16M14 9h6v12M2 21h20M9 2v4M7 4h4M8 13h2M8 17h2M17 13h1M17 17h1"/></svg></div><div><p class="text-sm font-bold uppercase tracking-[.16em] text-violet-200">Your hospital companion</p><h1 class="font-display mt-1 text-3xl font-semibold">{{ c.provider.displayName }}</h1><p class="mt-2 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm font-bold">{{ label(c.status) }}{{ c.status === 'CONNECTED' ? ' ✓' : '' }}</p></div></div>
         @if (c.externalPatientReference) { <p class="mt-5 text-sm text-violet-100">Hospital ID <strong class="text-white">{{ c.externalPatientReference }}</strong></p> }
       </header>
       @if (returnUrl) {
@@ -36,26 +36,26 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         <section class="mt-6 rounded-[2rem] border border-violet-100 bg-gradient-to-b from-white to-violet-50/50 p-6 shadow-sm">
           <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Today at {{ c.provider.displayName }}</p>
           @if (companionLoading()) {
-            <p class="mt-3 text-slate-600">Checking what you need to do next…</p>
+            <p class="mt-3 text-ink-soft">Checking what you need to do next…</p>
           } @else if (companion(); as h) {
             <div class="mt-3 rounded-2xl bg-brand-950 p-5 text-white">
               <p class="text-xs font-bold uppercase tracking-[.15em] text-violet-200">Your next step</p>
-              <h2 class="mt-1 text-2xl font-black">{{ h.nextAction.title }}</h2>
+              <h2 class="font-display mt-1 text-2xl font-semibold">{{ h.nextAction.title }}</h2>
               @if (h.consolidatedPayment.itemCount > 0 && h.consolidatedPayment.amountMinor !== null && h.consolidatedPayment.currency) {
                 <p class="mt-2 text-violet-100">{{ h.consolidatedPayment.itemCount }} request{{ h.consolidatedPayment.itemCount === 1 ? '' : 's' }} · {{ money(h.consolidatedPayment.amountMinor, h.consolidatedPayment.currency) }}</p>
-                @if (h.nextAction.kind === 'PAYMENT_REQUIRED') { <button type="button" (click)="payAllWallet()" [disabled]="settling()" class="mt-4 rounded-xl bg-white px-5 py-3 font-black text-brand-950">{{ settling() ? 'Confirming payment…' : 'Pay all from Wallet →' }}</button> }
+                @if (h.nextAction.kind === 'PAYMENT_REQUIRED') { <button type="button" (click)="payAllWallet()" [disabled]="settling()" class="mt-4 rounded-xl bg-white px-5 py-3 font-black text-ink">{{ settling() ? 'Confirming payment…' : 'Pay all from Wallet →' }}</button> }
               }
             </div>
             @if (servicePass(); as pass) { <div class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Payment confirmed ✓</p><h3 class="mt-1 text-xl font-black text-emerald-950">SmartClinic Service Pass</h3><p class="mt-2 font-bold">{{ money(pass.amountMinor, pass.currency) }} · {{ c.provider.displayName }}</p><p class="mt-3 rounded-xl bg-white p-3 font-mono text-sm font-bold">{{ pass.reference }}</p><p class="mt-2 text-sm text-emerald-900">Show this pass at the hospital service point. Open it again whenever staff need to verify payment.</p><button type="button" (click)="refreshPass()" class="mt-3 font-bold text-emerald-900 underline">Refresh verification pass</button></div> }
             @if (h.requests.length) {
               <div class="mt-5 grid gap-3">
                 @for (request of h.requests; track request.orderReference) {
-                  <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                  <article class="rounded-2xl bg-white p-4 ring-1 ring-ink/[0.08]">
                     <div class="flex items-start justify-between gap-3">
-                      <div><p class="font-black text-brand-950">{{ requestTitle(request.type) }}</p><p class="mt-1 text-sm text-slate-600">{{ request.serviceUnit || 'Requested by your care team' }}</p></div>
+                      <div><p class="font-black text-ink">{{ requestTitle(request.type) }}</p><p class="mt-1 text-sm text-ink-soft">{{ request.serviceUnit || 'Requested by your care team' }}</p></div>
                       <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="request.resultReady ? 'bg-emerald-50 text-emerald-800' : request.paymentStatus === 'PAID' ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'">{{ request.resultReady ? 'Result ready' : request.paymentStatus === 'PAID' ? 'Paid ✓' : request.paymentStatus === 'NOT_PRICED' ? 'Being prepared' : 'Payment needed' }}</span>
                     </div>
-                    @if (request.amountMinor !== null && request.currency) { <p class="mt-3 font-extrabold text-slate-900">{{ money(request.amountMinor, request.currency) }}</p> }
+                    @if (request.amountMinor !== null && request.currency) { <p class="mt-3 font-extrabold text-ink">{{ money(request.amountMinor, request.currency) }}</p> }
                     @if (request.resultReady) { <a [routerLink]="['/me/orders', request.orderReference]" class="mt-3 inline-flex font-bold text-brand-700">View result →</a> }
                     @else if (request.type === 'PRESCRIPTION') { <a routerLink="/me/prescriptions" class="mt-3 inline-flex font-bold text-brand-700">Open prescription →</a> }
                     @else { <a [routerLink]="['/me/orders', request.orderReference]" class="mt-3 inline-flex font-bold text-brand-700">Open request →</a> }
@@ -69,43 +69,43 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             <p class="mt-3 rounded-2xl bg-amber-50 p-4 text-amber-900">Your hospital companion is temporarily unavailable. Your hospital connection is still safe.</p>
           }
           <div class="mt-5 flex flex-wrap gap-3">
-            <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white px-4 py-3 font-bold text-brand-900 ring-1 ring-slate-200">Book care</a>
-            <a routerLink="/me/health-records" class="rounded-xl bg-white px-4 py-3 font-bold text-brand-900 ring-1 ring-slate-200">My hospital records</a>
+            <a routerLink="/me/request-care" [queryParams]="{ journey: 'doctor' }" class="rounded-xl bg-white px-4 py-3 font-bold text-ink ring-1 ring-ink/[0.08]">Book care</a>
+            <a routerLink="/me/health-records" class="rounded-xl bg-white px-4 py-3 font-bold text-ink ring-1 ring-ink/[0.08]">My hospital records</a>
           </div>
         </section>
       }
       <details class="mt-6 rounded-2xl border bg-white p-5"><summary class="cursor-pointer font-bold text-brand-800">Hospital connection details</summary><section class="mt-5">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
-            <dt class="text-sm text-slate-500">Provider</dt>
+            <dt class="text-sm text-ink-muted">Provider</dt>
             <dd class="font-bold">{{ c.provider.displayName }}</dd>
             <dd>{{ c.provider.providerType }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Original request</dt>
+            <dt class="text-sm text-ink-muted">Original request</dt>
             <dd>{{ path(c.originalIntent) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Current path</dt>
+            <dt class="text-sm text-ink-muted">Current path</dt>
             <dd>{{ path(c.currentPath) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Created</dt>
+            <dt class="text-sm text-ink-muted">Created</dt>
             <dd>{{ date(c.createdAt) }}</dd>
           </div>
           @if (c.externalPatientReference) {
             <div>
-              <dt class="text-sm text-slate-500">Hospital Patient Number</dt>
+              <dt class="text-sm text-ink-muted">Hospital Patient Number</dt>
               <dd class="break-all font-bold">{{ c.externalPatientReference }}</dd>
             </div>
           }
         </dl></section></details>
       <section class="mt-6 rounded-2xl border bg-white p-6">
-        <h2 class="text-xl font-bold">Connection payment</h2>
+        <h2 class="font-display text-xl font-semibold">Connection payment</h2>
         @if (funding(); as f) {
           <div class="mt-4 grid gap-3">
             @for (item of f.fundings; track item.purpose) {
-              <div class="flex flex-wrap justify-between gap-3 rounded-xl bg-slate-50 p-4">
+              <div class="flex flex-wrap justify-between gap-3 rounded-xl bg-sand-50 p-4">
                 <div>
                   <p class="font-bold">
                     {{
@@ -143,13 +143,13 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
       </section>
       @if (c.status === 'SUBMITTED') {
         <section class="mt-6 rounded-2xl bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">Registration sent</h2>
+          <h2 class="font-display text-xl font-semibold">Registration sent</h2>
           <p class="mt-2">Your registration or record-linking request has been sent to the hospital.</p>
         </section>
       }
       @if (c.status === 'UNABLE_TO_VERIFY') {
         <section class="mt-6 rounded-2xl bg-amber-50 p-6">
-          <h2 class="text-xl font-bold">We couldn't verify your existing patient record</h2>
+          <h2 class="font-display text-xl font-semibold">We couldn't verify your existing patient record</h2>
           <p class="mt-2">The hospital was unable to verify the information submitted.</p>
           <label class="mt-4 grid gap-2 font-bold"
             >Correct Hospital Patient Number<input

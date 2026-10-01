@@ -11,15 +11,15 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-10">
-      <header class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-900 to-violet-800 p-6 text-white shadow-lg sm:p-8">
+      <header class="relative overflow-hidden rounded-[2rem] sc-hero p-6 text-white shadow-lg sm:p-8">
         <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-white/10 blur-2xl"></div>
         <div class="relative flex flex-wrap items-end justify-between gap-4">
           <div>
             <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-100">My care network</p>
-            <h1 class="mt-2 text-3xl font-black sm:text-4xl">My Hospitals</h1>
+            <h1 class="font-display mt-2 text-3xl font-semibold sm:text-4xl">My Hospitals</h1>
             <p class="mt-2 max-w-2xl text-brand-50">Open a connected hospital to see supported care, requests, bills and records in one place.</p>
           </div>
-          <a routerLink="/me/providers/connect" class="min-h-12 rounded-xl bg-white px-5 py-3 font-bold text-brand-900 shadow-sm">Connect a hospital</a>
+          <a routerLink="/me/providers/connect" class="min-h-12 rounded-xl bg-white px-5 py-3 font-bold text-ink shadow-sm">Connect a hospital</a>
           <a routerLink="/me/partner-facilities" class="min-h-12 rounded-xl border border-white/70 px-5 py-3 font-bold text-white">Find hospitals, pharmacies and labs</a>
         </div>
       </header>
@@ -29,16 +29,16 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
       } @else if (error()) {
         <div role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">We couldn't load your hospitals. <button type="button" (click)="load()" class="font-bold underline">Try again</button></div>
       } @else if (!items().length) {
-        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-100 text-2xl" aria-hidden="true">🏥</span>
-          <h2 class="mt-4 text-xl font-bold">No hospitals connected yet</h2>
-          <p class="mt-2 text-slate-600">Connect a hospital as a new patient or link an existing hospital patient number.</p>
+        <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-8 text-center shadow-sm">
+          <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-100 text-brand-700" aria-hidden="true"><svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5h10v16M14 9h6v12M2 21h20M9 2v4M7 4h4M8 13h2M8 17h2M17 13h1M17 17h1"/></svg></span>
+          <h2 class="font-display mt-4 text-xl font-semibold">No hospitals connected yet</h2>
+          <p class="mt-2 text-ink-soft">Connect a hospital as a new patient or link an existing hospital patient number.</p>
           <a routerLink="/me/providers/connect" class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 font-bold text-white">Choose a hospital</a>
         </section>
       } @else {
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
           @for (item of items(); track item.reference) {
-            <article class="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+            <article class="group overflow-hidden rounded-[2rem] border border-ink/[0.08] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
               <div class="h-2 bg-gradient-to-r from-brand-700 via-violet-500 to-emerald-500" aria-hidden="true"></div>
               <div class="p-5 sm:p-6">
                 <div class="flex items-start gap-4">
@@ -48,14 +48,14 @@ import { PatientProviderConnectionsApiService } from '../../core/services/patien
                       <p class="text-xs font-bold uppercase tracking-wider text-brand-700">{{ providerType(item.provider.providerType) }}</p>
                       <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="statusTone(item.status)">{{ status(item.status) }}</span>
                     </div>
-                    <h2 class="mt-2 text-xl font-black leading-tight text-brand-950">{{ item.provider.displayName }}</h2>
+                    <h2 class="font-display mt-2 text-xl font-semibold leading-tight text-ink">{{ item.provider.displayName }}</h2>
                   </div>
                 </div>
 
                 @if (item.externalPatientReference) {
-                  <div class="mt-5 rounded-2xl bg-slate-50 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Your hospital number</p>
-                    <p class="mt-1 break-all font-mono font-bold text-slate-900">{{ item.externalPatientReference }}</p>
+                  <div class="mt-5 rounded-2xl bg-sand-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-ink-muted">Your hospital number</p>
+                    <p class="mt-1 break-all font-mono font-bold text-ink">{{ item.externalPatientReference }}</p>
                   </div>
                 } @else {
                   <p class="mt-5 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">{{ connectionHelp(item.status) }}</p>

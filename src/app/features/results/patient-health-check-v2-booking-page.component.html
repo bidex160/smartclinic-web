@@ -2,8 +2,8 @@
   <a routerLink="/me" class="font-bold text-brand-700">← Back to home</a>
   <header class="mt-5">
     <p class="font-bold uppercase tracking-wider text-brand-700">Book a Checkup</p>
-    <h1 class="mt-2 text-3xl font-bold">Choose your checkup</h1>
-    <p class="mt-2 text-slate-600">A few simple choices, then you can review and pay.</p>
+    <h1 class="font-display mt-2 text-3xl font-semibold">Choose your checkup</h1>
+    <p class="mt-2 text-ink-soft">A few simple choices, then you can review and pay.</p>
   </header>
 
   <nav aria-label="Booking progress" class="mt-6 rounded-2xl border bg-white p-4">
@@ -41,8 +41,8 @@
             (ngSubmit)="discover(1)"
             class="rounded-2xl border bg-white p-5 sm:p-6"
           >
-            <h2 class="text-2xl font-bold">Your checkup</h2>
-            <p class="mt-2 text-slate-600">Choose who it is for, the checkup you want and where you want it done.</p>
+            <h2 class="font-display text-2xl font-semibold">Your checkup</h2>
+            <p class="mt-2 text-ink-soft">Choose who it is for, the checkup you want and where you want it done.</p>
             <fieldset class="mt-5">
               <legend class="font-bold">Who is this for?</legend>
               <div class="mt-3 grid gap-3 sm:grid-cols-2">
@@ -53,12 +53,12 @@
                 @for (item of dependants(); track item.patientReference) {
                   <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
                     <input type="radio" name="health-check-participant" [value]="item.patientReference" [checked]="participantSelected(item.patientReference)" (change)="selectParticipant(item.patientReference)" />
-                    <span><strong>{{ item.displayName }}</strong><span class="block text-sm text-slate-600">{{ item.patientReference }}</span></span>
+                    <span><strong>{{ item.displayName }}</strong><span class="block text-sm text-ink-soft">{{ item.patientReference }}</span></span>
                   </label>
                 }
               </div>
-              @if (dependantsLoading()) { <p role="status" class="mt-2 text-sm text-slate-600">Loading dependants…</p> }
-              @else if (dependantsError()) { <p class="mt-2 text-sm text-slate-600">Dependants could not be loaded. You can continue booking for yourself.</p> }
+              @if (dependantsLoading()) { <p role="status" class="mt-2 text-sm text-ink-soft">Loading dependants…</p> }
+              @else if (dependantsError()) { <p class="mt-2 text-sm text-ink-soft">Dependants could not be loaded. You can continue booking for yourself.</p> }
               <a routerLink="/me/family" class="mt-3 inline-block text-sm font-bold text-brand-700 underline">Add a dependant</a>
             </fieldset>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
@@ -78,18 +78,18 @@
               @if (selectedPackage(); as selected) {
                 <section class="rounded-2xl border border-brand-100 bg-brand-50 p-4 sm:col-span-2">
                   <div class="flex flex-wrap items-start justify-between gap-2">
-                    <div><p class="text-xs font-bold uppercase tracking-wide text-brand-700">What this checkup includes</p><h3 class="mt-1 text-lg font-black text-brand-950">{{ packageLabel(selected, 0) }}</h3></div>
-                    @if (selected.estimatedDurationMinutes) { <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700">About {{ selected.estimatedDurationMinutes }} min</span> }
+                    <div><p class="text-xs font-bold uppercase tracking-wide text-brand-700">What this checkup includes</p><h3 class="mt-1 text-lg font-black text-ink">{{ packageLabel(selected, 0) }}</h3></div>
+                    @if (selected.estimatedDurationMinutes) { <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-ink-soft">About {{ selected.estimatedDurationMinutes }} min</span> }
                   </div>
-                  <p class="mt-2 text-sm text-slate-700">{{ packageSummary(selected, 0) }}</p>
+                  <p class="mt-2 text-sm text-ink-soft">{{ packageSummary(selected, 0) }}</p>
                   @if (selected.includedContents.length) {
                     <ul class="mt-3 grid gap-2 sm:grid-cols-2">
                       @for (item of selected.includedContents; track item.code) {
-                        <li class="flex gap-2 rounded-xl bg-white p-3 text-sm"><span aria-hidden="true">✓</span><span><strong>{{ item.name }}</strong>@if(item.description){<span class="mt-0.5 block text-slate-600">{{ item.description }}</span>}</span></li>
+                        <li class="flex gap-2 rounded-xl bg-white p-3 text-sm"><span aria-hidden="true">✓</span><span><strong>{{ item.name }}</strong>@if(item.description){<span class="mt-0.5 block text-ink-soft">{{ item.description }}</span>}</span></li>
                       }
                     </ul>
                   } @else {
-                    <p class="mt-3 rounded-xl bg-white p-3 text-sm text-slate-600">The provider will see the package specification before confirming this checkup.</p>
+                    <p class="mt-3 rounded-xl bg-white p-3 text-sm text-ink-soft">The provider will see the package specification before confirming this checkup.</p>
                   }
                 </section>
               }
@@ -187,30 +187,30 @@
             }
           @if (discovered() && !offerings().length) {
   <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
-    <h3 class="font-bold text-slate-900">No matching provider for this exact choice yet</h3>
-    <p class="mt-1 text-slate-700">SmartClinic couldn't match this checkup, location and time exactly. Your checkup is still available.</p>
+    <h3 class="font-bold text-ink">No matching provider for this exact choice yet</h3>
+    <p class="mt-1 text-ink-soft">SmartClinic couldn't match this checkup, location and time exactly. Your checkup is still available.</p>
     <div class="mt-4 rounded-2xl border border-brand-200 bg-white p-4">
       @if (assistedMatchReference()) {
-        <p class="font-black text-brand-950">SmartClinic is finding an option for you ✓</p>
-        <p class="mt-1 text-sm text-slate-700">You can leave this page. We will keep this request in the matching queue and escalate it for agent review if automation cannot find a suitable option.</p>
-        <p class="mt-2 text-xs font-bold text-slate-500">Reference {{ assistedMatchReference() }}</p>
+        <p class="font-black text-ink">SmartClinic is finding an option for you ✓</p>
+        <p class="mt-1 text-sm text-ink-soft">You can leave this page. We will keep this request in the matching queue and escalate it for agent review if automation cannot find a suitable option.</p>
+        <p class="mt-2 text-xs font-bold text-ink-muted">Reference {{ assistedMatchReference() }}</p>
       } @else {
-        <p class="font-black text-brand-950">Let SmartClinic find one for me</p>
-        <p class="mt-1 text-sm text-slate-700">We'll keep searching beyond the exact match and escalate the request if needed. You won't have to start again.</p>
+        <p class="font-black text-ink">Let SmartClinic find one for me</p>
+        <p class="mt-1 text-sm text-ink-soft">We'll keep searching beyond the exact match and escalate the request if needed. You won't have to start again.</p>
         <div class="mt-3 grid gap-2 sm:grid-cols-3">
           <button type="button" (click)="requestAssistedMatch('NOTIFY')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl bg-brand-700 px-4 font-bold text-white">{{ assistedMatchingBusy() ? 'Starting search…' : 'Keep searching' }}</button>
-          <button type="button" (click)="requestAssistedMatch('CALL')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-brand-900">Have an agent call me</button>
-          <button type="button" (click)="requestAssistedMatch('WHATSAPP')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-brand-900">WhatsApp me</button>
+          <button type="button" (click)="requestAssistedMatch('CALL')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-ink">Have an agent call me</button>
+          <button type="button" (click)="requestAssistedMatch('WHATSAPP')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-ink">WhatsApp me</button>
         </div>
         @if(assistedMatchError()){<p class="mt-2 text-sm font-semibold text-red-700">{{ assistedMatchError() }}</p>}
       }
     </div>
     <div class="mt-4 grid gap-2 sm:grid-cols-2">
-      <button type="button" (click)="backTo(1)" class="min-h-11 rounded-xl border border-amber-300 bg-white px-4 font-bold text-slate-900">Change time or location</button>
+      <button type="button" (click)="backTo(1)" class="min-h-11 rounded-xl border border-amber-300 bg-white px-4 font-bold text-ink">Change time or location</button>
       <a routerLink="/me/hospitals" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-200 bg-white px-4 font-bold text-brand-800">Browse hospitals</a>
     </div>
 
-    <p class="mt-3 text-sm text-slate-600">
+    <p class="mt-3 text-sm text-ink-soft">
       Know a hospital, clinic or diagnostic centre that could provide this service?
       Invite them to join SmartClinic Network.
     </p>
@@ -226,11 +226,11 @@
         </div>
 
         <div>
-          <p class="text-sm font-bold text-slate-900">
+          <p class="text-sm font-bold text-ink">
             Earn rewards for growing the network
           </p>
 
-          <p class="mt-0.5 text-sm text-slate-600">
+          <p class="mt-0.5 text-sm text-ink-soft">
             Invite a provider to SmartClinic Network. You may earn reward points
             when an eligible provider successfully joins through your invitation.
           </p>
@@ -251,8 +251,8 @@
         }
         @case (2) {
           <section class="rounded-2xl border bg-white p-5 sm:p-6">
-            <h2 class="text-2xl font-bold">Choose where to get your checkup</h2>
-            <p class="mt-2 text-slate-600">We found more than one available option. Choose the one you prefer.</p>
+            <h2 class="font-display text-2xl font-semibold">Choose where to get your checkup</h2>
+            <p class="mt-2 text-ink-soft">We found more than one available option. Choose the one you prefer.</p>
             <div class="mt-5 grid gap-4">
               @for (offering of offerings(); track offeringKey(offering)) {
                 <button
@@ -265,7 +265,7 @@
                   <span class="mt-2 block"
                     >From {{ money(offering.basePackagePriceMinor, offering.currency) }}</span
                   >
-                  <span class="mt-1 block text-sm text-slate-600"
+                  <span class="mt-1 block text-sm text-ink-soft"
                     >{{ offering.fulfilmentMode.name }} · Fulfilment fee
                     {{ money(offering.fulfilmentMode.fulfilmentFeeMinor, offering.currency) }}</span
                   >
@@ -311,8 +311,8 @@
         @case (3) {
           @if (selectedOffering(); as offering) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
-              <h2 class="text-2xl font-bold">Anything else?</h2>
-              <p class="mt-2 text-slate-600">Confirm where you will attend and add extras only if you want them.</p>
+              <h2 class="font-display text-2xl font-semibold">Anything else?</h2>
+              <p class="mt-2 text-ink-soft">Confirm where you will attend and add extras only if you want them.</p>
               @if (offering.fulfilmentMode.code === 'PROVIDER_LOCATION') {
                 <fieldset class="mt-5">
                   <legend class="font-bold">Where will you attend?</legend>
@@ -337,7 +337,7 @@
               @if (offering.addons.length) {
                 <fieldset class="mt-6">
                   <legend class="font-bold">Want to add anything?</legend>
-                  <p class="mt-1 text-sm text-slate-600">Optional — you can continue without adding anything.</p>
+                  <p class="mt-1 text-sm text-ink-soft">Optional — you can continue without adding anything.</p>
                   @for (addon of offering.addons; track addon.code) {
                     <label
                       class="mt-3 flex cursor-pointer justify-between gap-4 rounded-xl border p-4"
@@ -353,7 +353,7 @@
                   }
                 </fieldset>
               } @else {
-                <p class="mt-5 text-slate-600">No optional add-ons are available.</p>
+                <p class="mt-5 text-ink-soft">No optional add-ons are available.</p>
               }
               @if (quoteError()) {
                 <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
@@ -385,27 +385,27 @@
         @case (4) {
           @if (quote(); as confirmed) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
-              <h2 class="text-2xl font-bold">Review & Pay</h2>
-              <p class="mt-2 text-slate-600">Check the important details below. If they look right, continue to payment.</p>
+              <h2 class="font-display text-2xl font-semibold">Review & Pay</h2>
+              <p class="mt-2 text-ink-soft">Check the important details below. If they look right, continue to payment.</p>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt class="text-sm text-slate-600">Participant</dt>
+                  <dt class="text-sm text-ink-soft">Participant</dt>
                   <dd class="font-bold">{{ participantName() }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-slate-600">Health Check</dt>
+                  <dt class="text-sm text-ink-soft">Health Check</dt>
                   <dd class="font-bold">{{ confirmed.package.name }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-slate-600">Provider</dt>
+                  <dt class="text-sm text-ink-soft">Provider</dt>
                   <dd class="font-bold">{{ confirmed.provider.name }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-slate-600">How you’ll attend</dt>
+                  <dt class="text-sm text-ink-soft">How you’ll attend</dt>
                   <dd class="font-bold">{{ confirmed.fulfilmentMode.name }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-slate-600">Preferred appointment</dt>
+                  <dt class="text-sm text-ink-soft">Preferred appointment</dt>
                   <dd class="font-bold">
                     {{ form.controls.preferredDate.value }} at
                     {{ form.controls.preferredTime.value }}
@@ -417,7 +417,7 @@
                   as location
                 ) {
                   <div class="sm:col-span-2">
-                    <dt class="text-sm text-slate-600">Provider location</dt>
+                    <dt class="text-sm text-ink-soft">Provider location</dt>
                     <dd class="font-bold">
                       {{ location.name }}, {{ location.addressLine1 }}, {{ location.city }}
                     </dd>
@@ -425,7 +425,7 @@
                 }
                 @if (confirmed.fulfilmentMode.code === 'HOME_VISIT') {
                   <div class="sm:col-span-2">
-                    <dt class="text-sm text-slate-600">Home visit address</dt>
+                    <dt class="text-sm text-ink-soft">Home visit address</dt>
                     <dd class="font-bold">
                       {{ form.controls.address.controls.addressLine1.value }},
                       {{ form.controls.address.controls.city.value }},
@@ -435,7 +435,7 @@
                 }
               </dl>
               @if (confirmed.includedContents.length) {
-                <details class="mt-5 rounded-xl border border-slate-200 p-4">
+                <details class="mt-5 rounded-xl border border-ink/[0.08] p-4">
                   <summary class="cursor-pointer font-bold text-brand-800">What’s included?</summary>
                 <ul class="mt-2 list-disc pl-5">
                   @for (item of confirmed.includedContents; track item.code) {
@@ -483,13 +483,13 @@
                   <app-patient-payment-panel [reference]="booking.bookingReference" />
                 </div>
                 <section id="booking-success" tabindex="-1" class="mt-6 scroll-mt-4 rounded-2xl bg-brand-50 p-5 outline-none ring-1 ring-brand-100">
-                  <h3 class="text-xl font-bold text-brand-950">After payment</h3>
-                  <p class="mt-2 text-slate-700">
+                  <h3 class="text-xl font-bold text-ink">After payment</h3>
+                  <p class="mt-2 text-ink-soft">
                     We’ll keep this checkup in My Health so you can return to the booking and see what happens next.
                   </p>
-                  <div class="mt-4 rounded-xl bg-white p-4 ring-1 ring-slate-200">
+                  <div class="mt-4 rounded-xl bg-white p-4 ring-1 ring-ink/[0.08]">
                     <strong>Keep your health checks on track</strong>
-                    <p class="mt-1 text-sm text-slate-600">
+                    <p class="mt-1 text-sm text-ink-soft">
                       After this checkup is completed, SmartClinic can help you remember when it is time to check again.
                       No automatic booking or charge will be made.
                     </p>
@@ -522,9 +522,9 @@
       >
         <div class="flex items-start justify-between gap-4">
           <div>
-            <h2 class="text-2xl font-bold">Invite a provider</h2>
+            <h2 class="font-display text-2xl font-semibold">Invite a provider</h2>
 
-            <p class="mt-1 text-slate-600">
+            <p class="mt-1 text-ink-soft">
               Invite a hospital, clinic or diagnostic centre to join SmartClinic Network.
             </p>
           </div>
@@ -532,7 +532,7 @@
           <button
             type="button"
             (click)="closeProviderInvitation()"
-            class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            class="rounded-lg p-2 text-ink-muted hover:bg-sand-100 hover:text-slate-900"
             aria-label="Close provider invitation"
           >
             ✕
@@ -540,10 +540,10 @@
         </div>
 
         @if (providerInvitationContext(); as context) {
-          <div class="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <div class="mt-5 rounded-xl bg-sand-50 p-4 text-sm text-ink-soft">
             <div class="grid gap-2 sm:grid-cols-2">
               <div>
-                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
                   Health Check
                 </span>
 
@@ -553,7 +553,7 @@
               </div>
 
               <div>
-                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
                   Location
                 </span>
 
@@ -563,7 +563,7 @@
               </div>
 
               <div>
-                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
                   Fulfilment
                 </span>
 
@@ -573,7 +573,7 @@
               </div>
 
               <div>
-                <span class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
                   Preferred appointment
                 </span>
 
@@ -615,11 +615,11 @@
             class="mt-5"
           >
           <div class="rounded-xl border border-purple-200 bg-purple-50 p-4">
-  <p class="text-sm font-semibold text-slate-900">
+  <p class="text-sm font-semibold text-ink">
     🎁 Your invitation can earn rewards
   </p>
 
-  <p class="mt-1 text-sm text-slate-600">
+  <p class="mt-1 text-sm text-ink-soft">
     If an eligible provider successfully joins SmartClinic Network through
     your invitation, you may qualify for reward points.
   </p>
@@ -649,7 +649,7 @@
               <div class="grid gap-5 sm:grid-cols-2">
                 <label class="font-bold">
                   Email
-                  <span class="font-normal text-slate-500">(optional)</span>
+                  <span class="font-normal text-ink-muted">(optional)</span>
 
                   <input
                     type="email"
@@ -671,7 +671,7 @@
 
                 <label class="font-bold">
                   Phone number
-                  <span class="font-normal text-slate-500">(optional)</span>
+                  <span class="font-normal text-ink-muted">(optional)</span>
 
                   <input
                     type="tel"
@@ -683,7 +683,7 @@
                 </label>
               </div>
 
-              <p class="-mt-2 text-sm text-slate-600">
+              <p class="-mt-2 text-sm text-ink-soft">
                 Provide at least an email address or phone number so we can contact the provider.
               </p>
 

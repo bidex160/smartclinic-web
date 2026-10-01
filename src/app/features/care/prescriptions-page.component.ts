@@ -8,10 +8,10 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
-    <header class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <header class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">My health records</p>
-      <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Prescriptions</h1>
-      <p class="mt-2 text-slate-600">Medicines prescribed during your SmartClinic care journey, kept together for easy access.</p>
+      <h1 class="font-display mt-2 text-3xl font-semibold text-ink sm:text-4xl">Prescriptions</h1>
+      <p class="mt-2 text-ink-soft">Medicines prescribed during your SmartClinic care journey, kept together for easy access.</p>
     </header>
     @if (loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Loading prescriptions…</p>
@@ -21,11 +21,11 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
         <button (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (!items().length) {
-      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h2 class="text-xl font-bold">No prescriptions yet.</h2>
+      <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-8 text-center shadow-sm">
+        <h2 class="font-display text-xl font-semibold">No prescriptions yet.</h2>
       </section>
     } @else {
-      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-ink/[0.08] bg-white shadow-sm">
         <table class="min-w-full divide-y">
           <thead>
             <tr>
@@ -40,7 +40,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
                 ];
                 track h
               ) {
-                <th class="p-4 text-left text-xs font-bold uppercase text-slate-500">{{ h }}</th>
+                <th class="p-4 text-left text-xs font-bold uppercase text-ink-muted">{{ h }}</th>
               }
             </tr>
           </thead>

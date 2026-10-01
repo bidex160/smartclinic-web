@@ -29,12 +29,12 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
   imports: [ReactiveFormsModule, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <section
-    class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+    class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8"
     aria-labelledby="patient-payment-heading"
   >
     <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Secure checkout</p>
-    <h2 id="patient-payment-heading" class="mt-2 text-2xl font-bold text-slate-950">Payment</h2>
-    <p class="mt-2 text-sm text-slate-600">Review your total, apply eligible rewards and choose how you would like to complete payment.</p>
+    <h2 id="patient-payment-heading" class="font-display mt-2 text-2xl font-semibold text-ink">Payment</h2>
+    <p class="mt-2 text-sm text-ink-soft">Review your total, apply eligible rewards and choose how you would like to complete payment.</p>
     @if (statusLoading()) {
       <p role="status" class="mt-4">Loading payment status…</p>
     }
@@ -76,7 +76,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           class="mt-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5"
           aria-labelledby="patient-rewards-heading"
         >
-          <h3 id="patient-rewards-heading" class="font-bold text-brand-900">Your rewards</h3>
+          <h3 id="patient-rewards-heading" class="font-bold text-ink">Your rewards</h3>
           @if (rewardsLoading()) {
             <p role="status" class="mt-3">Loading your reward points…</p>
           } @else if (rewardsError()) {
@@ -94,7 +94,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             @if (activePoints() > 0 && redemptionStatus() === 'RESERVED') {
               <div>
                 <p class="mt-3 text-lg font-bold">{{ activePoints() }} points reserved</p>
-                <p class="mt-1 text-sm text-slate-600">
+                <p class="mt-1 text-sm text-ink-soft">
                   These points remain reserved for this Health Check until payment settles or you
                   remove them.
                 </p>
@@ -108,12 +108,12 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                 </button>
               </div>
             } @else if (rewards.availablePoints === 0) {
-              <p class="mt-3 text-slate-600">You don't have reward points available to use yet.</p>
+              <p class="mt-3 text-ink-soft">You don't have reward points available to use yet.</p>
             } @else {
               <p class="mt-3">
                 <strong>{{ rewards.availablePoints }}</strong> points available
               </p>
-              <p class="mt-1 text-sm text-slate-600">
+              <p class="mt-1 text-sm text-ink-soft">
                 Maximum you can use for this Health Check:
                 {{ rewards.maximumRedeemablePoints }} points
               </p>
@@ -183,7 +183,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
 
         <fieldset [disabled]="busy()" class="mt-5">
-          <legend class="text-xl font-bold text-brand-900">How would you like to pay?</legend>
+          <legend class="text-xl font-bold text-ink">How would you like to pay?</legend>
           <div class="mt-3 grid gap-3 md:grid-cols-3">
             @for (option of options; track option.value) {
               <label
@@ -197,14 +197,14 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   [checked]="selected() === option.value"
                   (change)="select(option.value)"
                 /><strong class="ml-2">{{ option.label }}</strong
-                ><span class="mt-2 block text-sm text-slate-600">{{
+                ><span class="mt-2 block text-sm text-ink-soft">{{
                   option.description
                 }}</span></label
               >
             }
           </div>
         </fieldset>
-        <p class="mt-4 text-sm text-slate-600">
+        <p class="mt-4 text-sm text-ink-soft">
           Your request is sent to your selected provider after funding is settled. Pay later does
           not send the request or reserve an appointment.
         </p>

@@ -22,10 +22,10 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </p>
     } @else if (appointment(); as a) {
-      <header class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <header class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Your care journey</p>
-        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Your appointment</h1>
-        <div class="mt-3 flex flex-wrap items-center gap-3"><span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{ label(a.status) }}</span><span class="text-sm text-slate-500">Reference {{ a.appointmentReference }}</span></div>
+        <h1 class="font-display mt-2 text-3xl font-semibold text-ink sm:text-4xl">Your appointment</h1>
+        <div class="mt-3 flex flex-wrap items-center gap-3"><span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800">{{ label(a.status) }}</span><span class="text-sm text-ink-muted">Reference {{ a.appointmentReference }}</span></div>
       </header>
       @if (feedback()) {
         <p aria-live="polite" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
@@ -35,36 +35,36 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       @if (error()) {
         <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
       }
-      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
-            <dt class="text-sm text-slate-500">Provider</dt>
+            <dt class="text-sm text-ink-muted">Provider</dt>
             <dd class="font-semibold">{{ a.provider.displayName }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Service</dt>
+            <dt class="text-sm text-ink-muted">Service</dt>
             <dd>{{ a.service.name }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Delivery</dt>
+            <dt class="text-sm text-ink-muted">Delivery</dt>
             <dd>{{ deliveryModeLabel(a.deliveryMode) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Date and time</dt>
+            <dt class="text-sm text-ink-muted">Date and time</dt>
             <dd>
               {{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }}
             </dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Timezone</dt>
+            <dt class="text-sm text-ink-muted">Timezone</dt>
             <dd>{{ a.timezone }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Care Request</dt>
+            <dt class="text-sm text-ink-muted">Care Request</dt>
             <dd class="break-all">{{ a.careRequestReference }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Location</dt>
+            <dt class="text-sm text-ink-muted">Location</dt>
             <dd>
               {{
                 a.deliveryMode === 'VIRTUAL'
@@ -77,7 +77,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           </div>
           @if (a.providerLocation; as l) {
             <div class="sm:col-span-2">
-              <dt class="text-sm text-slate-500">Appointment address</dt>
+              <dt class="text-sm text-ink-muted">Appointment address</dt>
               <dd>
                 {{ l.addressLine1 }}{{ l.addressLine2 ? ', ' + l.addressLine2 : '' }}, {{ l.city }},
                 {{ l.stateOrRegion }} {{ l.postalCode || '' }}, {{ l.countryCode }}
@@ -85,14 +85,14 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             </div>
           }
         </dl>
-        <div class="mt-6 rounded-2xl bg-slate-50 p-5"><p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">What happens next</p><p class="mt-2 font-semibold text-slate-800">{{ nextStep(a.status) }}</p></div>
+        <div class="mt-6 rounded-2xl bg-sand-50 p-5"><p class="text-xs font-bold uppercase tracking-[0.16em] text-ink-muted">What happens next</p><p class="mt-2 font-semibold text-ink">{{ nextStep(a.status) }}</p></div>
       </section>
       @if (a.deliveryMode === 'VIRTUAL') {
         <section class="mt-6 overflow-hidden rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm sm:p-8">
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Video care</p>
-          <h2 class="mt-2 text-2xl font-bold text-slate-950">Virtual consultation</h2>
+          <h2 class="font-display mt-2 text-2xl font-semibold text-ink">Virtual consultation</h2>
           @if (isActive(a.status) && safeMeetingUrl(a.meetingUrl); as url) {
-            <p class="mt-2 text-slate-600">
+            <p class="mt-2 text-ink-soft">
               Your consultation room is ready. You do not need to copy or enter a meeting link.
             </p>
             <div class="mt-4 flex flex-wrap gap-3">
@@ -110,29 +110,29 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
               >
             </div>
           } @else if (isActive(a.status)) {
-            <p class="mt-2 text-slate-600">Your consultation room is being prepared. Refresh this page shortly.</p>
+            <p class="mt-2 text-ink-soft">Your consultation room is being prepared. Refresh this page shortly.</p>
           } @else {
-            <p class="mt-2 text-slate-600">This consultation room is no longer available.</p>
+            <p class="mt-2 text-ink-soft">This consultation room is no longer available.</p>
           }
         </section>
       }
       @if (a.deliveryMode === 'VIRTUAL' && a.status === 'COMPLETED') {
         <section class="mt-6 rounded-[2rem] border border-emerald-100 bg-gradient-to-b from-white to-emerald-50 p-6 shadow-sm">
           <p class="text-xs font-bold uppercase tracking-[.16em] text-emerald-700">Consultation complete ✓</p>
-          <h2 class="mt-1 text-2xl font-black text-brand-950">Continue with your care</h2>
-          <p class="mt-2 text-slate-600">Anything your doctor has requested stays in SmartClinic. You do not need to start again.</p>
-          @if (ordersLoading()) { <p class="mt-5 rounded-2xl bg-white p-4 text-slate-600">Loading your doctor's next steps…</p> }
+          <h2 class="font-display mt-1 text-2xl font-semibold text-ink">Continue with your care</h2>
+          <p class="mt-2 text-ink-soft">Anything your doctor has requested stays in SmartClinic. You do not need to start again.</p>
+          @if (ordersLoading()) { <p class="mt-5 rounded-2xl bg-white p-4 text-ink-soft">Loading your doctor's next steps…</p> }
           @else if (orders().length) {
             <div class="mt-5 grid gap-3">
               @for (o of orders(); track o.reference) {
                 <a [routerLink]="orderRoute(o)" class="rounded-2xl border bg-white p-5 shadow-sm hover:border-brand-300">
-                  <span class="font-bold text-brand-950">{{ orderIcon(o) }} {{ orderTitle(o) }}</span>
-                  <span class="mt-1 block text-sm text-slate-600">{{ orderDetail(o) }}</span>
+                  <span class="font-bold text-ink">{{ orderIcon(o) }} {{ orderTitle(o) }}</span>
+                  <span class="mt-1 block text-sm text-ink-soft">{{ orderDetail(o) }}</span>
                   <span class="mt-3 block font-bold text-brand-700">{{ orderAction(o) }} →</span>
                 </a>
               }
             </div>
-          } @else { <p class="mt-5 rounded-2xl bg-white p-4 text-slate-600">There are no issued prescriptions or tests from this consultation yet. Any new doctor request will appear in SmartClinic.</p> }
+          } @else { <p class="mt-5 rounded-2xl bg-white p-4 text-ink-soft">There are no issued prescriptions or tests from this consultation yet. Any new doctor request will appear in SmartClinic.</p> }
           <div class="mt-4 flex flex-wrap gap-4 text-sm font-semibold"><a routerLink="/me/providers" class="text-brand-700 underline">Visit a hospital</a><a routerLink="/me/care" class="text-brand-700 underline">My follow-up care</a></div>
         </section>
       }
@@ -154,10 +154,10 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           aria-labelledby="patient-cancel-appointment-title"
           class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
-          <h2 id="patient-cancel-appointment-title" class="text-xl font-bold">
+          <h2 id="patient-cancel-appointment-title" class="font-display text-xl font-semibold">
             Cancel this appointment?
           </h2>
-          <p class="mt-2 text-slate-600">
+          <p class="mt-2 text-ink-soft">
             SmartClinic will update the appointment and related Care Request together.
           </p>
           <form [formGroup]="form" (ngSubmit)="cancel()" class="mt-5">

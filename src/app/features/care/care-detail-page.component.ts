@@ -31,7 +31,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
     <main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
       <a routerLink="/me/care" class="font-bold text-brand-700 underline">← My Care</a>
       @if (loading()) {
-        <p role="status" class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <p role="status" class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           Loading Care Request…
         </p>
       } @else if (error()) {
@@ -41,29 +41,29 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
         </div>
       } @else if (request(); as r) {
         <header
-          class="relative mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+          class="relative mt-6 overflow-hidden rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8"
         >
           <div
             class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"
           ></div>
           <div class="relative">
             <p class="text-sm font-bold uppercase text-brand-600">Care Request {{ r.reference }}</p>
-            <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
-            <p class="mt-2 text-lg font-semibold text-slate-600">{{ label(r.status) }}</p>
+            <h1 class="font-display mt-2 text-3xl font-semibold">{{ r.service.name }}</h1>
+            <p class="mt-2 text-lg font-semibold text-ink-soft">{{ label(r.status) }}</p>
           </div>
         </header>
-        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <dl class="grid gap-5 sm:grid-cols-2">
             <div>
-              <dt class="text-sm text-slate-500">Delivery</dt>
+              <dt class="text-sm text-ink-muted">Delivery</dt>
               <dd>{{ deliveryModeLabel(r.deliveryMode) }}</dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Patient</dt>
+              <dt class="text-sm text-ink-muted">Patient</dt>
               <dd class="font-semibold">{{ r.participant?.displayName ?? 'You' }}</dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Service price</dt>
+              <dt class="text-sm text-ink-muted">Service price</dt>
               <dd class="font-semibold">
                 {{
                   r.service.price
@@ -73,7 +73,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
               </dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Provider</dt>
+              <dt class="text-sm text-ink-muted">Provider</dt>
               <dd class="font-semibold">
                 {{
                   r.assignedProvider?.displayName ||
@@ -83,7 +83,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
               </dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Location</dt>
+              <dt class="text-sm text-ink-muted">Location</dt>
               <dd>
                 @if (r.geography; as geography) {
                   {{ geography.city }}, {{ geography.stateOrRegion }},
@@ -94,7 +94,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
               </dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Requested appointment</dt>
+              <dt class="text-sm text-ink-muted">Requested appointment</dt>
               <dd>
                 {{
                   r.preferredDate
@@ -104,33 +104,33 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
               </dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Contact method</dt>
+              <dt class="text-sm text-ink-muted">Contact method</dt>
               <dd>{{ r.contactMethod }}</dd>
             </div>
             @if (r.notes) {
               <div class="sm:col-span-2">
-                <dt class="text-sm text-slate-500">Request notes</dt>
+                <dt class="text-sm text-ink-muted">Request notes</dt>
                 <dd class="whitespace-pre-wrap">{{ r.notes }}</dd>
               </div>
             }
           </dl>
-          <p class="mt-6 rounded-xl bg-slate-50 p-4">{{ nextStep(r.status) }}</p>
+          <p class="mt-6 rounded-xl bg-sand-50 p-4">{{ nextStep(r.status) }}</p>
         </section>
         @if (r.status === 'PROVIDER_ACCEPTED' || r.funding) {
           <section
-            class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
+            class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm"
             aria-labelledby="care-payment-title"
           >
             <p class="text-xs font-bold uppercase tracking-[.16em] text-brand-600">Next step</p>
-            <h2 id="care-payment-title" class="mt-1 text-2xl font-black text-brand-950">
+            <h2 id="care-payment-title" class="font-display mt-1 text-2xl font-semibold text-ink">
               {{ r.deliveryMode === 'VIRTUAL' ? 'Confirm your consultation' : 'Payment' }}
             </h2>
             @if (fundingLoading() && !funding()) {
-              <p role="status" class="mt-3 text-slate-600">Loading payment status…</p>
+              <p role="status" class="mt-3 text-ink-soft">Loading payment status…</p>
             } @else if (funding(); as payment) {
               <dl class="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt class="text-sm text-slate-500">Service price</dt>
+                  <dt class="text-sm text-ink-muted">Service price</dt>
                   <dd class="font-bold">
                     {{
                       payment.amountMinor !== null && payment.currency
@@ -140,7 +140,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
                   </dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-slate-500">Payment status</dt>
+                  <dt class="text-sm text-ink-muted">Payment status</dt>
                   <dd class="font-bold">{{ fundingLabel(payment) }}</dd>
                 </div>
               </dl>
@@ -187,7 +187,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
                       }
                     </select>
                   </label>
-                  <p class="mt-2 text-sm text-slate-600">
+                  <p class="mt-2 text-sm text-ink-soft">
                     Programme membership is optional for each encounter. It never blocks ordinary
                     self-pay.
                   </p>
@@ -287,7 +287,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
           <section
             class="mt-6 rounded-[2rem] border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-slate-50 p-6 shadow-sm"
           >
-            <h2 class="text-xl font-bold">Your appointment</h2>
+            <h2 class="font-display text-xl font-semibold">Your appointment</h2>
             <p class="mt-3 font-semibold">
               {{ deliveryModeLabel(a.deliveryMode) }} · {{ appointmentLabel(a.status) }}
             </p>
@@ -330,7 +330,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
                 }
               </div>
               @if (!a.hasMeetingLink) {
-                <p class="mt-3 text-sm text-slate-600">
+                <p class="mt-3 text-sm text-ink-soft">
                   Your consultation is scheduled. The video room is being prepared.
                 </p>
               }
@@ -353,9 +353,9 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
           </button>
         }
         @if (chatAvailable()) {
-          <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="text-xl font-bold">Communication</h2>
-            <p class="mt-2 text-slate-600">Message your provider about this Care Request.</p>
+          <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
+            <h2 class="font-display text-xl font-semibold">Communication</h2>
+            <p class="mt-2 text-ink-soft">Message your provider about this Care Request.</p>
             <a
               [routerLink]="['/me/care', r.reference, 'chat']"
               class="mt-4 inline-flex min-h-12 items-center rounded-xl border border-brand-300 px-5 py-3 font-bold text-brand-800"
@@ -370,7 +370,7 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
         }
         @if (fastTrackEligible()) {
           <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-            <h2 class="text-xl font-bold">FastTrack available</h2>
+            <h2 class="font-display text-xl font-semibold">FastTrack available</h2>
             <p class="mt-2">
               Request priority appointment handling with this provider. Clinical urgency and medical
               triage always take priority.
@@ -397,8 +397,8 @@ import { PatientHmoCoverage } from '../../core/models/hmo.model';
             aria-labelledby="cancel-care-title"
             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
           >
-            <h2 id="cancel-care-title" class="text-xl font-bold">Cancel this Care Request?</h2>
-            <p class="mt-2 text-slate-600">
+            <h2 id="cancel-care-title" class="font-display text-xl font-semibold">Cancel this Care Request?</h2>
+            <p class="mt-2 text-ink-soft">
               SmartClinic will stop working on this request. This action does not cancel a scheduled
               appointment.
             </p>

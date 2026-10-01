@@ -53,6 +53,7 @@ export class SmartClinicCompanionComponent {
   readonly preferences = signal(this.loadPreferences());
   readonly open = signal(false);
   readonly settingsOpen = signal(false);
+  readonly teaserVisible = computed(() => !this.open() && !this.preferences().introduced);
   readonly listening = signal(false);
   readonly speaking = signal(false);
   readonly query = signal('');
@@ -74,10 +75,8 @@ export class SmartClinicCompanionComponent {
   readonly supportsSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
   constructor() {
-    if (!this.preferences().introduced) {
-      this.open.set(true);
-      this.settingsOpen.set(true);
-    }
+    // First visit: invite gently with a small bubble instead of covering the page.
+    if (!this.preferences().introduced) this.settingsOpen.set(true);
   }
 
   toggle(): void {
@@ -87,6 +86,7 @@ export class SmartClinicCompanionComponent {
 
   finishIntroduction(): void {
     this.updatePreferences({ introduced: true });
+    this.open.set(true);
     this.settingsOpen.set(false);
     if (this.preferences().autoSpeak) this.readAloud();
   }

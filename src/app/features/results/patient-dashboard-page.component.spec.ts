@@ -34,6 +34,12 @@ describe('PatientDashboardPageComponent', () => {
       createDailyRoutine: vi.fn(),
       updateDailyRoutine: vi.fn(),
       deleteDailyRoutine: vi.fn(),
+      completeRoutineToday: vi.fn((reference: string) =>
+        of({ localDate: '2026-10-01', completedReferences: [reference], streakDays: 4 }),
+      ),
+      undoRoutineToday: vi.fn(() =>
+        of({ localDate: '2026-10-01', completedReferences: [] as string[], streakDays: 3 }),
+      ),
     };
     const healthChecksApi = {
       getMyHealthChecks: vi.fn(() =>
@@ -71,7 +77,7 @@ describe('PatientDashboardPageComponent', () => {
   it('places authoritative identity and one backend-driven next step before secondary content', async () => {
     const { fixture } = await setup();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Welcome, Ada');
+    expect(text).toMatch(/Good (morning|afternoon|evening), Ada/);
     expect(text).toContain('SmartClinic ID: SCP-8K4M-27QD');
     expect(text).toContain('Your next step');
     expect(text).toContain('Complete your profile');
@@ -405,6 +411,52 @@ describe('PatientDashboardPageComponent', () => {
     expect(loaded.referralsApi.getMyImpact).toHaveBeenCalledOnce();
     expect(loaded.referralsApi.summary).not.toHaveBeenCalled();
     expect(loaded.referralsApi.getPublicLeaderboard).not.toHaveBeenCalled();
+  });
+
+  describe('daily routine check-offs', () => {
+    const routine = {
+      reference: 'SC-RTE-WATER0000001',
+      type: 'HYDRATION' as const,
+      label: 'Drink a glass of water',
+      instructions: null,
+      scheduledLocalTime: '09:00',
+      timezone: 'Africa/Lagos',
+      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+      enabled: true,
+      source: 'PATIENT' as const,
+      completedToday: false,
+    };
+
+    it('hides tick controls when the API does not yet report daily progress', async () => {
+      const { fixture } = await setup({ dashboard: { todayRoutines: [routine] } });
+      expect(fixture.nativeElement.querySelector('button[aria-pressed]')).toBeNull();
+      expect(fixture.nativeElement.querySelector('[data-streak]')).toBeNull();
+    });
+
+    it('marks a routine done, shows progress and the streak, then allows undo', async () => {
+      const { fixture, api } = await setup({
+        dashboard: {
+          todayRoutines: [routine],
+          dailyCare: { localDate: '2026-10-01', completedReferences: [], streakDays: 3 },
+        },
+      });
+      const element: HTMLElement = fixture.nativeElement;
+      expect(element.querySelector('[data-streak]')?.textContent).toContain('3-day streak');
+      expect(element.querySelector('[data-today-progress]')?.textContent).toContain('0 of 1 done today');
+
+      (element.querySelector('button[aria-pressed="false"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+
+      expect(api.completeRoutineToday).toHaveBeenCalledWith('SC-RTE-WATER0000001');
+      expect(element.querySelector('button[aria-pressed="true"]')).not.toBeNull();
+      expect(element.querySelector('[data-streak]')?.textContent).toContain('4-day streak');
+      expect(element.textContent).toContain('All done for today');
+
+      (element.querySelector('button[aria-pressed="true"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(api.undoRoutineToday).toHaveBeenCalledWith('SC-RTE-WATER0000001');
+      expect(element.querySelector('[data-today-progress]')?.textContent).toContain('0 of 1 done today');
+    });
   });
 });
 

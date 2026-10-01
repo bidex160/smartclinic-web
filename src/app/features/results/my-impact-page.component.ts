@@ -12,8 +12,8 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
     <main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:py-14">
       <header>
         <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Patient Portal</p>
-        <h1 class="mt-2 text-3xl font-bold text-brand-900">My Impact</h1>
-        <p class="mt-2 max-w-3xl text-slate-600">
+        <h1 class="font-display mt-2 text-3xl font-semibold text-ink">My Impact</h1>
+        <p class="mt-2 max-w-3xl text-ink-soft">
           Track the healthcare network you are helping build, your verified referral activity, and
           your progress through SmartClinic Builder levels.
         </p>
@@ -26,7 +26,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
           class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           @for (item of [1, 2, 3, 4]; track item) {
-            <div class="h-32 animate-pulse rounded-2xl bg-slate-100"></div>
+            <div class="h-32 animate-pulse rounded-2xl bg-sand-100"></div>
           }
         </div>
       } @else if (error()) {
@@ -45,26 +45,26 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
         </section>
       } @else if (impact(); as value) {
         <section class="mt-8" aria-labelledby="points-heading">
-          <h2 id="points-heading" class="text-2xl font-bold text-brand-900">Points summary</h2>
+          <h2 id="points-heading" class="font-display text-2xl font-semibold text-ink">Points summary</h2>
           <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             @for (metric of pointMetrics(value); track metric.label) {
               <article class="min-w-0 rounded-2xl border bg-white p-5">
-                <p class="font-semibold text-slate-600">{{ metric.label }}</p>
-                <p class="mt-2 break-words text-3xl font-bold text-brand-900">{{ metric.value }}</p>
+                <p class="font-semibold text-ink-soft">{{ metric.label }}</p>
+                <p class="mt-2 break-words text-3xl font-bold text-ink">{{ metric.value }}</p>
               </article>
             }
           </div>
-          <p class="mt-3 text-sm text-slate-600">
+          <p class="mt-3 text-sm text-ink-soft">
             Available points may be used for eligible rewards. Reserved points are held for pending
             reward operations.
           </p>
         </section>
 
         <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="earning-heading">
-          <h2 id="earning-heading" class="text-2xl font-bold text-brand-900">
+          <h2 id="earning-heading" class="font-display text-2xl font-semibold text-ink">
             How points are earned
           </h2>
-          <p class="mt-2 text-slate-600">Current reward model</p>
+          <p class="mt-2 text-ink-soft">Current reward model</p>
           <div class="mt-5 grid gap-6 md:grid-cols-2">
             <article>
               <h3 class="text-lg font-bold">Core Provider</h3>
@@ -89,21 +89,21 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
               </dl>
             </article>
           </div>
-          <p class="mt-5 text-sm text-slate-600">
+          <p class="mt-5 text-sm text-ink-soft">
             Provider milestones are awarded only after backend-verified lifecycle events. Patient
             care points are awarded only after a first completed meaningful healthcare action.
           </p>
-          <p class="mt-2 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <p class="mt-2 rounded-xl bg-sand-50 p-4 text-sm text-ink-soft">
             Older referrals may retain points awarded under a previous reward model. Historical
             points are preserved.
           </p>
         </section>
 
         <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="builder-heading">
-          <h2 id="builder-heading" class="text-2xl font-bold text-brand-900">
+          <h2 id="builder-heading" class="font-display text-2xl font-semibold text-ink">
             Builder Level Progress
           </h2>
-          <p class="mt-2 font-semibold text-slate-700">
+          <p class="mt-2 font-semibold text-ink-soft">
             Builder Levels are based on qualified referral mix, not your points balance.
           </p>
           @if (value.levelProgress.currentLevel; as current) {
@@ -112,14 +112,14 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
             <p class="mt-4 text-xl font-bold">No level achieved yet</p>
           }
           @if (value.levelProgress.highestConfiguredLevelReached) {
-            <p class="mt-4 rounded-xl bg-brand-50 p-4 font-semibold text-brand-900">
+            <p class="mt-4 rounded-xl bg-brand-50 p-4 font-semibold text-ink">
               Highest referral level achieved
             </p>
           } @else if (value.levelProgress.nextLevel; as next) {
             <h3 class="mt-5 text-lg font-bold">Next: {{ next.name }}</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               @for (requirement of value.levelProgress.requirements; track requirement.targetType) {
-                <article class="rounded-xl bg-slate-50 p-4">
+                <article class="rounded-xl bg-sand-50 p-4">
                   <h4 class="font-bold">{{ targetLabel(requirement.targetType) }}</h4>
                   <p class="mt-2 text-xl font-bold">
                     {{ requirement.qualified }} / {{ requirement.required }}
@@ -141,7 +141,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
               }
             </div>
             @if (!value.levelProgress.currentLevel) {
-              <p class="mt-4 text-slate-600">
+              <p class="mt-4 text-ink-soft">
                 Complete these qualification requirements to reach {{ next.name }}.
               </p>
             }
@@ -150,7 +150,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
         <div class="mt-8 grid gap-6 lg:grid-cols-3">
           <section class="rounded-2xl border bg-white p-6">
-            <h2 class="text-xl font-bold text-brand-900">Your referral code</h2>
+            <h2 class="font-display text-xl font-semibold text-ink">Your referral code</h2>
             <p class="mt-3 break-all font-mono text-2xl font-bold">{{ value.referralCode }}</p>
             <button
               type="button"
@@ -162,7 +162,7 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
             <p aria-live="polite" class="mt-2 text-sm font-semibold text-brand-700">
               {{ copyFeedback() }}
             </p>
-            <p class="mt-3 text-sm text-slate-600">
+            <p class="mt-3 text-sm text-ink-soft">
               This code identifies your referrals. It is not an account password or access
               credential.
             </p>
@@ -171,36 +171,36 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
             class="rounded-2xl border bg-white p-6 lg:col-span-2"
             aria-labelledby="pipeline-heading"
           >
-            <h2 id="pipeline-heading" class="text-xl font-bold text-brand-900">
+            <h2 id="pipeline-heading" class="font-display text-xl font-semibold text-ink">
               Referral pipeline
             </h2>
             <div class="mt-4 grid gap-4 sm:grid-cols-3">
               <div>
-                <p class="text-sm text-slate-600">Registered referrals</p>
+                <p class="text-sm text-ink-soft">Registered referrals</p>
                 <p class="text-2xl font-bold">{{ value.summary.registeredReferrals }}</p>
               </div>
               <div>
-                <p class="text-sm text-slate-600">Qualified referrals</p>
+                <p class="text-sm text-ink-soft">Qualified referrals</p>
                 <p class="text-2xl font-bold">{{ value.summary.qualifiedReferrals }}</p>
               </div>
               <div>
-                <p class="text-sm text-slate-600">Pending qualification</p>
+                <p class="text-sm text-ink-soft">Pending qualification</p>
                 <p class="text-2xl font-bold">{{ value.summary.pendingReferrals }}</p>
               </div>
             </div>
-            <p class="mt-4 text-sm text-slate-600">
+            <p class="mt-4 text-sm text-ink-soft">
               These counts come from referral lifecycle state and are not derived from points.
             </p>
           </section>
         </div>
 
         <section class="mt-8" aria-labelledby="invite-heading">
-          <h2 id="invite-heading" class="text-2xl font-bold text-brand-900">Invite someone</h2>
+          <h2 id="invite-heading" class="font-display text-2xl font-semibold text-ink">Invite someone</h2>
           <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             @for (target of inviteTargets(); track target) {
               <article class="rounded-2xl border bg-white p-5">
                 <h3 class="font-bold">Invite a {{ inviteLabel(target) }}</h3>
-                <p class="mt-2 text-sm text-slate-600">{{ inviteHelp(target) }}</p>
+                <p class="mt-2 text-sm text-ink-soft">{{ inviteHelp(target) }}</p>
                 <div class="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -227,21 +227,21 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
         <div class="mt-8 grid gap-6 lg:grid-cols-2">
           <section class="rounded-2xl border bg-white p-6">
-            <h2 class="text-xl font-bold text-brand-900">Qualified connections</h2>
+            <h2 class="font-display text-xl font-semibold text-ink">Qualified connections</h2>
             <div class="mt-4 grid grid-cols-2 gap-4">
               @for (target of targets; track target) {
                 <div>
-                  <p class="text-sm text-slate-600">{{ targetLabel(target) }}</p>
+                  <p class="text-sm text-ink-soft">{{ targetLabel(target) }}</p>
                   <p class="text-2xl font-bold">{{ value.qualifiedCounts[target] }}</p>
                 </div>
               }
             </div>
           </section>
           <section class="rounded-2xl border bg-white p-6" aria-labelledby="leaderboard-heading">
-            <h2 id="leaderboard-heading" class="text-xl font-bold text-brand-900">
+            <h2 id="leaderboard-heading" class="font-display text-xl font-semibold text-ink">
               Public leaderboard
             </h2>
-            <p class="mt-2 text-slate-600">
+            <p class="mt-2 text-ink-soft">
               Users appear publicly only when they choose to participate. Rankings are
               backend-authoritative.
             </p>
@@ -285,14 +285,14 @@ import { ReferralsApiService } from '../../core/services/referrals-api.service';
           class="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-brand-900 p-6 text-white"
         >
           <div>
-            <h2 class="text-xl font-bold">Referral activity</h2>
+            <h2 class="font-display text-xl font-semibold">Referral activity</h2>
             <p class="mt-1 text-brand-100">
               Review your direct referral history and reward operations.
             </p>
           </div>
           <a
             routerLink="/me/referrals"
-            class="rounded-lg bg-white px-5 py-3 font-bold text-brand-900"
+            class="rounded-lg bg-white px-5 py-3 font-bold text-ink"
             >View referral history</a
           >
         </section>

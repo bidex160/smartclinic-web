@@ -17,6 +17,15 @@ export interface PatientDailyRoutine {
   readonly daysOfWeek: readonly number[];
   readonly enabled: boolean;
   readonly source: 'PATIENT' | 'PRESCRIPTION';
+  /** Only present on dashboard `todayRoutines`; optional during staggered deployment. */
+  readonly completedToday?: boolean;
+}
+
+/** Self-reported daily routine ticks. Never clinical adherence data. */
+export interface DailyCareProgress {
+  readonly localDate: string;
+  readonly completedReferences: readonly string[];
+  readonly streakDays: number;
 }
 
 export interface CreatePatientDailyRoutineRequest {
@@ -89,6 +98,8 @@ export interface PatientDashboard {
   readonly dashboardMode: PatientDashboardMode;
   /** Optional during a staggered API/Web deployment. */
   readonly todayRoutines?: readonly PatientDailyRoutine[];
+  /** Optional during a staggered API/Web deployment. */
+  readonly dailyCare?: DailyCareProgress;
 }
 
 export interface PatientPortalProfile {

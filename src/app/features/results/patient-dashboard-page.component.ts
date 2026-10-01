@@ -30,135 +30,200 @@ interface DashboardNextStep {
   imports: [RouterLink, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="sc-page mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-8">
+    <main class="mx-auto max-w-6xl px-4 pb-10 pt-5 sm:px-8 sm:pt-8 lg:pt-10">
       @if (loading()) {
         <section role="status" aria-live="polite" class="animate-pulse space-y-4">
           <span class="sr-only">Loading your dashboard…</span>
-          <div class="h-20 rounded-2xl bg-slate-200"></div>
-          <div class="h-48 rounded-2xl bg-slate-200"></div>
+          <div class="h-16 w-2/3 rounded-2xl bg-sand-200"></div>
+          <div class="h-52 rounded-[1.75rem] bg-sand-200"></div>
+          <div class="h-40 rounded-[1.75rem] bg-sand-100"></div>
         </section>
       } @else if (error()) {
-        <section role="alert" class="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 class="text-2xl font-bold">Your dashboard is unavailable right now</h1>
-          <p class="mt-2">Check your connection and try again.</p>
-          <button
-            type="button"
-            (click)="load()"
-            class="mt-4 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white"
-          >
-            Retry
-          </button>
+        <section role="alert" class="sc-card p-6">
+          <h1 class="font-display text-2xl font-semibold text-ink">Your dashboard is unavailable right now</h1>
+          <p class="mt-2 text-ink-soft">Check your connection and try again.</p>
+          <button type="button" (click)="load()" class="mt-4 rounded-full bg-brand-700 px-5 py-3 font-semibold text-white hover:bg-brand-800">Retry</button>
         </section>
       } @else if (dashboard(); as value) {
-        <header class="flex flex-wrap items-start justify-between gap-3">
+        <header class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <div>
-            <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Patient home</p>
-            <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-              Welcome, {{ value.patient.firstName }}
+            <p class="text-sm font-medium text-ink-muted">{{ today }}</p>
+            <h1 class="font-display mt-1 text-[2rem] font-semibold leading-[1.1] text-ink sm:text-[2.6rem]">
+              {{ greeting() }}, {{ value.patient.firstName }}
             </h1>
-            <p class="mt-1 text-sm text-slate-600">
-              SmartClinic ID:
-              <strong class="font-mono text-slate-900">{{ value.patient.patientReference }}</strong>
-            </p>
           </div>
-          <button
-            type="button"
-            (click)="copyPatientId()"
-            class="min-h-11 rounded-xl border border-brand-200 px-4 text-sm font-bold text-brand-800 focus:ring-4 focus:ring-brand-200"
-          >
-            Copy ID
-          </button>
-          <p aria-live="polite" class="w-full text-sm font-semibold text-brand-700">
-            {{ copyFeedback() }}
-          </p>
-        </header>
-
-        <section
-          class="sc-hero-glow relative mt-5 overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-brand-950 to-violet-800 p-6 text-white shadow-[0_24px_60px_rgba(30,20,70,0.24)] sm:p-8"
-          aria-labelledby="next-step-heading"
-        >
-          <p class="text-sm font-bold uppercase tracking-wider text-brand-100">Your next step</p>
-          <h2 id="next-step-heading" class="mt-1 text-xl font-bold sm:text-2xl">
-            {{ nextStep(value).title }}
-          </h2>
-          <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-50 sm:text-base">
-            {{ nextStep(value).message }}
-          </p>
-          <a
-            [routerLink]="nextStep(value).route"
-            class="mt-3 inline-flex min-h-10 items-center rounded-xl bg-white px-4 text-sm font-bold text-brand-900 focus:ring-4 focus:ring-white/40"
-            >{{ nextStep(value).label }} <span class="ml-2" aria-hidden="true">→</span></a
-          >
-        </section>
-
-        <section class="mt-5 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-5 shadow-[0_10px_28px_rgba(6,95,70,0.07)]" aria-labelledby="today-care-heading">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-emerald-700">Today</p>
-              <h2 id="today-care-heading" class="mt-1 text-xl font-bold text-brand-950">Small things that keep you well</h2>
-              <p class="mt-1 text-sm leading-6 text-slate-600">Optional routines you choose. Clinical actions above always remain the priority.</p>
-            </div>
-            <button type="button" (click)="toggleRoutineManager()" class="shrink-0 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-bold text-emerald-800">
-              {{ routineManagerOpen() ? 'Close' : 'Manage' }}
+          <div class="flex items-center gap-2 rounded-full border border-ink/[0.08] bg-white py-1.5 pl-4 pr-1.5 shadow-card">
+            <p class="text-sm text-ink-soft">
+              SmartClinic ID: <strong class="font-mono font-semibold tracking-wide text-ink">{{ value.patient.patientReference }}</strong>
+            </p>
+            <button type="button" (click)="copyPatientId()" class="min-h-9 rounded-full bg-sand-100 px-3.5 text-xs font-semibold text-ink transition hover:bg-sand-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+              Copy ID
             </button>
           </div>
+          <p aria-live="polite" class="w-full text-sm font-medium text-leaf-700 empty:hidden">{{ copyFeedback() }}</p>
+        </header>
+
+        <div class="mt-6 grid gap-4 lg:grid-cols-12">
+          <section class="relative overflow-hidden rounded-[1.75rem] bg-ink p-6 text-white shadow-lift sm:p-8 lg:col-span-7" aria-labelledby="next-step-heading">
+            <div class="sc-motif pointer-events-none absolute inset-0 opacity-[0.07]" aria-hidden="true"></div>
+            <div class="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-brand-600/40 blur-3xl" aria-hidden="true"></div>
+            <div class="pointer-events-none absolute -bottom-28 left-10 size-64 rounded-full bg-ochre-500/20 blur-3xl" aria-hidden="true"></div>
+            <div class="relative">
+              <p class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ochre-300">
+                <span class="size-1.5 rounded-full bg-ochre-300"></span>Your next step
+              </p>
+              <h2 id="next-step-heading" class="font-display mt-3 text-[1.7rem] font-semibold leading-tight sm:text-[2rem]">
+                {{ nextStep(value).title }}
+              </h2>
+              <p class="mt-2 max-w-md text-[15px] leading-relaxed text-white/75">{{ nextStep(value).message }}</p>
+              <a [routerLink]="nextStep(value).route" class="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink transition hover:bg-ochre-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
+                {{ nextStep(value).label }} <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </section>
+
+          <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 text-white shadow-lift sm:p-7 lg:col-span-5" aria-labelledby="passport-heading">
+            <div class="sc-motif pointer-events-none absolute inset-0 opacity-[0.08]" aria-hidden="true"></div>
+            <div class="relative flex h-full flex-col">
+              <div class="flex items-start justify-between gap-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Smart Health Passport</p>
+                <span class="grid size-10 place-items-center rounded-xl bg-white/10 ring-1 ring-white/20" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5Z"/><path d="M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0"/><path d="M8 18h8"/></svg></span>
+              </div>
+              <h2 id="passport-heading" class="font-display mt-3 text-[1.45rem] font-semibold leading-tight">Your health story, wherever you go.</h2>
+              <p class="mt-2 text-sm leading-relaxed text-white/70">Records, results, prescriptions and care history in one place — shared only when you choose.</p>
+              <div class="mt-auto flex flex-wrap items-end justify-between gap-3 pt-6">
+                <div>
+                  <p class="text-[11px] uppercase tracking-[0.16em] text-white/55">Holder</p>
+                  <p class="font-semibold">{{ value.patient.displayName }}</p>
+                </div>
+                <a routerLink="/me/health-passport" class="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full bg-white/15 px-4 text-sm font-semibold ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25">
+                  Open Health Passport <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="sc-card mt-4 p-5 sm:p-7" aria-labelledby="today-care-heading">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ochre-700">
+                <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                Today
+              </p>
+              <h2 id="today-care-heading" class="font-display mt-1.5 text-[1.45rem] font-semibold text-ink">Small things that keep you well</h2>
+              <p class="mt-1 text-sm leading-6 text-ink-muted">Optional routines you choose. Clinical actions above always remain the priority.</p>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              @if (value.dailyCare; as care) {
+                @if (care.streakDays > 0) {
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-ochre-50 px-3 py-1.5 text-sm font-semibold text-ochre-700 ring-1 ring-ochre-100" data-streak>
+                    <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.7 7-7 0-3.5-2.5-6.5-4-8-.5 2-1.5 3.5-3 4.5C12 8 11 4.5 8.5 2 9 6 5 9 5 15c0 4.3 3 7 7 7Z"/></svg>
+                    {{ care.streakDays }}-day streak
+                  </span>
+                }
+              }
+              <button type="button" (click)="toggleRoutineManager()" class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-sand-100">
+                {{ routineManagerOpen() ? 'Close' : 'Manage' }}
+              </button>
+            </div>
+          </div>
+
+          @if (value.dailyCare && (value.todayRoutines ?? []).length) {
+            <div class="mt-4 flex items-center gap-3" data-today-progress>
+              <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100" role="progressbar" aria-label="Routines done today" [attr.aria-valuenow]="doneToday(value)" aria-valuemin="0" [attr.aria-valuemax]="(value.todayRoutines ?? []).length">
+                <div class="h-full rounded-full bg-gradient-to-r from-leaf-500 to-ochre-500 transition-all duration-500" [style.width.%]="(doneToday(value) / (value.todayRoutines ?? []).length) * 100"></div>
+              </div>
+              <p class="shrink-0 text-sm font-medium text-ink-soft">{{ doneToday(value) }} of {{ (value.todayRoutines ?? []).length }} done today</p>
+            </div>
+            @if (doneToday(value) === (value.todayRoutines ?? []).length) {
+              <p class="mt-3 rounded-2xl bg-leaf-50 px-4 py-3 text-sm font-medium text-leaf-700" role="status">All done for today — well done, {{ value.patient.firstName }}. Come back tomorrow to keep your streak going.</p>
+            }
+          }
 
           @if ((value.todayRoutines ?? []).length) {
-            <ul class="mt-4 grid gap-2 sm:grid-cols-3">
+            <ol class="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               @for (routine of value.todayRoutines ?? []; track routine.reference) {
-                <li class="rounded-2xl bg-white p-4 ring-1 ring-emerald-100">
-                  <div class="flex items-center gap-2">
-                    <span class="grid size-9 place-items-center rounded-xl bg-emerald-100 text-lg" aria-hidden="true">{{ routineIcon(routine.type) }}</span>
-                    <div><p class="font-bold text-brand-950">{{ routine.label }}</p><p class="text-xs text-slate-500">{{ routine.scheduledLocalTime }} · {{ routineTypeLabel(routine.type) }}</p></div>
+                <li class="relative flex gap-3 rounded-2xl p-4 ring-1 transition {{ routine.completedToday ? 'bg-leaf-50 ring-leaf-300' : routine.reference === nextRoutineReference() ? 'bg-ochre-50 ring-ochre-300' : 'bg-sand-50 ring-ink/[0.06]' }}">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-xl {{ routineTone(routine.type) }}" aria-hidden="true">
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of routineIconPaths(routine.type); track $index) { <path [attr.d]="d" /> }</svg>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-semibold leading-snug text-ink">{{ routine.label }}</p>
+                    <div class="mt-0.5 flex flex-wrap items-center gap-2">
+                      <p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ routineTypeLabel(routine.type) }}</p>
+                      @if (routine.reference === nextRoutineReference()) {
+                        <span class="rounded-full bg-ochre-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">Up next</span>
+                      }
+                    </div>
+                    @if (routine.instructions) { <p class="mt-1.5 text-xs leading-5 text-ink-soft">{{ routine.instructions }}</p> }
                   </div>
-                  @if (routine.instructions) { <p class="mt-2 text-xs leading-5 text-slate-600">{{ routine.instructions }}</p> }
+                  @if (value.dailyCare) {
+                    <button
+                      type="button"
+                      (click)="toggleDone(routine)"
+                      [disabled]="tickingReference() === routine.reference"
+                      [attr.aria-pressed]="routine.completedToday ? 'true' : 'false'"
+                      [attr.aria-label]="(routine.completedToday ? 'Undo done: ' : 'Mark done: ') + routine.label"
+                      class="grid size-10 shrink-0 place-items-center self-center rounded-full ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-60 {{ routine.completedToday ? 'bg-leaf-500 text-white ring-leaf-500' : 'bg-white text-ink-muted ring-ink/15 hover:text-leaf-700 hover:ring-leaf-300' }}"
+                    >
+                      <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg>
+                    </button>
+                  }
+
                 </li>
               }
-            </ul>
+            </ol>
+            @if (routineError() && !routineManagerOpen()) { <p role="alert" class="mt-3 text-sm font-semibold text-clay-700">{{ routineError() }}</p> }
           } @else {
-            <p class="mt-4 rounded-2xl bg-white p-4 text-sm text-slate-600 ring-1 ring-emerald-100">No routine added yet. Add only what would genuinely help you.</p>
+            <div class="mt-5 flex items-center gap-4 rounded-2xl border border-dashed border-sand-300 bg-sand-50 p-5">
+              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-leaf-100 text-leaf-700" aria-hidden="true">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </span>
+              <p class="text-sm text-ink-soft">No routine added yet. Add only what would genuinely help you — water, a walk, your medicine.</p>
+            </div>
           }
 
           @if (routineManagerOpen()) {
-            <div class="mt-4 grid gap-4 border-t border-emerald-200 pt-4 lg:grid-cols-[1fr_1.1fr]">
-              <form [formGroup]="routineForm" (ngSubmit)="createRoutine()" class="grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-                <h3 class="font-bold text-brand-950">Add a routine</h3>
-                <label class="text-sm font-semibold">Type
-                  <select formControlName="type" class="mt-1 min-h-11 w-full rounded-xl border px-3">
+            <div class="mt-5 grid gap-4 border-t border-ink/[0.07] pt-5 lg:grid-cols-[1fr_1.1fr]">
+              <form [formGroup]="routineForm" (ngSubmit)="createRoutine()" class="grid gap-3 rounded-2xl bg-sand-50 p-4 ring-1 ring-ink/[0.06]">
+                <h3 class="font-semibold text-ink">Add a routine</h3>
+                <label class="text-sm font-medium text-ink-soft">Type
+                  <select formControlName="type" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink">
                     @for (type of routineTypes; track type) { <option [value]="type">{{ routineTypeLabel(type) }}</option> }
                   </select>
                 </label>
-                <label class="text-sm font-semibold">What should SmartClinic show you?
-                  <input formControlName="label" maxlength="120" placeholder="e.g. Take my evening medicine" class="mt-1 min-h-11 w-full rounded-xl border px-3" />
+                <label class="text-sm font-medium text-ink-soft">What should SmartClinic show you?
+                  <input formControlName="label" maxlength="120" placeholder="e.g. Take my evening medicine" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
                 </label>
                 <div class="grid grid-cols-2 gap-3">
-                  <label class="text-sm font-semibold">Time<input type="time" formControlName="scheduledLocalTime" class="mt-1 min-h-11 w-full rounded-xl border px-3" /></label>
-                  <label class="text-sm font-semibold">Time zone<input formControlName="timezone" readonly class="mt-1 min-h-11 w-full rounded-xl border bg-slate-50 px-3 text-xs" /></label>
+                  <label class="text-sm font-medium text-ink-soft">Time<input type="time" formControlName="scheduledLocalTime" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" /></label>
+                  <label class="text-sm font-medium text-ink-soft">Time zone<input formControlName="timezone" readonly class="mt-1 min-h-11 w-full rounded-xl border border-ink/10 bg-sand-100 px-3 text-xs text-ink-soft" /></label>
                 </div>
-                <label class="text-sm font-semibold">Helpful note (optional)<input formControlName="instructions" maxlength="300" placeholder="Keep it short" class="mt-1 min-h-11 w-full rounded-xl border px-3" /></label>
+                <label class="text-sm font-medium text-ink-soft">Helpful note (optional)<input formControlName="instructions" maxlength="300" placeholder="Keep it short" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" /></label>
                 @if (routineForm.controls.type.value === 'MEDICATION') {
-                  <label class="flex gap-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">
+                  <label class="flex gap-2 rounded-xl bg-ochre-50 p-3 text-xs leading-5 text-ochre-700 ring-1 ring-ochre-100">
                     <input type="checkbox" formControlName="medicationSafetyAcknowledged" class="mt-1" />
                     <span>I will follow the prescription or clinician’s instructions. This personal reminder does not replace medical advice.</span>
                   </label>
                 }
-                <p class="text-xs leading-5 text-slate-500">Shown every day. You can pause or remove it anytime. Hydration needs differ; follow any fluid restriction given by your clinician.</p>
-                @if (routineError()) { <p role="alert" class="text-sm font-semibold text-red-700">{{ routineError() }}</p> }
-                <button [disabled]="routineForm.invalid || routineSaving()" class="min-h-11 rounded-xl bg-emerald-700 px-4 font-bold text-white disabled:opacity-50">{{ routineSaving() ? 'Saving…' : 'Add routine' }}</button>
+                <p class="text-xs leading-5 text-ink-muted">Shown every day. You can pause or remove it anytime. Hydration needs differ; follow any fluid restriction given by your clinician.</p>
+                @if (routineError()) { <p role="alert" class="text-sm font-semibold text-clay-700">{{ routineError() }}</p> }
+                <button [disabled]="routineForm.invalid || routineSaving()" class="min-h-11 rounded-full bg-leaf-700 px-4 font-semibold text-white transition hover:bg-leaf-500 disabled:opacity-50">{{ routineSaving() ? 'Saving…' : 'Add routine' }}</button>
               </form>
 
-              <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-                <h3 class="font-bold text-brand-950">Your routines</h3>
-                @if (routinesLoading()) { <p role="status" class="mt-3 text-sm">Loading routines…</p> }
-                @else if (!allRoutines().length) { <p class="mt-3 text-sm text-slate-600">You have no saved routines.</p> }
+              <div class="rounded-2xl bg-white p-4 ring-1 ring-ink/[0.06]">
+                <h3 class="font-semibold text-ink">Your routines</h3>
+                @if (routinesLoading()) { <p role="status" class="mt-3 text-sm text-ink-soft">Loading routines…</p> }
+                @else if (!allRoutines().length) { <p class="mt-3 text-sm text-ink-muted">You have no saved routines.</p> }
                 @else {
-                  <ul class="mt-3 divide-y">
+                  <ul class="mt-3 divide-y divide-ink/[0.06]">
                     @for (routine of allRoutines(); track routine.reference) {
                       <li class="flex items-center justify-between gap-3 py-3">
-                        <div><p class="text-sm font-bold text-brand-950">{{ routine.label }}</p><p class="text-xs text-slate-500">{{ routine.scheduledLocalTime }} · {{ routine.enabled ? 'Active' : 'Paused' }}</p></div>
-                        <div class="flex gap-2">
-                          <button type="button" (click)="toggleRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-bold text-brand-700 underline">{{ routine.enabled ? 'Pause' : 'Resume' }}</button>
-                          @if (routine.source === 'PATIENT') { <button type="button" (click)="deleteRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-bold text-red-700 underline">Remove</button> }
+                        <div><p class="text-sm font-semibold text-ink">{{ routine.label }}</p><p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ routine.enabled ? 'Active' : 'Paused' }}</p></div>
+                        <div class="flex gap-3">
+                          <button type="button" (click)="toggleRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-semibold text-brand-700 underline underline-offset-2">{{ routine.enabled ? 'Pause' : 'Resume' }}</button>
+                          @if (routine.source === 'PATIENT') { <button type="button" (click)="deleteRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-semibold text-clay-700 underline underline-offset-2">Remove</button> }
                         </div>
                       </li>
                     }
@@ -169,172 +234,148 @@ interface DashboardNextStep {
           }
         </section>
 
-        <nav class="mt-9" aria-labelledby="quick-access-heading">
-          <div class="mb-3">
-            <p class="text-sm font-bold uppercase tracking-wider text-brand-700">SmartClinic</p>
-            <h2 id="quick-access-heading" class="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">
+        <nav class="mt-10" aria-labelledby="quick-access-heading">
+          <div class="mb-4">
+            <h2 id="quick-access-heading" class="font-display text-[1.6rem] font-semibold text-ink sm:text-[1.9rem]">
               What do you need today?
             </h2>
-            <p class="mt-1 text-sm text-slate-600">Choose what you want to do. We’ll guide you from there.</p>
+            <p class="mt-1 text-sm text-ink-muted">Choose what you want to do. We’ll guide you from there.</p>
           </div>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <a routerLink="/me/book" queryParamsHandling="preserve" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(76,29,149,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(76,29,149,0.15)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-violet-200/30 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-violet-600 text-xl text-white shadow-md shadow-violet-600/20" aria-hidden="true">♥</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Book a Checkup</span><span class="text-brand-500 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/book" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+              <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.checkup; track $index) { <path [attr.d]="d" /> }</svg></span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">Book a Checkup</span>
             </a>
-            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" queryParamsHandling="merge" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(6,95,70,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(6,95,70,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-emerald-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-emerald-600 text-xl text-white shadow-md shadow-emerald-600/20" aria-hidden="true">✚</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>See a Doctor</span><span class="text-emerald-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" queryParamsHandling="merge" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+              <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.doctor; track $index) { <path [attr.d]="d" /> }</svg></span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">See a Doctor</span>
             </a>
-            <a routerLink="/me/providers" queryParamsHandling="preserve" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(3,105,161,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(3,105,161,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-sky-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-sky-600 text-sm font-black text-white shadow-md shadow-sky-600/20" aria-hidden="true">H</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Visit a Hospital</span><span class="text-sky-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/providers" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+              <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.hospital; track $index) { <path [attr.d]="d" /> }</svg></span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">Visit a Hospital</span>
             </a>
-            <a routerLink="/me/prescriptions" queryParamsHandling="preserve" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(180,83,9,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(180,83,9,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-amber-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-amber-500 text-sm font-black text-white shadow-md shadow-amber-500/20" aria-hidden="true">Rx</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Get Medicine</span><span class="text-amber-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/prescriptions" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+              <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.medicine; track $index) { <path [attr.d]="d" /> }</svg></span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">Get Medicine</span>
             </a>
-            <a routerLink="/me/lab-tests" queryParamsHandling="preserve" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(190,24,93,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(190,24,93,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-rose-200/35 blur-xl" aria-hidden="true"></span>
-              <span class="relative grid h-11 w-11 place-items-center rounded-2xl bg-rose-500 text-sm font-black text-white shadow-md shadow-rose-500/20" aria-hidden="true">T</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Get a Test</span><span class="text-rose-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/lab-tests" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+              <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.test; track $index) { <path [attr.d]="d" /> }</svg></span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">Get a Test</span>
             </a>
-            <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="sc-action group relative flex min-h-[142px] flex-col items-start justify-between overflow-hidden rounded-[1.4rem] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4 text-left font-bold text-brand-950 shadow-[0_10px_28px_rgba(30,41,59,0.08)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(30,41,59,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700">
-              <span class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-800 text-lg text-white" aria-hidden="true">₦</span>
-              <span class="relative flex w-full items-end justify-between gap-2"><span>Pay Bills</span><span class="text-brand-600 transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+            <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+              <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.bills; track $index) { <path [attr.d]="d" /> }</svg></span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">Pay Bills</span>
             </a>
           </div>
         </nav>
 
-        <section class="mt-7" aria-labelledby="coverage-programmes-heading">
-          <div>
-            <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Your relationships</p>
-            <h2 id="coverage-programmes-heading" class="mt-1 text-xl font-bold text-brand-950">How you access and pay for care</h2>
-            <p class="mt-1 text-sm leading-6 text-slate-600">Use one SmartClinic account. Add only the coverage or programme that applies to you.</p>
-          </div>
-          <div class="mt-3 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="group flex min-h-20 items-center gap-4 border-b border-slate-100 p-4 transition hover:bg-violet-50/60 sm:p-5">
-              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-violet-100 font-black text-violet-700" aria-hidden="true">₦</span>
-              <span class="min-w-0 flex-1"><strong class="block text-brand-950">Self-pay &amp; SmartClinic Wallet</strong><span class="mt-1 block text-sm text-slate-600">Available for eligible bills and services</span></span>
-              <span class="shrink-0 text-sm font-bold text-violet-700">View <span aria-hidden="true">→</span></span>
-            </a>
-            <a routerLink="/me/insurance" queryParamsHandling="preserve" class="group flex min-h-20 items-center gap-4 border-b border-slate-100 p-4 transition hover:bg-blue-50/70 sm:p-5">
-              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-blue-100 font-black text-blue-700" aria-hidden="true">H</span>
-              <span class="min-w-0 flex-1"><strong class="block text-brand-950">Health Insurance / HMO</strong><span class="mt-1 block text-sm text-slate-600">Add existing cover or request enrollment help</span></span>
-              <span class="shrink-0 text-sm font-bold text-blue-700">Manage <span aria-hidden="true">→</span></span>
-            </a>
-            <a routerLink="/healthy-families" queryParamsHandling="preserve" class="group flex min-h-20 items-center gap-4 p-4 transition hover:bg-emerald-50/70 sm:p-5">
-              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-emerald-100 font-black text-emerald-700" aria-hidden="true">F</span>
-              <span class="min-w-0 flex-1"><strong class="block text-brand-950">School, employer &amp; family programmes</strong><span class="mt-1 block text-sm text-slate-600">View relationships connected by a valid invitation</span></span>
-              <span class="shrink-0 text-sm font-bold text-emerald-700">View <span aria-hidden="true">→</span></span>
-            </a>
-          </div>
-          <p class="mt-2 px-1 text-xs leading-5 text-slate-500">SmartClinic subscription is a future option and is not currently active.</p>
-        </section>
-
-        <section class="mt-7" aria-labelledby="your-care-heading">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Your care</p>
-              <h2 id="your-care-heading" class="mt-1 text-xl font-bold text-brand-950">Everything connected.</h2>
+        <div class="mt-10 grid gap-4 lg:grid-cols-2">
+          <section aria-labelledby="your-care-heading">
+            <div class="mb-3 flex items-end justify-between gap-3">
+              <h2 id="your-care-heading" class="font-display text-[1.35rem] font-semibold text-ink">Your care, connected</h2>
+              <a routerLink="/me/care" class="text-sm font-semibold text-brand-700 hover:text-brand-900">View care →</a>
             </div>
-            <a routerLink="/me/care" class="text-sm font-bold text-brand-700">View care →</a>
-          </div>
-          <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <a routerLink="/me/providers" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <span class="text-xl" aria-hidden="true">🏥</span>
-              <p class="mt-2 text-sm font-bold text-brand-950">{{ value.setup.hasConnectedProvider ? 'Hospital connected' : value.setup.hasProviderConnection ? 'Connection in progress' : 'Choose a hospital' }}</p>
-            </a>
-            <a routerLink="/me/care" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <span class="text-xl" aria-hidden="true">♥</span>
-              <p class="mt-2 text-sm font-bold text-brand-950">{{ value.setup.hasCareRequest ? 'Care activity' : 'Start your care' }}</p>
-            </a>
-            <a routerLink="/me/health-passport" class="col-span-2 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100 sm:col-span-1">
-              <span class="text-xl" aria-hidden="true">▣</span>
-              <p class="mt-2 text-sm font-bold text-brand-950">Health Passport</p>
-            </a>
-          </div>
-        </section>
-
-        <section class="mt-7 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-700 text-white shadow-soft" aria-labelledby="health-check-summary-heading">
-          <div class="p-5 sm:p-7">
-            <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-100">Invest in yourself</p>
-            <h2 id="health-check-summary-heading" class="mt-2 max-w-2xl text-2xl font-bold sm:text-3xl">
-              Your health deserves a place on your priority list.
-            </h2>
-            @if (healthChecks()?.items?.length === 0) {
-              <p class="mt-3 max-w-2xl text-sm leading-6 text-brand-50 sm:text-base">
-                We spend on the things we use every day. A simple Health Check is an investment in the person who uses them all — you.
-              </p>
-              <a routerLink="/me/health-journey" class="mt-5 inline-flex min-h-11 items-center rounded-xl bg-white px-5 font-bold text-brand-900">
-                Check my health → 
+            <div class="sc-card divide-y divide-ink/[0.06] overflow-hidden">
+              <a routerLink="/me/providers" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
+                <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5h10v16M14 9h6v12M2 21h20"/><path d="M9 2v4M7 4h4"/></svg></span>
+                <span class="min-w-0 flex-1">
+                  <strong class="block font-semibold text-ink">{{ value.setup.hasConnectedProvider ? 'Hospital connected' : value.setup.hasProviderConnection ? 'Connection in progress' : 'Choose a hospital' }}</strong>
+                  <span class="block text-sm text-ink-muted">Your hospital companion for visits, bills and records</span>
+                </span>
+                <span class="text-ink-muted" aria-hidden="true">›</span>
               </a>
-            } @else {
-              <p class="mt-2 text-sm text-brand-50">Your preventive Health Check activity at a glance.</p>
-              <div class="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
-                @for (item of healthCheckSummary(); track item.label) {
-                  <article class="flex items-center justify-between gap-2 rounded-xl bg-white/10 p-3 ring-1 ring-white/20">
-                    <p class="text-xs font-semibold text-brand-50">{{ item.label }}</p>
-                    <p class="text-xl font-bold">{{ item.count }}</p>
-                  </article>
-                }
-              </div>
-              <a routerLink="/me/health-checks" class="mt-4 inline-block text-sm font-bold text-white underline">View Health Checks →</a>
-            }
-          </div>
-        </section>
-
-        <section class="mt-7 rounded-3xl border border-brand-100 bg-gradient-to-br from-white to-brand-50 p-5" aria-labelledby="passport-heading">
-          <div class="flex items-start gap-4">
-            <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-700 text-xl text-white" aria-hidden="true">▣</div>
-            <div class="min-w-0 flex-1">
-              <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Smart Health Passport</p>
-              <h2 id="passport-heading" class="mt-1 text-xl font-bold text-brand-950">Your health story, wherever you go.</h2>
-              <p class="mt-1 text-sm leading-6 text-slate-600">Records, results, prescriptions and care history in one place.</p>
-              <a routerLink="/me/health-passport" class="mt-3 inline-flex min-h-10 items-center font-bold text-brand-700">Open Health Passport →</a>
+              <a routerLink="/me/care" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
+                <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-clay-50 text-clay-500" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.25-8.45C.9 9.2 2.48 5 6.5 5c2.1 0 3.2 1.2 3.9 2.2C11.1 6.2 12.2 5 14.5 5c4.02 0 5.6 4.2 3.75 7.55C16 16.65 12 21 12 21Z"/></svg></span>
+                <span class="min-w-0 flex-1">
+                  <strong class="block font-semibold text-ink">{{ value.setup.hasCareRequest ? 'Care activity' : 'Start your care' }}</strong>
+                  <span class="block text-sm text-ink-muted">Appointments, requests and conversations</span>
+                </span>
+                <span class="text-ink-muted" aria-hidden="true">›</span>
+              </a>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section class="mt-7 rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50/80 via-white to-brand-50 p-5 shadow-[0_10px_28px_rgba(120,53,15,0.06)]" aria-labelledby="impact-heading">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Community impact</p>
-              <h2 id="impact-heading" class="mt-1 text-xl font-bold text-brand-950">Help someone access healthcare.</h2>
-              <p class="mt-1 text-sm leading-6 text-slate-600">Invite someone to SmartClinic and grow your verified impact.</p>
-              @if (referrals(); as rewards) {
-                <p class="mt-3 text-sm font-bold text-brand-950">
-                  {{ rewards.balances.availablePoints }} points
-                  @if (rewards.leaderboard.optedIn && rewards.leaderboard.position !== null) { · #{{ rewards.leaderboard.position }} }
+          <section aria-labelledby="coverage-programmes-heading">
+            <div class="mb-3">
+              <h2 id="coverage-programmes-heading" class="font-display text-[1.35rem] font-semibold text-ink">How you pay for care</h2>
+            </div>
+            <div class="sc-card divide-y divide-ink/[0.06] overflow-hidden">
+              <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
+                <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12v4"/><path d="M16 13.5h1"/></svg></span>
+                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">Self-pay &amp; SmartClinic Wallet</strong><span class="block text-sm text-ink-muted">Available for eligible bills and services</span></span>
+                <span class="text-ink-muted" aria-hidden="true">›</span>
+              </a>
+              <a routerLink="/me/insurance" queryParamsHandling="preserve" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
+                <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">Health Insurance / HMO</strong><span class="block text-sm text-ink-muted">Add existing cover or request enrollment help</span></span>
+                <span class="text-ink-muted" aria-hidden="true">›</span>
+              </a>
+              <a routerLink="/healthy-families" queryParamsHandling="preserve" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
+                <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M2 20a5 5 0 0 1 10 0M12 20a5 5 0 0 1 10 0"/></svg></span>
+                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">School, employer &amp; family programmes</strong><span class="block text-sm text-ink-muted">View relationships connected by a valid invitation</span></span>
+                <span class="text-ink-muted" aria-hidden="true">›</span>
+              </a>
+            </div>
+            <p class="mt-2 px-1 text-xs leading-5 text-ink-muted">SmartClinic subscription is a future option and is not currently active.</p>
+          </section>
+        </div>
+
+        <div class="mt-4 grid gap-4 lg:grid-cols-12">
+          <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-ochre-50 via-white to-sand-100 p-6 ring-1 ring-ochre-100 sm:p-7 lg:col-span-8" aria-labelledby="health-check-summary-heading">
+            <div class="sc-motif-ink pointer-events-none absolute -right-10 -top-10 size-56 rounded-full opacity-[0.07]" aria-hidden="true"></div>
+            <div class="relative">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ochre-700">Invest in yourself</p>
+              <h2 id="health-check-summary-heading" class="font-display mt-2 max-w-xl text-[1.5rem] font-semibold leading-tight text-ink sm:text-[1.75rem]">
+                Your health deserves a place on your priority list.
+              </h2>
+              @if (healthChecks()?.items?.length === 0) {
+                <p class="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-soft">
+                  We spend on the things we use every day. A simple Health Check is an investment in the person who uses them all — you.
                 </p>
+                <a routerLink="/me/health-journey" class="mt-5 inline-flex min-h-12 items-center rounded-full bg-ink px-6 text-sm font-semibold text-white transition hover:bg-brand-900">
+                  Check my health →
+                </a>
+              } @else {
+                <p class="mt-2 text-sm text-ink-soft">Your preventive Health Check activity at a glance.</p>
+                <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  @for (item of healthCheckSummary(); track item.label) {
+                    <article class="rounded-2xl bg-white/80 p-3.5 ring-1 ring-ink/[0.06]">
+                      <p class="font-display text-2xl font-semibold text-ink">{{ item.count }}</p>
+                      <p class="mt-0.5 text-xs font-medium text-ink-muted">{{ item.label }}</p>
+                    </article>
+                  }
+                </div>
+                <a routerLink="/me/health-checks" class="mt-4 inline-block text-sm font-semibold text-brand-700 underline underline-offset-4">View Health Checks →</a>
               }
             </div>
-            <a routerLink="/me/impact" class="shrink-0 text-sm font-bold text-brand-700">View →</a>
-          </div>
-        </section>
+          </section>
+
+          <section class="sc-card flex flex-col p-6 lg:col-span-4" aria-labelledby="impact-heading">
+            <div class="flex items-start justify-between gap-4">
+              <span class="grid size-11 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.25-8.45C.9 9.2 2.48 5 6.5 5c2.1 0 3.2 1.2 3.9 2.2C11.1 6.2 12.2 5 14.5 5c4.02 0 5.6 4.2 3.75 7.55C16 16.65 12 21 12 21Z"/><path d="M9 12h6M12 9v6"/></svg></span>
+              <a routerLink="/me/impact" class="text-sm font-semibold text-brand-700 hover:text-brand-900">View →</a>
+            </div>
+            <h2 id="impact-heading" class="font-display mt-4 text-[1.25rem] font-semibold leading-snug text-ink">Help someone access healthcare.</h2>
+            <p class="mt-1 text-sm leading-6 text-ink-muted">Invite someone to SmartClinic and grow your verified impact.</p>
+            @if (referrals(); as rewards) {
+              <p class="mt-auto pt-4 text-sm font-semibold text-ink">
+                <span class="font-display text-2xl">{{ rewards.balances.availablePoints }}</span> points
+                @if (rewards.leaderboard.optedIn && rewards.leaderboard.position !== null) { <span class="text-ink-muted">· #{{ rewards.leaderboard.position }}</span> }
+              </p>
+            }
+          </section>
+        </div>
 
         @if (value.dashboardMode === 'GETTING_STARTED') {
-          <section class="mt-7" aria-labelledby="getting-started-heading">
-            <h2 id="getting-started-heading" class="text-xl font-bold text-brand-950">
-              Getting started
-            </h2>
+          <section class="mt-10" aria-labelledby="getting-started-heading">
+            <h2 id="getting-started-heading" class="font-display text-[1.35rem] font-semibold text-ink">Getting started</h2>
             <ul class="mt-3 grid gap-2 sm:grid-cols-2">
               @for (step of checklist(value); track step.label) {
-                <li class="flex items-center gap-3 rounded-xl bg-white p-3 ring-1 ring-slate-200">
-                  <span
-                    aria-hidden="true"
-                    class="grid size-7 shrink-0 place-items-center rounded-full bg-slate-100 font-bold"
-                    >{{ step.complete ? '✓' : '○' }}</span
-                  ><span
-                    ><strong class="block text-sm">{{ step.label }}</strong
-                    ><span class="text-xs text-slate-600">{{
-                      step.complete ? 'Complete' : 'Not complete'
-                    }}</span></span
-                  >
+                <li class="flex items-center gap-3 rounded-2xl bg-white p-3.5 ring-1 ring-ink/[0.06]">
+                  <span aria-hidden="true" class="grid size-8 shrink-0 place-items-center rounded-full font-bold"
+                    [class.bg-leaf-100]="step.complete" [class.text-leaf-700]="step.complete"
+                    [class.bg-sand-100]="!step.complete" [class.text-ink-muted]="!step.complete">{{ step.complete ? '✓' : '○' }}</span>
+                  <span><strong class="block text-sm font-semibold text-ink">{{ step.label }}</strong><span class="text-xs text-ink-muted">{{ step.complete ? 'Complete' : 'Not complete' }}</span></span>
                 </li>
               }
             </ul>
@@ -376,6 +417,7 @@ export class PatientDashboardPageComponent {
   readonly routinesLoading = signal(false);
   readonly routineSaving = signal(false);
   readonly routineError = signal('');
+  readonly tickingReference = signal<string | null>(null);
   readonly routineTypes: readonly PatientDailyRoutineType[] = ['HYDRATION', 'MOVEMENT', 'BREAK', 'SLEEP', 'VITAMIN', 'MEDICATION'];
   readonly routineForm = this.formBuilder.nonNullable.group({
     type: this.formBuilder.nonNullable.control<PatientDailyRoutineType>('HYDRATION'),
@@ -385,6 +427,24 @@ export class PatientDashboardPageComponent {
     instructions: ['', Validators.maxLength(300)],
     medicationSafetyAcknowledged: false,
   });
+  readonly today = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+  readonly greeting = signal(PatientDashboardPageComponent.greetingFor(new Date().getHours()));
+  readonly nextRoutineReference = computed(() => {
+    const routines = this.dashboard()?.todayRoutines ?? [];
+    const now = new Date();
+    const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return [...routines]
+      .filter((routine) => routine.enabled && !routine.completedToday && routine.scheduledLocalTime.slice(0, 5) >= current)
+      .sort((a, b) => a.scheduledLocalTime.localeCompare(b.scheduledLocalTime))[0]?.reference ?? null;
+  });
+  readonly icons = {
+    checkup: ['M4 6h16v14H4Z', 'M8 3v6M16 3v6M4 10h16', 'M12 13v4M10 15h4'],
+    doctor: ['M6 3v5a4 4 0 0 0 8 0V3', 'M10 12v3a5 5 0 0 0 10 0v-2', 'M20 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z'],
+    hospital: ['M4 21V5h10v16M14 9h6v12M2 21h20', 'M9 2v4M7 4h4', 'M8 13h2M8 17h2M17 13h1M17 17h1'],
+    medicine: ['M10.5 20.5a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 7Z', 'M7 10l7 7'],
+    test: ['M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3', 'M7.5 15h9'],
+    bills: ['M3 6h18v12H3Z', 'M3 10h18M7 15h3'],
+  } as const;
   readonly supportWhatsappUrl = this.publicSiteConfig?.whatsappUrl?.trim() || null;
   readonly healthCheckSummary = computed(() => {
     const items = this.healthChecks()?.items ?? [];
@@ -443,6 +503,35 @@ export class PatientDashboardPageComponent {
       error: () => this.routineError.set('We could not save this routine. Check the details and try again.'),
     });
   }
+  doneToday(value: PatientDashboard): number {
+    return (value.todayRoutines ?? []).filter((routine) => routine.completedToday).length;
+  }
+  toggleDone(routine: PatientDailyRoutine): void {
+    if (this.tickingReference()) return;
+    this.tickingReference.set(routine.reference);
+    this.routineError.set('');
+    const request = routine.completedToday
+      ? this.api.undoRoutineToday(routine.reference)
+      : this.api.completeRoutineToday(routine.reference);
+    request.pipe(finalize(() => this.tickingReference.set(null))).subscribe({
+      next: (progress) => {
+        const done = new Set(progress.completedReferences);
+        this.dashboard.update((value) =>
+          value
+            ? {
+                ...value,
+                dailyCare: progress,
+                todayRoutines: (value.todayRoutines ?? []).map((item) => ({
+                  ...item,
+                  completedToday: done.has(item.reference),
+                })),
+              }
+            : value,
+        );
+      },
+      error: () => this.routineError.set('We could not update today’s routine. Please try again.'),
+    });
+  }
   toggleRoutine(routine: PatientDailyRoutine): void {
     if (this.routineSaving()) return;
     this.routineSaving.set(true);
@@ -462,8 +551,30 @@ export class PatientDashboardPageComponent {
   routineTypeLabel(type: PatientDailyRoutineType): string {
     return ({ HYDRATION: 'Hydration', MOVEMENT: 'Movement', BREAK: 'Take a break', SLEEP: 'Wind-down / sleep', VITAMIN: 'Vitamin', MEDICATION: 'Personal medication' } as const)[type];
   }
-  routineIcon(type: PatientDailyRoutineType): string {
-    return ({ HYDRATION: '◉', MOVEMENT: '↗', BREAK: '☕', SLEEP: '☾', VITAMIN: 'V', MEDICATION: 'Rx' } as const)[type];
+  static greetingFor(hour: number): string {
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+  routineIconPaths(type: PatientDailyRoutineType): readonly string[] {
+    return ({
+      HYDRATION: ['M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z'],
+      MOVEMENT: ['M13 4a1.5 1.5 0 1 0 0 .01', 'M9 21l2-6 3 3v3M7 12l3-3 3 1 2 3h3M10 9l1 6'],
+      BREAK: ['M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z', 'M17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3'],
+      SLEEP: ['M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z'],
+      VITAMIN: ['M10.5 20.5a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 7Z', 'M7 10l7 7'],
+      MEDICATION: ['M6 3h12v4H6Z', 'M7 7h10v13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1Z', 'M10 13h4M12 11v4'],
+    } as const)[type];
+  }
+  routineTone(type: PatientDailyRoutineType): string {
+    return ({
+      HYDRATION: 'bg-sky-100 text-sky-700',
+      MOVEMENT: 'bg-leaf-100 text-leaf-700',
+      BREAK: 'bg-ochre-100 text-ochre-700',
+      SLEEP: 'bg-brand-100 text-brand-700',
+      VITAMIN: 'bg-clay-100 text-clay-700',
+      MEDICATION: 'bg-brand-100 text-brand-800',
+    } as const)[type];
   }
   loadHealthChecks(): void {
     if (this.healthChecksLoading()) return;

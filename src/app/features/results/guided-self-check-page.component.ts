@@ -39,15 +39,15 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
     } @else if (detail(); as check) {
       <header class="mt-6 rounded-2xl bg-brand-900 p-6 text-white">
         <p class="text-sm font-bold uppercase text-brand-100">Guided Self-Check</p>
-        <h1 class="mt-2 text-3xl font-bold">Your health questions</h1>
+        <h1 class="font-display mt-2 text-3xl font-semibold">Your health questions</h1>
         <p class="mt-2 break-all text-sm text-brand-100">{{ check.reference }}</p>
       </header>
       @if (check.workflowStatus === 'COMPLETED') {
         <section class="mt-6 rounded-2xl border bg-white p-6" aria-labelledby="result-heading">
-          <h2 id="result-heading" class="text-2xl font-bold">{{ resultTitle(check) }}</h2>
-          <p class="mt-3 text-slate-700">{{ resultMessage(check) }}</p>
+          <h2 id="result-heading" class="font-display text-2xl font-semibold">{{ resultTitle(check) }}</h2>
+          <p class="mt-3 text-ink-soft">{{ resultMessage(check) }}</p>
           @if (check.classificationStatus === 'CONFIGURATION_REQUIRED') {
-            <p class="mt-4 rounded-xl bg-slate-100 p-4">
+            <p class="mt-4 rounded-xl bg-sand-100 p-4">
               Your answers have been saved and are awaiting clinical processing.
             </p>
           }
@@ -82,7 +82,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   </h3>
                   <p class="mt-1">{{ analysisCopy(analysis) }}</p>
                   @if (analysis.status !== 'FAILED') {
-                    <p class="mt-2 text-sm text-slate-700">
+                    <p class="mt-2 text-sm text-ink-soft">
                       Your original Self-Check result remains unchanged.
                     </p>
                   }
@@ -147,16 +147,16 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               }
             </section>
           }
-          <p class="mt-5 text-sm text-slate-600">A Guided Self-Check is not a diagnosis.</p>
+          <p class="mt-5 text-sm text-ink-soft">A Guided Self-Check is not a diagnosis.</p>
         </section>
       } @else if (!funded(check)) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-2xl font-bold">Payment</h2>
+          <h2 class="font-display text-2xl font-semibold">Payment</h2>
           @if (funding(); as f) {
             <p class="mt-3">
               Self-Check price: <strong>{{ money(f.amountMinor, f.currency) }}</strong>
             </p>
-            <p class="mt-2 text-slate-600">Payment status: {{ fundingLabel(f.fundingStatus) }}</p>
+            <p class="mt-2 text-ink-soft">Payment status: {{ fundingLabel(f.fundingStatus) }}</p>
             <app-payment-contact-email />
             <button
               type="button"
@@ -183,7 +183,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           @if (actionError()) {
             <p role="alert" class="mt-4 text-red-800">{{ actionError() }}</p>
           }
-          <p class="mt-4 text-sm text-slate-600">
+          <p class="mt-4 text-sm text-ink-soft">
             Your questionnaire becomes available only after SmartClinic confirms payment.
           </p>
         </section>
@@ -193,7 +193,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             <p class="font-bold">Question {{ index() + 1 }} of {{ questions().length }}</p>
             <p class="text-sm">{{ q.progress.percentage }}% complete</p>
           </div>
-          <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+          <div class="mt-3 h-2 overflow-hidden rounded-full bg-sand-200">
             <div class="h-full bg-brand-600" [style.width.%]="q.progress.percentage"></div>
           </div>
           @if (current(); as question) {
@@ -205,7 +205,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                 }
               </legend>
               @if (question.helperText) {
-                <p class="mt-2 text-slate-600">{{ question.helperText }}</p>
+                <p class="mt-2 text-ink-soft">{{ question.helperText }}</p>
               }
               @switch (question.type) {
                 @case ('SINGLE_CHOICE') {
@@ -281,7 +281,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   /></label>
                 }
                 @case ('BLOOD_PRESSURE') {
-                  <p class="mt-3 text-sm text-slate-600">
+                  <p class="mt-3 text-sm text-ink-soft">
                     If you know a recent reading, add it here. Choose “I don't know” if you're
                     unsure.
                   </p>
@@ -364,8 +364,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
       } @else {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Ready to begin?</h2>
-          <p class="mt-2 text-slate-600">
+          <h2 class="font-display text-xl font-semibold">Ready to begin?</h2>
+          <p class="mt-2 text-ink-soft">
             Your answers are saved securely so you can resume later.
           </p>
           <button

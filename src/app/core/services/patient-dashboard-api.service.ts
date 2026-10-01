@@ -4,6 +4,7 @@ import { API_CONFIG } from '../config/api-config.token';
 import {
   PatientDashboard,
   CreatePatientDailyRoutineRequest,
+  DailyCareProgress,
   PatientDailyRoutine,
   PatientPortalProfile,
   UpdatePatientPortalProfileRequest,
@@ -40,5 +41,18 @@ export class PatientDashboardApiService {
 
   deleteDailyRoutine(reference: string) {
     return this.http.delete<void>(`${this.base}/me/daily-care/routines/${encodeURIComponent(reference)}`);
+  }
+
+  completeRoutineToday(reference: string) {
+    return this.http.put<DailyCareProgress>(
+      `${this.base}/me/daily-care/routines/${encodeURIComponent(reference)}/completions/today`,
+      null,
+    );
+  }
+
+  undoRoutineToday(reference: string) {
+    return this.http.delete<DailyCareProgress>(
+      `${this.base}/me/daily-care/routines/${encodeURIComponent(reference)}/completions/today`,
+    );
   }
 }

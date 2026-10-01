@@ -17,7 +17,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
 
       @if (!token) {
         <section class="mt-8 rounded-2xl border bg-white p-6">
-          <h1 class="text-3xl font-bold">
+          <h1 class="font-display text-[2.1rem] font-semibold leading-tight">
             This password reset link is invalid or has expired.
           </h1>
 
@@ -47,7 +47,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
           </a>
         </section>
       } @else {
-        <h1 class="mt-8 text-3xl font-bold">Create a new password</h1>
+        <h1 class="mt-8 font-display text-[2.1rem] font-semibold leading-tight">Create a new password</h1>
 
         <form
           [formGroup]="form"
@@ -86,7 +86,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
               form.controls.password.touched &&
               form.controls.password.invalid
             ) {
-              <p class="mt-1 text-sm text-red-700" role="alert">
+              <p class="mt-1 text-sm text-clay-700" role="alert">
                 Password must be 6–128 characters.
               </p>
             }
@@ -128,7 +128,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
               form.controls.confirmPassword.value !==
                 form.controls.password.value
             ) {
-              <p class="mt-1 text-sm text-red-700" role="alert">
+              <p class="mt-1 text-sm text-clay-700" role="alert">
                 Passwords do not match.
               </p>
             }
@@ -137,7 +137,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
           @if (error()) {
             <p
               role="alert"
-              class="rounded-xl bg-red-50 p-4 text-red-800"
+              class="rounded-xl bg-clay-50 p-4 text-clay-700"
             >
               {{ error() }}
             </p>
@@ -146,7 +146,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
           <button
             type="submit"
             [disabled]="pending()"
-            class="min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-60"
+            class="min-h-12 rounded-full bg-ink px-5 py-3 font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
           >
             {{ pending() ? 'Updating…' : 'Reset password' }}
           </button>

@@ -1,10 +1,31 @@
 @config "../tailwind.config.js";
 @import 'tailwindcss';
 @theme {
-  --color-brand-red: #c00000;
-  --color-brand-purple: #6c3bb8;
-  --color-brand-purple-soft: #f5f0fb;
-  --color-ink: #202124;
-  --color-soft: #f6f6f6;
-  --font-sans: Inter, Arial, sans-serif;
+  --color-brand-red: #c2553a;
+  --color-brand-purple: #5a2fae;
+  --color-brand-purple-soft: #f6f3fd;
+  --color-soft: #f5efe5;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* Tailwind v4 defaults borders to currentColor; keep plain `border` cards soft. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: rgb(29 21 48 / 0.09);
+  }
+}
+
+/* Dark patterned header used by patient page heroes. */
+@utility sc-hero {
+  background-color: #1d1530;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56' fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1.1'%3E%3Cpath d='M28 4 52 28 28 52 4 28Z'/%3E%3Cpath d='M28 16 40 28 28 40 16 28Z'/%3E%3Ccircle cx='28' cy='28' r='2.5'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 100% 0%, rgb(106 60 196 / 0.55), transparent 55%),
+    radial-gradient(circle at 0% 100%, rgb(217 154 43 / 0.10), transparent 45%);
+  background-size: 56px 56px, auto, auto;
+  color: #fff;
 }

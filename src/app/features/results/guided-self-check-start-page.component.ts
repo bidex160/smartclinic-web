@@ -12,14 +12,14 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
     <a routerLink="/me/health-journey" class="font-bold text-brand-700">← Health journey</a>
     <article class="mt-6 rounded-3xl border bg-white p-6 shadow-soft sm:p-9">
       <p class="font-bold uppercase tracking-wider text-brand-700">Guided Self-Check</p>
-      <h1 class="mt-2 text-3xl font-bold">Start understanding your health from home.</h1>
-      <p class="mt-3 text-slate-600">
+      <h1 class="font-display mt-2 text-3xl font-semibold">Start understanding your health from home.</h1>
+      <p class="mt-3 text-ink-soft">
         Complete guided questions at your own pace. It is okay not to know every answer.
       </p>
       <div class="mt-7 grid gap-6 sm:grid-cols-2">
         <section>
           <h2 class="text-lg font-bold">You'll complete</h2>
-          <ul class="mt-3 list-disc space-y-2 pl-5 text-slate-700">
+          <ul class="mt-3 list-disc space-y-2 pl-5 text-ink-soft">
             <li>Guided health questions</li>
             <li>Measurements you already know</li>
             <li>Lifestyle and health-history information</li>
@@ -27,7 +27,7 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
         </section>
         <section>
           <h2 class="text-lg font-bold">You'll receive</h2>
-          <ul class="mt-3 list-disc space-y-2 pl-5 text-slate-700">
+          <ul class="mt-3 list-disc space-y-2 pl-5 text-ink-soft">
             <li>A completion summary when available</li>
             <li>Professional review where required</li>
             <li>One recommended next action</li>
@@ -52,10 +52,10 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
         </div>
       } @else if (product(); as p) {
         <div class="mt-7 border-t pt-6">
-          <p class="text-sm text-slate-600">Current price</p>
+          <p class="text-sm text-ink-soft">Current price</p>
           <p class="text-2xl font-bold">{{ money(p.effectivePriceMinor, p.currency) }}</p>
           @if (p.promotionActive && p.standardPriceMinor !== p.effectivePriceMinor) {
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-ink-muted">
               Standard price <s>{{ money(p.standardPriceMinor, p.currency) }}</s>
             </p>
           }

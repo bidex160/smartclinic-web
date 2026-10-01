@@ -10,13 +10,13 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
-    <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <header class="relative overflow-hidden rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
       <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
       <div class="relative flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Your care journey</p>
-        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">My Care</h1>
-        <p class="mt-2 max-w-2xl text-slate-600">
+        <h1 class="font-display mt-2 text-3xl font-semibold text-ink sm:text-4xl">My Care</h1>
+        <p class="mt-2 max-w-2xl text-ink-soft">
           See what is happening now, what needs your attention and what comes next.
         </p>
       </div>
@@ -39,9 +39,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <button type="button" (click)="load()" class="font-bold underline">Try again</button>
       </div>
     } @else if (!items().length) {
-      <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h2 class="text-xl font-bold">No Care Requests yet</h2>
-        <p class="mt-2 text-slate-600">
+      <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-8 text-center shadow-sm">
+        <h2 class="font-display text-xl font-semibold">No Care Requests yet</h2>
+        <p class="mt-2 text-ink-soft">
           Find an eligible provider or ask SmartClinic to help match you.
         </p>
         <a
@@ -51,9 +51,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         >
       </section>
     } @else {
-      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <div class="mt-6 overflow-x-auto rounded-[2rem] border border-ink/[0.08] bg-white shadow-sm">
         <table class="min-w-[760px] w-full text-left">
-          <thead class="bg-slate-50">
+          <thead class="bg-sand-50">
             <tr>
               <th class="p-4">Service</th>
               <th class="p-4">Participant</th>
@@ -68,7 +68,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           </thead>
           <tbody>
             @for (item of items(); track item.reference) {
-              <tr class="border-t transition hover:bg-slate-50">
+              <tr class="border-t transition hover:bg-sand-50">
                 <td class="p-4 font-semibold">{{ item.service.name }}</td>
                 <td class="p-4">{{ item.participant?.displayName ?? 'You' }}</td>
                 <td class="p-4">

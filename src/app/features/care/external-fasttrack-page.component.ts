@@ -22,9 +22,9 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 
       <p class="mt-6 text-sm font-bold uppercase text-brand-600">Existing appointment</p>
 
-      <h1 class="mt-2 text-3xl font-bold">Request FastTrack</h1>
+      <h1 class="font-display mt-2 text-3xl font-semibold">Request FastTrack</h1>
 
-      <p class="mt-3 text-slate-600">
+      <p class="mt-3 text-ink-soft">
         Ask a participating provider to verify your existing appointment for priority handling and a
         shorter expected waiting time. Clinical urgency and medical triage always take priority.
       </p>
@@ -42,7 +42,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         <fieldset>
           <legend class="text-lg font-bold">Find your provider</legend>
 
-          <p class="mt-1 text-sm text-slate-600">
+          <p class="mt-1 text-sm text-ink-soft">
             Search for the hospital, clinic, laboratory, pharmacy or other provider where you
             already have an appointment.
           </p>
@@ -71,7 +71,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               </button>
             </div>
 
-            <p class="mt-2 text-sm text-slate-500">
+            <p class="mt-2 text-sm text-ink-muted">
               You don't need to know the provider's state or city.
             </p>
           </div>
@@ -113,7 +113,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             >Add a dependant</a
           >
           @if (dependantsError()) {
-            <p class="mt-2 text-sm text-slate-600">
+            <p class="mt-2 text-sm text-ink-soft">
               Dependants could not be loaded. You can still submit for yourself.
             </p>
           }
@@ -123,7 +123,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         <!-- OPTIONAL LOCATION FILTERS -->
         <!-- ====================================================== -->
 
-        <section class="rounded-2xl border bg-slate-50 p-4">
+        <section class="rounded-2xl border bg-sand-50 p-4">
           <button
             type="button"
             (click)="toggleLocationFilters()"
@@ -214,7 +214,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               <button
                 type="button"
                 (click)="clearLocationFilters()"
-                class="min-h-11 rounded-xl px-4 font-bold text-slate-600"
+                class="min-h-11 rounded-xl px-4 font-bold text-ink-soft"
               >
                 Clear location
               </button>
@@ -227,7 +227,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
         <!-- ====================================================== -->
 
         @if (providerLoading()) {
-          <p role="status" class="rounded-xl bg-slate-50 p-4 text-slate-600">Finding providers…</p>
+          <p role="status" class="rounded-xl bg-sand-50 p-4 text-ink-soft">Finding providers…</p>
         }
 
         <!-- ====================================================== -->
@@ -241,12 +241,12 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
                 <div>
                   <h2 class="font-bold">Search results</h2>
 
-                  <p class="mt-1 text-sm text-slate-600">
+                  <p class="mt-1 text-sm text-ink-soft">
                     Select the provider where you already have an appointment.
                   </p>
                 </div>
 
-                <span class="text-sm text-slate-500">
+                <span class="text-sm text-ink-muted">
                   {{ providers().length }}
                   {{ providers().length === 1 ? 'provider' : 'providers' }}
                 </span>
@@ -271,12 +271,12 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
                           {{ provider.displayName }}
                         </strong>
 
-                        <p class="mt-1 text-sm text-slate-600">
+                        <p class="mt-1 text-sm text-ink-soft">
                           {{ provider.providerType.replaceAll('_', ' ') }}
                         </p>
 
                         @if (provider.location) {
-                          <p class="mt-2 text-sm text-slate-600">
+                          <p class="mt-2 text-sm text-ink-soft">
                             {{ providerLocation(provider) }}
                           </p>
                         }
@@ -296,10 +296,10 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
               </div>
             </section>
           } @else {
-            <section class="rounded-2xl border bg-slate-50 p-5">
+            <section class="rounded-2xl border bg-sand-50 p-5">
               <h2 class="font-bold">Provider not found</h2>
 
-              <p class="mt-2 text-sm text-slate-600">
+              <p class="mt-2 text-sm text-ink-soft">
                 We couldn't find a matching provider. Check the name or use the location filters to
                 narrow your search.
               </p>
@@ -343,7 +343,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
             </h2>
 
             @if (provider.location) {
-              <p class="mt-1 text-sm text-slate-600">
+              <p class="mt-1 text-sm text-ink-soft">
                 {{ providerLocation(provider) }}
               </p>
             }
@@ -389,7 +389,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
           <fieldset>
             <legend class="text-lg font-bold">Existing appointment details</legend>
 
-            <p class="mt-1 text-sm text-slate-600">
+            <p class="mt-1 text-sm text-ink-soft">
               Enter the details from the appointment you already have with this provider.
             </p>
 
@@ -433,7 +433,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 
               <label class="font-semibold">
                 Appointment time
-                <span class="font-normal text-slate-500"> (optional) </span>
+                <span class="font-normal text-ink-muted"> (optional) </span>
 
                 <input
                   type="time"
@@ -444,7 +444,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 
               <label class="font-semibold">
                 Department
-                <span class="font-normal text-slate-500"> (optional) </span>
+                <span class="font-normal text-ink-muted"> (optional) </span>
 
                 <input
                   formControlName="department"
@@ -455,7 +455,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 
               <label class="font-semibold">
                 Doctor name
-                <span class="font-normal text-slate-500"> (optional) </span>
+                <span class="font-normal text-ink-muted"> (optional) </span>
 
                 <input
                   formControlName="doctorName"
@@ -466,7 +466,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 
               <label class="font-semibold sm:col-span-2">
                 Notes
-                <span class="font-normal text-slate-500"> (optional) </span>
+                <span class="font-normal text-ink-muted"> (optional) </span>
 
                 <textarea
                   formControlName="notes"

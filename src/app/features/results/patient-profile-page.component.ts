@@ -5,7 +5,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 @Component({
   selector: 'app-patient-profile-page',
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
-    <h1 class="text-3xl font-bold text-brand-900">Profile</h1>
+    <h1 class="font-display text-3xl font-semibold text-ink">Profile</h1>
     @if (loading()) {
       <p role="status" class="mt-6">Loading your profile…</p>
     }
@@ -17,23 +17,23 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
     @if (profile(); as p) {
       <dl class="mt-7 grid gap-5 rounded-2xl border border-brand-100 bg-white p-6 sm:grid-cols-2">
         <div>
-          <dt class="text-sm font-semibold text-slate-600">First name</dt>
+          <dt class="text-sm font-semibold text-ink-soft">First name</dt>
           <dd class="mt-1 font-bold">{{ p.patient.givenName }}</dd>
         </div>
         <div>
-          <dt class="text-sm font-semibold text-slate-600">Last name</dt>
+          <dt class="text-sm font-semibold text-ink-soft">Last name</dt>
           <dd class="mt-1 font-bold">{{ p.patient.familyName }}</dd>
         </div>
         <div>
-          <dt class="text-sm font-semibold text-slate-600">Email</dt>
+          <dt class="text-sm font-semibold text-ink-soft">Email</dt>
           <dd class="mt-1 font-bold">{{ p.user.email ?? 'Not provided' }}</dd>
         </div>
         <div>
-          <dt class="text-sm font-semibold text-slate-600">Phone</dt>
+          <dt class="text-sm font-semibold text-ink-soft">Phone</dt>
           <dd class="mt-1 font-bold">{{ p.patient.phone ?? 'Not available' }}</dd>
         </div>
         <div class="sm:col-span-2">
-          <dt class="text-sm font-semibold text-slate-600">SmartClinic Patient ID</dt>
+          <dt class="text-sm font-semibold text-ink-soft">SmartClinic Patient ID</dt>
           <dd class="mt-1 font-mono text-xl font-bold">{{ p.patient.patientReference }}</dd>
           <button
             type="button"
@@ -45,7 +45,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
           <p aria-live="polite" class="mt-2 text-sm">{{ feedback() }}</p>
         </div>
       </dl>
-      <p class="mt-5 text-sm text-slate-600">Profile editing is not available yet.</p>
+      <p class="mt-5 text-sm text-ink-soft">Profile editing is not available yet.</p>
     }
   </main>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
