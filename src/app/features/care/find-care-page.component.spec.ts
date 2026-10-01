@@ -121,6 +121,16 @@ describe('FindCarePageComponent', () => {
     fixture.detectChanges();
     return { fixture, find, care, router: TestBed.inject(Router) };
   }
+  it('shows emergency guidance before the form, with a callable emergency number', async () => {
+    const { fixture } = await setup();
+    const element: HTMLElement = fixture.nativeElement;
+    const guidance = element.querySelector('[data-emergency-guidance]') as HTMLElement;
+    expect(guidance.textContent).toContain('Is this an emergency?');
+    expect(guidance.querySelector('a[href="tel:112"]')).not.toBeNull();
+    const form = element.querySelector('form');
+    if (form) expect(guidance.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('preselects a valid serviceCode only after catalogue validation and reuses serviceChanged', async () => {
     const { fixture, find } = await setup(true, [], 'DENTAL');
     const c = fixture.componentInstance;

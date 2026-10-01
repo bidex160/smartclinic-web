@@ -35,6 +35,13 @@ describe('PatientPayBillsPageComponent', () => {
     return fixture;
   }
 
+  it('shows an empty wallet as ₦0.00, never as "Free"', async () => {
+    const fixture = await setup('NOT_PRICED', 0, null);
+    const wallet = (fixture.nativeElement as HTMLElement).querySelector('section.sc-hero') as HTMLElement;
+    expect(wallet.textContent).toContain('₦0.00');
+    expect(wallet.textContent).not.toContain('Free');
+  });
+
   it('shows a truthful price-pending state instead of saying there is nothing to pay', async () => {
     const fixture = await setup('NOT_PRICED', 0, null);
     const text = fixture.nativeElement.textContent as string;

@@ -16,7 +16,22 @@ import { ReferralImpact } from '../../core/models/referral.model';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
+
+interface StarterRoutine {
+  readonly type: PatientDailyRoutineType;
+  readonly label: string;
+  readonly time: string;
+}
+
+/** One-tap starter habits. Medication is excluded: it needs an explicit safety acknowledgement. */
+const STARTER_ROUTINES: readonly StarterRoutine[] = [
+  { type: 'HYDRATION', label: 'Drink a glass of water', time: '09:00' },
+  { type: 'BREAK', label: 'Stretch for 2 minutes', time: '12:30' },
+  { type: 'MOVEMENT', label: 'Take a 10-minute walk', time: '17:30' },
+  { type: 'SLEEP', label: 'Wind down for bed', time: '22:00' },
+];
 
 interface DashboardNextStep {
   readonly title: string;
@@ -62,6 +77,36 @@ interface DashboardNextStep {
           </div>
           <p aria-live="polite" class="w-full text-sm font-medium text-leaf-700 empty:hidden">{{ copyFeedback() }}</p>
         </header>
+
+        @if (value.dashboardMode === 'GETTING_STARTED') {
+          <section class="sc-card mt-5 p-5" aria-labelledby="getting-started-heading">
+            <div class="flex items-center gap-4">
+              <div class="relative size-14 shrink-0" aria-hidden="true">
+                <svg class="size-14 -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="3" class="text-sand-200" />
+                  <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="text-leaf-500"
+                    [attr.stroke-dasharray]="97.4" [attr.stroke-dashoffset]="97.4 - (97.4 * completedSteps(value)) / checklist(value).length" />
+                </svg>
+                <span class="absolute inset-0 grid place-items-center text-sm font-bold text-ink">{{ completedSteps(value) }}/{{ checklist(value).length }}</span>
+              </div>
+              <div class="min-w-0">
+                <h2 id="getting-started-heading" class="font-display text-[1.25rem] font-semibold text-ink">Getting started</h2>
+                <p class="text-sm text-ink-muted">{{ completedSteps(value) }} of {{ checklist(value).length }} done — a few minutes to set up your health companion.</p>
+              </div>
+            </div>
+            <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+              @for (step of checklist(value); track step.label) {
+                <li>
+                  <a [routerLink]="step.route" class="flex items-center gap-3 rounded-2xl p-3 ring-1 transition {{ step.complete ? 'bg-leaf-50 ring-leaf-100' : 'bg-white ring-ink/[0.07] hover:bg-sand-50' }}">
+                    <span aria-hidden="true" class="grid size-8 shrink-0 place-items-center rounded-full font-bold {{ step.complete ? 'bg-leaf-500 text-white' : 'bg-sand-100 text-ink-muted' }}">{{ step.complete ? '✓' : '○' }}</span>
+                    <span class="min-w-0 flex-1"><strong class="block text-sm font-semibold text-ink">{{ step.label }}</strong><span class="text-xs text-ink-muted">{{ step.complete ? 'Complete' : 'Not complete' }}</span></span>
+                    @if (!step.complete) { <span class="text-ink-muted" aria-hidden="true">›</span> }
+                  </a>
+                </li>
+              }
+            </ul>
+          </section>
+        }
 
         <div class="mt-6 grid gap-4 lg:grid-cols-12">
           <section class="relative overflow-hidden rounded-[1.75rem] bg-ink p-6 text-white shadow-lift sm:p-8 lg:col-span-7" aria-labelledby="next-step-heading">
@@ -176,11 +221,45 @@ interface DashboardNextStep {
             </ol>
             @if (routineError() && !routineManagerOpen()) { <p role="alert" class="mt-3 text-sm font-semibold text-clay-700">{{ routineError() }}</p> }
           } @else {
-            <div class="mt-5 flex items-center gap-4 rounded-2xl border border-dashed border-sand-300 bg-sand-50 p-5">
-              <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-leaf-100 text-leaf-700" aria-hidden="true">
-                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            <p class="mt-5 text-sm text-ink-soft">No routine added yet. Start with one small habit — tap to add it.</p>
+          }
+
+          @if (availableStarters(value).length) {
+            <div class="mt-4" data-starter-routines>
+              @if ((value.todayRoutines ?? []).length) {
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">Add another</p>
+              }
+              <ul class="mt-2 flex flex-wrap gap-2">
+                @for (starter of availableStarters(value); track starter.type) {
+                  <li>
+                    <button
+                      type="button"
+                      (click)="addStarter(starter)"
+                      [disabled]="routineSaving()"
+                      class="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/10 bg-white py-2 pl-2 pr-4 text-sm font-semibold text-ink shadow-card transition hover:border-leaf-300 hover:bg-leaf-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-60"
+                    >
+                      <span class="grid size-7 place-items-center rounded-full {{ routineTone(starter.type) }}" aria-hidden="true">
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">@for (d of routineIconPaths(starter.type); track $index) { <path [attr.d]="d" /> }</svg>
+                      </span>
+                      {{ starter.label }}
+                      <span class="text-xs font-medium text-ink-muted">{{ starter.time }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+          @if (offerReminders()) {
+            <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100" role="status" data-reminder-offer>
+              <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-brand-700" aria-hidden="true">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
               </span>
-              <p class="text-sm text-ink-soft">No routine added yet. Add only what would genuinely help you — water, a walk, your medicine.</p>
+              <p class="min-w-0 flex-1 text-sm text-ink"><strong class="font-semibold">Want a nudge at the right time?</strong> Turn on reminders on this device.</p>
+              <div class="flex gap-2">
+                <button type="button" (click)="enableReminders()" class="min-h-10 rounded-full bg-brand-700 px-4 text-sm font-semibold text-white hover:bg-brand-800">Turn on</button>
+                <button type="button" (click)="deviceNotifications.dismiss()" class="min-h-10 rounded-full px-3 text-sm font-semibold text-ink-soft hover:bg-white">Not now</button>
+              </div>
             </div>
           }
 
@@ -366,22 +445,6 @@ interface DashboardNextStep {
           </section>
         </div>
 
-        @if (value.dashboardMode === 'GETTING_STARTED') {
-          <section class="mt-10" aria-labelledby="getting-started-heading">
-            <h2 id="getting-started-heading" class="font-display text-[1.35rem] font-semibold text-ink">Getting started</h2>
-            <ul class="mt-3 grid gap-2 sm:grid-cols-2">
-              @for (step of checklist(value); track step.label) {
-                <li class="flex items-center gap-3 rounded-2xl bg-white p-3.5 ring-1 ring-ink/[0.06]">
-                  <span aria-hidden="true" class="grid size-8 shrink-0 place-items-center rounded-full font-bold"
-                    [class.bg-leaf-100]="step.complete" [class.text-leaf-700]="step.complete"
-                    [class.bg-sand-100]="!step.complete" [class.text-ink-muted]="!step.complete">{{ step.complete ? '✓' : '○' }}</span>
-                  <span><strong class="block text-sm font-semibold text-ink">{{ step.label }}</strong><span class="text-xs text-ink-muted">{{ step.complete ? 'Complete' : 'Not complete' }}</span></span>
-                </li>
-              }
-            </ul>
-          </section>
-        }
-
         @if (supportWhatsappUrl) {
           <a
             [href]="supportWhatsappUrl"
@@ -418,6 +481,11 @@ export class PatientDashboardPageComponent {
   readonly routineSaving = signal(false);
   readonly routineError = signal('');
   readonly tickingReference = signal<string | null>(null);
+  readonly deviceNotifications = inject(DeviceNotificationsService);
+  /** Offer device reminders only after the patient has at least one routine. */
+  readonly offerReminders = computed(
+    () => (this.dashboard()?.todayRoutines ?? []).length > 0 && this.deviceNotifications.canOffer(),
+  );
   readonly routineTypes: readonly PatientDailyRoutineType[] = ['HYDRATION', 'MOVEMENT', 'BREAK', 'SLEEP', 'VITAMIN', 'MEDICATION'];
   readonly routineForm = this.formBuilder.nonNullable.group({
     type: this.formBuilder.nonNullable.control<PatientDailyRoutineType>('HYDRATION'),
@@ -502,6 +570,35 @@ export class PatientDashboardPageComponent {
       },
       error: () => this.routineError.set('We could not save this routine. Check the details and try again.'),
     });
+  }
+  availableStarters(value: PatientDashboard): readonly StarterRoutine[] {
+    const routines = value.todayRoutines ?? [];
+    if (routines.length >= 3) return [];
+    const taken = new Set(routines.map((routine) => routine.type));
+    return STARTER_ROUTINES.filter((starter) => !taken.has(starter.type));
+  }
+  addStarter(starter: StarterRoutine): void {
+    if (this.routineSaving()) return;
+    this.routineSaving.set(true);
+    this.routineError.set('');
+    this.api
+      .createDailyRoutine({
+        type: starter.type,
+        label: starter.label,
+        scheduledLocalTime: starter.time,
+        timezone: this.routineForm.controls.timezone.value,
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+        instructions: null,
+      })
+      .pipe(finalize(() => this.routineSaving.set(false)))
+      .subscribe({
+        next: () => this.load(),
+        error: () => this.routineError.set('We could not add this routine. Please try again.'),
+      });
+  }
+  async enableReminders(): Promise<void> {
+    const result = await this.deviceNotifications.enable();
+    if (result === 'denied') this.deviceNotifications.dismiss();
   }
   doneToday(value: PatientDashboard): number {
     return (value.todayRoutines ?? []).filter((routine) => routine.completedToday).length;
@@ -772,14 +869,18 @@ export class PatientDashboardPageComponent {
     };
     return actions[action] ?? actions.NONE;
   }
+  completedSteps(value: PatientDashboard): number {
+    return this.checklist(value).filter((step) => step.complete).length;
+  }
   checklist(value: PatientDashboard) {
     return [
-      { label: 'SmartClinic account created', complete: value.setup.accountCreated },
-      { label: 'Complete your profile', complete: value.setup.profileComplete },
-      { label: 'Connect to a healthcare provider', complete: value.setup.hasConnectedProvider },
+      { label: 'SmartClinic account created', complete: value.setup.accountCreated, route: '/me/profile' },
+      { label: 'Complete your profile', complete: value.setup.profileComplete, route: '/me/profile' },
+      { label: 'Connect to a healthcare provider', complete: value.setup.hasConnectedProvider, route: '/me/providers/connect' },
       {
         label: 'Book or request your first care service',
         complete: value.setup.hasStartedCareJourney,
+        route: '/me/health-journey',
       },
     ];
   }

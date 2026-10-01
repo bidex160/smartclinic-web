@@ -48,6 +48,17 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
         }
       </div>
     </header>
+    <aside class="mt-4 flex gap-3 rounded-2xl border border-clay-100 bg-clay-50 p-4 text-clay-700" role="note" aria-labelledby="emergency-guidance-heading" data-emergency-guidance>
+      <svg aria-hidden="true" class="mt-0.5 size-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <div class="min-w-0">
+        <h2 id="emergency-guidance-heading" class="font-semibold text-ink">Is this an emergency?</h2>
+        <p class="mt-1 text-sm leading-6">
+          Chest pain, difficulty breathing, heavy bleeding, seizures, fainting or signs of stroke need help now.
+          Call your local emergency number (<a href="tel:112" class="font-bold underline underline-offset-2">112</a> in Nigeria) or go to the nearest emergency unit.
+          Don't wait for a Care Request.
+        </p>
+      </div>
+    </aside>
     @if (success(); as request) {
       <section class="mt-6 rounded-[2rem] border border-green-200 bg-green-50 p-7 shadow-sm">
         <h2 class="font-display text-2xl font-semibold text-green-950">Care Request submitted</h2>

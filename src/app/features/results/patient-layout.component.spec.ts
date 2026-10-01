@@ -86,8 +86,9 @@ describe('PatientLayoutComponent', () => {
 
     expect(nav.classList.contains('lg:hidden')).toBe(true);
     expect(nav.className).toContain('pb-[env(safe-area-inset-bottom)]');
-    expect(content.className).toContain('pb-[calc(5rem+env(safe-area-inset-bottom))]');
-    expect(content.classList.contains('lg:pb-0')).toBe(true);
+    // Clears both the bottom bar and the floating guide so the last action is never covered.
+    expect(content.className).toContain('pb-[calc(9rem+env(safe-area-inset-bottom))]');
+    expect(content.classList.contains('lg:pb-24')).toBe(true);
   });
 
   it('preserves Health Records in desktop and expandable mobile navigation', async () => {

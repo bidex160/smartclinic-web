@@ -73,4 +73,21 @@ describe('SmartClinicCompanionComponent', () => {
     const link = fixture.nativeElement.querySelector('.guide__answer a') as HTMLAnchorElement;
     expect(link.getAttribute('href')).toBe('/login?returnUrl=%2Fme%2Forders');
   });
+
+  it('tucks the launcher away while the patient types in a page form', () => {
+    const fixture = TestBed.createComponent(SmartClinicCompanionComponent);
+    fixture.componentInstance.skipIntroduction();
+    fixture.detectChanges();
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+
+    input.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.guide').classList).toContain('guide--tucked');
+
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.guide').classList).not.toContain('guide--tucked');
+    input.remove();
+  });
 });

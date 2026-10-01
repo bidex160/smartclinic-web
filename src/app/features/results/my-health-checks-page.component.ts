@@ -89,6 +89,11 @@ export class MyHealthChecksPageComponent {
     page: 1,
     limit: 20,
   });
+  /** Filters only help once there is something to filter. */
+  readonly showFilters = computed(() => {
+    const applied = this.appliedFilters();
+    return this.response().total > 0 || !!applied.bookingStatus || !!applied.encounterStatus;
+  });
 
   constructor() {
     this.load();

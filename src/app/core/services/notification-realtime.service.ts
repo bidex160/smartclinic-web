@@ -4,12 +4,14 @@ import { AuthStateService } from './auth-state.service';
 import { Notification } from '../models/notification.model';
 import { NotificationsStateService } from './notifications-state.service';
 import { NotificationSoundService } from './notification-sound.service';
+import { DeviceNotificationsService } from './device-notifications.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationRealtimeService {
   private readonly auth = inject(AuthStateService);
   private readonly state = inject(NotificationsStateService);
   private readonly sound = inject(NotificationSoundService);
+  private readonly device = inject(DeviceNotificationsService);
   private readonly base = `${inject(API_CONFIG, { optional: true })?.baseUrl ?? ''}/me/notifications/stream`;
   private controller: AbortController | null = null;
   private running = false;
@@ -67,7 +69,11 @@ export class NotificationRealtimeService {
     if (event !== 'notification' || !data) return;
     try {
       const notification = JSON.parse(data) as Notification;
-      if (notification.reference && this.state.receiveRealtimeNotification(notification)) this.sound.play();
+      if (notification.reference && this.state.receiveRealtimeNotification(notification)) {
+        this.sound.play();
+        // Lock screens are visible to others: show the title only, never health details.
+        this.device.show(notification.title, 'Open SmartClinic to see it.');
+      }
     } catch {
       // Ignore malformed/future events; persisted notifications remain available.
     }

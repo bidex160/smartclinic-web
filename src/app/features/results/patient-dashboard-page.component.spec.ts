@@ -31,7 +31,7 @@ describe('PatientDashboardPageComponent', () => {
         options.dashboardError ? throwError(() => ({ status: 500 })) : of(value),
       ),
       getDailyRoutines: vi.fn(() => of({ items: [] })),
-      createDailyRoutine: vi.fn(),
+      createDailyRoutine: vi.fn(() => of({})),
       updateDailyRoutine: vi.fn(),
       deleteDailyRoutine: vi.fn(),
       completeRoutineToday: vi.fn((reference: string) =>
@@ -456,6 +456,51 @@ describe('PatientDashboardPageComponent', () => {
       fixture.detectChanges();
       expect(api.undoRoutineToday).toHaveBeenCalledWith('SC-RTE-WATER0000001');
       expect(element.querySelector('[data-today-progress]')?.textContent).toContain('0 of 1 done today');
+    });
+  });
+
+  describe('first-run habits', () => {
+    it('offers one-tap starter routines and creates one without opening the form', async () => {
+      const { fixture, api } = await setup({ dashboard: { todayRoutines: [] } });
+      const element: HTMLElement = fixture.nativeElement;
+      const chips = [...element.querySelectorAll('[data-starter-routines] button')] as HTMLButtonElement[];
+      expect(chips.map((chip) => chip.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+        'Drink a glass of water 09:00',
+        'Stretch for 2 minutes 12:30',
+        'Take a 10-minute walk 17:30',
+        'Wind down for bed 22:00',
+      ]);
+      expect(element.textContent).not.toContain('Personal medication');
+
+      chips[0].click();
+      expect(api.createDailyRoutine).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'HYDRATION', label: 'Drink a glass of water', scheduledLocalTime: '09:00', daysOfWeek: [0, 1, 2, 3, 4, 5, 6] }),
+      );
+      expect(api.getDashboard).toHaveBeenCalledTimes(2);
+    });
+
+    it('hides starter types the patient already has, and all starters at three routines', async () => {
+      const routine = (type: 'HYDRATION' | 'MOVEMENT' | 'SLEEP', reference: string) => ({
+        reference, type, label: type, instructions: null, scheduledLocalTime: '09:00', timezone: 'Africa/Lagos',
+        daysOfWeek: [0, 1, 2, 3, 4, 5, 6], enabled: true, source: 'PATIENT' as const,
+      });
+      let { fixture } = await setup({ dashboard: { todayRoutines: [routine('HYDRATION', 'R1')] } });
+      let labels = [...fixture.nativeElement.querySelectorAll('[data-starter-routines] button')].map((b: HTMLElement) => b.textContent);
+      expect(labels.join()).not.toContain('Drink a glass of water');
+      expect(labels).toHaveLength(3);
+
+      TestBed.resetTestingModule();
+      ({ fixture } = await setup({ dashboard: { todayRoutines: [routine('HYDRATION', 'R1'), routine('MOVEMENT', 'R2'), routine('SLEEP', 'R3')] } }));
+      expect(fixture.nativeElement.querySelector('[data-starter-routines]')).toBeNull();
+    });
+
+    it('puts Getting started first with a progress count and links to the next step', async () => {
+      const { fixture } = await setup();
+      const section = fixture.nativeElement.querySelector('#getting-started-heading').closest('section');
+      expect(section.textContent).toMatch(/\d of 4 done/);
+      const nextStep = fixture.nativeElement.querySelector('#next-step-heading');
+      expect(section.compareDocumentPosition(nextStep) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(section.querySelector('a[href="/me/providers/connect"]')).not.toBeNull();
     });
   });
 });
