@@ -656,6 +656,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/provider/team/provider-team-page.component').then((c) => c.ProviderTeamPageComponent),
       },
       {
+        path: 'integrations',
+        title: 'Connect your system | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/integrations/provider-integrations-page.component').then((c) => c.ProviderIntegrationsPageComponent),
+      },
+      {
         path: 'send-request',
         title: 'New request | SmartClinic',
         canActivate: [providerGuard],

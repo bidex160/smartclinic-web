@@ -125,7 +125,14 @@ export interface ProviderOrderFulfillment {
   };
   readonly recommendedServiceUnit: { readonly reference: string; readonly name: string } | null;
   /** Set when another lab or pharmacy referred this request on. */
-  readonly referral?: { readonly referredBy: { readonly providerReference: string; readonly displayName: string } | null; readonly note: string | null } | null;
+  readonly referral?: {
+    readonly referredBy: { readonly providerReference: string; readonly displayName: string } | null;
+    readonly note: string | null;
+    /** Share of this job paid to the referrer from the receiver's share, in basis points (300 = 3%). */
+    readonly feeBps?: number;
+  } | null;
+  /** On "Referred out": what the referrer earned once the job was paid. */
+  readonly referralFee?: { readonly amountMinor: number; readonly currency: string; readonly status: string } | null;
   readonly acceptedAt: string | null;
   readonly cancelledAt: string | null;
   readonly createdAt: string;

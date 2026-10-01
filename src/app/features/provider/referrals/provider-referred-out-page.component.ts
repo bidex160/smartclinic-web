@@ -15,6 +15,7 @@ import { PharmacyFulfillmentApiService } from '../../../core/services/pharmacy-f
       <a routerLink="/provider/dashboard" class="text-sm font-semibold text-brand-700">← Dashboard</a>
       <h1 class="font-display mt-3 text-3xl font-semibold text-ink sm:text-4xl">Referred out</h1>
       <p class="mt-1 text-ink-soft">Requests you passed to another lab or pharmacy on SmartClinic. Results appear here once they’ve accepted.</p>
+      <p class="mt-3 rounded-2xl bg-leaf-50 p-4 text-sm text-leaf-700 ring-1 ring-leaf-100" data-fee-explainer>You earn a referral fee on each job you refer, paid from the receiving facility’s share once the patient pays. The patient’s price doesn’t change.</p>
 
       @if (loading()) {
         <div role="status" class="mt-6 h-28 animate-pulse rounded-2xl bg-sand-200"><span class="sr-only">Loading…</span></div>
@@ -38,6 +39,12 @@ import { PharmacyFulfillmentApiService } from '../../../core/services/pharmacy-f
                 </div>
                 <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1 {{ toneClass(f) }}" data-status>{{ statusLabel(f) }}</span>
               </div>
+              @if (f.referralFee; as fee) {
+                <p class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-sand-50 px-4 py-3 text-sm ring-1 ring-ink/[0.06]" data-referral-fee>
+                  <span class="text-ink-soft">Your referral fee</span>
+                  <span><strong class="font-semibold text-ink">{{ money(fee.amountMinor, fee.currency) }}</strong><span class="text-ink-muted"> · {{ feeStatus(fee.status) }}</span></span>
+                </p>
+              }
               @if (hasResults(f)) {
                 <dl class="mt-4 grid gap-2 rounded-2xl bg-leaf-50 p-4 text-sm ring-1 ring-leaf-100" data-results>
                   @for (item of f.clinicalOrder.diagnosticItems ?? []; track item.sortOrder) {
@@ -101,6 +108,14 @@ export class ProviderReferredOutPageComponent {
 
   typeLabel(type: string): string {
     return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging' : 'Lab tests';
+  }
+
+  money(amountMinor: number, currency: string): string {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: currency || 'NGN' }).format(amountMinor / 100);
+  }
+
+  feeStatus(status: string): string {
+    return status === 'HELD' ? 'held until the job is done' : status === 'PAYABLE' ? 'ready for payout' : status === 'SETTLED' ? 'paid out' : status === 'VOIDED' ? 'cancelled' : status.toLowerCase();
   }
 
   date(value: string): string {

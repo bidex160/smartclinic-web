@@ -18,7 +18,7 @@ import { PharmacyFulfillmentApiService } from '../../../core/services/pharmacy-f
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="min-w-0">
             <h2 id="refer-heading" class="font-semibold text-ink">Can’t do this one?</h2>
-            <p class="mt-0.5 text-sm text-ink-muted">Refer it to another {{ place() }} on SmartClinic. The patient confirms, and you’ll see {{ isPrescription() ? 'when it’s dispensed' : 'the results' }}.</p>
+            <p class="mt-0.5 text-sm text-ink-muted">Refer it to another {{ place() }} on SmartClinic. The patient confirms, and you’ll see {{ isPrescription() ? 'when it’s dispensed' : 'the results' }}. You earn a referral fee when the patient pays.</p>
           </div>
           <button type="button" (click)="start()" class="min-h-11 rounded-full border border-ink/15 bg-white px-5 text-sm font-semibold text-ink hover:bg-sand-50">Refer to another {{ place() }}</button>
         </div>

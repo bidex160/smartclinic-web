@@ -60,6 +60,7 @@ const ROLE_ACTIONS: Record<ProviderMemberRole, readonly PrimaryAction[]> = {
   ],
   ADMIN: [
     { title: 'Team', helper: 'Invite staff and set what each person can see.', route: '/provider/team' },
+    { title: 'Connect your system', helper: 'API keys and updates for your EMR, lab or pharmacy software.', route: '/provider/integrations' },
     { title: 'Services', helper: 'Choose the consultations patients can book.', route: '/provider/care-services', status: 'findCare' },
     { title: 'Availability', helper: 'Set when patients can book you.', route: '/provider/profile', fragment: 'availability', status: 'availability' },
     { title: 'Locations', helper: 'Manage where you see patients in person.', route: '/provider/profile', fragment: 'configuration', status: 'locations' },
@@ -128,7 +129,8 @@ export class ProviderDashboardPageComponent {
     const role = this.membership.role();
     if (role) return ROLE_ACTIONS[role];
     const team: PrimaryAction = { title: 'Team', helper: 'Give your staff their own logins and roles.', route: '/provider/team' };
-    return [...this.ownerActions(), team];
+    const integrations: PrimaryAction = { title: 'Connect your system', helper: 'Link your EMR, lab or pharmacy software by API.', route: '/provider/integrations' };
+    return [...this.ownerActions(), team, integrations];
   });
 
   private ownerActions(): readonly PrimaryAction[] {
