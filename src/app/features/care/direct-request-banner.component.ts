@@ -47,8 +47,11 @@ export class DirectRequestBannerComponent {
     const o = this.order();
     return o.origin === 'DIRECT' && o.patientResponse === 'PENDING' && o.status === 'ISSUED';
   });
-  readonly noun = computed(() => (this.order().type === 'PRESCRIPTION' ? 'prescription' : 'request'));
-  readonly place = computed(() => (this.order().type === 'PRESCRIPTION' ? 'pharmacy' : this.order().type === 'IMAGING' ? 'imaging centre' : 'lab'));
+  readonly noun = computed(() => (this.order().type === 'PRESCRIPTION' ? 'prescription' : this.order().type === 'REFERRAL' ? 'referral' : 'request'));
+  readonly place = computed(() => {
+    const type = this.order().type;
+    return type === 'PRESCRIPTION' ? 'pharmacy' : type === 'IMAGING' ? 'imaging centre' : type === 'REFERRAL' ? 'specialist service' : 'lab';
+  });
 
   decline(): void {
     this.busy.set(true);

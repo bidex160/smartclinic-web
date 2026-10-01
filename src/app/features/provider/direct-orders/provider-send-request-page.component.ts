@@ -25,7 +25,13 @@ const TYPE_OPTIONS: readonly { readonly type: DirectOrderType; readonly title: s
   { type: 'PRESCRIPTION', title: 'Prescription', hint: 'Medicines from any SmartClinic pharmacy' },
   { type: 'LABORATORY', title: 'Lab tests', hint: 'Blood, urine and other laboratory tests' },
   { type: 'IMAGING', title: 'Imaging', hint: 'X-ray, ultrasound, CT and MRI' },
+  { type: 'REFERRAL', title: 'Specialist referral', hint: 'Refer to a specialist service on SmartClinic' },
 ];
+
+const SPECIALTIES = [
+  'Cardiology', 'Obstetrics & gynaecology', 'Paediatrics', 'Orthopaedics', 'Ear, nose & throat', 'Ophthalmology',
+  'Dermatology', 'Psychiatry', 'Neurology', 'Urology', 'General surgery', 'Endocrinology',
+] as const;
 
 /**
  * Send a prescription or test request to any patient by their SmartClinic ID,
@@ -118,7 +124,7 @@ const TYPE_OPTIONS: readonly { readonly type: DirectOrderType; readonly title: s
         <!-- 2. Type -->
         <section class="sc-card mt-4 p-5 sm:p-6 {{ patient() ? '' : 'opacity-60' }}" aria-labelledby="what-heading">
           <h2 id="what-heading" class="font-display text-xl font-semibold text-ink"><span class="text-brand-700">2.</span> What are you sending?</h2>
-          <div class="mt-4 grid gap-2 sm:grid-cols-3" role="radiogroup" aria-labelledby="what-heading">
+          <div class="mt-4 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-labelledby="what-heading">
             @for (option of typeOptions; track option.type) {
               <button type="button" role="radio" [attr.aria-checked]="type() === option.type" [disabled]="!patient()" (click)="chooseType(option.type)"
                 class="rounded-2xl p-4 text-left ring-1 transition disabled:cursor-not-allowed {{ type() === option.type ? 'bg-brand-700 text-white ring-brand-700' : 'bg-white text-ink ring-ink/10 hover:ring-brand-300' }}">
@@ -191,6 +197,13 @@ const TYPE_OPTIONS: readonly { readonly type: DirectOrderType; readonly title: s
                 </div>
                 <button type="button" (click)="addMedicine()" class="min-h-11 justify-self-start rounded-full border border-dashed border-brand-300 px-5 text-sm font-semibold text-brand-700 hover:bg-brand-50">+ Add another medicine</button>
               </div>
+            } @else if (t === 'REFERRAL') {
+              <p class="mt-1 text-sm text-ink-muted">Pick the specialty, then say why. The patient chooses a specialist service near them.</p>
+              <div class="mt-3 flex flex-wrap gap-2" aria-label="Specialty">
+                @for (name of specialties; track name) {
+                  <button type="button" (click)="chooseSpecialty(name)" class="min-h-10 rounded-full bg-white px-4 text-sm font-semibold text-ink ring-1 ring-ink/10 hover:ring-brand-300">{{ name }}</button>
+                }
+              </div>
             } @else {
               <div class="mt-4 flex flex-wrap gap-2" aria-label="Common choices">
                 @for (name of visiblePicks(); track name) {
@@ -222,8 +235,9 @@ const TYPE_OPTIONS: readonly { readonly type: DirectOrderType; readonly title: s
               }
             }
 
-            <label class="mt-5 block text-sm font-medium text-ink-soft">Clinical note for the {{ destination(t) }} <span class="font-normal text-ink-muted">(optional)</span>
-              <textarea [formControl]="clinicalNote" rows="3" maxlength="4000" placeholder="Working diagnosis, relevant history or anything they should know" class="mt-1 w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink"></textarea>
+            <label class="mt-5 block text-sm font-medium text-ink-soft">
+              @if (t === 'REFERRAL') { Reason for referral <span class="font-normal text-ink-muted">(required)</span> } @else { Clinical note for the {{ destination(t) }} <span class="font-normal text-ink-muted">(optional)</span> }
+              <textarea [formControl]="clinicalNote" rows="3" maxlength="4000" [placeholder]="t === 'REFERRAL' ? 'e.g. Cardiology: new murmur, please assess' : 'Working diagnosis, relevant history or anything they should know'" class="mt-1 w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink" data-note></textarea>
             </label>
           </section>
 
@@ -253,6 +267,8 @@ export class ProviderSendRequestPageComponent {
   readonly idControl = this.fb.nonNullable.control('');
   readonly customTest = this.fb.nonNullable.control('');
   readonly clinicalNote = this.fb.nonNullable.control('', Validators.maxLength(4000));
+  readonly specialties = SPECIALTIES;
+  private readonly noteText = signal('');
   readonly prescriptionForm = this.fb.group({ items: this.fb.array([this.medicineRow()]) });
 
   readonly patient = signal<DirectOrderPatient | null>(null);
@@ -278,12 +294,17 @@ export class ProviderSendRequestPageComponent {
   readonly recentOfType = computed(() => this.recent().filter((order) => order.type === this.type()).slice(0, 8));
   readonly canSend = computed(() => {
     if (!this.patient() || !this.type()) return false;
+    if (this.type() === 'REFERRAL') return this.noteText().trim().length > 0;
     return this.type() === 'PRESCRIPTION' ? this.medicinesValid() : this.tests().length > 0;
   });
 
   constructor() {
     const subscription = this.prescriptionForm.statusChanges.subscribe(() => this.medicinesValid.set(this.prescriptionForm.valid));
-    this.destroyRef.onDestroy(() => subscription.unsubscribe());
+    const notes = this.clinicalNote.valueChanges.subscribe((value) => this.noteText.set(value));
+    this.destroyRef.onDestroy(() => {
+      subscription.unsubscribe();
+      notes.unsubscribe();
+    });
     // Recent requests power "Copy a recent request"; the page works without them.
     this.api.listSent(1, 30).subscribe({ next: (page) => this.recent.set(page.items), error: () => undefined });
   }
@@ -353,9 +374,18 @@ export class ProviderSendRequestPageComponent {
     this.tests.update((tests) => tests.map((test, i) => (i === index ? { ...test, instructions } : test)));
   }
 
+  chooseSpecialty(name: string): void {
+    const rest = this.clinicalNote.value.replace(/^[^:]*:\s*/, '');
+    this.clinicalNote.setValue(`${name}: ${rest}`);
+  }
+
   copyFrom(reference: string): void {
     const source = this.recent().find((order) => order.reference === reference);
     if (!source) return;
+    if (source.type === 'REFERRAL') {
+      this.clinicalNote.setValue(source.clinicalNote ?? '');
+      return;
+    }
     if (source.type === 'PRESCRIPTION') {
       const items = source.prescription?.items ?? [];
       if (!items.length) return;
@@ -403,7 +433,9 @@ export class ProviderSendRequestPageComponent {
                 instructions: blankToNull(row.instructions),
               })),
             }
-          : { diagnosticItems: this.tests().map((test) => ({ name: test.name, instructions: blankToNull(test.instructions) })) }),
+          : type === 'REFERRAL'
+            ? {}
+            : { diagnosticItems: this.tests().map((test) => ({ name: test.name, instructions: blankToNull(test.instructions) })) }),
       })
       .pipe(finalize(() => this.sending.set(false)))
       .subscribe({
@@ -449,14 +481,15 @@ export class ProviderSendRequestPageComponent {
   }
 
   typeTitle(type: string): string {
-    return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging request' : 'Lab test request';
+    return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging request' : type === 'REFERRAL' ? 'Referral' : 'Lab test request';
   }
 
   destination(type: string): string {
-    return type === 'PRESCRIPTION' ? 'pharmacy' : type === 'IMAGING' ? 'imaging centre' : 'lab';
+    return type === 'PRESCRIPTION' ? 'pharmacy' : type === 'IMAGING' ? 'imaging centre' : type === 'REFERRAL' ? 'specialist' : 'lab';
   }
 
   summary(order: DirectOrder): string {
+    if (order.type === 'REFERRAL') return `${(order.clinicalNote ?? 'Referral').slice(0, 60)} · ${order.patient?.displayName ?? ''}`;
     const names = order.type === 'PRESCRIPTION' ? (order.prescription?.items ?? []).map((i) => i.medicationName) : (order.diagnosticItems ?? []).map((i) => i.name);
     const label = names.slice(0, 3).join(', ') + (names.length > 3 ? ` +${names.length - 3}` : '');
     return `${label} · ${order.patient?.displayName ?? ''}`.slice(0, 90);

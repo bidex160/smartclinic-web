@@ -1,6 +1,6 @@
 import { ClinicalOrder, PrescriptionItem } from './pharmacy-fulfillment.model';
 
-export type DirectOrderType = 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING';
+export type DirectOrderType = 'PRESCRIPTION' | 'LABORATORY' | 'IMAGING' | 'REFERRAL';
 
 export interface DirectOrderPatient {
   readonly patientReference: string;

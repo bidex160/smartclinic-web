@@ -124,6 +124,8 @@ export interface ProviderOrderFulfillment {
     readonly serviceUnitName: string;
   };
   readonly recommendedServiceUnit: { readonly reference: string; readonly name: string } | null;
+  /** Set when another lab or pharmacy referred this request on. */
+  readonly referral?: { readonly referredBy: { readonly providerReference: string; readonly displayName: string } | null; readonly note: string | null } | null;
   readonly acceptedAt: string | null;
   readonly cancelledAt: string | null;
   readonly createdAt: string;

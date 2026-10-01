@@ -129,6 +129,18 @@ describe('ProviderSendRequestPageComponent', () => {
     }));
   });
 
+  it('sends a specialist referral once a reason is given', async () => {
+    const { page, api } = await setup({ send: vi.fn(() => of(sentOrder({ type: 'REFERRAL', diagnosticItems: [] }))) });
+    page.patient.set({ patientReference: 'SCP-ABCD-1234', displayName: 'Adaeze O.' });
+    page.chooseType('REFERRAL');
+    expect(page.canSend()).toBe(false);
+    page.chooseSpecialty('Cardiology');
+    page.clinicalNote.setValue(page.clinicalNote.value + 'new murmur, please assess');
+    expect(page.canSend()).toBe(true);
+    page.send();
+    expect(api.send).toHaveBeenCalledWith({ patientReference: 'SCP-ABCD-1234', type: 'REFERRAL', clinicalNote: 'Cardiology: new murmur, please assess' });
+  });
+
   it('shares on WhatsApp without naming medicines or tests', async () => {
     const { page } = await setup();
     page.patient.set({ patientReference: 'SCP-ABCD-1234', displayName: 'Adaeze O.' });

@@ -89,7 +89,7 @@ import { DirectRequestBannerComponent } from './direct-request-banner.component'
           @if (f.status === 'PROPOSED') {
             <div class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4">
               <p class="font-semibold text-ink">
-                Your clinician recommended this pharmacy. Confirm it before the pharmacy can accept
+                This pharmacy was suggested for you — by your clinician, or by a pharmacy that referred your prescription on. Confirm it before the pharmacy can accept
                 the prescription and send a price.
               </p>
               <button

@@ -16,9 +16,11 @@ type OperationalState = {
   readonly dispensing: FulfillmentDispensingSummary | null;
 };
 import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulfillment-api.service';
+import { Router } from '@angular/router';
+import { ReferOnwardPanelComponent } from './referrals/refer-onward-panel.component';
 @Component({
   selector: 'app-provider-pharmacy-order-detail-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, ReferOnwardPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
     <a routerLink="/provider/pharmacy-orders" class="font-bold text-brand-700 underline"
@@ -38,6 +40,12 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
         </h1>
         <p class="mt-2 text-slate-600">{{ statusLabel(f.status) }}</p>
       </header>
+      @if (f.referral) {
+        <p class="mt-4 rounded-2xl bg-brand-50 p-4 text-sm text-brand-900 ring-1 ring-brand-100" data-referred-by>Referred to you by <strong>{{ f.referral.referredBy?.displayName ?? 'another provider' }}</strong>@if (f.referral.note) {: “{{ f.referral.note }}”}</p>
+      }
+      @if ((f.status === 'SELECTED' || f.status === 'ACCEPTED') && quote()?.status !== 'ACCEPTED_BY_PATIENT') {
+        <app-refer-onward-panel [fulfillment]="f" (referred)="onReferred()" />
+      }
       <section class="mt-6 rounded-2xl border bg-white p-6">
         <dl class="grid gap-4 sm:grid-cols-2">
           <div>
@@ -259,6 +267,10 @@ export class ProviderPharmacyOrderDetailPageComponent {
   private fb = inject(FormBuilder);
   readonly reference = inject(ActivatedRoute).snapshot.paramMap.get('reference')!;
   readonly fulfillment = signal<ProviderOrderFulfillment | null>(null);
+  private readonly router = inject(Router);
+  onReferred(): void {
+    void this.router.navigateByUrl('/provider/referred-out');
+  }
   readonly quote = signal<PharmacyQuote | null>(null);
   readonly editingQuoteReference = signal<string | null>(null);
   readonly patientState = signal<OperationalState | null>(null);

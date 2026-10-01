@@ -140,6 +140,14 @@ export class PharmacyFulfillmentApiService {
       { providerServiceUnitReference },
     );
   }
+  /** Pass a request this provider was chosen for to another lab or pharmacy. */
+  referOnward(reference: string, providerServiceUnitReference: string, note: string | null) {
+    return this.http.post<ProviderOrderFulfillment>(`${this.base}/provider/order-fulfillments/${this.enc(reference)}/refer-onward`, { providerServiceUnitReference, note });
+  }
+  /** Requests this provider referred on, with where each one is now. */
+  listReferredOut(page = 1, limit = 50) {
+    return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/referred-out-fulfillments`, { params: new HttpParams().set('page', page).set('limit', limit) });
+  }
   listFulfillmentsByType(orderType:'PRESCRIPTION'|'LABORATORY'|'IMAGING',page=1,limit=20){return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/order-fulfillments`,{params:new HttpParams().set('orderType',orderType).set('page',page).set('limit',limit)});}
   listFulfillments(page = 1, limit = 20) {
     return this.http.get<ProviderOrderFulfillmentPage>(`${this.base}/provider/order-fulfillments`, {

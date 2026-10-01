@@ -644,6 +644,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'referred-out',
+        title: 'Referred out | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () => import('./features/provider/referrals/provider-referred-out-page.component').then((c) => c.ProviderReferredOutPageComponent),
+      },
+      {
         path: 'team',
         title: 'Team | SmartClinic',
         canActivate: [providerGuard],

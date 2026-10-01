@@ -24,7 +24,7 @@ import { DirectOrdersApiService } from '../../core/services/direct-orders-api.se
                   <strong class="block font-semibold text-ink">{{ label(o.type) }}</strong>
                   <span class="block truncate text-sm text-ink-muted">From {{ o.orderingProvider.displayName }}@if (o.patient?.displayName) { · for {{ o.patient?.displayName }} }</span>
                 </span>
-                <span class="shrink-0 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white">Choose {{ o.type === 'PRESCRIPTION' ? 'pharmacy' : 'lab' }}</span>
+                <span class="shrink-0 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white">Choose {{ o.type === 'PRESCRIPTION' ? 'pharmacy' : o.type === 'REFERRAL' ? 'specialist' : 'lab' }}</span>
               </a>
             </li>
           }
@@ -50,6 +50,6 @@ export class PendingRequestsCardComponent {
   }
 
   label(type: string): string {
-    return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging request' : 'Lab test request';
+    return type === 'PRESCRIPTION' ? 'Prescription' : type === 'IMAGING' ? 'Imaging request' : type === 'REFERRAL' ? 'Specialist referral' : 'Lab test request';
   }
 }
