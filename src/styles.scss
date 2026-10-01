@@ -269,3 +269,21 @@ textarea::placeholder {
 .sc-celebrate { animation: sc-celebrate .6s cubic-bezier(.2, .9, .3, 1.4) both; }
 @keyframes sc-celebrate { from { opacity: 0; transform: scale(.94) translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sc-celebrate { animation: none; } }
+
+/* Printing a single slip (e.g. a request slip for a patient): everything
+   else on the page is hidden while body has .sc-printing. */
+@media print {
+  body.sc-printing * {
+    visibility: hidden !important;
+  }
+  body.sc-printing .sc-print-slip,
+  body.sc-printing .sc-print-slip * {
+    visibility: visible !important;
+  }
+  body.sc-printing .sc-print-slip {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    display: block !important;
+  }
+}

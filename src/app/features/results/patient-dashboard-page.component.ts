@@ -21,6 +21,7 @@ import { PatientDashboardApiService } from '../../core/services/patient-dashboar
 import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
 import { DailyCheckInComponent } from './daily-check-in.component';
 import { VisitDayCardComponent } from './visit-day-card.component';
+import { PendingRequestsCardComponent } from './pending-requests-card.component';
 import { tipForDate } from './daily-tips';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
@@ -62,7 +63,7 @@ interface DashboardNextStep {
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent],
+  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent, PendingRequestsCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-6xl px-4 pb-10 pt-5 sm:px-8 sm:pt-8 lg:pt-10">
@@ -100,6 +101,7 @@ interface DashboardNextStep {
         </header>
 
         <app-visit-day-card />
+        <app-pending-requests-card />
 
         @if (value.dashboardMode === 'GETTING_STARTED') {
           <section class="sc-card mt-5 p-5" aria-labelledby="getting-started-heading">

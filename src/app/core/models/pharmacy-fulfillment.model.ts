@@ -1,6 +1,8 @@
 export type ClinicalOrderType =
   'PRESCRIPTION' | 'LABORATORY' | 'IMAGING' | 'REFERRAL' | 'PROCEDURE';
 export type ClinicalOrderStatus = 'DRAFT' | 'ISSUED' | 'CANCELLED';
+export type ClinicalOrderOrigin = 'APPOINTMENT' | 'DIRECT';
+export type ClinicalOrderPatientResponse = 'PENDING' | 'APPROVED' | 'DECLINED';
 export type ClinicalOrderFulfillmentStatus = 'PROPOSED' | 'SELECTED' | 'ACCEPTED' | 'CANCELLED';
 export type PharmacyQuoteStatus =
   'DRAFT' | 'SUBMITTED' | 'ACCEPTED_BY_PATIENT' | 'EXPIRED' | 'CANCELLED';
@@ -44,8 +46,12 @@ export interface ClinicalOrder {
     readonly displayName: string;
     readonly providerType?: string;
   };
-  readonly careRequestReference: string;
-  readonly careAppointmentReference: string;
+  /** DIRECT requests were sent by SmartClinic ID, outside a SmartClinic appointment. */
+  readonly origin?: ClinicalOrderOrigin;
+  /** The patient's answer to a DIRECT request; null for appointment orders. */
+  readonly patientResponse?: ClinicalOrderPatientResponse | null;
+  readonly careRequestReference: string | null;
+  readonly careAppointmentReference: string | null;
   readonly clinicalRecordReference?: string;
   readonly issuedAt: string | null;
   readonly cancelledAt: string | null;

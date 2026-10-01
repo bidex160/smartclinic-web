@@ -638,6 +638,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'send-request',
+        title: 'New request | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/direct-orders/provider-send-request-page.component').then((c) => c.ProviderSendRequestPageComponent),
+      },
+      {
+        path: 'sent-requests',
+        title: 'Sent requests | SmartClinic',
+        canActivate: [providerGuard],
+        loadComponent: () =>
+          import('./features/provider/direct-orders/provider-sent-requests-page.component').then((c) => c.ProviderSentRequestsPageComponent),
+      },
+      {
         path: 'network',
         title: 'Grow My Network | SmartClinic',
         canActivate: [providerGuard],

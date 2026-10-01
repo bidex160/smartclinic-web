@@ -127,6 +127,21 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 
             @if (careProvider()) {
             <a
+              routerLink="/provider/send-request"
+              routerLinkActive="!bg-white !text-brand-900"
+              class="mx-2 mb-1 flex min-h-11 items-center justify-center rounded-xl bg-ochre-300 px-4 py-3 text-sm font-bold text-ink transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white"
+              data-nav-send-request
+            >
+              + New request
+            </a>
+            <a
+              routerLink="/provider/sent-requests"
+              routerLinkActive="!bg-brand-700 !text-white"
+              class="ml-2 flex min-h-11 items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-100 transition hover:bg-brand-800 hover:text-white focus:outline-none focus:ring-1 focus:ring-brand-700"
+            >
+              Sent requests
+            </a>
+            <a
               routerLink="/provider/offers"
               routerLinkActive="!bg-brand-700 !text-white"
               [routerLinkActiveOptions]="{ exact: true }"
@@ -716,6 +731,20 @@ Menu
             </p>
 
             @if (careProvider()) {
+            <a
+              routerLink="/provider/send-request"
+              routerLinkActive="ring-2 ring-brand-900"
+              class="mb-1 flex min-h-11 items-center justify-center rounded-lg bg-brand-700 px-3 py-3 font-bold text-white hover:bg-brand-800"
+            >
+              + New request
+            </a>
+            <a
+              routerLink="/provider/sent-requests"
+              routerLinkActive="bg-brand-100 text-brand-900"
+              class="min-h-11 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-brand-50 hover:text-brand-900"
+            >
+              Sent requests
+            </a>
             <a
               routerLink="/provider/offers"
               routerLinkActive="bg-brand-100 text-brand-900"
