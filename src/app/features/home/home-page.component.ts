@@ -63,6 +63,39 @@ export class HomePageComponent {
     this.authState.isPatient() ? '/health-check/packages' : '/login',
   );
 
+  readonly faqs = [
+    {
+      question: 'What is SmartClinic?',
+      answer:
+        'SmartClinic is a personal health companion. It helps you stay well every day, find care when you need it, connect with participating providers and keep your health records together.',
+    },
+    {
+      question: 'How do Health Checks work?',
+      answer:
+        'Choose an available package, review eligible provider and fulfilment options, then confirm your booking using the current quoted price.',
+    },
+    {
+      question: 'Can I use SmartClinic from home?',
+      answer:
+        'You can begin with a Guided Self-Check from home. Home visits are also shown when a selected provider supports that fulfilment option.',
+    },
+    {
+      question: 'How are providers selected?',
+      answer:
+        'Providers apply to the SmartClinic Network and are reviewed before eligible services are made available through the platform.',
+    },
+    {
+      question: 'How do I access My SmartClinic?',
+      answer:
+        'Use Open My SmartClinic to sign in with the email address or phone number linked to your account.',
+    },
+    {
+      question: 'How can I get help?',
+      answer:
+        'Sign in to review your current care activity. WhatsApp assistance will appear here when an authoritative support contact is configured.',
+    },
+  ] as const;
+
   readonly whatsappUrl = this.publicSiteConfig?.whatsappUrl?.trim() || null;
 
   constructor() {

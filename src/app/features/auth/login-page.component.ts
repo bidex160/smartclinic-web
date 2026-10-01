@@ -18,7 +18,7 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
 
     <main
   class="min-h-[calc(100vh-4rem)] bg-gradient-to-br
-         from-brand-50/70 via-white to-slate-50 px-5 py-8
+         from-sand-50 via-sand-50 to-brand-50/40 px-5 py-8
          sm:px-8 lg:py-10"
 >
   <div
@@ -35,8 +35,8 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
       class="auth-form-enter flex items-center"
     >
       <div
-        class="w-full rounded-[2rem] border border-slate-200
-               bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]
+        class="w-full rounded-[2rem] border border-ink/[0.07]
+               bg-white p-6 shadow-card
                sm:p-9 lg:p-10"
       >
         <div>
@@ -48,11 +48,11 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
             SmartClinic secure access
           </div>
 
-          <h1 class="mt-5 text-3xl font-bold text-brand-900">
+          <h1 class="mt-5 font-display text-[2.1rem] font-semibold leading-tight text-ink">
             Welcome back
           </h1>
 
-          <p class="mt-3 leading-7 text-slate-600">
+          <p class="mt-3 leading-7 text-ink-soft">
             Sign in with the email address or phone number linked
             to your SmartClinic account.
           </p>
@@ -61,15 +61,15 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
         @if (errorMessage) {
           <div
             role="alert"
-            class="mt-6 rounded-xl border border-red-200 bg-red-50
-                   p-4 text-red-900"
+            class="mt-6 rounded-xl border border-clay-100 bg-clay-50
+                   p-4 text-clay-700"
           >
             {{ errorMessage }}
           </div>
         }
 
             <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-5" novalidate>
-              <p class="text-sm text-slate-600">
+              <p class="text-sm text-ink-soft">
                 New to SmartClinic?
                 <a
                   routerLink="/register"
@@ -87,13 +87,13 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
             formControlName="identifier"
             autocomplete="username"
             [placeholder]="identifierPlaceholder"
-            class="mt-2 min-h-12 w-full rounded-xl border border-slate-300 px-4 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+            class="mt-2 min-h-12 w-full rounded-xl border border-ink/15 bg-white px-4 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
           />
 
           @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
-            <p class="mt-2 text-sm text-red-700">Email or phone number is required.</p>
+            <p class="mt-2 text-sm text-clay-700">Email or phone number is required.</p>
           }
-          <p class="mt-2 text-sm text-slate-600">
+          <p class="mt-2 text-sm text-ink-soft">
             Use the email address or phone number linked to your SmartClinic account.
           </p>
         </div>
@@ -108,13 +108,13 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
               formControlName="password"
               autocomplete="current-password"
               placeholder="Enter your password"
-              class="min-h-12 w-full rounded-xl border border-slate-300 px-4 pr-12 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
+              class="min-h-12 w-full rounded-xl border border-ink/15 bg-white px-4 pr-12 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
             />
 
             <button
               type="button"
               (click)="showPassword.update((value) => !value)"
-              class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition hover:text-brand-700 focus:outline-none focus:text-brand-700"
+              class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-ink-muted transition hover:text-brand-700 focus:outline-none focus:text-brand-700"
               [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
               [attr.title]="showPassword() ? 'Hide password' : 'Show password'"
             >
@@ -165,19 +165,19 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
           >
 
           @if (form.controls.password.touched && form.controls.password.invalid) {
-            <p class="mt-2 text-sm text-red-700">Password is required.</p>
+            <p class="mt-2 text-sm text-clay-700">Password is required.</p>
           }
         </div>
 
       <button
   type="submit"
   [disabled]="form.invalid || authState.loading()"
-  class="group relative min-h-12 overflow-hidden rounded-xl
-         bg-brand-600 px-5 py-3 font-bold text-white
-         shadow-lg shadow-brand-600/20
+  class="group relative min-h-12 overflow-hidden rounded-full
+         bg-ink px-5 py-3 font-semibold text-white
+         shadow-lg shadow-ink/20
          transition duration-200
-         hover:-translate-y-0.5 hover:bg-brand-700
-         hover:shadow-xl hover:shadow-brand-600/25
+         hover:-translate-y-0.5 hover:bg-brand-900
+         hover:shadow-xl hover:shadow-ink/20
          active:translate-y-0
          focus:outline-none focus:ring-4 focus:ring-brand-200
          disabled:cursor-not-allowed disabled:opacity-60
@@ -195,22 +195,22 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
 </button>
       </form>
 
-      <section class="mt-7 rounded-2xl border border-brand-200 bg-brand-50 p-5" aria-labelledby="provider-access-heading">
+      <section class="mt-7 rounded-2xl border border-brand-100 bg-brand-50/60 p-5" aria-labelledby="provider-access-heading">
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Healthcare provider?</p>
-        <h2 id="provider-access-heading" class="mt-2 text-xl font-bold text-brand-900">Join or access your provider workspace.</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-600">For clinics, pharmacies, laboratories, hospitals and health professionals.</p>
+        <h2 id="provider-access-heading" class="mt-2 font-display text-xl font-semibold text-ink">Join or access your provider workspace.</h2>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">For clinics, pharmacies, laboratories, hospitals and health professionals.</p>
         <a routerLink="/provider/register" [queryParams]="registrationQueryParams" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-700">Join SmartClinic as a provider →</a>
       </section>
 
       <section
-        class="mt-7 rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50/80 via-white to-amber-50/50 p-5"
+        class="mt-7 rounded-2xl border border-brand-100 bg-gradient-to-br from-sand-50 via-white to-amber-50/50 p-5"
         aria-labelledby="create-account-heading"
       >
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">New to SmartClinic?</p>
-        <h2 id="create-account-heading" class="mt-2 text-xl font-bold text-brand-900">
+        <h2 id="create-account-heading" class="mt-2 font-display text-xl font-semibold text-ink">
           Keep your healthcare together.
         </h2>
-        <p class="mt-2 text-sm leading-6 text-slate-600">
+        <p class="mt-2 text-sm leading-6 text-ink-soft">
           Create your SmartClinic account for appointments, tests, prescriptions and hospital connections.
         </p>
         <a
@@ -221,15 +221,15 @@ import { requestedMarket, rwandaLocale } from '../../core/config/market-context'
           Create my SmartClinic account →
         </a>
         @if (hasReferral) {
-          <div class="mt-4 flex items-start gap-3 rounded-xl bg-white/80 px-4 py-3 text-sm text-slate-600">
+          <div class="mt-4 flex items-start gap-3 rounded-xl bg-white/80 px-4 py-3 text-sm text-ink-soft">
             <span class="mt-0.5 text-amber-500" aria-hidden="true">✦</span>
             <p>
-              <span class="font-bold text-brand-900">You were invited to SmartClinic.</span>
+              <span class="font-bold text-ink">You were invited to SmartClinic.</span>
               Your invitation will be carried into account creation automatically.
             </p>
           </div>
         } @else {
-          <p class="mt-4 text-center text-sm text-slate-500">
+          <p class="mt-4 text-center text-sm text-ink-muted">
             Have an invitation link? Open it first and SmartClinic will carry your referral automatically.
           </p>
         }

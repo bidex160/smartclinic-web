@@ -14,8 +14,8 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
     <a routerLink="/me/dashboard" class="font-bold text-brand-700">← Dashboard</a>
     <header class="mt-6">
       <p class="font-bold uppercase tracking-wider text-brand-700">Your health journey</p>
-      <h1 class="mt-2 text-3xl font-bold text-brand-900 sm:text-4xl">Choose your first step</h1>
-      <p class="mt-3 max-w-2xl text-slate-600">
+      <h1 class="font-display mt-2 text-3xl font-semibold text-ink sm:text-4xl">Choose your first step</h1>
+      <p class="mt-3 max-w-2xl text-ink-soft">
         Start from home, or book a preventive check with a verified provider.
       </p>
     </header>
@@ -34,15 +34,15 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
           class="flex flex-col rounded-2xl border-2 border-brand-300 bg-white p-6 shadow-soft"
         >
           <p class="text-sm font-bold uppercase text-brand-700">From home</p>
-          <h2 class="mt-2 text-2xl font-bold">Guided Self-Check</h2>
-          <p class="mt-3 text-slate-600">
+          <h2 class="font-display mt-2 text-2xl font-semibold">Guided Self-Check</h2>
+          <p class="mt-3 text-ink-soft">
             Start understanding your health from home with guided questions and a summary saved to
             your Smart Health Passport.
           </p>
           @if (product(); as p) {
             <p class="mt-5 text-xl font-bold">{{ money(p.effectivePriceMinor, p.currency) }}</p>
             @if (p.promotionActive && p.standardPriceMinor !== p.effectivePriceMinor) {
-              <p class="text-sm text-slate-500">
+              <p class="text-sm text-ink-muted">
                 Standard price <s>{{ money(p.standardPriceMinor, p.currency) }}</s>
               </p>
             }
@@ -54,22 +54,22 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
         @for (option of checkChoices; track option.code) {
           <article class="flex flex-col rounded-2xl border bg-white p-6 shadow-soft">
             <p class="text-sm font-bold uppercase text-brand-700">With a provider</p>
-            <h2 class="mt-2 text-2xl font-bold">{{ option.label }}</h2>
+            <h2 class="font-display mt-2 text-2xl font-semibold">{{ option.label }}</h2>
             @if (packageFor(option.code); as item) {
-              <p class="mt-3 text-slate-600">
+              <p class="mt-3 text-ink-soft">
                 {{
                   item.description ||
                     'Choose this preventive Health Check from the current SmartClinic catalogue.'
                 }}
               </p>
               @if (item.estimatedDurationMinutes) {
-                <p class="mt-3 text-sm text-slate-600">
+                <p class="mt-3 text-sm text-ink-soft">
                   About {{ item.estimatedDurationMinutes }} minutes
                 </p>
               }
               @if (item.includedContents.length) {
                 <h3 class="mt-5 text-sm font-bold">Included</h3>
-                <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <ul class="mt-2 space-y-2 text-sm text-ink-soft">
                   @for (content of item.includedContents; track content.code) {
                     <li class="flex gap-2">
                       <span aria-hidden="true">✓</span><span>{{ content.name }}</span>
@@ -82,12 +82,12 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
                   From {{ money(item.fromPriceMinor, item.currency) }}
                 </p>
               } @else {
-                <p class="mt-5 font-semibold text-slate-600">
+                <p class="mt-5 font-semibold text-ink-soft">
                   Price shown after you choose a provider
                 </p>
               }
             } @else {
-              <p class="mt-3 text-slate-600">
+              <p class="mt-3 text-ink-soft">
                 This option is currently unavailable in the Health Check catalogue.
               </p>
             }

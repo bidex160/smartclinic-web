@@ -11,8 +11,8 @@ import { UtilsService } from '../../core/services/utils.service';
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="text-sm font-bold uppercase text-brand-600">Patient Portal</p>
-        <h1 class="mt-2 text-3xl font-bold">FastTrack requests</h1>
-        <p class="mt-2 text-slate-600">
+        <h1 class="font-display mt-2 text-3xl font-semibold">FastTrack requests</h1>
+        <p class="mt-2 text-ink-soft">
           Priority appointment handling with participating providers. Clinical urgency and medical
           triage always take priority.
         </p>
@@ -32,7 +32,7 @@ import { UtilsService } from '../../core/services/utils.service';
       </p>
     } @else if (!items().length) {
       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
-        <h2 class="text-xl font-bold">No FastTrack requests yet</h2>
+        <h2 class="font-display text-xl font-semibold">No FastTrack requests yet</h2>
         <p class="mt-2">
           Already booked outside SmartClinic? Ask the provider to verify your appointment.
         </p>
@@ -40,7 +40,7 @@ import { UtilsService } from '../../core/services/utils.service';
     } @else {
       <div class="mt-8 overflow-x-auto rounded-2xl border bg-white">
         <table class="min-w-[780px] w-full text-left">
-          <thead class="bg-slate-50">
+          <thead class="bg-sand-50">
             <tr>
               <th class="p-4">Reference</th>
               <th class="p-4">Provider</th>

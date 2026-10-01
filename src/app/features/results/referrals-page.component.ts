@@ -20,8 +20,8 @@ import { UtilsService } from '../../core/services/utils.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
     <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Patient Portal</p>
-    <h1 class="mt-2 text-3xl font-bold text-brand-900">Referrals & Rewards</h1>
-    <p class="mt-2 text-slate-600">
+    <h1 class="font-display mt-2 text-3xl font-semibold text-ink">Referrals & Rewards</h1>
+    <p class="mt-2 text-ink-soft">
       Invite people and healthcare providers to SmartClinic and earn points when direct referrals
       qualify.
     </p>
@@ -40,7 +40,7 @@ import { UtilsService } from '../../core/services/utils.service';
     }
     @if (summary(); as s) {
       <section class="mt-8 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-6">
-        <h2 class="text-2xl font-bold text-emerald-950">Referral earnings</h2>
+        <h2 class="font-display text-2xl font-semibold text-emerald-950">Referral earnings</h2>
         <p class="mt-2 text-sm text-emerald-900">
           Money earned from eligible payments is separate from reward points.
         </p>
@@ -71,7 +71,7 @@ import { UtilsService } from '../../core/services/utils.service';
           </div>
           <div class="mt-5 overflow-x-auto rounded-xl border bg-white">
             <table class="min-w-[760px] w-full text-left">
-              <thead class="bg-slate-50">
+              <thead class="bg-sand-50">
                 <tr>
                   <th class="p-3">Payment/source</th>
                   <th class="p-3">Gross</th>
@@ -109,15 +109,15 @@ import { UtilsService } from '../../core/services/utils.service';
       >
         <h2 id="balances-heading" class="sr-only">Reward balances</h2>
         <article class="rounded-2xl border bg-white p-5">
-          <p class="font-semibold text-slate-600">Available</p>
-          <p class="mt-2 text-3xl font-bold text-brand-900">{{ s.availablePoints }}</p>
-          <p class="text-sm text-slate-500">points</p>
+          <p class="font-semibold text-ink-soft">Available</p>
+          <p class="mt-2 text-3xl font-bold text-ink">{{ s.availablePoints }}</p>
+          <p class="text-sm text-ink-muted">points</p>
         </article>
         <article class="rounded-2xl border bg-white p-5">
-          <p class="font-semibold text-slate-600">Reserved</p>
-          <p class="mt-2 text-3xl font-bold text-brand-900">{{ s.reservedPoints }}</p>
-          <p class="text-sm text-slate-500">points in active reservations</p>
-          <dl class="mt-3 grid gap-1 text-sm text-slate-600">
+          <p class="font-semibold text-ink-soft">Reserved</p>
+          <p class="mt-2 text-3xl font-bold text-ink">{{ s.reservedPoints }}</p>
+          <p class="text-sm text-ink-muted">points in active reservations</p>
+          <dl class="mt-3 grid gap-1 text-sm text-ink-soft">
             <div class="flex justify-between gap-3">
               <dt>Withdrawals</dt>
               <dd>{{ s.withdrawalReservedPoints }}</dd>
@@ -129,21 +129,21 @@ import { UtilsService } from '../../core/services/utils.service';
           </dl>
         </article>
         <article class="rounded-2xl border bg-white p-5">
-          <p class="font-semibold text-slate-600">Earned</p>
-          <p class="mt-2 text-3xl font-bold text-brand-900">{{ s.lifetimeEarnedPoints }}</p>
-          <p class="text-sm text-slate-500">lifetime points</p>
+          <p class="font-semibold text-ink-soft">Earned</p>
+          <p class="mt-2 text-3xl font-bold text-ink">{{ s.lifetimeEarnedPoints }}</p>
+          <p class="text-sm text-ink-muted">lifetime points</p>
         </article>
         <article class="rounded-2xl border bg-white p-5">
-          <p class="font-semibold text-slate-600">Redeemed</p>
-          <p class="mt-2 text-3xl font-bold text-brand-900">{{ s.lifetimeRedeemedPoints }}</p>
-          <p class="text-sm text-slate-500">lifetime points</p>
+          <p class="font-semibold text-ink-soft">Redeemed</p>
+          <p class="mt-2 text-3xl font-bold text-ink">{{ s.lifetimeRedeemedPoints }}</p>
+          <p class="text-sm text-ink-muted">lifetime points</p>
         </article>
       </section>
       <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="withdraw-heading">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 id="withdraw-heading" class="text-2xl font-bold text-brand-900">Cash withdrawal</h2>
-            <p class="mt-2 max-w-2xl text-slate-600">
+            <h2 id="withdraw-heading" class="font-display text-2xl font-semibold text-ink">Cash withdrawal</h2>
+            <p class="mt-2 max-w-2xl text-ink-soft">
               Request a manual bank transfer using your available reward points. SmartClinic does
               not verify bank account ownership in this version.
             </p>
@@ -158,7 +158,7 @@ import { UtilsService } from '../../core/services/utils.service';
           </button>
         </div>
         @if (s.availablePoints < 1) {
-          <p class="mt-4 rounded-lg bg-slate-50 p-3 text-sm">
+          <p class="mt-4 rounded-lg bg-sand-50 p-3 text-sm">
             You need available points before you can request a withdrawal.
           </p>
         }
@@ -171,7 +171,7 @@ import { UtilsService } from '../../core/services/utils.service';
         @if (actionMessage()) {
           <p
             aria-live="polite"
-            class="mt-4 rounded-lg bg-brand-50 p-3 font-semibold text-brand-900"
+            class="mt-4 rounded-lg bg-brand-50 p-3 font-semibold text-ink"
           >
             {{ actionMessage() }}
           </p>
@@ -180,7 +180,7 @@ import { UtilsService } from '../../core/services/utils.service';
         @if (withdrawals().length) {
           <div class="mt-4 overflow-x-auto rounded-xl border">
             <table class="min-w-[820px] w-full text-left">
-              <thead class="bg-slate-50">
+              <thead class="bg-sand-50">
                 <tr>
                   <th class="p-4">Reference</th>
                   <th class="p-4">Points</th>
@@ -199,10 +199,10 @@ import { UtilsService } from '../../core/services/utils.service';
                     <td class="p-4">{{ utils.formatMoney(item.amount, item.currency) }}</td>
                     <td class="p-4">
                       <span class="block">{{ item.bankName }}</span
-                      ><span class="text-sm text-slate-500">{{ item.maskedAccountNumber }}</span>
+                      ><span class="text-sm text-ink-muted">{{ item.maskedAccountNumber }}</span>
                     </td>
                     <td class="p-4">
-                      <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">{{
+                      <span class="rounded-full bg-sand-100 px-3 py-1 text-sm font-semibold">{{
                         statusLabel(item.status)
                       }}</span>
                     </td>
@@ -226,13 +226,13 @@ import { UtilsService } from '../../core/services/utils.service';
             </table>
           </div>
         } @else {
-          <p class="mt-4 rounded-xl bg-slate-50 p-5">No withdrawal requests yet.</p>
+          <p class="mt-4 rounded-xl bg-sand-50 p-5">No withdrawal requests yet.</p>
         }
       </section>
       <div class="mt-8 grid gap-5 lg:grid-cols-3">
         <section class="rounded-2xl border bg-white p-6">
-          <h2 class="font-bold text-slate-600">Your referral code</h2>
-          <p class="mt-2 font-mono text-2xl font-bold text-brand-900">{{ s.referralCode }}</p>
+          <h2 class="font-bold text-ink-soft">Your referral code</h2>
+          <p class="mt-2 font-mono text-2xl font-bold text-ink">{{ s.referralCode }}</p>
           <button
             type="button"
             (click)="copyCode()"
@@ -241,7 +241,7 @@ import { UtilsService } from '../../core/services/utils.service';
             Copy code
           </button>
           <p aria-live="polite" class="mt-2 text-sm">{{ copyFeedback() }}</p>
-          <p class="mt-3 text-sm text-slate-600">
+          <p class="mt-3 text-sm text-ink-soft">
             Your code identifies who invited someone. It does not grant account or Health Check
             access.
           </p>
@@ -250,16 +250,16 @@ import { UtilsService } from '../../core/services/utils.service';
           class="rounded-2xl border bg-white p-6 lg:col-span-2"
           aria-labelledby="level-summary-heading"
         >
-          <h2 id="level-summary-heading" class="font-bold text-slate-600">Current level</h2>
+          <h2 id="level-summary-heading" class="font-bold text-ink-soft">Current level</h2>
           @if (s.levelProgress.currentLevel; as level) {
             <p class="mt-2 text-2xl font-bold">{{ level.name }} achieved</p>
           } @else {
             <p class="mt-2 text-2xl font-bold">No level achieved yet</p>
-            <p class="mt-2 text-slate-600">Start your referral journey</p>
+            <p class="mt-2 text-ink-soft">Start your referral journey</p>
           }
           @if (s.levelProgress.highestConfiguredLevelReached) {
             <p class="mt-3 font-semibold text-brand-800">Highest referral level achieved</p>
-            <p class="text-sm text-slate-600">Highest configured level reached</p>
+            <p class="text-sm text-ink-soft">Highest configured level reached</p>
           } @else if (s.levelProgress.nextLevel; as next) {
             <p class="mt-3 font-semibold text-brand-800">Working toward {{ next.name }}</p>
           }
@@ -269,7 +269,7 @@ import { UtilsService } from '../../core/services/utils.service';
         class="mt-8 rounded-2xl border bg-white p-6"
         aria-labelledby="qualified-counts-heading"
       >
-        <h2 id="qualified-counts-heading" class="text-xl font-bold">Qualified direct referrals</h2>
+        <h2 id="qualified-counts-heading" class="font-display text-xl font-semibold">Qualified direct referrals</h2>
         <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           @for (target of targetTypes; track target) {
             <article>
@@ -281,15 +281,15 @@ import { UtilsService } from '../../core/services/utils.service';
       </section>
       @if (!s.levelProgress.highestConfiguredLevelReached && s.levelProgress.nextLevel; as next) {
         <section class="mt-8 rounded-2xl border bg-white p-6" aria-labelledby="next-level-heading">
-          <h2 id="next-level-heading" class="text-2xl font-bold">Working toward {{ next.name }}</h2>
+          <h2 id="next-level-heading" class="font-display text-2xl font-semibold">Working toward {{ next.name }}</h2>
           <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             @for (requirement of s.levelProgress.requirements; track requirement.targetType) {
-              <article class="rounded-xl bg-slate-50 p-4">
+              <article class="rounded-xl bg-sand-50 p-4">
                 <h3 class="font-bold">{{ targetLabelPlural(requirement.targetType) }}</h3>
                 <p class="mt-2 text-xl font-bold">
                   {{ requirement.qualified }} / {{ requirement.required }}
                 </p>
-                <p class="mt-1 text-sm text-slate-600">
+                <p class="mt-1 text-sm text-ink-soft">
                   {{ requirement.qualified }} of {{ requirement.required }} qualified
                   {{ targetLabelPlural(requirement.targetType).toLowerCase() }}
                 </p>
@@ -304,12 +304,12 @@ import { UtilsService } from '../../core/services/utils.service';
         </section>
       }
       <section class="mt-8">
-        <h2 class="text-2xl font-bold text-brand-900">Invite someone</h2>
+        <h2 class="font-display text-2xl font-semibold text-ink">Invite someone</h2>
         <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           @for (invite of invites; track invite.target) {
             <article class="rounded-2xl border bg-white p-5">
               <h3 class="text-lg font-bold">Invite a {{ invite.label }}</h3>
-              <p class="mt-2 text-sm text-slate-600">{{ invite.copy }}</p>
+              <p class="mt-2 text-sm text-ink-soft">{{ invite.copy }}</p>
               <button
                 type="button"
                 (click)="copyLink(invite.target)"
@@ -332,11 +332,11 @@ import { UtilsService } from '../../core/services/utils.service';
         <p aria-live="polite" class="mt-3 font-semibold text-brand-700">{{ inviteFeedback() }}</p>
       </section>
       <section class="mt-8">
-        <h2 class="text-2xl font-bold">Direct referral history</h2>
+        <h2 class="font-display text-2xl font-semibold">Direct referral history</h2>
         @if (history().length) {
           <div class="mt-4 overflow-x-auto rounded-2xl border bg-white">
             <table class="min-w-[700px] w-full text-left">
-              <thead class="bg-slate-50">
+              <thead class="bg-sand-50">
                 <tr>
                   <th class="p-4">Type</th>
                   <th class="p-4">Status</th>
@@ -375,7 +375,7 @@ import { UtilsService } from '../../core/services/utils.service';
           aria-labelledby="request-withdrawal-title"
           class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
         >
-          <h2 id="request-withdrawal-title" class="text-2xl font-bold">Request cash withdrawal</h2>
+          <h2 id="request-withdrawal-title" class="font-display text-2xl font-semibold">Request cash withdrawal</h2>
           <p class="mt-2">
             Available points: <strong>{{ s.availablePoints }}</strong>
           </p>
@@ -405,7 +405,7 @@ import { UtilsService } from '../../core/services/utils.service';
                 class="mt-1 w-full rounded-lg border p-3"
                 placeholder="e.g. Ada Okafor"
             /></label>
-            <p class="text-sm text-slate-600">
+            <p class="text-sm text-ink-soft">
               SmartClinic does not verify bank account ownership in this version. Confirm the
               details carefully before submitting.
             </p>
@@ -440,7 +440,7 @@ import { UtilsService } from '../../core/services/utils.service';
           aria-labelledby="cancel-withdrawal-title"
           class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
         >
-          <h2 id="cancel-withdrawal-title" class="text-2xl font-bold">
+          <h2 id="cancel-withdrawal-title" class="font-display text-2xl font-semibold">
             Cancel this withdrawal request?
           </h2>
           <p class="mt-3">Reserved points will return to your available balance.</p>

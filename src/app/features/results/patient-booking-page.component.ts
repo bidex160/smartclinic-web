@@ -40,11 +40,11 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
         Patient booking
       </p>
 
-      <h1 class="mt-2 text-3xl font-bold text-brand-900">
+      <h1 class="font-display mt-2 text-3xl font-semibold text-ink">
         Book a Health Check for yourself
       </h1>
 
-      <p class="mt-3 text-slate-600">
+      <p class="mt-3 text-ink-soft">
         SmartClinic securely uses the Patient linked to your account.
         You do not need to re-enter your identity.
       </p>
@@ -72,7 +72,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
           role="status"
           class="mt-7 rounded-2xl border border-brand-100 bg-white p-7"
         >
-          <h2 class="text-2xl font-bold text-brand-900">
+          <h2 class="font-display text-2xl font-semibold text-ink">
             Health Check booking created
           </h2>
 
@@ -101,7 +101,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
         >
           <!-- Health Check -->
           <section class="rounded-2xl border bg-white p-6">
-            <h2 class="text-xl font-bold">
+            <h2 class="font-display text-xl font-semibold">
               Health Check
             </h2>
 
@@ -160,7 +160,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
 
           <!-- Appointment -->
           <section class="rounded-2xl border bg-white p-6">
-            <h2 class="text-xl font-bold">
+            <h2 class="font-display text-xl font-semibold">
               Requested appointment
             </h2>
 
@@ -229,7 +229,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                 }}
               </legend>
 
-              <p class="mt-2 text-sm leading-6 text-slate-600">
+              <p class="mt-2 text-sm leading-6 text-ink-soft">
                 @if (isHomeVisit()) {
                   Enter the address where the provider should
                   perform your Health Check.
@@ -371,7 +371,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                     }
                   </datalist>
 
-                  <p class="mt-1 text-xs text-slate-500">
+                  <p class="mt-1 text-xs text-ink-muted">
                     Select a suggestion or enter your city or area.
                   </p>
                 </div>
@@ -383,7 +383,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                     class="block text-sm font-bold"
                   >
                     Postal code
-                    <span class="font-normal text-slate-500">
+                    <span class="font-normal text-ink-muted">
                       (optional)
                     </span>
                   </label>
@@ -424,13 +424,13 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
           <!-- Review -->
           @if (reviewing()) {
             <section class="rounded-2xl bg-brand-50 p-6">
-              <h2 class="text-xl font-bold">
+              <h2 class="font-display text-xl font-semibold">
                 Review your booking
               </h2>
 
               <dl class="mt-4 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <dt class="text-sm text-slate-600">
+                  <dt class="text-sm text-ink-soft">
                     Package
                   </dt>
                   <dd class="font-bold">
@@ -439,7 +439,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                 </div>
 
                 <div>
-                  <dt class="text-sm text-slate-600">
+                  <dt class="text-sm text-ink-soft">
                     Fulfilment
                   </dt>
                   <dd class="font-bold">
@@ -448,7 +448,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                 </div>
 
                 <div>
-                  <dt class="text-sm text-slate-600">
+                  <dt class="text-sm text-ink-soft">
                     Appointment
                   </dt>
                   <dd class="font-bold">
@@ -462,7 +462,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                 </div>
 
                 <div>
-                  <dt class="text-sm text-slate-600">
+                  <dt class="text-sm text-ink-soft">
                     Timezone
                   </dt>
                   <dd class="font-bold">
@@ -472,7 +472,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
 
                 @if (requiresVisitAddress()) {
                   <div class="sm:col-span-2">
-                    <dt class="text-sm text-slate-600">
+                    <dt class="text-sm text-ink-soft">
                       {{
                         isHomeVisit()
                           ? 'Home visit address'
@@ -515,7 +515,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
 
                     @if (!isHomeVisit()) {
                       <p
-                        class="mt-2 text-sm font-normal text-slate-600"
+                        class="mt-2 text-sm font-normal text-ink-soft"
                       >
                         SmartClinic will use this origin to
                         match an appropriate provider branch.
@@ -527,7 +527,7 @@ import { PatientPaymentPanelComponent } from './patient-payment-panel.component'
                 }
               </dl>
 
-              <p class="mt-4 text-sm text-slate-600">
+              <p class="mt-4 text-sm text-ink-soft">
                 Submitting creates an awaiting-funding booking
                 for your authenticated SELF Patient.
               </p>

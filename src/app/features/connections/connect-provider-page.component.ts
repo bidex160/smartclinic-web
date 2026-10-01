@@ -16,12 +16,12 @@ import { formatMinor } from '../provider/care-money';
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <a [routerLink]="backUrl()" class="font-bold text-brand-700 underline">← Back</a>
     <p class="mt-6 text-sm font-bold uppercase tracking-[.16em] text-brand-600">Connect a hospital</p>
-       <h1 class="mt-2 text-3xl font-black text-brand-950">
+       <h1 class="font-display mt-2 text-3xl font-semibold text-ink">
       {{
         targeted() && selected() ? 'Connect with ' + selected()?.displayName : 'Choose a Hospital'
       }}
     </h1>
-    <p class="mt-2 text-slate-600">Choose a hospital and SmartClinic will guide you through the shortest way to connect your care.</p>
+    <p class="mt-2 text-ink-soft">Choose a hospital and SmartClinic will guide you through the shortest way to connect your care.</p>
     @if (targeted() && loading()) {
       <p role="status" class="mt-8 rounded-2xl border bg-white p-6">Preparing this hospital…</p>
     } @else if (targeted() && targetError()) {
@@ -58,22 +58,22 @@ import { formatMinor } from '../provider/care-money';
             </button>
           </p>
         } @else if (!providers().length) {
-          <p class="mt-4 rounded-xl bg-slate-50 p-4">No hospitals match this search.</p>
+          <p class="mt-4 rounded-xl bg-sand-50 p-4">No hospitals match this search.</p>
         } @else {
           <div class="mt-5 grid gap-4 sm:grid-cols-2">
             @for (p of providers(); track p.providerReference) {
-              <button type="button" (click)="choose(p)" class="group overflow-hidden rounded-3xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-700">
+              <button type="button" (click)="choose(p)" class="group overflow-hidden rounded-3xl border border-ink/[0.08] bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-700">
                 <span class="block h-2 bg-gradient-to-r from-brand-700 via-violet-500 to-emerald-500" aria-hidden="true"></span>
                 <span class="block p-5">
-                <span class="flex items-start gap-3"><span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-violet-100 font-black text-violet-800">{{ initials(p.displayName) }}</span><span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wider text-brand-700">{{ providerType(p.providerType) }}</span><span class="mt-1 block text-lg font-black leading-tight text-brand-950">{{ p.displayName }}</span></span></span>
-                <span class="mt-4 flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-sm text-slate-600"><span aria-hidden="true">⌖</span><span>{{ location(p) }}</span></span>
+                <span class="flex items-start gap-3"><span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-violet-100 font-black text-violet-800">{{ initials(p.displayName) }}</span><span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wider text-brand-700">{{ providerType(p.providerType) }}</span><span class="mt-1 block text-lg font-black leading-tight text-ink">{{ p.displayName }}</span></span></span>
+                <span class="mt-4 flex items-start gap-2 rounded-xl bg-sand-50 p-3 text-sm text-ink-soft"><span aria-hidden="true">⌖</span><span>{{ location(p) }}</span></span>
                 @if (p.newPatientRegistration.enabled) {
-                  <span class="mt-3 flex items-center justify-between gap-3 text-sm"><span>New patient connection</span><strong class="text-brand-950">{{ money(p.newPatientRegistration.feeMinor, p.newPatientRegistration.currency) }}</strong></span>
+                  <span class="mt-3 flex items-center justify-between gap-3 text-sm"><span>New patient connection</span><strong class="text-ink">{{ money(p.newPatientRegistration.feeMinor, p.newPatientRegistration.currency) }}</strong></span>
                 }
                 @if (p.existingPatientLink.enabled) {
-                  <span class="mt-2 flex items-center justify-between gap-3 text-sm"><span>Connect existing record</span><strong class="text-brand-950">{{ money(p.existingPatientLink.feeMinor, p.existingPatientLink.currency) }}</strong></span>
+                  <span class="mt-2 flex items-center justify-between gap-3 text-sm"><span>Connect existing record</span><strong class="text-ink">{{ money(p.existingPatientLink.feeMinor, p.existingPatientLink.currency) }}</strong></span>
                 }
-                <span class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm font-bold text-brand-700"><span>Choose hospital</span><span class="transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
+                <span class="mt-4 flex items-center justify-between border-t border-ink/[0.06] pt-4 text-sm font-bold text-brand-700"><span>Choose hospital</span><span class="transition group-hover:translate-x-1" aria-hidden="true">→</span></span>
                 </span>
               </button>
             }
@@ -96,17 +96,17 @@ import { formatMinor } from '../provider/care-money';
       >
         <div>
           <p class="text-sm font-bold uppercase text-brand-600">Selected Hospital</p>
-          <h2 class="text-2xl font-bold">{{ p.displayName }}</h2>
-          <p class="text-sm text-slate-600">{{ p.providerType }} · {{ location(p) }}</p>
+          <h2 class="font-display text-2xl font-semibold">{{ p.displayName }}</h2>
+          <p class="text-sm text-ink-soft">{{ p.providerType }} · {{ location(p) }}</p>
           @if (!targeted()) {
             <button type="button" (click)="selected.set(null)" class="mt-2 font-bold underline">
               Change Hospital
             </button>
           }
         </div>
-        <div class="rounded-2xl bg-violet-50 p-4"><p class="text-sm font-bold uppercase tracking-wider text-brand-600">Your hospital connection</p><p class="mt-1 text-sm text-slate-600">We only ask what is needed to connect you correctly.</p></div>
+        <div class="rounded-2xl bg-violet-50 p-4"><p class="text-sm font-bold uppercase tracking-wider text-brand-600">Your hospital connection</p><p class="mt-1 text-sm text-ink-soft">We only ask what is needed to connect you correctly.</p></div>
         <fieldset class="grid gap-3">
-          <legend class="text-lg font-black text-brand-950">Have you been a patient here before?</legend>
+          <legend class="text-lg font-black text-ink">Have you been a patient here before?</legend>
           @if (p.newPatientRegistration.enabled) {
             <label class="rounded-xl border p-4"
               ><input type="radio" formControlName="path" value="NEW_PATIENT_REGISTRATION" />
@@ -129,8 +129,8 @@ import { formatMinor } from '../provider/care-money';
               ></label
             >
           } @else {
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-600">
-              <strong class="block text-slate-800">Yes — connect my existing record</strong>
+            <div class="rounded-xl border border-ink/[0.08] bg-sand-50 p-4 text-ink-soft">
+              <strong class="block text-ink">Yes — connect my existing record</strong>
               <span class="mt-1 block text-sm">This hospital has not enabled existing patient connections yet. Choose the new patient option or contact the hospital directly.</span>
             </div>
           }
@@ -141,7 +141,7 @@ import { formatMinor } from '../provider/care-money';
               formControlName="externalPatientReference"
               maxlength="160"
               class="rounded-xl border p-3"
-            /><span class="text-sm font-normal text-slate-600"
+            /><span class="text-sm font-normal text-ink-soft"
               >The hospital will verify this number.</span
             ></label
           >

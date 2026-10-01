@@ -32,7 +32,7 @@ import { HealthCheckResultViewComponent } from './health-check-result-view.compo
           role="alert"
           class="rounded-2xl border border-red-200 bg-red-50 p-6 outline-none focus:ring-4 focus:ring-red-200"
         >
-          <h1 class="text-2xl font-bold">Result unavailable</h1>
+          <h1 class="font-display text-2xl font-semibold">Result unavailable</h1>
           <p class="mt-2">{{ error() }}</p>
         </section>
       </main>

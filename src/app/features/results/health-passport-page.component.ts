@@ -13,18 +13,18 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<main class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-    <header class="rounded-3xl bg-gradient-to-br from-brand-900 to-brand-700 p-7 text-white">
+    <header class="rounded-3xl sc-hero p-7 text-white">
       <p class="font-bold uppercase tracking-wider text-brand-100">Smart Health Passport</p>
-      <h1 class="mt-2 text-3xl font-bold">Your health story, together</h1>
+      <h1 class="font-display mt-2 text-3xl font-semibold">Your health story, together</h1>
       <p class="mt-3 max-w-2xl text-brand-100">
         Your health history, checks, results and recommendations in one place.
       </p>
     </header>
     @if (loading()) {
       <div role="status" class="mt-8 grid animate-pulse gap-4 md:grid-cols-3">
-        <div class="h-32 rounded-2xl bg-slate-200"></div>
-        <div class="h-32 rounded-2xl bg-slate-200"></div>
-        <div class="h-32 rounded-2xl bg-slate-200"></div>
+        <div class="h-32 rounded-2xl bg-sand-200"></div>
+        <div class="h-32 rounded-2xl bg-sand-200"></div>
+        <div class="h-32 rounded-2xl bg-sand-200"></div>
       </div>
     } @else if (error()) {
       <div role="alert" class="mt-8 rounded-2xl bg-red-50 p-6">
@@ -37,7 +37,7 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
       @if (p.currentNextAction; as action) {
         <section class="mt-8 rounded-2xl border-2 border-brand-300 bg-brand-50 p-6">
           <p class="text-sm font-bold uppercase text-brand-700">Your next action</p>
-          <h2 class="mt-2 text-xl font-bold">{{ action.title }}</h2>
+          <h2 class="font-display mt-2 text-xl font-semibold">{{ action.title }}</h2>
           <p class="mt-2">{{ action.message }}</p>
           @if (action.cta.type === 'FIND_CARE') {
             <a
@@ -56,28 +56,28 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
       }
       @if (p.latestMeasurements.length) {
         <section class="mt-8">
-          <h2 class="text-2xl font-bold">Latest measurements</h2>
+          <h2 class="font-display text-2xl font-semibold">Latest measurements</h2>
           <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             @for (m of p.latestMeasurements; track m.type + ':' + m.provenance) {
               <article class="rounded-2xl border bg-white p-5">
                 <h3 class="font-bold">{{ measurementLabel(m.type) }}</h3>
                 <p class="mt-3 text-xl font-bold">{{ measurementValue(m) }}</p>
-                <p class="mt-2 text-sm font-semibold text-slate-600">
+                <p class="mt-2 text-sm font-semibold text-ink-soft">
                   {{ provenance(m.provenance) }}
                 </p>
-                <p class="mt-1 text-sm text-slate-500">{{ date(m.recordedAt) }}</p>
+                <p class="mt-1 text-sm text-ink-muted">{{ date(m.recordedAt) }}</p>
               </article>
             }
           </div>
         </section>
       }
       <section class="mt-8 rounded-2xl border bg-white p-6">
-        <h2 class="text-2xl font-bold">Reported health history</h2>
-        <p class="mt-2 text-slate-600">
+        <h2 class="font-display text-2xl font-semibold">Reported health history</h2>
+        <p class="mt-2 text-ink-soft">
           Information reported by you in your latest completed Self-Check.
         </p>
         @if (!p.reportedHealthHistory.length) {
-          <p class="mt-4 rounded-xl bg-slate-50 p-4">
+          <p class="mt-4 rounded-xl bg-sand-50 p-4">
             No health history has been reported in a completed Self-Check yet.
           </p>
         } @else {
@@ -85,10 +85,10 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
             @for (item of p.reportedHealthHistory; track item.key) {
               <div>
                 <dt class="font-bold">{{ item.label }}</dt>
-                <dd class="mt-1 whitespace-pre-line text-slate-700">
+                <dd class="mt-1 whitespace-pre-line text-ink-soft">
                   {{ historyValue(item.value, item.answerState) }}
                 </dd>
-                <dd class="mt-1 text-sm text-slate-500">
+                <dd class="mt-1 text-sm text-ink-muted">
                   Reported by you · {{ date(item.reportedAt) }}
                 </dd>
               </div>
@@ -99,14 +99,14 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
       @if (p.recentMedicationContext.length) {
         <section class="mt-8">
           <div class="flex justify-between gap-4">
-            <h2 class="text-2xl font-bold">Recent prescriptions</h2>
+            <h2 class="font-display text-2xl font-semibold">Recent prescriptions</h2>
             <a routerLink="/me/prescriptions" class="font-bold text-brand-700">View all</a>
           </div>
           <div class="mt-4 grid gap-4">
             @for (rx of p.recentMedicationContext; track rx.orderReference) {
               <article class="rounded-2xl border bg-white p-5">
                 <h3 class="font-bold">Prescription from {{ rx.provider.displayName }}</h3>
-                <p class="mt-1 text-sm text-slate-500">{{ date(rx.issuedAt) }}</p>
+                <p class="mt-1 text-sm text-ink-muted">{{ date(rx.issuedAt) }}</p>
                 <p class="mt-3">{{ medicineNames(rx.medicines) }}</p>
               </article>
             }
@@ -115,7 +115,7 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
       }
       <section class="mt-8">
         <div class="flex flex-wrap items-end justify-between gap-4">
-          <h2 class="text-2xl font-bold">Health timeline</h2>
+          <h2 class="font-display text-2xl font-semibold">Health timeline</h2>
           <a routerLink="/me/self-checks" class="font-bold text-brand-700">My Self-Checks</a>
         </div>
         @if (timelineLoading()) {
@@ -141,8 +141,8 @@ import { HealthPassportApiService } from '../../core/services/health-passport-ap
               <li class="rounded-2xl border bg-white p-5">
                 <p class="text-sm font-semibold text-brand-700">{{ eventType(event.type) }}</p>
                 <h3 class="mt-1 font-bold">{{ event.title }}</h3>
-                <p class="mt-2 text-slate-600">{{ event.description }}</p>
-                <p class="mt-2 text-sm text-slate-500">
+                <p class="mt-2 text-ink-soft">{{ event.description }}</p>
+                <p class="mt-2 text-sm text-ink-muted">
                   {{ date(event.occurredAt) }}
                   @if (event.provenance) {
                     · {{ provenance(event.provenance) }}

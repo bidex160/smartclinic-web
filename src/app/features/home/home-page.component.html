@@ -1,218 +1,244 @@
-<section class="relative isolate overflow-hidden bg-white" aria-labelledby="home-hero-title">
-  <div class="absolute inset-x-0 top-0 -z-10 h-[40rem] bg-gradient-to-br from-brand-50 via-white to-violet-50" aria-hidden="true"></div>
-  <div class="mx-auto max-w-7xl px-5 pb-10 pt-8 sm:px-8 lg:px-10">
-    <div class="grid items-center gap-4 md:grid-cols-2">
-      <div class="pt-3">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">YOUR HEALTH, CONNECTED</p>
-        <h1 id="home-hero-title" class="mt-3 text-4xl font-bold tracking-tight text-brand-950 sm:text-5xl lg:text-6xl">Your health journey <span class="text-brand-700">starts here.</span></h1>
-        <p class="mt-4 max-w-xl text-lg leading-8 text-slate-600">Healthcare made simpler. What do you need today?</p>
+<section class="relative isolate overflow-hidden bg-sand-50" aria-labelledby="home-hero-title">
+  <div class="pointer-events-none absolute -right-32 -top-40 -z-10 size-[36rem] rounded-full bg-brand-200/40 blur-3xl" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -bottom-40 -left-20 -z-10 size-[28rem] rounded-full bg-ochre-100/70 blur-3xl" aria-hidden="true"></div>
+
+  <div class="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:gap-14 lg:px-10 lg:pb-20 lg:pt-16">
+    <div>
+      <p class="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-ochre-700 shadow-card ring-1 ring-ink/[0.05]">
+        <span class="size-1.5 rounded-full bg-ochre-500" aria-hidden="true"></span>Your personal health companion
+      </p>
+      <h1 id="home-hero-title" class="font-display mt-5 text-[2.6rem] font-semibold leading-[1.04] text-ink sm:text-6xl lg:text-[4.2rem]">
+        Stay well. Get care.<br />
+        <span class="text-brand-700">Keep your health story</span> together.
+      </h1>
+      <p class="mt-5 max-w-xl text-lg leading-8 text-ink-soft">
+        SmartClinic is with you every day — small routines that keep you well, and a trusted companion when you need a doctor, a test, medicine or a hospital.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a [routerLink]="mySmartClinicRoute()" class="inline-flex min-h-13 items-center gap-2 rounded-full bg-ink px-7 py-3.5 font-semibold text-white shadow-lift transition hover:bg-brand-900 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-300">
+          Open My SmartClinic <span aria-hidden="true">→</span>
+        </a>
+        <a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams('')" class="inline-flex min-h-13 items-center rounded-full border border-ink/15 bg-white px-7 py-3.5 font-semibold text-ink transition hover:border-ink/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-200">
+          Book a Smart Health Check
+        </a>
       </div>
-      <div class="relative mx-auto w-full max-w-md overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-brand-100">
-        <img src="/assets/hadiza.jpeg" alt="Dr Hadiza welcoming patients to SmartClinic" class="aspect-[4/3] w-full object-cover object-[60%_58%]" />
-        <div class="absolute bottom-4 left-4 rounded-full bg-white/95 px-4 py-2 text-sm font-bold text-brand-900 shadow">Dr Hadiza · Here to guide you</div>
+      <ul class="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-ink-soft" aria-label="Why patients choose SmartClinic">
+        <li class="flex items-center gap-2"><span class="grid size-6 place-items-center rounded-full bg-leaf-100 text-leaf-700" aria-hidden="true"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg></span>Clear pricing</li>
+        <li class="flex items-center gap-2"><span class="grid size-6 place-items-center rounded-full bg-leaf-100 text-leaf-700" aria-hidden="true"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg></span>Verified providers</li>
+        <li class="flex items-center gap-2"><span class="grid size-6 place-items-center rounded-full bg-leaf-100 text-leaf-700" aria-hidden="true"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg></span>Care near you</li>
+      </ul>
+    </div>
+
+    <div class="relative mx-auto w-full max-w-[26rem] lg:mr-0">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-t-[13rem] rounded-b-[2rem] bg-brand-800 shadow-lift">
+        <div class="sc-motif absolute inset-0 opacity-[0.12]" aria-hidden="true"></div>
+        <img src="/assets/valerie.jpeg" alt="Dr Valerie of SmartClinic, smiling" class="relative h-full w-full object-cover object-[50%_20%]" />
+        <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink/80 to-transparent" aria-hidden="true"></div>
+        <p class="absolute bottom-5 left-6 text-sm font-semibold text-white">Dr Valerie <span class="font-normal text-white/70">· Driving healthcare change</span></p>
+      </div>
+
+      <div class="absolute -left-4 top-16 w-56 rounded-2xl bg-white/95 p-3.5 shadow-lift ring-1 ring-ink/[0.06] backdrop-blur sm:-left-14" aria-hidden="true">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-ochre-700">Today</p>
+        <div class="mt-2 flex items-center gap-2.5">
+          <span class="grid size-8 place-items-center rounded-lg bg-sky-100 text-sky-700"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" /></svg></span>
+          <span class="text-sm font-semibold text-ink">Drink a glass of water</span>
+        </div>
+        <div class="mt-2 flex items-center gap-2.5">
+          <span class="grid size-8 place-items-center rounded-lg bg-leaf-100 text-leaf-700"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 4a1.5 1.5 0 1 0 0 .01M9 21l2-6 3 3v3M7 12l3-3 3 1 2 3h3" /></svg></span>
+          <span class="text-sm font-semibold text-ink">20-minute walk</span>
+        </div>
+      </div>
+
+      <div class="absolute -right-3 bottom-20 w-52 rounded-2xl bg-ink p-3.5 text-white shadow-lift sm:-right-10" aria-hidden="true">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">Smart Health Passport</p>
+        <p class="font-display mt-1 text-[15px] font-semibold leading-snug">Your records, shared only when you choose.</p>
       </div>
     </div>
-    <div class="relative z-10 mt-6 rounded-[2rem] bg-white/95 p-4 shadow-xl ring-1 ring-slate-200 sm:p-6">
-      <div class="mb-4"><p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">SMARTCLINIC</p><h2 class="mt-1 text-2xl font-bold text-brand-950">What do you need today?</h2><p class="mt-1 text-sm text-slate-500">Choose one. SmartClinic will guide you.</p></div>
+  </div>
+</section>
+
+<section class="relative z-10 -mt-4 bg-transparent" aria-labelledby="home-actions-title">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+    <div class="sc-card p-4 sm:p-6">
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 id="home-actions-title" class="font-display text-[1.6rem] font-semibold text-ink">What do you need today?</h2>
+          <p class="mt-0.5 text-sm text-ink-muted">Healthcare made simpler. Choose one and SmartClinic will guide you.</p>
+        </div>
+      </div>
       <nav class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="Healthcare actions">
-        <a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams('')" class="flex min-h-28 flex-col justify-between rounded-2xl bg-rose-50 p-4 font-bold text-brand-950 ring-1 ring-rose-100"><span class="grid size-10 place-items-center rounded-xl bg-white text-xl text-rose-600 shadow-sm" aria-hidden="true">♥</span><span>Book a Checkup</span></a>
-        <a [routerLink]="requestCareRoute()" [queryParams]="doctorQueryParams()" class="flex min-h-28 flex-col justify-between rounded-2xl bg-blue-50 p-4 font-bold text-brand-950 ring-1 ring-blue-100"><span class="grid size-10 place-items-center rounded-xl bg-white text-xl text-blue-600 shadow-sm" aria-hidden="true">✚</span><span>See a Doctor</span></a>
-        <a [routerLink]="myHospitalRoute()" [queryParams]="myHospitalQueryParams()" class="flex min-h-28 flex-col justify-between rounded-2xl bg-emerald-50 p-4 font-bold text-brand-950 ring-1 ring-emerald-100"><span class="grid size-10 place-items-center rounded-xl bg-white text-lg text-emerald-700 shadow-sm" aria-hidden="true">H</span><span>Visit a Hospital</span></a>
-        <a [routerLink]="medicineRoute()" [queryParams]="medicineQueryParams()" class="flex min-h-28 flex-col justify-between rounded-2xl bg-violet-50 p-4 font-bold text-brand-950 ring-1 ring-violet-100"><span class="grid size-10 place-items-center rounded-xl bg-white text-sm text-violet-700 shadow-sm" aria-hidden="true">Rx</span><span>Get Medicine</span></a>
-        <a [routerLink]="testRoute()" [queryParams]="testQueryParams()" class="flex min-h-28 flex-col justify-between rounded-2xl bg-orange-50 p-4 font-bold text-brand-950 ring-1 ring-orange-100"><span class="grid size-10 place-items-center rounded-xl bg-white text-lg text-orange-600 shadow-sm" aria-hidden="true">T</span><span>Get a Test</span></a>
-        <button type="button" disabled aria-disabled="true" class="flex min-h-28 flex-col justify-between rounded-2xl bg-slate-50 p-4 text-left font-bold text-slate-600 ring-1 ring-slate-200"><span class="grid size-10 place-items-center rounded-xl bg-white text-lg shadow-sm" aria-hidden="true">₦</span><span>Pay a Bill<small class="mt-1 block text-[10px] font-medium text-slate-500">Coming soon</small></span></button>
+        <a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams('')" class="sc-tile group flex min-h-28 flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-sand-50 p-4 font-semibold text-ink">
+          <span class="grid size-11 place-items-center rounded-2xl bg-white text-brand-700 shadow-card transition group-hover:bg-brand-700 group-hover:text-white" aria-hidden="true"><svg class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4ZM8 3v6M16 3v6M4 10h16M12 13v4M10 15h4" /></svg></span>
+          <span>Book a Checkup</span>
+        </a>
+        <a [routerLink]="requestCareRoute()" [queryParams]="doctorQueryParams()" class="sc-tile group flex min-h-28 flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-sand-50 p-4 font-semibold text-ink">
+          <span class="grid size-11 place-items-center rounded-2xl bg-white text-brand-700 shadow-card transition group-hover:bg-brand-700 group-hover:text-white" aria-hidden="true"><svg class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v5a4 4 0 0 0 8 0V3M10 12v3a5 5 0 0 0 10 0v-2M20 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /></svg></span>
+          <span>See a Doctor</span>
+        </a>
+        <a [routerLink]="myHospitalRoute()" [queryParams]="myHospitalQueryParams()" class="sc-tile group flex min-h-28 flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-sand-50 p-4 font-semibold text-ink">
+          <span class="grid size-11 place-items-center rounded-2xl bg-white text-brand-700 shadow-card transition group-hover:bg-brand-700 group-hover:text-white" aria-hidden="true"><svg class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5h10v16M14 9h6v12M2 21h20M9 2v4M7 4h4M8 13h2M8 17h2M17 13h1M17 17h1" /></svg></span>
+          <span>Visit a Hospital</span>
+        </a>
+        <a [routerLink]="medicineRoute()" [queryParams]="medicineQueryParams()" class="sc-tile group flex min-h-28 flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-sand-50 p-4 font-semibold text-ink">
+          <span class="grid size-11 place-items-center rounded-2xl bg-white text-brand-700 shadow-card transition group-hover:bg-brand-700 group-hover:text-white" aria-hidden="true"><svg class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 7ZM7 10l7 7" /></svg></span>
+          <span>Get Medicine</span>
+        </a>
+        <a [routerLink]="testRoute()" [queryParams]="testQueryParams()" class="sc-tile group flex min-h-28 flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-sand-50 p-4 font-semibold text-ink">
+          <span class="grid size-11 place-items-center rounded-2xl bg-white text-brand-700 shadow-card transition group-hover:bg-brand-700 group-hover:text-white" aria-hidden="true"><svg class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9" /></svg></span>
+          <span>Get a Test</span>
+        </a>
+        <button type="button" disabled aria-disabled="true" class="flex min-h-28 flex-col justify-between rounded-[1.25rem] border border-dashed border-ink/15 p-4 text-left font-semibold text-ink-muted">
+          <span class="grid size-11 place-items-center rounded-2xl bg-sand-100" aria-hidden="true"><svg class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 6h18v12H3ZM3 10h18M7 15h3" /></svg></span>
+          <span>Pay a Bill<small class="mt-0.5 block text-[11px] font-medium">Coming soon</small></span>
+        </button>
       </nav>
     </div>
   </div>
 </section>
 
-<section class="bg-white" aria-labelledby="valerie-story-title">
-  <div class="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
-    <div class="relative grid overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-950 via-brand-900 to-violet-800 text-white shadow-lg md:grid-cols-[1fr_.55fr]">
-      <div class="relative z-10 p-6 sm:p-8">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-200">CARE THAT MOVES WITH YOU</p>
-        <h2 id="valerie-story-title" class="mt-2 text-3xl font-bold">One patient. One health journey.</h2>
-        <p class="mt-3 max-w-xl leading-7 text-brand-50">Appointments, prescriptions, tests and health records stay connected around you—not around paperwork.</p>
-        <p class="mt-5 text-sm font-bold text-brand-100">Dr Valerie · Driving healthcare change</p>
-      </div>
-      <img src="/assets/valerie.jpeg" alt="Dr Valerie of SmartClinic" class="h-72 w-full object-cover object-top md:h-full" />
+<section class="bg-sand-50" aria-labelledby="companion-title">
+  <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
+    <div class="max-w-2xl">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">One companion, every season of life</p>
+      <h2 id="companion-title" class="font-display mt-3 text-4xl font-semibold leading-tight text-ink sm:text-5xl">Care that moves with you.</h2>
+      <p class="mt-4 text-lg leading-8 text-ink-soft">One patient. One health journey. Appointments, prescriptions, tests and records stay connected around you — not around paperwork.</p>
     </div>
-  </div>
-</section>
+    <div class="mt-10 grid gap-4 md:grid-cols-3">
+      <article class="sc-card relative overflow-hidden p-6">
+        <span class="grid size-12 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg></span>
+        <h3 class="font-display mt-5 text-2xl font-semibold text-ink">Stay well</h3>
+        <p class="mt-2 leading-7 text-ink-soft">Daily routines for water, movement, rest and medicine. Guided Self-Checks and Smart Health Checks to stay ahead.</p>
+      </article>
+      <article class="sc-card relative overflow-hidden p-6">
+        <span class="grid size-12 place-items-center rounded-2xl bg-clay-50 text-clay-500" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.25-8.45C.9 9.2 2.48 5 6.5 5c2.1 0 3.2 1.2 3.9 2.2C11.1 6.2 12.2 5 14.5 5c4.02 0 5.6 4.2 3.75 7.55C16 16.65 12 21 12 21Z" /></svg></span>
+        <h3 class="font-display mt-5 text-2xl font-semibold text-ink">Get care</h3>
+        <p class="mt-2 leading-7 text-ink-soft">See a doctor, get tests and medicine, and use SmartClinic as your companion inside participating hospitals.</p>
+      </article>
+      <article class="relative overflow-hidden rounded-[1.5rem] bg-ink p-6 text-white shadow-lift">
+        <div class="sc-motif absolute inset-0 opacity-[0.07]" aria-hidden="true"></div>
+        <span class="relative grid size-12 place-items-center rounded-2xl bg-white/10 text-ochre-300 ring-1 ring-white/15" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5ZM9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0M8 18h8" /></svg></span>
+        <h3 class="font-display relative mt-5 text-2xl font-semibold">Keep your story</h3>
+        <p class="relative mt-2 leading-7 text-white/75">Your Smart Health Passport keeps records, results and prescriptions together — and you decide who sees them.</p>
+      </article>
+    </div>
 
-<section class="bg-white" aria-labelledby="portal-title">
-  <div class="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
-    <div class="rounded-[2rem] border border-slate-200 bg-slate-50 p-5 sm:p-7">
-      <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-        <div><p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">MY SMARTCLINIC</p><h2 id="portal-title" class="mt-1 text-2xl font-bold text-brand-950">Your care, together in one place.</h2><p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Appointments, results, prescriptions, hospitals and your Smart Health Passport.</p></div>
-        <a [routerLink]="mySmartClinicRoute()" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-brand-700 px-6 py-3 font-bold text-white shadow-sm">Open My SmartClinic →</a>
+    <div class="mt-4 grid items-center gap-6 overflow-hidden rounded-[1.75rem] bg-white shadow-card ring-1 ring-ink/[0.06] md:grid-cols-[.4fr_.6fr]">
+      <div class="relative h-72 self-stretch bg-gradient-to-br from-ochre-50 to-sand-100 md:h-auto md:min-h-80">
+        <img src="/assets/hadiza.jpeg" alt="Dr Hadiza welcoming patients to SmartClinic" class="absolute inset-0 h-full w-full object-cover object-[70%_68%] mix-blend-multiply" />
       </div>
-      <div class="mt-5 grid grid-cols-2 gap-2 text-sm font-semibold text-slate-700 sm:grid-cols-3 lg:grid-cols-6"><span class="rounded-xl bg-white p-3 ring-1 ring-slate-200">Appointments</span><span class="rounded-xl bg-white p-3 ring-1 ring-slate-200">Results & Records</span><span class="rounded-xl bg-white p-3 ring-1 ring-slate-200">Prescriptions</span><span class="rounded-xl bg-white p-3 ring-1 ring-slate-200">My Hospitals</span><span class="rounded-xl bg-white p-3 ring-1 ring-slate-200">Health Passport</span><span class="rounded-xl bg-white p-3 ring-1 ring-slate-200">SmartCard</span></div>
+      <div class="p-6 sm:p-8">
+        <h2 id="portal-title" class="font-display text-3xl font-semibold text-ink">Your care, together in one place.</h2>
+        <p class="mt-3 max-w-xl leading-7 text-ink-soft">Appointments, results, prescriptions, hospitals and your Smart Health Passport — with a friendly guide whenever you need help finding your way.</p>
+        <ul class="mt-5 flex flex-wrap gap-2 text-sm font-medium text-ink-soft">
+          <li class="rounded-full bg-sand-100 px-3 py-1.5">Appointments</li>
+          <li class="rounded-full bg-sand-100 px-3 py-1.5">Results &amp; Records</li>
+          <li class="rounded-full bg-sand-100 px-3 py-1.5">Prescriptions</li>
+          <li class="rounded-full bg-sand-100 px-3 py-1.5">My Hospitals</li>
+          <li class="rounded-full bg-sand-100 px-3 py-1.5">Health Passport</li>
+          <li class="rounded-full bg-sand-100 px-3 py-1.5">SmartCard</li>
+        </ul>
+        <p class="mt-5 text-sm font-semibold text-ink">Dr Hadiza <span class="font-normal text-ink-muted">· Here to guide you</span></p>
+      </div>
     </div>
   </div>
 </section>
 
 @if (whatsappUrl) {
-  <section class="border-b border-emerald-950/10 bg-[#f7faf9]" aria-labelledby="whatsapp-title">
-    <div
-      class="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10"
-    >
+  <section class="bg-leaf-50" aria-labelledby="whatsapp-title">
+    <div class="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
       <div>
-        <h2 id="whatsapp-title" class="text-xl font-bold text-brand-950">Continue on WhatsApp</h2>
-        <p class="mt-1 text-slate-600">Prefer some help? Continue with SmartClinic on WhatsApp.</p>
+        <h2 id="whatsapp-title" class="font-display text-2xl font-semibold text-ink">Continue on WhatsApp</h2>
+        <p class="mt-1 text-ink-soft">Prefer some help? Continue with SmartClinic on WhatsApp.</p>
       </div>
       <a
         [href]="whatsappUrl"
-        class="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#128c7e] px-5 py-3 font-bold text-[#087266] focus:outline-none focus:ring-4 focus:ring-emerald-200"
+        class="inline-flex min-h-12 items-center justify-center rounded-full border border-[#128c7e] bg-white px-6 py-3 font-semibold text-[#087266] focus:outline-none focus:ring-4 focus:ring-emerald-200"
         >Continue on WhatsApp</a
       >
     </div>
   </section>
 }
 
-<section class="bg-white" aria-label="Why patients choose SmartClinic">
-  <div class="mx-auto max-w-7xl px-5 pb-10 sm:px-8 lg:px-10">
-    <div class="grid grid-cols-3 gap-2">
-      <div class="rounded-2xl bg-emerald-50 p-3 text-center ring-1 ring-emerald-100"><span class="text-lg" aria-hidden="true">✓</span><p class="mt-1 text-xs font-bold text-brand-950 sm:text-sm">Clear pricing</p></div>
-      <div class="rounded-2xl bg-violet-50 p-3 text-center ring-1 ring-violet-100"><span class="text-lg" aria-hidden="true">✓</span><p class="mt-1 text-xs font-bold text-brand-950 sm:text-sm">Verified providers</p></div>
-      <div class="rounded-2xl bg-blue-50 p-3 text-center ring-1 ring-blue-100"><span class="text-lg" aria-hidden="true">⌖</span><p class="mt-1 text-xs font-bold text-brand-950 sm:text-sm">Care near you</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="bg-gradient-to-b from-[#fffdf7] via-[#f8faf9] to-white" aria-labelledby="services-title">
-  <div class="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:px-10">
-    <div class="max-w-3xl">
-      <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-amber-800"><span aria-hidden="true">✦</span> Invest in yourself</div><p class="text-sm font-bold uppercase tracking-[0.14em] text-brand-700">STAY AHEAD OF YOUR HEALTH</p>
-      <h2 id="services-title" class="mt-2 text-3xl font-bold text-brand-950 sm:text-4xl">Smart Health Checks</h2>
-      <p class="mt-3 leading-7 text-slate-600">Choose a health check and we'll help you arrange where and when to do it.</p><p class="mt-4 max-w-2xl rounded-2xl border border-amber-200/80 bg-white/80 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 shadow-sm"><span class="text-amber-700">Your health deserves attention too.</span> We invest in the things we use every day. A simple check can be one of the most important investments you make in yourself.</p>
+<section class="relative overflow-hidden bg-white" aria-labelledby="services-title">
+  <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
+    <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div class="max-w-2xl">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ochre-700">Invest in yourself</p>
+        <h2 id="services-title" class="font-display mt-3 text-4xl font-semibold text-ink sm:text-5xl">Smart Health Checks</h2>
+        <p class="mt-4 text-lg leading-8 text-ink-soft">We invest in the things we use every day. A simple check is one of the most important investments you can make in yourself — choose one and we'll help you arrange where and when.</p>
+      </div>
     </div>
     @if (catalogueLoading()) {
-      <p role="status" class="mt-6 rounded-2xl border bg-white p-5">Loading available Health Checks…</p>
+      <p role="status" class="mt-8 rounded-2xl bg-sand-50 p-5 text-ink-soft">Loading available Health Checks…</p>
     } @else if (catalogueError()) {
-      <div role="alert" class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5"><p>Health Check options are temporarily unavailable.</p><button type="button" (click)="loadCatalogue()" class="mt-3 font-bold text-brand-700 underline">Try again</button></div>
+      <div role="alert" class="mt-8 rounded-2xl bg-clay-50 p-5 text-clay-700"><p>Health Check options are temporarily unavailable.</p><button type="button" (click)="loadCatalogue()" class="mt-3 font-semibold underline">Try again</button></div>
     } @else if (!catalogue().length) {
-      <p class="mt-6 rounded-2xl border bg-white p-5 text-slate-600">No Health Check packages are currently available.</p>
+      <div class="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] bg-sand-50 p-6 ring-1 ring-ink/[0.05]">
+        <p class="text-ink-soft">No Health Check packages are currently available. New packages appear here as providers publish them.</p>
+        <a [routerLink]="mySmartClinicRoute()" class="font-semibold text-brand-700 underline underline-offset-4">Start with a Guided Self-Check →</a>
+      </div>
     } @else {
-      <div class="mt-6 grid gap-4 lg:grid-cols-3">
-        @for (item of catalogue().slice(0, 3); track item.code) {
-          <article class="flex flex-col rounded-3xl border border-brand-100 bg-white p-5 shadow-[0_12px_35px_rgba(54,20,110,0.08)] transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-            <h3 class="text-xl font-bold text-brand-950">{{ item.name }}</h3>
-            @if (item.description) { <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{{ item.description }}</p> }
-            <div class="mt-auto flex items-end justify-between gap-3 pt-5">
-              <div>@if (item.fromPriceMinor !== null && item.currency) { <p class="text-xs text-slate-500">From</p><p class="text-lg font-bold text-brand-950">{{ money(item.fromPriceMinor, item.currency) }}</p> } @else { <p class="text-sm font-semibold text-slate-600">Price shown after provider</p> }</div>
-              <a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams(item.code)" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-700 px-4 py-2 text-sm font-bold text-white shadow-sm">Start my Health Check →</a>
+      <div class="mt-8 grid gap-4 lg:grid-cols-3">
+        @for (item of catalogue().slice(0, 3); track item.code; let first = $first) {
+          <article class="sc-tile flex flex-col rounded-[1.5rem] border p-6 shadow-card {{ first ? 'border-ink bg-ink text-white' : 'border-ink/[0.07] bg-white text-ink' }}">
+            <h3 class="font-display text-2xl font-semibold">{{ item.name }}</h3>
+            @if (item.description) { <p class="mt-2 line-clamp-2 text-sm leading-6 {{ first ? 'text-white/70' : 'text-ink-soft' }}">{{ item.description }}</p> }
+            <div class="mt-auto flex flex-wrap items-end justify-between gap-3 pt-6">
+              <div>@if (item.fromPriceMinor !== null && item.currency) { <p class="text-xs {{ first ? 'text-white/60' : 'text-ink-muted' }}">From</p><p class="font-display text-2xl font-semibold">{{ money(item.fromPriceMinor, item.currency) }}</p> } @else { <p class="text-sm font-medium {{ first ? 'text-white/70' : 'text-ink-soft' }}">Price shown after provider</p> }</div>
+              <a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams(item.code)" class="inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold {{ first ? 'bg-white text-ink' : 'bg-brand-700 text-white' }}">Start my Health Check →</a>
             </div>
           </article>
         }
       </div>
-      <div class="mt-6"><a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams('')" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-300 bg-white px-5 py-3 font-bold text-brand-800">See all Health Checks →</a></div>
+      <div class="mt-6"><a [routerLink]="healthCheckRoute()" [queryParams]="healthCheckQueryParams('')" class="inline-flex min-h-12 items-center justify-center rounded-full border border-ink/15 bg-white px-6 py-3 font-semibold text-ink hover:border-ink/30">See all Health Checks →</a></div>
     }
   </div>
 </section>
 
-<section class="bg-white" aria-labelledby="how-it-works-title">
-  <div class="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:px-10">
-    <div class="max-w-2xl"><p class="text-sm font-bold uppercase tracking-[0.14em] text-brand-700">SIMPLE BY DESIGN</p><h2 id="how-it-works-title" class="mt-2 text-3xl font-bold text-brand-950 sm:text-4xl">Healthcare without the runaround.</h2></div>
-    <ol class="mt-6 grid gap-3 md:grid-cols-3">
-      <li class="flex gap-4 rounded-2xl bg-brand-50 p-4"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white font-bold text-brand-700 shadow-sm">01</span><div><h3 class="font-bold text-brand-950">Tell us what you need</h3><p class="mt-1 text-sm leading-6 text-slate-600">Choose a healthcare action.</p></div></li>
-      <li class="flex gap-4 rounded-2xl bg-emerald-50 p-4"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white font-bold text-emerald-700 shadow-sm">02</span><div><h3 class="font-bold text-brand-950">See your options</h3><p class="mt-1 text-sm leading-6 text-slate-600">Find suitable care, providers and prices.</p></div></li>
-      <li class="flex gap-4 rounded-2xl bg-violet-50 p-4"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white font-bold text-violet-700 shadow-sm">03</span><div><h3 class="font-bold text-brand-950">SmartClinic stays with you</h3><p class="mt-1 text-sm leading-6 text-slate-600">Keep appointments, tests, medicine and records connected.</p></div></li>
+<section class="bg-sand-50" aria-labelledby="how-it-works-title">
+  <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
+    <div class="max-w-2xl"><p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Simple by design</p><h2 id="how-it-works-title" class="font-display mt-3 text-4xl font-semibold text-ink sm:text-5xl">Healthcare without the runaround.</h2></div>
+    <ol class="mt-10 grid gap-4 md:grid-cols-3">
+      <li class="border-t-2 border-ink pt-5"><span class="font-display text-4xl font-semibold text-brand-700">01</span><h3 class="mt-3 text-lg font-semibold text-ink">Tell us what you need</h3><p class="mt-1 leading-7 text-ink-soft">Choose a healthcare action — or start with a Guided Self-Check.</p></li>
+      <li class="border-t-2 border-ink pt-5"><span class="font-display text-4xl font-semibold text-brand-700">02</span><h3 class="mt-3 text-lg font-semibold text-ink">See your options</h3><p class="mt-1 leading-7 text-ink-soft">Find suitable care, verified providers and clear prices.</p></li>
+      <li class="border-t-2 border-ink pt-5"><span class="font-display text-4xl font-semibold text-brand-700">03</span><h3 class="mt-3 text-lg font-semibold text-ink">SmartClinic stays with you</h3><p class="mt-1 leading-7 text-ink-soft">Appointments, tests, medicine and records stay connected — and you come back daily to stay well.</p></li>
     </ol>
   </div>
 </section>
 
-<section class="bg-brand-950 text-white" aria-labelledby="impact-teaser-title">
-  <div class="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
-    <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-      <div><p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-200">COMMUNITY IMPACT</p><h2 id="impact-teaser-title" class="mt-2 text-2xl font-bold">Healthcare grows when communities connect.</h2><p class="mt-2 max-w-2xl text-sm leading-6 text-brand-100">Discover how people and communities are helping more patients connect to care.</p></div>
-      <a routerLink="/impact" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-white px-5 py-3 font-bold text-brand-900">Explore Impact →</a>
+<section class="relative overflow-hidden bg-ink text-white" aria-labelledby="impact-teaser-title">
+  <div class="sc-motif absolute inset-0 opacity-[0.06]" aria-hidden="true"></div>
+  <div class="relative mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
+    <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-ochre-300">Community impact</p><h2 id="impact-teaser-title" class="font-display mt-3 text-3xl font-semibold sm:text-4xl">Healthcare grows when communities connect.</h2><p class="mt-3 max-w-2xl leading-7 text-white/70">Discover how people and communities are helping more patients connect to care.</p></div>
+      <a routerLink="/impact" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-white px-6 py-3 font-semibold text-ink hover:bg-ochre-50">Explore Impact →</a>
     </div>
   </div>
 </section>
 
-<section class="border-b border-emerald-950/10 bg-brand-50" aria-labelledby="provider-network-title">
-  <div class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-6 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
-    <div><p class="text-xs font-bold uppercase tracking-[0.14em] text-brand-700">FOR HEALTHCARE PROVIDERS</p><h2 id="provider-network-title" class="mt-1 text-xl font-bold text-brand-950">Bring your services to SmartClinic.</h2></div>
-    <div class="flex flex-wrap gap-4"><a routerLink="/provider/register" class="font-bold text-brand-700">Join the network →</a><a routerLink="/login" class="font-semibold text-slate-600">Provider sign in</a></div>
+<section class="bg-brand-50" aria-labelledby="provider-network-title">
+  <div class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
+    <div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">For healthcare providers</p><h2 id="provider-network-title" class="font-display mt-1 text-2xl font-semibold text-ink">Bring your services to SmartClinic.</h2></div>
+    <div class="flex flex-wrap gap-5"><a routerLink="/provider/register" class="font-semibold text-brand-700">Join the network →</a><a routerLink="/login" class="font-medium text-ink-soft">Provider sign in</a></div>
   </div>
 </section>
 
-<section class="bg-white" aria-labelledby="faq-title">
-  <div class="mx-auto max-w-5xl px-5 pb-10 pt-8 sm:px-8">
+<section class="bg-sand-50" aria-labelledby="faq-title">
+  <div class="mx-auto max-w-3xl px-5 py-16 sm:px-8">
     <div class="text-center">
-      <h2 id="faq-title" class="text-3xl font-bold text-brand-950 sm:text-4xl">
-        Questions &amp; support
-      </h2>
-      <p class="mt-3 text-slate-600">Helpful answers before you continue.</p>
+      <h2 id="faq-title" class="font-display text-4xl font-semibold text-ink">Questions &amp; support</h2>
+      <p class="mt-3 text-ink-soft">Helpful answers before you continue.</p>
     </div>
-    <div class="mt-7 divide-y rounded-3xl border border-brand-100 bg-white px-5 shadow-[0_12px_35px_rgba(54,20,110,0.06)] sm:px-7">
-      <details class="group py-5">
-        <summary
-          class="cursor-pointer font-bold text-brand-950 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        >
-          What is SmartClinic?
-        </summary>
-        <p class="mt-3 leading-7 text-slate-600">
-          SmartClinic helps patients access preventive health, find care, connect with participating
-          providers, and keep relevant care activity together.
-        </p>
-      </details>
-      <details class="group py-5">
-        <summary
-          class="cursor-pointer font-bold text-brand-950 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        >
-          How do Health Checks work?
-        </summary>
-        <p class="mt-3 leading-7 text-slate-600">
-          Choose an available package, review eligible provider and fulfilment options, then confirm
-          your booking using the current quoted price.
-        </p>
-      </details>
-      <details class="group py-5">
-        <summary
-          class="cursor-pointer font-bold text-brand-950 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        >
-          Can I use SmartClinic from home?
-        </summary>
-        <p class="mt-3 leading-7 text-slate-600">
-          You can begin with a Guided Self-Check from home. Home visits are also shown when a
-          selected provider supports that fulfilment option.
-        </p>
-      </details>
-      <details class="group py-5">
-        <summary
-          class="cursor-pointer font-bold text-brand-950 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        >
-          How are providers selected?
-        </summary>
-        <p class="mt-3 leading-7 text-slate-600">
-          Providers apply to the SmartClinic Network and are reviewed before eligible services are
-          made available through the platform.
-        </p>
-      </details>
-      <details class="group py-5">
-        <summary
-          class="cursor-pointer font-bold text-brand-950 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        >
-          How do I access My SmartClinic?
-        </summary>
-        <p class="mt-3 leading-7 text-slate-600">
-          Use Open My SmartClinic to sign in with the email address or phone number linked to your
-          account.
-        </p>
-      </details>
-      <details class="group py-5">
-        <summary
-          class="cursor-pointer font-bold text-brand-950 focus:outline-none focus:ring-4 focus:ring-brand-100"
-        >
-          How can I get help?
-        </summary>
-        <p class="mt-3 leading-7 text-slate-600">
-          Sign in to review your current care activity. WhatsApp assistance will appear here when an
-          authoritative support contact is configured.
-        </p>
-      </details>
+    <div class="sc-card mt-8 divide-y divide-ink/[0.07] px-5 sm:px-7">
+      @for (faq of faqs; track faq.question) {
+        <details class="group py-5">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-100">
+            {{ faq.question }}
+            <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sand-100 text-ink transition group-open:rotate-45" aria-hidden="true">+</span>
+          </summary>
+          <p class="mt-3 leading-7 text-ink-soft">{{ faq.answer }}</p>
+        </details>
+      }
     </div>
   </div>
 </section>

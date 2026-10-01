@@ -31,8 +31,8 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
       <p role="status" class="mt-6 rounded-2xl border bg-white p-6">Loading care chat…</p>
     } @else if (unavailable()) {
       <section class="mt-6 rounded-2xl border bg-white p-7">
-        <h1 class="text-2xl font-bold">Care chat unavailable</h1>
-        <p class="mt-2 text-slate-600">{{ unavailable() }}</p>
+        <h1 class="font-display text-2xl font-semibold">Care chat unavailable</h1>
+        <p class="mt-2 text-ink-soft">{{ unavailable() }}</p>
       </section>
     } @else if (error() && !chat()) {
       <section role="alert" class="mt-6 rounded-2xl bg-red-50 p-6">
@@ -46,16 +46,16 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             <p class="break-all text-sm font-bold uppercase text-brand-600">
               {{ detail.careRequestReference }}
             </p>
-            <h1 class="mt-2 text-3xl font-bold">
+            <h1 class="font-display mt-2 text-3xl font-semibold">
               {{ scope === 'patient' ? 'Chat with provider' : 'Chat with patient' }}
             </h1>
             <p class="mt-2 font-semibold">{{ detail.participant.displayName }}</p>
             @if (scope === 'patient' && detail.subject) {
-              <p class="mt-2 text-sm text-slate-600">
+              <p class="mt-2 text-sm text-ink-soft">
                 Regarding <strong>{{ detail.subject.displayName }}</strong>
               </p>
             }
-            <!-- <p class="text-sm text-slate-600">{{ detail.service.name }}</p> -->
+            <!-- <p class="text-sm text-ink-soft">{{ detail.service.name }}</p> -->
           </div>
           @if (detail.unreadCount > 0) {
             <span class="rounded-full bg-brand-700 px-3 py-1 text-sm font-bold text-white"
@@ -64,7 +64,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           }
         </div>
         @if (detail.appointment; as a) {
-          <p class="mt-4 rounded-xl bg-slate-50 p-3">
+          <p class="mt-4 rounded-xl bg-sand-50 p-3">
             {{ utils.formatAppointment(a.scheduledDate, a.scheduledTimeFrom, a.scheduledTimeTo) }} ·
             {{ deliveryModeLabel(a.deliveryMode) }}
             <a
@@ -79,7 +79,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
         <p role="alert" class="mt-4 rounded-xl bg-red-50 p-3 text-red-800">{{ error() }}</p>
       }
       <section
-        class="mt-5 overflow-hidden rounded-2xl border bg-slate-50"
+        class="mt-5 overflow-hidden rounded-2xl border bg-sand-50"
         aria-labelledby="messages-heading"
       >
         <h2 id="messages-heading" class="sr-only">Messages</h2>
@@ -97,7 +97,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             </div>
           }
           @if (!messages().length) {
-            <p class="py-16 text-center text-slate-600">
+            <p class="py-16 text-center text-ink-soft">
               No messages yet. Start the conversation when you're ready.
             </p>
           }
@@ -187,9 +187,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
             @if (pendingAttachments().length || uploadingFile() || failedFile()) {
               <div class="mt-3 grid gap-2 sm:grid-cols-2">
                 @for (attachment of pendingAttachments(); track attachment.reference) {
-                  <div class="rounded-xl border bg-slate-50 p-3">
+                  <div class="rounded-xl border bg-sand-50 p-3">
                     <p class="break-words text-sm font-bold">{{ attachment.originalName }}</p>
-                    <p class="text-xs text-slate-500">
+                    <p class="text-xs text-ink-muted">
                       Ready · {{ formatFileSize(attachment.sizeBytes) }}
                     </p>
                     <button
@@ -202,9 +202,9 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
                   </div>
                 }
                 @if (uploadingFile(); as file) {
-                  <div class="rounded-xl border bg-slate-50 p-3">
+                  <div class="rounded-xl border bg-sand-50 p-3">
                     <p class="break-words text-sm font-bold">{{ file.name }}</p>
-                    <p role="status" class="text-xs text-slate-500">Uploading…</p>
+                    <p role="status" class="text-xs text-ink-muted">Uploading…</p>
                   </div>
                 }
                 @if (failedFile(); as file) {
@@ -258,12 +258,12 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
                 {{ sending() ? 'Sending…' : 'Send' }}
               </button>
             </div>
-            <p class="mt-2 text-xs text-slate-500">
+            <p class="mt-2 text-xs text-ink-muted">
               PDF, JPG, PNG or WEBP. Max 15 MB each. Up to 5 attachments.
             </p>
           </form>
         } @else {
-          <p class="border-t bg-white p-4 text-center font-semibold text-slate-600">
+          <p class="border-t bg-white p-4 text-center font-semibold text-ink-soft">
             This conversation is now read-only.
           </p>
         }
@@ -278,7 +278,7 @@ import { careDeliveryModeLabel } from './care-delivery-mode';
           class="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
         >
           <div class="flex items-start justify-between gap-3">
-            <h2 id="chat-attachment-preview-title" class="break-words text-xl font-bold">
+            <h2 id="chat-attachment-preview-title" class="font-display break-words text-xl font-semibold">
               {{ previewName() }}
             </h2>
             <button

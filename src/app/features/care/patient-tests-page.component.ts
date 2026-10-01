@@ -12,8 +12,8 @@
 //   changeDetection: ChangeDetectionStrategy.OnPush,
 //   template: `<main class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
 //     <p class="text-sm font-bold uppercase text-brand-600">SmartClinic tests</p>
-//     <h1 class="mt-2 text-3xl font-black text-brand-950">Get a Test</h1>
-//     <p class="mt-2 text-slate-600">Doctor-requested tests and scans appear here automatically.</p>
+//     <h1 class="font-display mt-2 text-3xl font-semibold text-ink">Get a Test</h1>
+//     <p class="mt-2 text-ink-soft">Doctor-requested tests and scans appear here automatically.</p>
 //     @if (loading()) {
 //       <p class="mt-8 rounded-2xl border bg-white p-6">Loading your tests…</p>
 //     } @else if (error()) {
@@ -31,13 +31,13 @@
 //                 <p class="text-xs font-bold uppercase tracking-[.14em] text-brand-600">
 //                   {{ o.type === 'IMAGING' ? 'Scan / imaging' : 'Laboratory test' }}
 //                 </p>
-//                 <h2 class="mt-1 text-xl font-black text-brand-950">{{ names(o) }}</h2>
-//                 <p class="mt-2 text-sm text-slate-600">
+//                 <h2 class="font-display mt-1 text-xl font-semibold text-ink">{{ names(o) }}</h2>
+//                 <p class="mt-2 text-sm text-ink-soft">
 //                   Requested by {{ o.orderingProvider.displayName
 //                   }}{{ o.issuedAt ? ' · ' + date(o.issuedAt) : '' }}
 //                 </p>
 //                 @if (o.clinicalNote) {
-//                   <p class="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+//                   <p class="mt-3 rounded-xl bg-sand-50 p-3 text-sm text-ink-soft">
 //                     {{ o.clinicalNote }}
 //                   </p>
 //                 }
@@ -52,10 +52,10 @@
 //                   <div class="mt-4 border-t pt-4">
 //                     @if (fulfillment(); as f) {
 //                       <div class="mb-4 rounded-2xl bg-brand-50 p-4">
-//                         <p class="font-bold text-brand-950">
+//                         <p class="font-bold text-ink">
 //                           {{ f.provider?.displayName || f.fulfiller?.displayName }}
 //                         </p>
-//                         <p class="mt-1 text-sm text-slate-600">
+//                         <p class="mt-1 text-sm text-ink-soft">
 //                           {{
 //                             f.status === 'SELECTED'
 //                               ? 'Centre selected · waiting for acceptance'
@@ -66,7 +66,7 @@
 //                         </p>
 //                         @if (f.quote; as q) {
 //                           <div class="mt-3 border-t border-brand-100 pt-3">
-//                             <p class="text-sm text-slate-600">Price</p>
+//                             <p class="text-sm text-ink-soft">Price</p>
 //                             <p class="text-2xl font-black">{{ money(q.totalMinor, q.currency) }}</p>
 //                             @if (q.status === 'SUBMITTED') {
 //                               <button
@@ -106,7 +106,7 @@
 //                             >
 //                               {{ resultOpening() ? 'Opening result…' : 'View result →' }}
 //                             </button>
-//                             <p class="mt-2 text-xs text-slate-500">
+//                             <p class="mt-2 text-xs text-ink-muted">
 //                               Your ordering clinician can also access this result through
 //                               SmartClinic.
 //                             </p>
@@ -115,9 +115,9 @@
 //                       </div>
 //                     }
 //                     @if (providersLoading()) {
-//                       <p class="text-sm text-slate-600">Finding available centres…</p>
+//                       <p class="text-sm text-ink-soft">Finding available centres…</p>
 //                     } @else if (providers().length) {
-//                       <p class="mb-3 text-sm font-bold text-brand-950">Available centres</p>
+//                       <p class="mb-3 text-sm font-bold text-ink">Available centres</p>
 //                       <div class="grid gap-2">
 //                         @for (p of providers(); track p.providerServiceUnitReference) {
 //                           <button
@@ -127,7 +127,7 @@
 //                             class="rounded-xl border p-3 text-left hover:border-brand-300 disabled:opacity-50"
 //                           >
 //                             <strong class="block">{{ p.displayName }}</strong
-//                             ><span class="text-sm text-slate-600"
+//                             ><span class="text-sm text-ink-soft"
 //                               >{{ p.unitName
 //                               }}{{ p.location.city ? ', ' + p.location.city : '' }}</span
 //                             >
@@ -135,7 +135,7 @@
 //                         }
 //                       </div>
 //                     } @else {
-//                       <p class="text-sm text-slate-600">
+//                       <p class="text-sm text-ink-soft">
 //                         No available centre is listed yet for this request.
 //                       </p>
 //                     }
@@ -148,8 +148,8 @@
 //       </section>
 //     } @else {
 //       <section class="mt-8 rounded-2xl border bg-white p-8 text-center">
-//         <h2 class="text-xl font-bold">No doctor-requested tests yet</h2>
-//         <p class="mt-2 text-slate-600">
+//         <h2 class="font-display text-xl font-semibold">No doctor-requested tests yet</h2>
+//         <p class="mt-2 text-ink-soft">
 //           If a SmartClinic doctor requests a lab test or scan, it will appear here automatically.
 //         </p>
 //         <a

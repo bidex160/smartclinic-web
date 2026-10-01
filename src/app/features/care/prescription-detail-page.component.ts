@@ -27,7 +27,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
     } @else if (order(); as o) {
       <header class="mt-6">
         <p class="break-all text-sm font-bold text-brand-700">{{ o.reference }}</p>
-        <h1 class="mt-2 text-3xl font-bold">Get your medicines</h1>
+        <h1 class="font-display mt-2 text-3xl font-semibold">Get your medicines</h1>
         <p class="mt-2">
           {{ o.orderingProvider.displayName }} · {{ date(o.issuedAt) }} · {{ o.status }}
         </p>
@@ -79,14 +79,14 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
       </section>
       @if (fulfillment(); as f) {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Your pharmacy</h2>
+          <h2 class="font-display text-xl font-semibold">Your pharmacy</h2>
           <p class="mt-2">
             <strong>{{ f.pharmacy.displayName }}</strong> · {{ f.pharmacy.serviceUnitName }}
           </p>
           <p class="mt-2">{{ status(f.status) }}</p>
           @if (f.status === 'PROPOSED') {
             <div class="mt-5 rounded-xl border border-brand-200 bg-brand-50 p-4">
-              <p class="font-semibold text-brand-950">
+              <p class="font-semibold text-ink">
                 Your clinician recommended this pharmacy. Confirm it before the pharmacy can accept
                 the prescription and send a price.
               </p>
@@ -123,7 +123,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                     ></label
                   >
                 }
-                <form [formGroup]="fulfillmentForm" class="mt-5 rounded-xl border bg-slate-50 p-4">
+                <form [formGroup]="fulfillmentForm" class="mt-5 rounded-xl border bg-sand-50 p-4">
                   <label class="font-bold">How would you like to receive it?<select formControlName="method" class="mt-2 block min-h-12 w-full rounded-xl border bg-white px-3">@for (option of q.fulfillmentOptions; track option.method) { <option [value]="option.method">{{ methodLabel(option.method) }}{{ option.feeMinor ? ' · ' + money(option.feeMinor, q.currency) : ' · Free' }}</option> }</select></label>
                   @if (fulfillmentForm.controls.method.value === 'HOME_DELIVERY') {
                     <div class="mt-4 grid gap-3 sm:grid-cols-2">
@@ -149,7 +149,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             </div>
           }
           @if (f.funding; as funding) {
-            <div class="mt-5 rounded-xl bg-slate-50 p-4">
+            <div class="mt-5 rounded-xl bg-sand-50 p-4">
               <strong>Payment: {{ fundingLabel(funding.status) }}</strong>
               <dl class="mt-3 grid gap-2 text-sm"><div class="flex justify-between"><dt>Medicine</dt><dd>{{ money(funding.medicineAmountMinor, funding.currency) }}</dd></div>@if (funding.deliveryFeeMinor) { <div class="flex justify-between"><dt>Delivery</dt><dd>{{ money(funding.deliveryFeeMinor, funding.currency) }}</dd></div> }@if (funding.doctorCoordinationFeeMinor) { <div class="flex justify-between"><dt>Doctor coordination</dt><dd>{{ money(funding.doctorCoordinationFeeMinor, funding.currency) }}</dd></div> }@if (funding.hospitalCoordinationFeeMinor) { <div class="flex justify-between"><dt>Hospital coordination</dt><dd>{{ money(funding.hospitalCoordinationFeeMinor, funding.currency) }}</dd></div> }<div class="flex justify-between border-t pt-2 text-base font-bold"><dt>Total</dt><dd>{{ money(funding.amountMinor, funding.currency) }}</dd></div></dl>
               @if (funding.status === 'PENDING') {
@@ -182,8 +182,8 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
       } @else if (o.status === 'ISSUED') {
         <section class="mt-6 rounded-2xl border bg-white p-6">
-          <h2 class="text-xl font-bold">Choose where to get your medicines</h2>
-          <p class="mt-2 text-slate-600">
+          <h2 class="font-display text-xl font-semibold">Choose where to get your medicines</h2>
+          <p class="mt-2 text-ink-soft">
             Choose an available pharmacy. You can change it before payment.
           </p>
           <form [formGroup]="searchForm" (ngSubmit)="search()" class="mt-4 flex gap-3">
@@ -201,14 +201,14 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
               <button (click)="search()" class="font-bold underline">Try again</button>
             </p>
           } @else if (!pharmacies().length) {
-            <p class="mt-4 text-slate-600">No eligible pharmacies match your search.</p>
+            <p class="mt-4 text-ink-soft">No eligible pharmacies match your search.</p>
           } @else {
             <div class="mt-4 grid gap-3 sm:grid-cols-2">
               @for (p of pharmacies(); track p.providerServiceUnitReference) {
                 <article class="rounded-xl border p-4">
                   <h3 class="font-bold">{{ p.displayName }}</h3>
                   <p>{{ p.unitName }}</p>
-                  <p class="text-sm text-slate-600">
+                  <p class="text-sm text-ink-soft">
                     {{ p.location.city }}, {{ p.location.stateOrRegion }} ·
                     {{ p.location.countryCode }}
                   </p>

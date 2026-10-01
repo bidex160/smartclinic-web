@@ -17,8 +17,8 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
       class="font-bold text-brand-700 underline"
       >← Back to sign in</a
     >
-    <h1 class="mt-8 text-3xl font-bold">Forgot your password?</h1>
-    <p class="mt-3 text-slate-600">
+    <h1 class="mt-8 font-display text-[2.1rem] font-semibold leading-tight">Forgot your password?</h1>
+    <p class="mt-3 text-ink-soft">
       Enter the email address associated with your SmartClinic account and we'll send you a link to
       reset your password.
     </p>
@@ -43,15 +43,15 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
           />
         </label>
         @if (form.controls.email.touched && form.controls.email.invalid) {
-          <p class="text-sm text-red-700" role="alert">Enter a valid email address.</p>
+          <p class="text-sm text-clay-700" role="alert">Enter a valid email address.</p>
         }
         @if (error()) {
-          <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
+          <p role="alert" class="rounded-xl bg-clay-50 p-4 text-clay-700">{{ error() }}</p>
         }
         <button
           type="submit"
           [disabled]="pending()"
-          class="min-h-12 rounded-xl bg-brand-700 px-5 py-3 font-bold text-white disabled:opacity-60"
+          class="min-h-12 rounded-full bg-ink px-5 py-3 font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
         >
           {{ pending() ? 'Sending…' : 'Send reset link' }}
         </button>

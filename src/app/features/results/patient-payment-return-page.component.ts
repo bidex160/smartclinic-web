@@ -21,15 +21,15 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       <p class="text-sm font-bold uppercase tracking-wider text-brand-600">Payment return</p>
       @if (verifying()) {
         <section role="status" class="mt-6 rounded-2xl border bg-white p-7">
-          <h1 class="text-2xl font-bold">Verifying your payment…</h1>
-          <p class="mt-2 text-slate-600">
+          <h1 class="font-display text-2xl font-semibold">Verifying your payment…</h1>
+          <p class="mt-2 text-ink-soft">
             SmartClinic is checking the authoritative payment status.
           </p>
         </section>
       }
       @if (error()) {
         <section role="alert" class="mt-6 rounded-2xl bg-red-50 p-7 text-red-950">
-          <h1 class="text-2xl font-bold">We could not confirm the payment yet</h1>
+          <h1 class="font-display text-2xl font-semibold">We could not confirm the payment yet</h1>
           <p class="mt-2">Refresh or try verification again.</p>
           <button
             type="button"
@@ -44,7 +44,7 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       @if (status(); as payment) {
         <section class="mt-6 rounded-2xl border bg-white p-7">
           @if (payment.fundingStatus === 'SETTLED') {
-            <h1 class="text-2xl font-bold text-green-900">Payment confirmed</h1>
+            <h1 class="font-display text-2xl font-semibold text-green-900">Payment confirmed</h1>
             <p class="mt-2">
               {{
                 payment.bookingStatus === 'SCHEDULED'
@@ -53,10 +53,10 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
               }}
             </p>
           } @else if (payment.paymentStatus === 'FAILED' || payment.paymentStatus === 'CANCELLED') {
-            <h1 class="text-2xl font-bold">Payment was not completed successfully</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment was not completed successfully</h1>
             <p class="mt-2">Return to your Health Check and try again.</p>
           } @else {
-            <h1 class="text-2xl font-bold">Payment pending</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment pending</h1>
             <p class="mt-2">We could not confirm the payment yet. You can retry verification.</p>
             <button
               type="button"
@@ -80,13 +80,13 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       @if (fastTrackStatus(); as payment) {
         <section class="mt-6 rounded-2xl border bg-white p-7">
           @if (payment.fastTrackStatus === 'CONFIRMED' || payment.fastTrackStatus === 'PAID') {
-            <h1 class="text-2xl font-bold text-green-900">Payment confirmed</h1>
+            <h1 class="font-display text-2xl font-semibold text-green-900">Payment confirmed</h1>
             <p class="mt-2">Your FastTrack request is confirmed.</p>
           } @else if (payment.paymentAttemptStatus === 'FAILED') {
-            <h1 class="text-2xl font-bold">Payment was not completed successfully</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment was not completed successfully</h1>
             <p class="mt-2">Return to FastTrack and try again.</p>
           } @else {
-            <h1 class="text-2xl font-bold">Payment pending</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment pending</h1>
             <p class="mt-2">We could not confirm the payment yet.</p>
             <button
               type="button"
@@ -110,13 +110,13 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       @if (careFunding(); as payment) {
         <section class="mt-6 rounded-2xl border bg-white p-7">
           @if (payment.fundingStatus === 'PAID') {
-            <h1 class="text-2xl font-bold text-green-900">Payment confirmed</h1>
+            <h1 class="font-display text-2xl font-semibold text-green-900">Payment confirmed</h1>
             <p class="mt-2">Your provider can now schedule your care.</p>
           } @else if (payment.fundingStatus === 'SATISFIED_FREE') {
-            <h1 class="text-2xl font-bold text-green-900">No payment required</h1>
+            <h1 class="font-display text-2xl font-semibold text-green-900">No payment required</h1>
             <p class="mt-2">This care service is free.</p>
           } @else {
-            <h1 class="text-2xl font-bold">Payment pending</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment pending</h1>
             <p class="mt-2">We could not confirm the payment yet.</p>
             <button
               type="button"
@@ -140,10 +140,10 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       @if (connectionFunding(); as payment) {
         <section class="mt-6 rounded-2xl border bg-white p-7">
           @if (payment.fundingSatisfied) {
-            <h1 class="text-2xl font-bold text-green-900">Payment confirmed</h1>
+            <h1 class="font-display text-2xl font-semibold text-green-900">Payment confirmed</h1>
             <p class="mt-2">Your registration or linking request has been sent to the Provider.</p>
           } @else {
-            <h1 class="text-2xl font-bold">Payment pending</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment pending</h1>
             <p class="mt-2">We could not confirm the payment yet.</p>
             <button
               type="button"
@@ -163,12 +163,12 @@ import { PharmacyFulfillmentApiService } from '../../core/services/pharmacy-fulf
       @if (pharmacyFunding(); as payment) {
         <section class="mt-6 rounded-2xl border bg-white p-7">
           @if (payment.fundingStatus === 'PAID' || payment.fundingStatus === 'SATISFIED_FREE') {
-            <h1 class="text-2xl font-bold text-green-900">
+            <h1 class="font-display text-2xl font-semibold text-green-900">
               {{ payment.fundingStatus === 'PAID' ? 'Payment confirmed' : 'No payment required' }}
             </h1>
             <p class="mt-2">Your pharmacy can now prepare the prescription.</p>
           } @else {
-            <h1 class="text-2xl font-bold">Payment pending</h1>
+            <h1 class="font-display text-2xl font-semibold">Payment pending</h1>
             <p class="mt-2">We could not confirm the payment yet.</p>
             <button
               type="button"

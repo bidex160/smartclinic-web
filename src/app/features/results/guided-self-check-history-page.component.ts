@@ -11,8 +11,8 @@ import { GuidedSelfChecksApiService } from '../../core/services/guided-self-chec
     <header class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="font-bold uppercase text-brand-700">Smart Health Passport</p>
-        <h1 class="mt-2 text-3xl font-bold">My Self-Checks</h1>
-        <p class="mt-2 text-slate-600">Resume an open Self-Check or revisit a completed summary.</p>
+        <h1 class="font-display mt-2 text-3xl font-semibold">My Self-Checks</h1>
+        <p class="mt-2 text-ink-soft">Resume an open Self-Check or revisit a completed summary.</p>
       </div>
       <a
         routerLink="/me/self-checks/start"
@@ -31,8 +31,8 @@ import { GuidedSelfChecksApiService } from '../../core/services/guided-self-chec
       </div>
     } @else if (!items().length) {
       <div class="mt-8 rounded-2xl border bg-white p-8">
-        <h2 class="text-xl font-bold">No Self-Checks yet</h2>
-        <p class="mt-2 text-slate-600">Start from home with guided questions when you're ready.</p>
+        <h2 class="font-display text-xl font-semibold">No Self-Checks yet</h2>
+        <p class="mt-2 text-ink-soft">Start from home with guided questions when you're ready.</p>
       </div>
     } @else {
       <ul class="mt-8 grid gap-4">
@@ -41,7 +41,7 @@ import { GuidedSelfChecksApiService } from '../../core/services/guided-self-chec
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 class="font-bold">Guided Self-Check</h2>
-                <p class="mt-1 text-sm text-slate-600">
+                <p class="mt-1 text-sm text-ink-soft">
                   Started {{ date(item.createdAt) }} · {{ workflow(item) }}
                 </p>
               </div>

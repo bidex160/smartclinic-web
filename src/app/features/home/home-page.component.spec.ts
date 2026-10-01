@@ -58,9 +58,9 @@ describe('HomePageComponent', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const text = element.textContent ?? '';
-    expect(text).toContain('YOUR HEALTH, CONNECTED');
+    expect(text).toContain('Your personal health companion');
     expect(text).toContain('What do you need today?');
-    expect(text).toContain('Healthcare made simpler. What do you need today?');
+    expect(text).toContain('Healthcare made simpler.');
     const actions = element.querySelectorAll('[aria-label="Healthcare actions"] a');
     expect(actions).toHaveLength(5);
     expect([...actions].map((action) => action.textContent?.trim())).toEqual(expect.arrayContaining([

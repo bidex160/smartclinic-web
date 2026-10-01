@@ -10,10 +10,10 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
-      <header class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <header class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">My health records</p>
-        <h1 class="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Health Records</h1>
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-4"><p class="max-w-2xl text-slate-600">Your finalized clinical records from care delivered through SmartClinic.</p><div class="flex flex-wrap gap-3"><a routerLink="/me/health-records/access-requests" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Access Requests</a><a routerLink="/me/health-records/sharing" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Manage sharing</a></div></div>
+        <h1 class="font-display mt-2 text-3xl font-semibold text-ink sm:text-4xl">Health Records</h1>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-4"><p class="max-w-2xl text-ink-soft">Your finalized clinical records from care delivered through SmartClinic.</p><div class="flex flex-wrap gap-3"><a routerLink="/me/health-records/access-requests" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Access Requests</a><a routerLink="/me/health-records/sharing" class="rounded-xl border px-4 py-3 font-bold text-brand-700">Manage sharing</a></div></div>
       </header>
 
       @if (loading()) {
@@ -41,112 +41,112 @@ import { ClinicalRecordsApiService } from '../../core/services/clinical-records-
         </div>
       }
       @else if (!records().length) {
-        <section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h2 class="text-xl font-bold">
+        <section class="mt-6 rounded-[2rem] border border-ink/[0.08] bg-white p-8 text-center shadow-sm">
+          <h2 class="font-display text-xl font-semibold">
             No finalized health records yet
           </h2>
 
-          <p class="mt-2 text-slate-600">
+          <p class="mt-2 text-ink-soft">
             Records will appear here after your provider finalizes them.
           </p>
         </section>
       }
       @else {
-        <div class="mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+        <div class="mt-6 overflow-hidden rounded-[2rem] border border-ink/[0.08] bg-white shadow-sm">
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200">
-              <thead class="bg-slate-50">
+            <table class="min-w-full divide-y divide-ink/[0.08]">
+              <thead class="bg-sand-50">
                 <tr>
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Record
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Type
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Service
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Provider
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Care Date
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Finalized
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Status
                   </th>
 
                   <th
                     scope="col"
-                    class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500"
+                    class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-ink-muted"
                   >
                     Action
                   </th>
                 </tr>
               </thead>
 
-              <tbody class="divide-y divide-slate-100 bg-white">
+              <tbody class="divide-y divide-ink/[0.06] bg-white">
                 @for (record of records(); track record.reference) {
-                  <tr class="transition hover:bg-slate-50">
+                  <tr class="transition hover:bg-sand-50">
                     <td class="whitespace-nowrap px-5 py-4">
                       <div class="max-w-xs">
-                        <p class="truncate font-semibold text-slate-900">
+                        <p class="truncate font-semibold text-ink">
                           {{ record.title }}
                         </p>
 
-                        <p class="mt-1 text-xs text-slate-500">
+                        <p class="mt-1 text-xs text-ink-muted">
                           {{ record.reference }}
                         </p>
                       </div>
                     </td>
 
-                    <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-ink-soft">
                       {{ typeLabel(record.recordType) }}
                     </td>
 
-                    <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-ink-soft">
                       {{ record.service?.name || 'General Care' }}
                     </td>
 
-                    <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-ink-soft">
                       {{ record.provider.displayName }}
                     </td>
 
-                    <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-ink-soft">
                       {{ formatDate(record.occurredAt) }}
                     </td>
 
-                    <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-ink-soft">
                       {{ formatDate(record.finalizedAt) }}
                     </td>
 

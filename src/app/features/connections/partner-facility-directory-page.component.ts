@@ -12,8 +12,8 @@ import { PartnerFacilityDirectoryApiService } from '../../core/services/partner-
   template: `<main class="mx-auto max-w-6xl px-5 py-8 sm:px-8">
     <a routerLink="/me/providers" class="font-bold text-brand-700 underline">← My providers</a>
     <p class="mt-6 text-sm font-bold uppercase tracking-wider text-brand-700">SmartClinic Network</p>
-    <h1 class="mt-2 text-3xl font-black text-slate-950">Find a hospital, pharmacy or lab</h1>
-    <p class="mt-2 max-w-3xl text-slate-600">Search verified facility listings. Facilities marked “Available to join” are not yet connected for bookings or payments. Ask SmartClinic to contact them for you.</p>
+    <h1 class="font-display mt-2 text-3xl font-semibold text-ink">Find a hospital, pharmacy or lab</h1>
+    <p class="mt-2 max-w-3xl text-ink-soft">Search verified facility listings. Facilities marked “Available to join” are not yet connected for bookings or payments. Ask SmartClinic to contact them for you.</p>
     <section class="mt-6 grid gap-3 rounded-2xl border bg-white p-4 sm:grid-cols-4">
       <label class="grid gap-1 text-sm font-bold">Search<input [formControl]="search" class="rounded-xl border p-3 font-normal" placeholder="Name, city or state"></label>
       <label class="grid gap-1 text-sm font-bold">Facility type<select [formControl]="type" class="rounded-xl border p-3"><option value="">All facilities</option><option value="HOSPITAL">Hospital</option><option value="PHARMACY">Pharmacy</option><option value="LABORATORY">Laboratory</option><option value="RADIOLOGY">Radiology</option></select></label>
@@ -23,13 +23,13 @@ import { PartnerFacilityDirectoryApiService } from '../../core/services/partner-
     </section>
     @if (loading()) { <p role="status" class="mt-5">Loading facilities…</p> }
     @else if (error()) { <p role="alert" class="mt-5 rounded-xl bg-red-50 p-4">We couldn’t load the facility directory. <button (click)="load(page())" class="font-bold underline">Try again</button></p> }
-    @else if (!items().length) { <p class="mt-5 rounded-xl bg-slate-50 p-5">No listed facilities match these filters yet.</p> }
+    @else if (!items().length) { <p class="mt-5 rounded-xl bg-sand-50 p-5">No listed facilities match these filters yet.</p> }
     @else {
       <section class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @for (item of items(); track item.id) {
           <article class="rounded-2xl border bg-white p-5 shadow-sm">
             <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-wide text-brand-700">{{ typeLabel(item.facilityType) }}</p><h2 class="mt-1 text-lg font-black">{{ item.displayName }}</h2></div><span class="rounded-full border px-3 py-1 text-xs font-bold">{{ readinessLabel(item.readiness) }}</span></div>
-            <p class="mt-3 text-sm text-slate-600">{{ location(item) }}</p>
+            <p class="mt-3 text-sm text-ink-soft">{{ location(item) }}</p>
             @if (!item.availableForConnection) {
               <label class="mt-4 flex gap-2 text-sm"><input type="checkbox" [checked]="consented(item.id)" (change)="setConsent(item.id, $any($event.target).checked)"><span>I agree that SmartClinic may use my contact details to contact me and this facility about my request. This does not share my medical record or confirm an appointment.</span></label>
               @if (item.facilityType === 'HOSPITAL') { <label class="mt-3 grid gap-1 text-sm font-semibold">Preferred appointment time (optional)<input type="datetime-local" [value]="preferredTimes()[item.id] || ''" (change)="setPreferredTime(item.id, $any($event.target).value)" class="rounded-xl border p-3 font-normal"></label> }

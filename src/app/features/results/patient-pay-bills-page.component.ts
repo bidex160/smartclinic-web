@@ -24,8 +24,8 @@ interface BillGroup {
       <a routerLink="/me/dashboard" class="font-bold text-brand-700">← Home</a>
       <header class="mt-5">
         <p class="text-sm font-bold uppercase tracking-wider text-brand-700">Payments</p>
-        <h1 class="mt-1 text-3xl font-black text-brand-950">Pay hospital bills</h1>
-        <p class="mt-2 max-w-2xl text-slate-600">
+        <h1 class="font-display mt-1 text-3xl font-semibold text-ink">Pay hospital bills</h1>
+        <p class="mt-2 max-w-2xl text-ink-soft">
           SmartClinic brings the unpaid requests from each connected hospital together so you can review them and pay once.
         </p>
       </header>
@@ -39,7 +39,7 @@ interface BillGroup {
         </div>
       } @else {
         @if (wallet(); as w) {
-          <section class="mt-6 rounded-3xl bg-gradient-to-br from-brand-950 to-violet-700 p-6 text-white">
+          <section class="mt-6 rounded-3xl sc-hero p-6 text-white">
             <p class="text-xs font-bold uppercase tracking-wider text-violet-200">SmartClinic Wallet</p>
             <p class="mt-2 text-3xl font-black">{{ money(w.balanceMinor, w.currency) }}</p>
             <p class="mt-1 text-sm text-violet-100">Available balance</p>
@@ -56,14 +56,14 @@ interface BillGroup {
 
         @if (!groups().length) {
           <section class="mt-6 rounded-3xl border bg-white p-7 text-center">
-            <h2 class="text-xl font-black text-brand-950">No hospital bills waiting</h2>
-            <p class="mt-2 text-slate-600">When a connected hospital creates payable requests, they will appear here automatically.</p>
+            <h2 class="font-display text-xl font-semibold text-ink">No hospital bills waiting</h2>
+            <p class="mt-2 text-ink-soft">When a connected hospital creates payable requests, they will appear here automatically.</p>
             <a routerLink="/me/providers" class="mt-4 inline-flex rounded-xl bg-brand-700 px-5 py-3 font-bold text-white">My hospitals</a>
           </section>
         } @else {
           <div class="mt-6 grid gap-5">
             @for (group of groups(); track group.connection.reference) {
-              <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+              <section class="overflow-hidden rounded-3xl border border-ink/[0.08] bg-white shadow-sm">
                 <div class="h-2 bg-gradient-to-r from-brand-700 via-violet-500 to-emerald-500" aria-hidden="true"></div>
                 <div class="p-5 sm:p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4">
@@ -71,25 +71,25 @@ interface BillGroup {
                     <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-100 font-black text-brand-800" aria-hidden="true">{{ providerInitials(group.connection.provider.displayName) }}</span>
                     <div class="min-w-0">
                       <div class="flex flex-wrap items-center gap-2"><p class="text-xs font-bold uppercase tracking-wider text-brand-700">Connected hospital</p><span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800">Connected ✓</span></div>
-                      <h2 class="mt-1 text-xl font-black text-brand-950">{{ group.connection.provider.displayName }}</h2>
-                      <p class="mt-1 text-sm text-slate-600">{{ providerTypeLabel(group.connection.provider.providerType) }}@if (group.connection.externalPatientReference) { · Hospital ID {{ group.connection.externalPatientReference }}}</p>
+                      <h2 class="font-display mt-1 text-xl font-semibold text-ink">{{ group.connection.provider.displayName }}</h2>
+                      <p class="mt-1 text-sm text-ink-soft">{{ providerTypeLabel(group.connection.provider.providerType) }}@if (group.connection.externalPatientReference) { · Hospital ID {{ group.connection.externalPatientReference }}}</p>
                     </div>
                   </div>
                   @if (group.companion.consolidatedPayment.itemCount > 0 && group.companion.consolidatedPayment.amountMinor !== null && group.companion.consolidatedPayment.currency) {
                     <div class="text-right">
-                      <p class="text-sm text-slate-500">{{ group.companion.consolidatedPayment.itemCount }} unpaid item{{ group.companion.consolidatedPayment.itemCount === 1 ? '' : 's' }}</p>
-                      <p class="text-2xl font-black text-brand-950">{{ money(group.companion.consolidatedPayment.amountMinor, group.companion.consolidatedPayment.currency) }}</p>
+                      <p class="text-sm text-ink-muted">{{ group.companion.consolidatedPayment.itemCount }} unpaid item{{ group.companion.consolidatedPayment.itemCount === 1 ? '' : 's' }}</p>
+                      <p class="text-2xl font-black text-ink">{{ money(group.companion.consolidatedPayment.amountMinor, group.companion.consolidatedPayment.currency) }}</p>
                     </div>
                   }
                 </div>
 
                 @if (group.companion.requests.length) {
-                  <div class="mt-5 divide-y rounded-2xl border border-slate-200">
+                  <div class="mt-5 divide-y rounded-2xl border border-ink/[0.08]">
                     @for (item of group.companion.requests; track item.orderReference) {
                       <div class="flex items-center justify-between gap-4 p-4">
                         <div>
-                          <p class="font-bold text-slate-900">{{ requestLabel(item.type) }}</p>
-                          <p class="text-sm text-slate-500">{{ item.serviceUnit || 'Hospital service' }}</p>
+                          <p class="font-bold text-ink">{{ requestLabel(item.type) }}</p>
+                          <p class="text-sm text-ink-muted">{{ item.serviceUnit || 'Hospital service' }}</p>
                         </div>
                         <div class="text-right">
                           @if (item.amountMinor !== null && item.currency) {
@@ -116,7 +116,7 @@ interface BillGroup {
                     </button>
                     @if (!canWalletPay(group)) {
                       <button type="button" (click)="togglePaymentOptions(group.connection.reference)" [disabled]="payingReference() === group.connection.reference" class="rounded-xl bg-brand-950 px-5 py-3 font-bold text-white disabled:opacity-50">{{ choosingPaymentReference() === group.connection.reference ? 'Close payment options' : 'Choose payment method' }}</button>
-                      <p class="w-full text-sm text-slate-600">Review the payment provider only when you are ready. SmartClinic will fund the exact wallet shortfall and settle this hospital once.</p>
+                      <p class="w-full text-sm text-ink-soft">Review the payment provider only when you are ready. SmartClinic will fund the exact wallet shortfall and settle this hospital once.</p>
                       @if (choosingPaymentReference() === group.connection.reference) {
                         <section class="w-full rounded-2xl border border-brand-100 bg-violet-50/50 p-4" aria-label="Payment options">
                           <app-payment-contact-email />

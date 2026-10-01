@@ -24,21 +24,21 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
     } @else if (request(); as r) {
       <header class="mt-6">
         <p class="text-sm font-bold uppercase text-brand-600">FastTrack {{ r.reference }}</p>
-        <h1 class="mt-2 text-3xl font-bold">{{ r.service.name }}</h1>
+        <h1 class="font-display mt-2 text-3xl font-semibold">{{ r.service.name }}</h1>
         <p class="mt-2 text-lg font-semibold">{{ label(r.status) }}</p>
       </header>
       <section class="mt-7 rounded-2xl border bg-white p-6">
         <dl class="grid gap-5 sm:grid-cols-2">
           <div>
-            <dt class="text-sm text-slate-500">Provider</dt>
+            <dt class="text-sm text-ink-muted">Provider</dt>
             <dd class="font-semibold">{{ r.provider.displayName }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Patient</dt>
+            <dt class="text-sm text-ink-muted">Patient</dt>
             <dd class="font-semibold">{{ r.participant?.displayName ?? 'You' }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Source</dt>
+            <dt class="text-sm text-ink-muted">Source</dt>
             <dd>
               {{
                 r.source === 'EXTERNAL_APPOINTMENT'
@@ -49,11 +49,11 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           </div>
           @if (r.externalAppointment) {
             <div>
-              <dt class="text-sm text-slate-500">Appointment reference</dt>
+              <dt class="text-sm text-ink-muted">Appointment reference</dt>
               <dd>{{ r.externalAppointment.reference }}</dd>
             </div>
             <div>
-              <dt class="text-sm text-slate-500">Appointment</dt>
+              <dt class="text-sm text-ink-muted">Appointment</dt>
               <dd>
                 {{
                   utils.formatAppointment(
@@ -65,25 +65,25 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
             </div>
           }
           <div>
-            <dt class="text-sm text-slate-500">FastTrack fee</dt>
+            <dt class="text-sm text-ink-muted">FastTrack fee</dt>
             <dd class="font-semibold">{{ money(r.feeMinor, r.currency) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-500">Payment</dt>
+            <dt class="text-sm text-ink-muted">Payment</dt>
             <dd>{{ paymentLabel(payment()?.paymentAttemptStatus ?? null, r.status) }}</dd>
           </div>
         </dl>
       </section>
       @if (r.status === 'VERIFYING') {
         <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6">
-          <h2 class="text-xl font-bold">Your appointment is being verified with the provider</h2>
+          <h2 class="font-display text-xl font-semibold">Your appointment is being verified with the provider</h2>
           <p class="mt-2">
             Payment will become available only after the provider verifies the appointment.
           </p>
         </section>
       } @else if (r.status === 'READY_FOR_PAYMENT' || r.status === 'PAYMENT_PENDING') {
         <section class="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
-          <h2 class="text-xl font-bold">
+          <h2 class="font-display text-xl font-semibold">
             {{ r.status === 'READY_FOR_PAYMENT' ? 'Ready for payment' : 'Payment pending' }}
           </h2>
           <p class="mt-2">
@@ -112,11 +112,11 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
       } @else if (r.status === 'CONFIRMED' || r.status === 'PAID') {
         <section class="mt-6 rounded-2xl border border-green-200 bg-green-50 p-6">
-          <h2 class="text-xl font-bold text-green-950">FastTrack confirmed</h2>
+          <h2 class="font-display text-xl font-semibold text-green-950">FastTrack confirmed</h2>
           <p class="mt-2">The backend has confirmed your payment and FastTrack request.</p>
         </section>
       }
-      <p class="mt-6 rounded-xl bg-slate-50 p-4">
+      <p class="mt-6 rounded-xl bg-sand-50 p-4">
         Clinical urgency and medical triage always take priority.
       </p>
     }

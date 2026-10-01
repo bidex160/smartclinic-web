@@ -24,24 +24,24 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
   imports: [ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
-    <header class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <header class="relative overflow-hidden rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
       <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
       <div class="relative">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">SmartClinic care network</p>
-        <h1 class="mt-2 text-4xl font-bold text-slate-950">{{ doctorJourney() ? 'See a Doctor' : 'Find Care' }}</h1>
-        <p class="mt-3 max-w-2xl text-slate-600">{{ doctorJourney() ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.' : 'Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.' }}</p>
+        <h1 class="font-display mt-2 text-4xl font-semibold text-ink">{{ doctorJourney() ? 'See a Doctor' : 'Find Care' }}</h1>
+        <p class="mt-3 max-w-2xl text-ink-soft">{{ doctorJourney() ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.' : 'Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.' }}</p>
         @if (doctorJourney()) {
           <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
-            <button type="button" (click)="chooseDoctorMode('NOW')" [attr.aria-pressed]="doctorMode() === 'NOW'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'NOW'" [class.ring-brand-300]="doctorMode() === 'NOW'" [class.bg-brand-50]="doctorMode() === 'NOW'">
-              <strong class="block text-lg text-brand-950">Talk to a Doctor Now</strong><span class="mt-1 block text-sm text-slate-600">Start with an available doctor online.</span>
+            <button type="button" (click)="chooseDoctorMode('NOW')" [attr.aria-pressed]="doctorMode() === 'NOW'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-ink/[0.08]" [class.ring-4]="doctorMode() === 'NOW'" [class.ring-brand-300]="doctorMode() === 'NOW'" [class.bg-brand-50]="doctorMode() === 'NOW'">
+              <strong class="block text-lg text-ink">Talk to a Doctor Now</strong><span class="mt-1 block text-sm text-ink-soft">Start with an available doctor online.</span>
               @if (doctorMode() === 'NOW') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a doctor below</span> }
             </button>
-            <button type="button" (click)="chooseDoctorMode('LATER')" [attr.aria-pressed]="doctorMode() === 'LATER'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'LATER'" [class.ring-brand-300]="doctorMode() === 'LATER'" [class.bg-brand-50]="doctorMode() === 'LATER'">
-              <strong class="block text-lg text-brand-950">Book for Later</strong><span class="mt-1 block text-sm text-slate-600">Choose a date or time that suits you.</span>
+            <button type="button" (click)="chooseDoctorMode('LATER')" [attr.aria-pressed]="doctorMode() === 'LATER'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-ink/[0.08]" [class.ring-4]="doctorMode() === 'LATER'" [class.ring-brand-300]="doctorMode() === 'LATER'" [class.bg-brand-50]="doctorMode() === 'LATER'">
+              <strong class="block text-lg text-ink">Book for Later</strong><span class="mt-1 block text-sm text-ink-soft">Choose a date or time that suits you.</span>
               @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">Selected — choose your preferred time below</span> }
             </button>
-            <button type="button" (click)="openInstitutionCare()" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-slate-200" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
-              <strong class="block text-lg text-brand-950">Visit a Hospital</strong><span class="mt-1 block text-sm text-slate-600">Browse hospitals first, then choose the service or doctor you need there.</span>
+            <button type="button" (click)="openInstitutionCare()" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-ink/[0.08]" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
+              <strong class="block text-lg text-ink">Visit a Hospital</strong><span class="mt-1 block text-sm text-ink-soft">Browse hospitals first, then choose the service or doctor you need there.</span>
               @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a hospital below</span> }
             </button>
           </section>
@@ -50,30 +50,30 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
     </header>
     @if (success(); as request) {
       <section class="mt-6 rounded-[2rem] border border-green-200 bg-green-50 p-7 shadow-sm">
-        <h2 class="text-2xl font-bold text-green-950">Care Request submitted</h2>
+        <h2 class="font-display text-2xl font-semibold text-green-950">Care Request submitted</h2>
         <dl class="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
-            <dt class="text-sm text-slate-600">Reference</dt>
+            <dt class="text-sm text-ink-soft">Reference</dt>
             <dd class="font-bold">{{ request.reference }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-600">Status</dt>
+            <dt class="text-sm text-ink-soft">Status</dt>
             <dd>{{ statusLabel(request.status) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-600">Service</dt>
+            <dt class="text-sm text-ink-soft">Service</dt>
             <dd>{{ request.service.name }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-600">Care type</dt>
+            <dt class="text-sm text-ink-soft">Care type</dt>
             <dd>{{ deliveryModeLabel(request.deliveryMode) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-600">Care for</dt>
+            <dt class="text-sm text-ink-soft">Care for</dt>
             <dd>{{ request.participant?.displayName ?? 'You' }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-600">Service price</dt>
+            <dt class="text-sm text-ink-soft">Service price</dt>
             <dd class="font-bold">
               {{
                 request.service.price
@@ -83,24 +83,24 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
             </dd>
           </div>
           <div>
-            <dt class="text-sm text-slate-600">Preferred provider</dt>
+            <dt class="text-sm text-ink-soft">Preferred provider</dt>
             <dd>{{ request.preferredProvider?.displayName || 'SmartClinic will match you' }}</dd>
           </div>
           @if (request.geography; as geography) {
             <div>
-              <dt class="text-sm text-slate-600">Requested location</dt>
+              <dt class="text-sm text-ink-soft">Requested location</dt>
               <dd>
                 {{ geography.city }}, {{ geography.stateOrRegion }}, {{ geography.countryCode }}
               </dd>
             </div>
           } @else if (request.deliveryMode === 'VIRTUAL') {
             <div>
-              <dt class="text-sm text-slate-600">Location</dt>
+              <dt class="text-sm text-ink-soft">Location</dt>
               <dd>Virtual care</dd>
             </div>
           }
         </dl>
-        <p class="mt-5 text-slate-700">
+        <p class="mt-5 text-ink-soft">
           SmartClinic will keep the next step here in My Care. You do not need to start again.
         </p>
         <a
@@ -111,7 +111,7 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
       </section>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 grid gap-5" novalidate>
-        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
           @if (servicesLoading()) {
             <p role="status" class="mt-3">Loading care services…</p>
@@ -136,11 +136,11 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
               </select></label
             >
             @if (selectedDescription()) {
-              <p class="mt-3 text-sm text-slate-600">{{ selectedDescription() }}</p>
+              <p class="mt-3 text-sm text-ink-soft">{{ selectedDescription() }}</p>
             }
           }
         </fieldset>
-        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">Who is this care request for?</legend>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
@@ -176,13 +176,13 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
             >Add someone</a
           >
           @if (dependantsError()) {
-            <p class="mt-2 text-sm text-slate-600">
+            <p class="mt-2 text-sm text-ink-soft">
               Dependants could not be loaded. You can still request care for yourself.
             </p>
           }
         </fieldset>
         @if (!doctorJourney()) {
-        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
           @if (deliveryModes().length) {
             <div class="mt-3 grid gap-3 sm:grid-cols-3">
@@ -200,7 +200,7 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
                   />
                   <span
                     ><strong class="block">{{ deliveryModeLabel(mode) }}</strong
-                    ><span class="mt-1 block text-sm text-slate-600">{{
+                    ><span class="mt-1 block text-sm text-ink-soft">{{
                       deliveryModeHelp(mode)
                     }}</span></span
                   >
@@ -208,14 +208,14 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
               }
             </div>
           } @else {
-            <p class="mt-3 text-sm text-slate-600">
+            <p class="mt-3 text-sm text-ink-soft">
               Choose a care service to see supported delivery modes.
             </p>
           }
         </fieldset>
         }
         @if (requiresGeography()) {
-          <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
             <legend class="px-2 text-xl font-bold">3. Location</legend>
             <div class="mt-3 grid gap-5 md:grid-cols-3">
               <label class="font-semibold"
@@ -255,7 +255,7 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
             </div>
           </fieldset>
         }
-        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
             {{ requiresGeography() ? '4' : '3' }}. Preferred provider
           </legend>
@@ -273,9 +273,9 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
           @if (providersLoading()) {
             <p role="status" class="mt-3 text-sm">Finding matching providers…</p>
           } @else if (providerSearchReady() && !providers().length) {
-            <div class="mt-3 rounded-xl bg-slate-50 p-4">
+            <div class="mt-3 rounded-xl bg-sand-50 p-4">
               <p class="font-bold">No matching clinician is available right now.</p>
-              <p class="mt-1 text-sm text-slate-600">@if(hostInstitutionReference()){This hospital has no approved virtual clinician matching this service at the moment. You can still send the request and SmartClinic will keep it in matching, or return to Hospitals & clinics to choose another option.} @else {You can still send the request with “No preference”. SmartClinic will keep matching instead of ending your care journey.}</p>
+              <p class="mt-1 text-sm text-ink-soft">@if(hostInstitutionReference()){This hospital has no approved virtual clinician matching this service at the moment. You can still send the request and SmartClinic will keep it in matching, or return to Hospitals & clinics to choose another option.} @else {You can still send the request with “No preference”. SmartClinic will keep matching instead of ending your care journey.}</p>
             </div>
           }
           @if (providersError()) {
@@ -285,26 +285,26 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
           }
           @if (selectedProviderPrice(); as price) {
             <div class="mt-4 rounded-xl bg-brand-50 p-4">
-              <p class="text-sm text-slate-600">
+              <p class="text-sm text-ink-soft">
                 {{ deliveryModeLabel(form.controls.deliveryMode.value || 'IN_PERSON') }} service
                 price
               </p>
               <p class="mt-1 text-xl font-bold">
                 {{ formatPrice(price.priceMinor, price.currency) }}
               </p>
-              <p class="mt-1 text-xs text-slate-500">
+              <p class="mt-1 text-xs text-ink-muted">
                 The backend confirms and snapshots the authoritative request price.
               </p>
             </div>
           } @else if (
             !form.controls.preferredProviderReference.value && form.controls.deliveryMode.value
           ) {
-            <p class="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
+            <p class="mt-4 rounded-xl bg-sand-50 p-4 text-sm">
               Price will be determined when a Provider is assigned.
             </p>
           }
         </fieldset>
-        <fieldset class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
             {{ doctorJourney() ? 'Anything else?' : (requiresGeography() ? '5. Optional request details' : '4. Optional request details') }}
           </legend>
@@ -314,12 +314,12 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
               <p class="mt-1 text-sm text-green-900">No time to enter. Choose a doctor and send the request. If they accept, you pay and SmartClinic confirms the consultation automatically.</p>
             </div>
           } @else if (doctorJourney()) {
-            <p class="mt-2 text-sm text-slate-600">Choose when you would like the consultation. Your doctor can accept that time or suggest another.</p>
+            <p class="mt-2 text-sm text-ink-soft">Choose when you would like the consultation. Your doctor can accept that time or suggest another.</p>
             @if (form.controls.preferredDate.value && form.controls.preferredTime.value) {
               <div class="mt-4 rounded-2xl border border-brand-200 bg-brand-50 p-4">
                 <p class="text-xs font-bold uppercase tracking-wide text-brand-700">Recommended time</p>
-                <p class="mt-1 text-lg font-black text-brand-950">{{ form.controls.preferredDate.value }} · {{ form.controls.preferredTime.value }}</p>
-                <p class="mt-1 text-sm text-slate-600">Your doctor can accept this time or suggest another.</p>
+                <p class="mt-1 text-lg font-black text-ink">{{ form.controls.preferredDate.value }} · {{ form.controls.preferredTime.value }}</p>
+                <p class="mt-1 text-sm text-ink-soft">Your doctor can accept this time or suggest another.</p>
               </div>
             }
           }
@@ -357,7 +357,7 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
           } @else {
             <div class="mt-4 grid gap-5 sm:grid-cols-2">
               <label class="font-semibold">Contact method<select formControlName="contactMethod" class="mt-2 min-h-12 w-full rounded-xl border px-3"><option value="EMAIL">Email</option><option value="PHONE">Phone</option><option value="WHATSAPP">WhatsApp</option></select></label>
-              <label class="font-semibold sm:col-span-2">Notes <span class="font-normal text-slate-500">(optional)</span><textarea formControlName="notes" maxlength="4000" rows="3" placeholder="What would you like the doctor to know?" class="mt-2 w-full rounded-xl border p-3"></textarea></label>
+              <label class="font-semibold sm:col-span-2">Notes <span class="font-normal text-ink-muted">(optional)</span><textarea formControlName="notes" maxlength="4000" rows="3" placeholder="What would you like the doctor to know?" class="mt-2 w-full rounded-xl border p-3"></textarea></label>
             </div>
           }
         </fieldset>
@@ -373,8 +373,8 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
         </button>
       </form>
       <aside class="mt-8 rounded-2xl border border-brand-100 bg-brand-50 p-5">
-        <h2 class="font-bold text-brand-950">Already have an appointment?</h2>
-        <p class="mt-1 text-sm text-slate-700">
+        <h2 class="font-bold text-ink">Already have an appointment?</h2>
+        <p class="mt-1 text-sm text-ink-soft">
           Request FastTrack for priority appointment handling. Clinical urgency and medical triage
           always take priority.
         </p>
