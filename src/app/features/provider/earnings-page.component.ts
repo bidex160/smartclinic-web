@@ -294,6 +294,8 @@ export class EarningsPageComponent {
     'PHARMACY_FULFILLMENT',
     'PATIENT_REGISTRATION',
     'PATIENT_LINKING',
+    'DIAGNOSTIC_FULFILLMENT',
+    'PROVIDER_REFERRAL',
   ];
   readonly filters = this.fb.nonNullable.group({
     providerReference: '',

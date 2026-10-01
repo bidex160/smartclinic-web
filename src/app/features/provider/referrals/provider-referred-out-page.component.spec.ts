@@ -19,7 +19,7 @@ describe('ProviderReferredOutPageComponent', () => {
   it('shows where each referral is, with results once accepted', async () => {
     const items = [
       row({ reference: 'A' }),
-      row({ reference: 'B', status: 'ACCEPTED', clinicalOrder: { type: 'LABORATORY', diagnosticItems: [{ name: 'HbA1c', resultValue: '7.9', resultUnit: '%', resultedAt: '2026-10-02', sortOrder: 0 }] } }),
+      row({ reference: 'B', status: 'ACCEPTED', referralFee: { amountMinor: 45000, currency: 'NGN', status: 'PAYABLE' }, clinicalOrder: { type: 'LABORATORY', diagnosticItems: [{ name: 'HbA1c', resultValue: '7.9', resultUnit: '%', resultedAt: '2026-10-02', sortOrder: 0 }] } }),
       row({ reference: 'C', status: 'CANCELLED' }),
     ];
     await TestBed.configureTestingModule({
@@ -32,5 +32,9 @@ describe('ProviderReferredOutPageComponent', () => {
     expect([...el.querySelectorAll('[data-status]')].map((n) => n.textContent?.trim())).toEqual(['Waiting for patient', 'Results ready', 'Not taken up']);
     expect(el.querySelector('[data-results]')?.textContent).toContain('7.9');
     expect(el.textContent).toContain('We don’t run HbA1c');
+    const fees = el.querySelectorAll('[data-referral-fee]');
+    expect(fees.length).toBe(1);
+    expect(fees[0].textContent).toContain('450');
+    expect(fees[0].textContent).toContain('ready for payout');
   });
 });

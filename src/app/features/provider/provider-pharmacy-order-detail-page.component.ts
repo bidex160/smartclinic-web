@@ -41,7 +41,7 @@ import { ReferOnwardPanelComponent } from './referrals/refer-onward-panel.compon
         <p class="mt-2 text-slate-600">{{ statusLabel(f.status) }}</p>
       </header>
       @if (f.referral) {
-        <p class="mt-4 rounded-2xl bg-brand-50 p-4 text-sm text-brand-900 ring-1 ring-brand-100" data-referred-by>Referred to you by <strong>{{ f.referral.referredBy?.displayName ?? 'another provider' }}</strong>@if (f.referral.note) {: “{{ f.referral.note }}”}</p>
+        <p class="mt-4 rounded-2xl bg-brand-50 p-4 text-sm text-brand-900 ring-1 ring-brand-100" data-referred-by>Referred to you by <strong>{{ f.referral.referredBy?.displayName ?? 'another provider' }}</strong>@if (f.referral.note) {: “{{ f.referral.note }}”}@if (f.referral.feeBps) { <span class="mt-1 block text-xs text-brand-800" data-referral-fee>A {{ f.referral.feeBps / 100 }}% referral fee goes to them from your share when the patient pays. The patient’s price doesn’t change.</span> }</p>
       }
       @if ((f.status === 'SELECTED' || f.status === 'ACCEPTED') && quote()?.status !== 'ACCEPTED_BY_PATIENT') {
         <app-refer-onward-panel [fulfillment]="f" (referred)="onReferred()" />
