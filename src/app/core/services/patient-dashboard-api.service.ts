@@ -5,6 +5,8 @@ import {
   PatientDashboard,
   CreatePatientDailyRoutineRequest,
   DailyCareProgress,
+  DailyCheckIn,
+  UpsertDailyCheckInRequest,
   PatientDailyRoutine,
   PatientPortalProfile,
   UpdatePatientPortalProfileRequest,
@@ -54,5 +56,15 @@ export class PatientDashboardApiService {
     return this.http.delete<DailyCareProgress>(
       `${this.base}/me/daily-care/routines/${encodeURIComponent(reference)}/completions/today`,
     );
+  }
+
+  saveTodayCheckIn(request: UpsertDailyCheckInRequest) {
+    return this.http.put<DailyCareProgress>(`${this.base}/me/daily-care/check-ins/today`, request);
+  }
+
+  getCheckIns(days: number, timezone: string) {
+    return this.http.get<{ items: DailyCheckIn[] }>(`${this.base}/me/daily-care/check-ins`, {
+      params: { days, timezone },
+    });
   }
 }

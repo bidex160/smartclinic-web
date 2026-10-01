@@ -10,6 +10,8 @@ import {
   PatientDashboardRecommendedActionDetail,
   PatientDailyRoutine,
   PatientDailyRoutineType,
+  DailyCareProgress,
+  DailyCheckIn,
 } from '../../core/models/patient-dashboard.model';
 import { PatientHealthCheckHistoryResponse } from '../../core/models/patient-health-check-history.model';
 import { ReferralImpact } from '../../core/models/referral.model';
@@ -17,6 +19,8 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
 import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
+import { DailyCheckInComponent } from './daily-check-in.component';
+import { tipForDate } from './daily-tips';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
 interface StarterRoutine {
@@ -33,6 +37,21 @@ const STARTER_ROUTINES: readonly StarterRoutine[] = [
   { type: 'SLEEP', label: 'Wind down for bed', time: '22:00' },
 ];
 
+interface StreakBadge {
+  readonly days: number;
+  readonly name: string;
+}
+
+/** Non-monetary milestones: celebrating habits without rewarding unearned ticks. */
+const STREAK_BADGES: readonly StreakBadge[] = [
+  { days: 3, name: 'Spark' },
+  { days: 7, name: 'One week strong' },
+  { days: 30, name: '30-day rhythm' },
+  { days: 100, name: '100-day legend' },
+];
+
+const MOOD_LABELS = ['', 'very low', 'low', 'okay', 'good', 'great'] as const;
+
 interface DashboardNextStep {
   readonly title: string;
   readonly message: string;
@@ -42,7 +61,7 @@ interface DashboardNextStep {
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-6xl px-4 pb-10 pt-5 sm:px-8 sm:pt-8 lg:pt-10">
@@ -174,6 +193,57 @@ interface DashboardNextStep {
             </div>
           </div>
 
+          @if (value.dailyCare?.week; as week) {
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <ol class="flex gap-1.5" aria-label="Your last 7 days" data-week-strip>
+                @for (day of week; track day.localDate; let last = $last) {
+                  <li class="flex flex-col items-center gap-1">
+                    <span
+                      class="grid size-8 place-items-center rounded-full text-[11px] font-bold transition {{ day.active ? 'bg-leaf-500 text-white' : 'bg-sand-100 text-ink-muted' }} {{ last ? 'ring-2 ring-offset-2 ring-brand-500' : '' }}"
+                      [attr.aria-label]="weekdayName(day.localDate) + (day.active ? ': active' : ': not active')"
+                    >{{ day.active ? '✓' : '' }}</span>
+                    <span class="text-[10px] font-semibold uppercase text-ink-muted" aria-hidden="true">{{ weekdayInitial(day.localDate) }}</span>
+                  </li>
+                }
+              </ol>
+              <div class="flex flex-wrap gap-1.5" data-badges>
+                @for (badge of earnedBadges(value); track badge.days) {
+                  <span class="inline-flex items-center gap-1 rounded-full bg-ochre-50 px-2.5 py-1 text-xs font-semibold text-ochre-700 ring-1 ring-ochre-100" [attr.title]="badge.days + '-day streak reached'">
+                    <svg aria-hidden="true" class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7Z"/></svg>
+                    {{ badge.name }}
+                  </span>
+                }
+                @if (nextBadge(value); as next) {
+                  <span class="rounded-full bg-sand-50 px-2.5 py-1 text-xs font-medium text-ink-muted ring-1 ring-ink/[0.06]">Next: {{ next.name }} in {{ next.days - (value.dailyCare?.streakDays ?? 0) }} {{ next.days - (value.dailyCare?.streakDays ?? 0) === 1 ? 'day' : 'days' }}</span>
+                }
+              </div>
+            </div>
+
+            @if (celebration(value); as badge) {
+              <p class="sc-celebrate mt-4 rounded-2xl bg-gradient-to-r from-ochre-50 to-leaf-50 px-4 py-3 text-sm font-semibold text-ink ring-1 ring-ochre-100" role="status" data-celebration>
+                🎉 {{ badge.days }}-day streak — <span class="text-ochre-700">{{ badge.name }}</span>! Keep it going, {{ value.patient.firstName }}.
+              </p>
+            }
+
+            @if (isSunday(value)) {
+              <section class="mt-4 rounded-2xl bg-ink p-4 text-white" aria-labelledby="week-recap-heading" data-week-recap>
+                <h3 id="week-recap-heading" class="font-display text-lg font-semibold">Your week</h3>
+                <p class="mt-1 text-sm text-white/75">
+                  Active {{ activeDays(week) }} of 7 days
+                  @if (weekCheckIns(); as checkIns) {
+                    @if (checkIns.length) { · {{ checkIns.length }} check-ins · mostly feeling {{ averageMoodLabel(checkIns) }} }
+                  }
+                  · best streak {{ value.dailyCare?.bestStreak ?? 0 }} days.
+                </p>
+                <p class="mt-2 text-sm font-medium text-ochre-300">{{ recapMessage(activeDays(week)) }}</p>
+              </section>
+            }
+
+            <div class="mt-4">
+              <app-daily-check-in [checkIn]="value.dailyCare?.todayCheckIn" (saved)="applyProgress($event)" />
+            </div>
+          }
+
           @if (value.dailyCare && (value.todayRoutines ?? []).length) {
             <div class="mt-4 flex items-center gap-3" data-today-progress>
               <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100" role="progressbar" aria-label="Routines done today" [attr.aria-valuenow]="doneToday(value)" aria-valuemin="0" [attr.aria-valuemax]="(value.todayRoutines ?? []).length">
@@ -251,12 +321,14 @@ interface DashboardNextStep {
           }
 
           @if (offerReminders()) {
-            <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100" role="status" data-reminder-offer>
-              <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-brand-700" aria-hidden="true">
-                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-              </span>
-              <p class="min-w-0 flex-1 text-sm text-ink"><strong class="font-semibold">Want a nudge at the right time?</strong> Turn on reminders on this device.</p>
-              <div class="flex gap-2">
+            <div class="mt-4 grid gap-3 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100 sm:flex sm:items-center" role="status" data-reminder-offer>
+              <div class="flex min-w-0 flex-1 items-center gap-3">
+                <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-brand-700" aria-hidden="true">
+                  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                </span>
+                <p class="min-w-0 text-sm text-ink"><strong class="font-semibold">Want a nudge at the right time?</strong> Turn on reminders on this device.</p>
+              </div>
+              <div class="flex gap-2 sm:shrink-0">
                 <button type="button" (click)="enableReminders()" class="min-h-10 rounded-full bg-brand-700 px-4 text-sm font-semibold text-white hover:bg-brand-800">Turn on</button>
                 <button type="button" (click)="deviceNotifications.dismiss()" class="min-h-10 rounded-full px-3 text-sm font-semibold text-ink-soft hover:bg-white">Not now</button>
               </div>
@@ -311,6 +383,17 @@ interface DashboardNextStep {
               </div>
             </div>
           }
+        </section>
+
+        <section class="mt-4 flex gap-4 rounded-[1.5rem] bg-leaf-50 p-5 ring-1 ring-leaf-100" aria-labelledby="tip-heading" data-daily-tip>
+          <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-white text-leaf-700 shadow-card" aria-hidden="true">
+            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
+          </span>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-leaf-700">Tip of the day</p>
+            <h2 id="tip-heading" class="mt-1 font-semibold text-ink">{{ tip.title }}</h2>
+            <p class="mt-1 text-sm leading-6 text-ink-soft">{{ tip.body }}</p>
+          </div>
         </section>
 
         <nav class="mt-10" aria-labelledby="quick-access-heading">
@@ -482,6 +565,8 @@ export class PatientDashboardPageComponent {
   readonly routineError = signal('');
   readonly tickingReference = signal<string | null>(null);
   readonly deviceNotifications = inject(DeviceNotificationsService);
+  readonly tip = tipForDate(new Date());
+  readonly weekCheckIns = signal<readonly DailyCheckIn[] | null>(null);
   /** Offer device reminders only after the patient has at least one routine. */
   readonly offerReminders = computed(
     () => (this.dashboard()?.todayRoutines ?? []).length > 0 && this.deviceNotifications.canOffer(),
@@ -539,7 +624,19 @@ export class PatientDashboardPageComponent {
     this.api
       .getDashboard()
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({ next: (value) => this.dashboard.set(value), error: () => this.error.set(true) });
+      .subscribe({
+        next: (value) => {
+          this.dashboard.set(value);
+          if (this.isSunday(value)) this.loadWeekCheckIns();
+        },
+        error: () => this.error.set(true),
+      });
+  }
+  loadWeekCheckIns(): void {
+    this.api.getCheckIns(7, this.routineForm.controls.timezone.value).subscribe({
+      next: ({ items }) => this.weekCheckIns.set(items),
+      error: () => this.weekCheckIns.set(null),
+    });
   }
   toggleRoutineManager(): void {
     this.routineManagerOpen.update((open) => !open);
@@ -611,23 +708,61 @@ export class PatientDashboardPageComponent {
       ? this.api.undoRoutineToday(routine.reference)
       : this.api.completeRoutineToday(routine.reference);
     request.pipe(finalize(() => this.tickingReference.set(null))).subscribe({
-      next: (progress) => {
-        const done = new Set(progress.completedReferences);
-        this.dashboard.update((value) =>
-          value
-            ? {
-                ...value,
-                dailyCare: progress,
-                todayRoutines: (value.todayRoutines ?? []).map((item) => ({
-                  ...item,
-                  completedToday: done.has(item.reference),
-                })),
-              }
-            : value,
-        );
-      },
+      next: (progress) => this.applyProgress(progress),
       error: () => this.routineError.set('We could not update today’s routine. Please try again.'),
     });
+  }
+  applyProgress(progress: DailyCareProgress): void {
+    const done = new Set(progress.completedReferences);
+    this.dashboard.update((value) =>
+      value
+        ? {
+            ...value,
+            dailyCare: progress,
+            todayRoutines: (value.todayRoutines ?? []).map((item) => ({
+              ...item,
+              completedToday: done.has(item.reference),
+            })),
+          }
+        : value,
+    );
+  }
+  earnedBadges(value: PatientDashboard): readonly StreakBadge[] {
+    const best = value.dailyCare?.bestStreak ?? 0;
+    return STREAK_BADGES.filter((badge) => best >= badge.days);
+  }
+  nextBadge(value: PatientDashboard): StreakBadge | null {
+    const current = value.dailyCare?.streakDays ?? 0;
+    return STREAK_BADGES.find((badge) => badge.days > current) ?? null;
+  }
+  /** A milestone reached exactly today, while today is active. */
+  celebration(value: PatientDashboard): StreakBadge | null {
+    const care = value.dailyCare;
+    if (!care?.week?.at(-1)?.active) return null;
+    return STREAK_BADGES.find((badge) => badge.days === care.streakDays) ?? null;
+  }
+  isSunday(value: PatientDashboard): boolean {
+    const today = value.dailyCare?.localDate;
+    return !!today && new Date(`${today}T12:00:00Z`).getUTCDay() === 0;
+  }
+  activeDays(week: readonly { active: boolean }[]): number {
+    return week.filter((day) => day.active).length;
+  }
+  averageMoodLabel(checkIns: readonly DailyCheckIn[]): string {
+    const average = checkIns.reduce((sum, item) => sum + item.mood, 0) / checkIns.length;
+    return MOOD_LABELS[Math.min(5, Math.max(1, Math.round(average)))];
+  }
+  recapMessage(active: number): string {
+    if (active === 7) return 'A perfect week. That is real commitment to yourself.';
+    if (active >= 4) return 'A strong week. Small steps, repeated, make the difference.';
+    if (active >= 1) return 'Every day you show up counts. Let’s aim for one more day next week.';
+    return 'A fresh week starts tomorrow — one small habit is all it takes.';
+  }
+  weekdayInitial(localDate: string): string {
+    return new Intl.DateTimeFormat('en-GB', { weekday: 'narrow', timeZone: 'UTC' }).format(new Date(`${localDate}T12:00:00Z`));
+  }
+  weekdayName(localDate: string): string {
+    return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'UTC' }).format(new Date(`${localDate}T12:00:00Z`));
   }
   toggleRoutine(routine: PatientDailyRoutine): void {
     if (this.routineSaving()) return;
