@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 
 import { EngagementBadge } from '../../core/models/engagement.model';
 import { EngagementApiService } from '../../core/services/engagement-api.service';
+import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
+import { SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 import { DailyQuizCardComponent } from './daily-quiz-card.component';
 import { PassportMeterComponent } from './passport-meter.component';
 
@@ -79,7 +81,17 @@ const EARN: readonly { key: string; label: string }[] = [
                 </li>
               }
             </ul>
-            <p class="mt-3 text-xs leading-5 text-ink-muted">Points show your healthy habits. They aren’t money and can’t be withdrawn. Ways to use them are coming.</p>
+            @if (spend(); as sp) {
+              <div class="mt-4 rounded-xl bg-leaf-50 p-4 ring-1 ring-leaf-100" data-spendable>
+                <p class="text-sm font-semibold text-ink"><span class="font-display text-2xl">{{ sp.available }}</span> points to spend</p>
+                <p class="mt-1 text-sm text-ink-soft">
+                  Worth {{ sp.value }} off a Smart Health Check — up to {{ sp.maxPercent }}% of the price, from {{ sp.minPoints }} points.
+                  @if (sp.used) { <span>You’ve used {{ sp.used }} so far.</span> }
+                </p>
+                <a routerLink="/me/book" class="mt-2 inline-flex min-h-10 items-center text-sm font-semibold text-leaf-700 underline underline-offset-2">Book a Health Check →</a>
+              </div>
+            }
+            <p class="mt-3 text-xs leading-5 text-ink-muted">Points show your healthy habits. Your level never goes down when you spend them. They aren’t cash and can’t be withdrawn.</p>
           </section>
         </div>
 
@@ -134,6 +146,23 @@ export class ProgressPageComponent {
   readonly summary = this.api.latest;
   readonly error = signal(false);
   readonly earn = EARN;
+  private readonly locale = inject(LocalePreferencesService);
+  /** What the spendable points are worth in the person's currency. */
+  readonly spend = computed(() => {
+    const s = this.summary();
+    if (!s?.wallet || !s.redeem) return null;
+    const currency = SMARTCLINIC_MARKETS[this.locale.market()].currency;
+    const perPoint = s.redeem.valuePerPointMinor[currency];
+    if (!perPoint) return null;
+    return {
+      available: s.wallet.availablePoints,
+      used: s.wallet.usedPoints,
+      // The API counts every currency in hundredths (RWF too), so divide by 100 here.
+      value: new Intl.NumberFormat('en-NG', { style: 'currency', currency, maximumFractionDigits: 0 }).format((s.wallet.availablePoints * perPoint) / 100),
+      maxPercent: s.redeem.maxPercent,
+      minPoints: s.redeem.minPoints,
+    };
+  });
   readonly earnedCount = computed(() => this.summary()?.badges.filter((b) => b.earned).length ?? 0);
   readonly levelPercent = computed(() => {
     const s = this.summary();

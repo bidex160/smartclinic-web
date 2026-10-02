@@ -28,6 +28,8 @@ const overview = (answered: EngagementOverview['quiz']['answered'] = null, point
   },
   quiz: { localDate: '2026-10-02', questionId: 'q-water', topic: 'Hydration', question: 'How much water?', options: ['A little', 'Enough to keep urine pale'], answered, bankSize: 40 },
   pointsRules: { quizAnswered: 5, quizCorrect: 5, checkInDay: 5, routineDay: 3, selfCheck: 20, healthCheck: 50, passportItem: 10 },
+  wallet: { earnedPoints: points, usedPoints: 0, availablePoints: points },
+  redeem: { valuePerPointMinor: { NGN: 500, GHS: 4, RWF: 400 }, maxPercent: 20, minPoints: 100 },
 });
 
 function setup<T>(component: Type<T>) {
@@ -86,6 +88,8 @@ describe('Progress page', () => {
     expect(el.querySelector('[data-badge="FIRST_CHECK_IN"]')!.getAttribute('data-earned')).toBe('true');
     expect(el.querySelector('[data-badge="STREAK_7"]')!.textContent).toContain('4 / 7');
     expect(el.querySelector('[data-passport-next]')!.textContent).toContain('Record your genotype');
-    expect(el.textContent).toContain('aren’t money');
+    expect(el.textContent).toContain('aren’t cash');
+    expect(el.querySelector('[data-spendable]')!.textContent).toMatch(/40\s*points to spend/);
+    expect(el.querySelector('[data-spendable]')!.textContent).toContain('₦200');
   });
 });

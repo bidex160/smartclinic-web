@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { LocalePickerComponent } from '../../shared/components/locale-picker/locale-picker.component';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { HealthCheckCataloguePackage } from '../../core/models/health-check-package.model';
@@ -10,7 +11,7 @@ import { useImageFallback } from '../../shared/image-fallback';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink],
+  imports: [LocalePickerComponent, RouterLink],
   templateUrl: './home-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

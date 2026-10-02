@@ -187,7 +187,10 @@
       <div
         class="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-7 text-sm sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10"
       >
-        <p>&copy; 2026 Smart Clinic Exchange. Your health journey, made clearer.</p>
+        <div class="flex flex-wrap items-center gap-3">
+          <app-locale-picker tone="dark" direction="up" />
+          <p>&copy; 2026 Smart Clinic Exchange. Your health journey, made clearer.</p>
+        </div>
         <nav aria-label="Footer" class="flex flex-wrap gap-x-5 gap-y-2">
           <a routerLink="/help" class="font-semibold text-white hover:underline">Get help: call, WhatsApp or call-back</a>
           <a routerLink="/developers" class="hover:underline">Connect your hospital</a>
@@ -196,4 +199,5 @@
       </div>
     </footer>
   </div>
+  <app-smartclinic-companion />
 }

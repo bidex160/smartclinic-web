@@ -1,43 +1,71 @@
-import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthStateService } from '../../../core/services/auth-state.service';
 
-type GuideLanguage = 'en' | 'pcm';
-type GuideCharacter = 'ayo' | 'zainab' | 'kito';
+import { AuthStateService } from '../../../core/services/auth-state.service';
+import { CompanionApiService, CompanionCapabilities, CompanionCharacter, CompanionTopic } from '../../../core/services/companion-api.service';
+import { APP_LANGUAGES, AppLanguage, LocalePreferencesService } from '../../../core/services/locale-preferences.service';
+import {
+  BROWSER_VOICE_LOCALE,
+  builtInExtra,
+  builtInTopic,
+  GuideAnswer,
+  keywordTopic,
+  LISTEN_LOCALE,
+  URGENT_PATTERN,
+  URGENT_TEXT,
+  welcomeText,
+} from './companion-content';
+
+export type { GuideAnswer } from './companion-content';
 
 interface GuidePreferences {
-  character: GuideCharacter;
-  language: GuideLanguage;
+  character: CompanionCharacter;
   largeText: boolean;
   reducedMotion: boolean;
   autoSpeak: boolean;
   introduced: boolean;
 }
 
-interface GuideAnswer {
-  title: string;
-  body: string;
-  route?: string;
-  action?: string;
+interface ThreadItem {
+  readonly id: number;
+  readonly from: 'guide' | 'me';
+  readonly answer: GuideAnswer;
+  /** e.g. "Shown in English for now" */
+  readonly note?: string;
 }
+
+type VoiceState = 'idle' | 'loading' | 'playing';
 
 const STORAGE_KEY = 'smartclinic-guide-preferences-v1';
 const DEFAULT_PREFERENCES: GuidePreferences = {
   character: 'ayo',
-  language: 'en',
   largeText: false,
   reducedMotion: false,
   autoSpeak: true,
   introduced: false,
 };
 
-const CHARACTERS: ReadonlyArray<{ id: GuideCharacter; name: string; emoji: string }> = [
-  { id: 'ayo', name: 'Ayo', emoji: '🦊' },
-  { id: 'zainab', name: 'Zainab', emoji: '🦋' },
-  { id: 'kito', name: 'Kito', emoji: '🐢' },
+const CHARACTERS: ReadonlyArray<{ id: CompanionCharacter; name: string; emoji: string; voice: string }> = [
+  { id: 'ayo', name: 'Ayo', emoji: '🦊', voice: 'Man’s voice' },
+  { id: 'zainab', name: 'Zainab', emoji: '🦋', voice: 'Woman’s voice' },
+  { id: 'kito', name: 'Kito', emoji: '🐢', voice: 'Calm voice' },
 ];
 
+const TOPICS: ReadonlyArray<{ id: Exclude<CompanionTopic, 'welcome'>; label: string }> = [
+  { id: 'find-care', label: 'See a doctor' },
+  { id: 'stay-well', label: 'Check my health' },
+  { id: 'know-numbers', label: 'Blood group & genotype' },
+  { id: 'passport', label: 'Health Passport' },
+  { id: 'points', label: 'My points' },
+  { id: 'hospital', label: 'My Hospital' },
+];
+
+/**
+ * The SmartClinic companion: a friendly guide that speaks the person's language in a natural voice,
+ * answers questions, and always offers a real person. It never diagnoses.
+ */
 @Component({
   selector: 'app-smartclinic-companion',
   imports: [FormsModule, RouterLink],
@@ -48,37 +76,50 @@ const CHARACTERS: ReadonlyArray<{ id: GuideCharacter; name: string; emoji: strin
 export class SmartClinicCompanionComponent {
   private readonly router = inject(Router);
   private readonly authState = inject(AuthStateService);
+  private readonly api = inject(CompanionApiService);
+  readonly locale = inject(LocalePreferencesService);
 
   readonly characters = CHARACTERS;
+  readonly topics = TOPICS;
   readonly preferences = signal(this.loadPreferences());
   readonly open = signal(false);
   readonly settingsOpen = signal(false);
   /** True while the patient types in a page form, so the launcher never covers the field. */
   readonly typing = signal(false);
   readonly teaserVisible = computed(() => !this.open() && !this.preferences().introduced);
+  /** On public pages the first-visit bubble would cover the main buttons on a phone, so it waits for wider screens. */
+  readonly publicPage = signal(!this.router.url.startsWith('/me'));
   readonly listening = signal(false);
-  readonly speaking = signal(false);
+  readonly thinking = signal(false);
+  readonly voice = signal<VoiceState>('idle');
+  /** Which message is being read aloud. */
+  readonly speakingId = signal<number | null>(null);
+  readonly voiceNote = signal('');
   readonly query = signal('');
-  readonly answer = signal<GuideAnswer | null>(null);
+  readonly thread = signal<readonly ThreadItem[]>([]);
   readonly recentQuestions = signal<string[]>(this.loadRecentQuestions());
 
-  readonly character = computed(
-    () => CHARACTERS.find((item) => item.id === this.preferences().character) ?? CHARACTERS[0],
-  );
-  readonly language = computed(() => this.preferences().language);
-  readonly welcome = computed(() =>
-    this.language() === 'pcm'
-      ? `Hello! I be ${this.character().name}, your SmartClinic guide. Wetin you wan do?`
-      : `Hello! I’m ${this.character().name}, your SmartClinic guide. What would you like to do?`,
-  );
+  private readonly capabilities = toSignal(this.api.capabilities(), { initialValue: { answers: false, voices: {} } as CompanionCapabilities });
+  readonly character = computed(() => CHARACTERS.find((item) => item.id === this.preferences().character) ?? CHARACTERS[0]);
+  readonly language = computed(() => this.locale.language());
+  readonly languageName = computed(() => APP_LANGUAGES[this.language()].label);
+  readonly welcome = computed(() => welcomeText(this.language(), this.character().name));
+  /** The latest thing the guide said: what "Hear this" reads. */
+  readonly answer = computed(() => [...this.thread()].reverse().find((t) => t.from === 'guide')?.answer ?? null);
+  readonly naturalVoice = computed(() => Boolean(this.capabilities().voices[this.language()]));
   readonly supportsVoiceInput =
-    typeof window !== 'undefined' &&
-    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
-  readonly supportsSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
+    typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+  readonly supportsSpeech = typeof window !== 'undefined' && (typeof Audio !== 'undefined' || 'speechSynthesis' in window);
+
+  private nextId = 1;
+  private audio: HTMLAudioElement | null = null;
+  private audioUrl: string | null = null;
 
   constructor() {
     // First visit: invite gently with a small bubble instead of covering the page.
     if (!this.preferences().introduced) this.settingsOpen.set(true);
+    inject(DestroyRef).onDestroy(() => this.stopSpeaking());
+    this.router.events.pipe(takeUntilDestroyed()).subscribe(() => this.publicPage.set(!this.router.url.startsWith('/me')));
   }
 
   @HostListener('document:focusin', ['$event'])
@@ -108,13 +149,14 @@ export class SmartClinicCompanionComponent {
     this.open.set(false);
   }
 
-  chooseCharacter(character: GuideCharacter): void {
+  chooseCharacter(character: CompanionCharacter): void {
     this.updatePreferences({ character });
   }
 
-  chooseLanguage(language: GuideLanguage): void {
-    this.updatePreferences({ language });
-    this.answer.set(null);
+  chooseLanguage(language: AppLanguage): void {
+    this.stopSpeaking();
+    this.locale.chooseLanguage(language);
+    this.thread.set([]);
   }
 
   toggleLargeText(): void {
@@ -129,159 +171,87 @@ export class SmartClinicCompanionComponent {
     this.updatePreferences({ autoSpeak: !this.preferences().autoSpeak });
   }
 
-  explain(topic: 'stay-well' | 'find-care' | 'hospital' | 'appointments' | 'passport' | 'network'): void {
-    const pcm = this.language() === 'pcm';
-    const answers: Record<typeof topic, GuideAnswer> = {
-      'stay-well': {
-        title: 'Stay Well',
-        body: pcm
-          ? 'Stay Well help you check your health before sickness start. First, tap Explore Stay Well. Choose Guided Self-Check if you wan answer simple questions yourself, or choose Health Check if you want provider check you. Follow the questions one by one. If any answer worry you, use Find Care talk to provider.'
-          : 'Stay Well helps you understand your health before illness starts. First, tap Explore Stay Well. Choose Guided Self-Check to answer simple questions yourself, or choose Health Check to book a provider. Follow each question one at a time. If a result concerns you, use Find Care to speak with a provider.',
-        route: '/me/health-journey',
-        action: pcm ? 'Start am' : 'Explore Stay Well',
-      },
-      'find-care': {
-        title: 'Find Care',
-        body: pcm
-          ? 'Find Care help you when something dey worry you. First, tap Find Care. Tell us the problem with simple words. Choose the kind service and how you want receive care. Check the provider, price and time before you confirm. If na emergency, call emergency service or go hospital now.'
-          : 'Find Care helps when something is worrying you. First, tap Find Care and describe the problem in simple words. Choose the service and how you want to receive care. Check the provider, price, and time before confirming. For an emergency, contact emergency services or go to the nearest emergency department.',
-        route: '/me/request-care',
-        action: pcm ? 'Find care' : 'Find Care',
-      },
-      hospital: {
-        title: pcm ? 'My Hospital' : 'My Hospital',
-        body: pcm
-          ? 'My Hospital connect you to hospital wey you dey use. Tap Connect Hospital, search the hospital, then choose whether you be new or existing patient. If you don register before, enter your hospital number and complete identity check. After connection, you fit see supported bills, appointments, receipts and records.'
-          : 'My Hospital connects you to a hospital you use. Tap Connect My Hospital, search for the hospital, and choose whether you are a new or existing patient. Existing patients enter their hospital number and complete identity verification. After connection, supported bills, appointments, receipts, and records can appear here.',
-        route: '/me/providers/connect',
-        action: pcm ? 'Connect hospital' : 'Connect My Hospital',
-      },
-      appointments: {
-        title: pcm ? 'Why book appointment?' : 'Why book an appointment?',
-        body: pcm
-          ? 'Appointment help provider prepare before you reach. Choose the care you need, provider, date and time. Check the price, then confirm. SmartClinic go show your next step and keep the appointment information together.'
-          : 'An appointment helps the provider prepare before you arrive. Choose the care you need, provider, date, and time. Review the price, then confirm. SmartClinic shows your next step and keeps the appointment information together.',
-        route: '/me/request-care',
-        action: pcm ? 'Book care' : 'Book Care',
-      },
-      passport: {
-        title: 'Health Passport',
-        body: pcm
-          ? 'Health Passport na one place for health information wey SmartClinic make available to you. Open am see your available checks, results and care information. If hospital or provider need record, na you choose wetin to share and how long dem fit see am.'
-          : 'Health Passport is one place for health information SmartClinic has made available to you. Open it to see available checks, results, and care information. When a hospital or provider needs a record, you choose what to share and how long access should last.',
-        route: '/me/health-passport',
-        action: pcm ? 'Open passport' : 'Open Health Passport',
-      },
-      network: {
-        title: pcm ? 'Build the Network' : 'Build the Network',
-        body: pcm
-          ? 'Build the Network mean say you help another person or provider join healthcare community. Open My Impact, copy your personal link, then share am. Follow up help the person finish and activate. Pending points dey wait for confirmation; verified points count for your level and leaderboard.'
-          : 'Build the Network means helping another person or provider join the healthcare community. Open My Impact, copy your personal link, and share it. Follow up so the person completes and activates their account. Pending points await confirmation; verified points count toward your level and leaderboard.',
-        route: '/me/impact',
-        action: pcm ? 'See my impact' : 'View My Impact',
-      },
-    };
-    this.answer.set(answers[topic]);
-    this.speakAnswerAutomatically();
+  /** Explain one part of the app, in the person's language. */
+  explain(topic: Exclude<CompanionTopic, 'welcome'>): void {
+    const lang = this.language();
+    if (lang === 'en' || lang === 'pcm') return this.say(builtInTopic(topic, lang === 'pcm'));
+    if (!this.capabilities().answers) return this.say(builtInTopic(topic, false), this.englishOnlyNote());
+    this.fetchAnswer({ topic }, () => this.say(builtInTopic(topic, false), this.englishOnlyNote()));
   }
 
   explainThisPage(): void {
     const path = this.router.url.split('?')[0];
     if (path.includes('health-passport')) return this.explain('passport');
+    if (path.includes('progress')) return this.explain('points');
     if (path.includes('request-care') || path.includes('/care')) return this.explain('find-care');
     if (path.includes('provider') || path.includes('hospital')) return this.explain('hospital');
-    if (path.includes('impact') || path.includes('referral')) return this.explain('network');
     if (path.includes('health') || path.includes('self-check')) return this.explain('stay-well');
-
-    this.answer.set({
-      title: this.language() === 'pcm' ? 'This page' : 'About this page',
-      body:
-        this.language() === 'pcm'
-          ? 'This na SmartClinic front door. Choose Stay Well, Find Care, or My Hospital. I fit explain any one.'
-          : 'This is the SmartClinic front door. Choose Stay Well, Find Care, or My Hospital. I can explain any option.',
+    const pcm = this.language() === 'pcm';
+    this.say({
+      title: pcm ? 'This page' : 'About this page',
+      body: pcm
+        ? 'This na SmartClinic front door. Choose Stay Well, Find Care, or My Hospital. I fit explain any one.'
+        : 'This is the SmartClinic front door. Choose Stay Well, Find Care, or My Hospital. I can explain any of them.',
     });
-    this.speakAnswerAutomatically();
   }
 
   actionRoute(route: string): string {
-    return this.authState.isPatient() ? route : '/login';
+    return this.authState.isPatient() || !route.startsWith('/me') ? route : '/login';
   }
 
   actionQueryParams(route: string): Record<string, string> | null {
-    return this.authState.isPatient() ? null : { returnUrl: route };
+    return this.authState.isPatient() || !route.startsWith('/me') ? null : { returnUrl: route };
   }
 
   ask(): void {
     const raw = this.query().trim();
-    const value = raw.toLowerCase();
-    if (raw) this.rememberQuestion(raw);
-    if (!value) return;
-    if (/(chest pain|cannot breathe|can't breathe|unconscious|bleeding|emergency|suicide)/i.test(value)) {
-      this.answer.set({
-        title: this.language() === 'pcm' ? 'Get urgent help now' : 'Get urgent help now',
-        body:
-          this.language() === 'pcm'
-            ? 'This guide no be emergency service. Call your local emergency number or go the nearest emergency department now.'
-            : 'This guide is not an emergency service. Call your local emergency number or go to the nearest emergency department now.',
-      });
-      this.speakAnswerAutomatically();
-    } else if (/(pay|payment|pay bill|fetch bill|invoice|receipt|wallet)/i.test(value)) {
-      this.answer.set({title: this.language()==='pcm'?'Bills & payment':'Bills & payment',body:this.language()==='pcm'?'Open My Hospital or Bills. Connect your hospital if needed, fetch available bills, review them, then pay with the payment option shown. Paid bills should return confirmation to the connected hospital.':'Open My Hospital or Bills. Connect your hospital if needed, fetch available bills, review them, then pay with the available payment option. Paid bills return confirmation through the connected hospital flow.',route:'/me/pay-bills',action:this.language()==='pcm'?'See bills':'View Bills'}); this.speakAnswerAutomatically();
-    } else if (/(\btest\b|\btests\b|lab|laboratory|blood test|scan|x-ray|xray|radiology|imaging|medicine|medication|pharmacy|prescription)/i.test(value)) {
-      this.answer.set({title:this.language()==='pcm'?'Tests & medicines':'Tests & medicines',body:this.language()==='pcm'?'To request a test, scan or medicine, open Tests & Referrals, choose the item, then review the provider, price and next step. Some requests need a valid prescription.':'To request a test, scan, or medicine, open Tests & Referrals, choose the item, then review the provider, price, and next step. Some requests need a valid prescription.',route:'/me/orders',action:this.language()==='pcm'?'Open my care':'Open Tests & Referrals'}); this.speakAnswerAutomatically();
-    } else if (/(specialist|dermatologist|cardiologist|gynecologist|gynaecologist|pediatrician|paediatrician|orthopedic|orthopaedic|ent|eye doctor)/i.test(value)) {
-      this.answer.set({title:this.language()==='pcm'?'Find specialist':'Find a specialist',body:this.language()==='pcm'?'Use Find Care describe wetin dey worry you. SmartClinic go show suitable doctor or specialist wey dey available; you still fit choose another provider.':'Use Find Care and describe what you need. SmartClinic can surface suitable available doctors or specialists, and you remain free to choose another provider.',route:'/me/request-care',action:this.language()==='pcm'?'Find specialist':'Find Care'}); this.speakAnswerAutomatically();
-    } else if (/(well|check|test|healthy)/i.test(value)) this.explain('stay-well');
-    else if (/(doctor|care|sick|symptom|help)/i.test(value)) this.explain('find-care');
-    else if (/(hospital|record|bill|wallet)/i.test(value)) this.explain('hospital');
-    else if (/(appointment|book|visit)/i.test(value)) this.explain('appointments');
-    else if (/(passport|result)/i.test(value)) this.explain('passport');
-    else if (/(point|refer|invite|leader|network)/i.test(value)) this.explain('network');
-    else {
-      this.answer.set({
-        title: this.language() === 'pcm' ? 'Make we find am together' : 'Let’s find it together',
-        body:
-          this.language() === 'pcm'
-            ? 'I fit explain Stay Well, Find Care, My Hospital, appointment, Health Passport, or network points. Choose one below.'
-            : 'I can explain Stay Well, Find Care, My Hospital, appointments, Health Passport, or network points. Choose one below.',
-      });
-      this.speakAnswerAutomatically();
-    }
+    if (!raw) return;
+    this.rememberQuestion(raw);
     this.query.set('');
+    this.push({ from: 'me', answer: { title: '', body: raw } });
+
+    const lang = this.language();
+    if (URGENT_PATTERN.test(raw)) return this.say(URGENT_TEXT[lang]);
+
+    const offline = () => this.keywordAnswer(raw);
+    if (this.capabilities().answers) this.fetchAnswer({ question: raw }, offline);
+    else offline();
   }
 
-  readAloud(): void {
-    if (!this.supportsSpeech) return;
-    this.stopSpeaking();
-    const response = this.answer();
-    const utterance = new SpeechSynthesisUtterance(response ? `${response.title}. ${response.body}` : this.welcome());
-    utterance.lang = this.language() === 'pcm' ? 'en-NG' : 'en-GB';
-    utterance.rate = 0.98;
-    const preferredVoice = this.preferredVoice();
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.onend = () => this.speaking.set(false);
-    utterance.onerror = () => this.speaking.set(false);
-    this.speaking.set(true);
-    window.speechSynthesis.speak(utterance);
+  /** Read the latest answer (or the welcome) aloud. */
+  readAloud(id?: number): void {
+    const item = id ? this.thread().find((t) => t.id === id) : [...this.thread()].reverse().find((t) => t.from === 'guide');
+    const text = item ? [item.answer.title, item.answer.body].filter(Boolean).join('. ') : this.welcome();
+    this.speak(text, item?.id ?? 0, item?.note ? 'en' : this.language());
   }
 
   stopSpeaking(): void {
-    if (this.supportsSpeech) window.speechSynthesis.cancel();
-    this.speaking.set(false);
+    if (this.audio) {
+      this.audio.pause();
+      this.audio = null;
+    }
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+      this.audioUrl = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    this.voice.set('idle');
+    this.speakingId.set(null);
+  }
+
+  /** Kept for the template's original control. */
+  speaking(): boolean {
+    return this.voice() !== 'idle';
   }
 
   startListening(): void {
     if (!this.supportsVoiceInput || this.listening()) return;
-    const recognitionConstructor = (
-      window as unknown as {
-        SpeechRecognition?: new () => SpeechRecognitionLike;
-        webkitSpeechRecognition?: new () => SpeechRecognitionLike;
-      }
-    ).SpeechRecognition ??
-      (window as unknown as { webkitSpeechRecognition: new () => SpeechRecognitionLike })
-        .webkitSpeechRecognition;
+    this.stopSpeaking();
+    const recognitionConstructor =
+      (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike }).SpeechRecognition ??
+      (window as unknown as { webkitSpeechRecognition: new () => SpeechRecognitionLike }).webkitSpeechRecognition;
     const recognition = new recognitionConstructor();
-    recognition.lang = this.language() === 'pcm' ? 'en-NG' : 'en-GB';
+    recognition.lang = LISTEN_LOCALE[this.language()];
     recognition.interimResults = false;
     recognition.continuous = false;
     recognition.onresult = (event) => {
@@ -289,42 +259,175 @@ export class SmartClinicCompanionComponent {
       this.listening.set(false);
       this.ask();
     };
-    recognition.onerror = () => this.listening.set(false);
+    recognition.onerror = () => {
+      this.listening.set(false);
+      this.voiceNote.set('I couldn’t hear that. You can type instead, or try again.');
+    };
     recognition.onend = () => this.listening.set(false);
+    this.voiceNote.set('');
     this.listening.set(true);
     recognition.start();
   }
 
-  useRecentQuestion(question:string):void{this.query.set(question);this.ask();}
-  private rememberQuestion(question:string):void{const next=[question,...this.recentQuestions().filter(x=>x.toLowerCase()!==question.toLowerCase())].slice(0,3);this.recentQuestions.set(next);if(typeof localStorage!=='undefined')localStorage.setItem('smartclinic-guide-recent-v1',JSON.stringify(next));}
-  private loadRecentQuestions():string[]{if(typeof localStorage==='undefined')return[];try{return JSON.parse(localStorage.getItem('smartclinic-guide-recent-v1')??'[]').slice(0,3)}catch{return[]}}
+  useRecentQuestion(question: string): void {
+    this.query.set(question);
+    this.ask();
+  }
+
+  private fetchAnswer(request: { question?: string; topic?: CompanionTopic }, fallback: () => void): void {
+    this.thinking.set(true);
+    this.api
+      .ask({
+        ...request,
+        language: this.language(),
+        character: this.character().id,
+        page: this.router.url.split('?')[0].slice(0, 100),
+        country: this.locale.market(),
+        signedIn: this.authState.isPatient(),
+      })
+      .subscribe({
+        next: (a) => {
+          this.thinking.set(false);
+          this.say({ title: a.title, body: a.body, route: a.route, action: a.action, urgent: a.urgent });
+        },
+        error: () => {
+          this.thinking.set(false);
+          fallback();
+        },
+      });
+  }
+
+  private keywordAnswer(raw: string): void {
+    const lang = this.language();
+    const pcm = lang === 'pcm';
+    const note = lang === 'en' || lang === 'pcm' ? undefined : this.englishOnlyNote();
+    const topic = keywordTopic(raw);
+    if (topic === 'tests' || topic === 'bills' || topic === 'specialist') return this.say(builtInExtra(topic, pcm), note);
+    if (topic) return this.say(builtInTopic(topic, pcm), note);
+    this.say(
+      {
+        title: pcm ? 'Make we find am together' : 'Let’s find it together',
+        body: pcm
+          ? 'I fit explain how to see doctor, check your health, your passport, your points, or My Hospital. Choose one below, or talk to person.'
+          : 'I can explain seeing a doctor, checking your health, your passport, your points, or My Hospital. Choose one below, or talk to a person.',
+        route: '/help',
+        action: pcm ? 'Talk to person' : 'Talk to a person',
+      },
+      note,
+    );
+  }
+
+  private englishOnlyNote(): string {
+    return `I can only show this in English right now, not ${APP_LANGUAGES[this.language()].english}.`;
+  }
+
+  private say(answer: GuideAnswer, note?: string): void {
+    const id = this.push({ from: 'guide', answer, note });
+    if (this.preferences().autoSpeak) this.speak([answer.title, answer.body].filter(Boolean).join('. '), id, note ? 'en' : this.language());
+  }
+
+  private push(item: Omit<ThreadItem, 'id'>): number {
+    const id = this.nextId++;
+    this.thread.update((t) => [...t, { ...item, id }].slice(-8));
+    return id;
+  }
+
+  /** Natural voice from SmartClinic first; a natural-sounding browser voice second; otherwise just text. */
+  private speak(text: string, id: number, language: AppLanguage): void {
+    this.stopSpeaking();
+    this.voiceNote.set('');
+    this.speakingId.set(id);
+    const useServer = Boolean(this.capabilities().voices[language]);
+    if (useServer) {
+      this.voice.set('loading');
+      this.api.speech(text, language, this.character().id, this.locale.market()).subscribe({
+        next: (blob) => this.playBlob(blob, id),
+        error: () => this.browserSpeak(text, id, language, true),
+      });
+      return;
+    }
+    this.browserSpeak(text, id, language);
+  }
+
+  private playBlob(blob: Blob, id: number): void {
+    if (this.speakingId() !== id) return;
+    try {
+      this.audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(this.audioUrl);
+      this.audio = audio;
+      audio.onended = () => this.stopSpeaking();
+      audio.onerror = () => this.stopSpeaking();
+      this.voice.set('playing');
+      void audio.play().catch(() => {
+        this.stopSpeaking();
+        this.voiceNote.set('Tap “Hear this” to listen.');
+      });
+    } catch {
+      this.stopSpeaking();
+    }
+  }
+
+  private browserSpeak(text: string, id: number, language: AppLanguage, serverFailed = false): void {
+    const voice = this.naturalBrowserVoice(language);
+    if (!voice) {
+      this.stopSpeaking();
+      this.voiceNote.set(
+        serverFailed
+          ? 'The voice is busy right now. The words are on screen — tap 🔊 to try again.'
+          : `A natural ${APP_LANGUAGES[language].english} voice isn’t ready yet. The words are on screen.`,
+      );
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+    utterance.rate = 0.95;
+    utterance.onend = () => this.stopSpeaking();
+    utterance.onerror = () => this.stopSpeaking();
+    this.speakingId.set(id);
+    this.voice.set('playing');
+    window.speechSynthesis.speak(utterance);
+  }
+
+  /** Only voices that sound human (neural / natural / online). Robotic system voices are skipped. */
+  private naturalBrowserVoice(language: AppLanguage): SpeechSynthesisVoice | null {
+    const prefix = BROWSER_VOICE_LOCALE[language];
+    if (!prefix || typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+    const natural = /natural|neural|online|premium|enhanced/i;
+    const voices = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(prefix.toLowerCase()) && natural.test(v.name));
+    const local = voices.find((v) => /NG|GH|KE|RW|TZ/i.test(v.lang));
+    return local ?? voices[0] ?? null;
+  }
+
+  private rememberQuestion(question: string): void {
+    const next = [question, ...this.recentQuestions().filter((x) => x.toLowerCase() !== question.toLowerCase())].slice(0, 3);
+    this.recentQuestions.set(next);
+    try {
+      localStorage.setItem('smartclinic-guide-recent-v1', JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private loadRecentQuestions(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem('smartclinic-guide-recent-v1') ?? '[]').slice(0, 3);
+    } catch {
+      return [];
+    }
+  }
 
   private updatePreferences(patch: Partial<GuidePreferences>): void {
     const next = { ...this.preferences(), ...patch };
     this.preferences.set(next);
-    if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  }
-
-  private speakAnswerAutomatically(): void {
-    if (this.preferences().autoSpeak) this.readAloud();
-  }
-
-  private preferredVoice(): SpeechSynthesisVoice | null {
-    if (!this.supportsSpeech) return null;
-    const languagePrefix = this.language() === 'pcm' ? 'en-NG' : 'en';
-    const voices = window.speechSynthesis.getVoices();
-    const preferredNames = /natural|neural|premium|enhanced|google|microsoft|siri/i;
-    return (
-      voices.find((voice) => voice.lang === languagePrefix && preferredNames.test(voice.name)) ??
-      voices.find((voice) => voice.lang.startsWith(languagePrefix) && preferredNames.test(voice.name)) ??
-      voices.find((voice) => voice.lang === languagePrefix) ??
-      voices.find((voice) => voice.lang.startsWith('en')) ??
-      null
-    );
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
   }
 
   private loadPreferences(): GuidePreferences {
-    if (typeof localStorage === 'undefined') return DEFAULT_PREFERENCES;
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Partial<GuidePreferences>;
       return { ...DEFAULT_PREFERENCES, ...saved };
