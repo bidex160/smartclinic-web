@@ -32,7 +32,7 @@ export const routes: Routes = [
   {
     path: 'join',
     data: { preload: true },
-    title: 'Choose a Smart Health Check | SmartClinic',
+    title: 'Join the SmartClinic network | SmartClinic',
     loadComponent: () =>
       import('./features/join/join.component').then((component) => component.JoinComponent),
   },
@@ -422,10 +422,12 @@ export const routes: Routes = [
       },
       {
         path: 'lab-tests',
+        title: 'Lab tests | SmartClinic',
         loadComponent: () => import('./features/care/patient-service-catalogue-page.component').then(m => m.PatientServiceCataloguePageComponent),
       },
       {
         path: 'medicines',
+        title: 'Medicines | SmartClinic',
         loadComponent: () => import('./features/care/patient-service-catalogue-page.component').then(m => m.PatientServiceCataloguePageComponent),
       },
       {

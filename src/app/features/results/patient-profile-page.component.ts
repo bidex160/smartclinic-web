@@ -62,7 +62,7 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
             </div>
           </form>
         } @else {
-          <dl class="mt-5 grid gap-5 sm:grid-cols-2">
+          <dl class="mt-5 grid gap-5 [overflow-wrap:anywhere] sm:grid-cols-2">
             <div>
               <dt class="text-sm font-semibold text-ink-soft">First name</dt>
               <dd class="mt-1 font-bold">{{ p.patient.givenName }}</dd>
