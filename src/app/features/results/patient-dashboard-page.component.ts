@@ -19,6 +19,7 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
 import { DeviceNotificationsService } from '../../core/services/device-notifications.service';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 import { DailyCheckInComponent } from './daily-check-in.component';
 import { VisitDayCardComponent } from './visit-day-card.component';
 import { PendingRequestsCardComponent } from './pending-requests-card.component';
@@ -30,33 +31,36 @@ import { DailyQuizCardComponent } from '../engagement/daily-quiz-card.component'
 import { PassportMeterComponent } from '../engagement/passport-meter.component';
 interface StarterRoutine {
   readonly type: PatientDailyRoutineType;
-  readonly label: string;
+  /** Translation key; the patient's routine is saved in the language they see. */
+  readonly labelKey: string;
   readonly time: string;
 }
 
 /** One-tap starter habits. Medication is excluded: it needs an explicit safety acknowledgement. */
 const STARTER_ROUTINES: readonly StarterRoutine[] = [
-  { type: 'HYDRATION', label: 'Drink a glass of water', time: '09:00' },
-  { type: 'BREAK', label: 'Stretch for 2 minutes', time: '12:30' },
-  { type: 'MOVEMENT', label: 'Take a 10-minute walk', time: '17:30' },
-  { type: 'SLEEP', label: 'Wind down for bed', time: '22:00' },
+  { type: 'HYDRATION', labelKey: 'dashboard.starter.water', time: '09:00' },
+  { type: 'BREAK', labelKey: 'dashboard.starter.stretch', time: '12:30' },
+  { type: 'MOVEMENT', labelKey: 'dashboard.starter.walk', time: '17:30' },
+  { type: 'SLEEP', labelKey: 'dashboard.starter.windDown', time: '22:00' },
 ];
 
 interface StreakBadge {
   readonly days: number;
+  /** Translation key for the badge name. */
   readonly name: string;
 }
 
 /** Non-monetary milestones: celebrating habits without rewarding unearned ticks. */
 const STREAK_BADGES: readonly StreakBadge[] = [
-  { days: 3, name: 'Spark' },
-  { days: 7, name: 'One week strong' },
-  { days: 30, name: '30-day rhythm' },
-  { days: 100, name: '100-day legend' },
+  { days: 3, name: 'dashboard.badges.spark' },
+  { days: 7, name: 'dashboard.badges.oneWeek' },
+  { days: 30, name: 'dashboard.badges.thirtyDays' },
+  { days: 100, name: 'dashboard.badges.hundredDays' },
 ];
 
-const MOOD_LABELS = ['', 'very low', 'low', 'okay', 'good', 'great'] as const;
+const MOOD_LABELS = ['', 'dashboard.mood.veryLow', 'dashboard.mood.low', 'dashboard.mood.okay', 'dashboard.mood.good', 'dashboard.mood.great'] as const;
 
+/** title, message and label are translation keys. */
 interface DashboardNextStep {
   readonly title: string;
   readonly message: string;
@@ -66,29 +70,29 @@ interface DashboardNextStep {
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent, PendingRequestsCardComponent, DailyQuizCardComponent, PassportMeterComponent],
+  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent, PendingRequestsCardComponent, DailyQuizCardComponent, PassportMeterComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-6xl px-4 pb-10 pt-5 sm:px-8 sm:pt-8 lg:pt-10">
       @if (loading()) {
         <section role="status" aria-live="polite" class="animate-pulse space-y-4">
-          <span class="sr-only">Loading your dashboard…</span>
+          <span class="sr-only">{{ 'dashboard.state.loading' | t }}</span>
           <div class="h-16 w-2/3 rounded-2xl bg-sand-200"></div>
           <div class="h-52 rounded-[1.75rem] bg-sand-200"></div>
           <div class="h-40 rounded-[1.75rem] bg-sand-100"></div>
         </section>
       } @else if (error()) {
         <section role="alert" class="sc-card p-6">
-          <h1 class="font-display text-2xl font-semibold text-ink">Your dashboard is unavailable right now</h1>
-          <p class="mt-2 text-ink-soft">Check your connection and try again.</p>
-          <button type="button" (click)="load()" class="mt-4 rounded-full bg-brand-700 px-5 py-3 font-semibold text-white hover:bg-brand-800">Retry</button>
+          <h1 class="font-display text-2xl font-semibold text-ink">{{ 'dashboard.state.errorTitle' | t }}</h1>
+          <p class="mt-2 text-ink-soft">{{ 'dashboard.state.errorBody' | t }}</p>
+          <button type="button" (click)="load()" class="mt-4 rounded-full bg-brand-700 px-5 py-3 font-semibold text-white hover:bg-brand-800">{{ 'dashboard.state.retry' | t }}</button>
         </section>
       } @else if (dashboard(); as value) {
         <header class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <div>
             <p class="text-sm font-medium text-ink-muted">{{ today }}</p>
             <h1 class="font-display mt-1 text-[2rem] font-semibold leading-[1.1] text-ink sm:text-[2.6rem]">
-              {{ greeting() }}, {{ value.patient.firstName }}
+              {{ greeting() | t: { name: value.patient.firstName } }}
             </h1>
           </div>
           <div class="flex items-center gap-2 rounded-full border border-ink/[0.08] bg-white py-1.5 pl-4 pr-1.5 shadow-card">
@@ -96,11 +100,11 @@ interface DashboardNextStep {
               <span class="sr-only sm:not-sr-only">SmartClinic ID: </span><strong class="whitespace-nowrap font-mono font-semibold tracking-wide text-ink">{{ value.patient.patientReference }}</strong>
             </p>
             <button type="button" (click)="copyPatientId()" class="min-h-9 whitespace-nowrap rounded-full bg-sand-100 px-3.5 text-xs font-semibold text-ink transition hover:bg-sand-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-              Copy ID
+              {{ 'dashboard.header.copyId' | t }}
             </button>
-            <a routerLink="/me/card" class="inline-flex min-h-9 items-center rounded-full bg-ink px-3.5 text-xs font-semibold text-white transition hover:bg-brand-900" data-card-shortcut>Card</a>
+            <a routerLink="/me/card" class="inline-flex min-h-9 items-center rounded-full bg-ink px-3.5 text-xs font-semibold text-white transition hover:bg-brand-900" data-card-shortcut>{{ 'dashboard.header.card' | t }}</a>
           </div>
-          <p aria-live="polite" class="w-full text-sm font-medium text-leaf-700 empty:hidden">{{ copyFeedback() }}</p>
+          <p aria-live="polite" class="w-full text-sm font-medium text-leaf-700 empty:hidden">{{ copyFeedback() | t }}</p>
         </header>
 
         <app-visit-day-card />
@@ -118,8 +122,8 @@ interface DashboardNextStep {
                 <span class="absolute inset-0 grid place-items-center text-sm font-bold text-ink">{{ completedSteps(value) }}/{{ checklist(value).length }}</span>
               </div>
               <div class="min-w-0">
-                <h2 id="getting-started-heading" class="font-display text-[1.25rem] font-semibold text-ink">Getting started</h2>
-                <p class="text-sm text-ink-muted">{{ completedSteps(value) }} of {{ checklist(value).length }} done — a few minutes to set up your health companion.</p>
+                <h2 id="getting-started-heading" class="font-display text-[1.25rem] font-semibold text-ink">{{ 'dashboard.setup.title' | t }}</h2>
+                <p class="text-sm text-ink-muted">{{ 'dashboard.setup.progress' | t: { done: completedSteps(value), total: checklist(value).length } }}</p>
               </div>
             </div>
             <ul class="mt-4 grid gap-2 sm:grid-cols-2">
@@ -127,7 +131,7 @@ interface DashboardNextStep {
                 <li>
                   <a [routerLink]="step.route" class="flex items-center gap-3 rounded-2xl p-3 ring-1 transition {{ step.complete ? 'bg-leaf-50 ring-leaf-100' : 'bg-white ring-ink/[0.07] hover:bg-sand-50' }}">
                     <span aria-hidden="true" class="grid size-8 shrink-0 place-items-center rounded-full font-bold {{ step.complete ? 'bg-leaf-500 text-white' : 'bg-sand-100 text-ink-muted' }}">{{ step.complete ? '✓' : '○' }}</span>
-                    <span class="min-w-0 flex-1"><strong class="block text-sm font-semibold text-ink">{{ step.label }}</strong><span class="text-xs text-ink-muted">{{ step.complete ? 'Complete' : 'Not complete' }}</span></span>
+                    <span class="min-w-0 flex-1"><strong class="block text-sm font-semibold text-ink">{{ step.label | t }}</strong><span class="text-xs text-ink-muted">{{ (step.complete ? 'dashboard.setup.complete' : 'dashboard.setup.notComplete') | t }}</span></span>
                     @if (!step.complete) { <span class="text-ink-muted" aria-hidden="true">›</span> }
                   </a>
                 </li>
@@ -143,14 +147,14 @@ interface DashboardNextStep {
             <div class="pointer-events-none absolute -bottom-28 left-10 size-64 rounded-full bg-ochre-500/20 blur-3xl" aria-hidden="true"></div>
             <div class="relative">
               <p class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ochre-300">
-                <span class="size-1.5 rounded-full bg-ochre-300"></span>Your next step
+                <span class="size-1.5 rounded-full bg-ochre-300"></span>{{ 'dashboard.nextStep.eyebrow' | t }}
               </p>
               <h2 id="next-step-heading" class="font-display mt-3 text-[1.7rem] font-semibold leading-tight sm:text-[2rem]">
-                {{ nextStep(value).title }}
+                {{ nextStep(value).title | t }}
               </h2>
-              <p class="mt-2 max-w-md text-[15px] leading-relaxed text-white/75">{{ nextStep(value).message }}</p>
+              <p class="mt-2 max-w-md text-[15px] leading-relaxed text-white/75">{{ nextStep(value).message | t }}</p>
               <a [routerLink]="nextStep(value).route" class="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink transition hover:bg-ochre-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">
-                {{ nextStep(value).label }} <span aria-hidden="true">→</span>
+                {{ nextStep(value).label | t }} <span aria-hidden="true">→</span>
               </a>
             </div>
           </section>
@@ -162,19 +166,19 @@ interface DashboardNextStep {
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Smart Health Passport</p>
                 <span class="grid size-10 place-items-center rounded-xl bg-white/10 ring-1 ring-white/20" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5Z"/><path d="M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0"/><path d="M8 18h8"/></svg></span>
               </div>
-              <h2 id="passport-heading" class="font-display mt-3 text-[1.45rem] font-semibold leading-tight">Your health story, wherever you go.</h2>
-              <p class="mt-2 text-sm leading-relaxed text-white/70">Records, results, prescriptions and care history in one place — shared only when you choose.</p>
+              <h2 id="passport-heading" class="font-display mt-3 text-[1.45rem] font-semibold leading-tight">{{ 'dashboard.passport.title' | t }}</h2>
+              <p class="mt-2 text-sm leading-relaxed text-white/70">{{ 'dashboard.passport.body' | t }}</p>
               <div class="mt-auto flex flex-wrap items-end justify-between gap-3 pt-6">
                 @if (engagement(); as g) {
                   <app-passport-meter [summary]="g" tone="dark" />
                 } @else {
                   <div>
-                    <p class="text-[11px] uppercase tracking-[0.16em] text-white/55">Holder</p>
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-white/55">{{ 'dashboard.passport.holder' | t }}</p>
                     <p class="font-semibold">{{ value.patient.displayName }}</p>
                   </div>
                 }
                 <a routerLink="/me/health-passport" class="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full bg-white/15 px-4 text-sm font-semibold ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25">
-                  Open Health Passport <span aria-hidden="true">→</span>
+                  {{ 'dashboard.passport.open' | t }} <span aria-hidden="true">→</span>
                 </a>
               </div>
             </div>
@@ -186,34 +190,34 @@ interface DashboardNextStep {
             <div>
               <p class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ochre-700">
                 <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-                Today
+                {{ 'dashboard.today.eyebrow' | t }}
               </p>
-              <h2 id="today-care-heading" class="font-display mt-1.5 text-[1.45rem] font-semibold text-ink">Small things that keep you well</h2>
-              <p class="mt-1 text-sm leading-6 text-ink-muted">Optional routines you choose. Clinical actions above always remain the priority.</p>
+              <h2 id="today-care-heading" class="font-display mt-1.5 text-[1.45rem] font-semibold text-ink">{{ 'dashboard.today.title' | t }}</h2>
+              <p class="mt-1 text-sm leading-6 text-ink-muted">{{ 'dashboard.today.intro' | t }}</p>
             </div>
             <div class="flex shrink-0 items-center gap-2">
               @if (value.dailyCare; as care) {
                 @if (care.streakDays > 0) {
                   <span class="inline-flex items-center gap-1.5 rounded-full bg-ochre-50 px-3 py-1.5 text-sm font-semibold text-ochre-700 ring-1 ring-ochre-100" data-streak>
                     <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.7 7-7 0-3.5-2.5-6.5-4-8-.5 2-1.5 3.5-3 4.5C12 8 11 4.5 8.5 2 9 6 5 9 5 15c0 4.3 3 7 7 7Z"/></svg>
-                    {{ care.streakDays }}-day streak
+                    {{ 'dashboard.today.streak' | t: { days: care.streakDays } }}
                   </span>
                 }
               }
               <button type="button" (click)="toggleRoutineManager()" class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-sand-100">
-                {{ routineManagerOpen() ? 'Close' : 'Manage' }}
+                {{ (routineManagerOpen() ? 'dashboard.today.close' : 'dashboard.today.manage') | t }}
               </button>
             </div>
           </div>
 
           @if (value.dailyCare?.week; as week) {
             <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <ol class="flex gap-1.5" aria-label="Your last 7 days" data-week-strip>
+              <ol class="flex gap-1.5" [attr.aria-label]="'dashboard.week.label' | t" data-week-strip>
                 @for (day of week; track day.localDate; let last = $last) {
                   <li class="flex flex-col items-center gap-1">
                     <span
                       class="grid size-8 place-items-center rounded-full text-[11px] font-bold transition {{ day.active ? 'bg-leaf-500 text-white' : 'bg-sand-100 text-ink-muted' }} {{ last ? 'ring-2 ring-offset-2 ring-brand-500' : '' }}"
-                      [attr.aria-label]="weekdayName(day.localDate) + (day.active ? ': active' : ': not active')"
+                      [attr.aria-label]="(day.active ? 'dashboard.week.dayActive' : 'dashboard.week.dayInactive') | t: { day: weekdayName(day.localDate) }"
                     >{{ day.active ? '✓' : '' }}</span>
                     <span class="text-[10px] font-semibold uppercase text-ink-muted" aria-hidden="true">{{ weekdayInitial(day.localDate) }}</span>
                   </li>
@@ -221,32 +225,32 @@ interface DashboardNextStep {
               </ol>
               <div class="flex flex-wrap gap-1.5" data-badges>
                 @for (badge of earnedBadges(value); track badge.days) {
-                  <span class="inline-flex items-center gap-1 rounded-full bg-ochre-50 px-2.5 py-1 text-xs font-semibold text-ochre-700 ring-1 ring-ochre-100" [attr.title]="badge.days + '-day streak reached'">
+                  <span class="inline-flex items-center gap-1 rounded-full bg-ochre-50 px-2.5 py-1 text-xs font-semibold text-ochre-700 ring-1 ring-ochre-100" [attr.title]="'dashboard.badges.reached' | t: { days: badge.days }">
                     <svg aria-hidden="true" class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7Z"/></svg>
-                    {{ badge.name }}
+                    {{ badge.name | t }}
                   </span>
                 }
                 @if (nextBadge(value); as next) {
-                  <span class="rounded-full bg-sand-50 px-2.5 py-1 text-xs font-medium text-ink-muted ring-1 ring-ink/[0.06]">Next: {{ next.name }} in {{ next.days - (value.dailyCare?.streakDays ?? 0) }} {{ next.days - (value.dailyCare?.streakDays ?? 0) === 1 ? 'day' : 'days' }}</span>
+                  <span class="rounded-full bg-sand-50 px-2.5 py-1 text-xs font-medium text-ink-muted ring-1 ring-ink/[0.06]">{{ (next.days - (value.dailyCare?.streakDays ?? 0) === 1 ? 'dashboard.badges.nextOne' : 'dashboard.badges.nextMany') | t: { badge: (next.name | t), count: next.days - (value.dailyCare?.streakDays ?? 0) } }}</span>
                 }
               </div>
             </div>
 
             @if (celebration(value); as badge) {
               <p class="sc-celebrate mt-4 rounded-2xl bg-gradient-to-r from-ochre-50 to-leaf-50 px-4 py-3 text-sm font-semibold text-ink ring-1 ring-ochre-100" role="status" data-celebration>
-                🎉 {{ badge.days }}-day streak — <span class="text-ochre-700">{{ badge.name }}</span>! Keep it going, {{ value.patient.firstName }}.
+                🎉 {{ 'dashboard.celebration.before' | t: { days: badge.days } }} <span class="text-ochre-700">{{ badge.name | t }}</span>{{ 'dashboard.celebration.after' | t: { name: value.patient.firstName } }}
               </p>
             }
 
             @if (isSunday(value)) {
               <section class="mt-4 rounded-2xl bg-ink p-4 text-white" aria-labelledby="week-recap-heading" data-week-recap>
-                <h3 id="week-recap-heading" class="font-display text-lg font-semibold">Your week</h3>
+                <h3 id="week-recap-heading" class="font-display text-lg font-semibold">{{ 'dashboard.recap.title' | t }}</h3>
                 <p class="mt-1 text-sm text-white/75">
-                  Active {{ activeDays(week) }} of 7 days
+                  {{ 'dashboard.recap.active' | t: { active: activeDays(week) } }}
                   @if (weekCheckIns(); as checkIns) {
-                    @if (checkIns.length) { · {{ checkIns.length }} check-ins · mostly feeling {{ averageMoodLabel(checkIns) }} }
+                    @if (checkIns.length) { {{ 'dashboard.recap.checkIns' | t: { count: checkIns.length, mood: averageMoodLabel(checkIns) } }} }
                   }
-                  · best streak {{ value.dailyCare?.bestStreak ?? 0 }} days.
+                  {{ 'dashboard.recap.bestStreak' | t: { days: value.dailyCare?.bestStreak ?? 0 } }}
                 </p>
                 <p class="mt-2 text-sm font-medium text-ochre-300">{{ recapMessage(activeDays(week)) }}</p>
               </section>
@@ -259,13 +263,13 @@ interface DashboardNextStep {
 
           @if (value.dailyCare && (value.todayRoutines ?? []).length) {
             <div class="mt-4 flex items-center gap-3" data-today-progress>
-              <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100" role="progressbar" aria-label="Routines done today" [attr.aria-valuenow]="doneToday(value)" aria-valuemin="0" [attr.aria-valuemax]="(value.todayRoutines ?? []).length">
+              <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100" role="progressbar" [attr.aria-label]="'dashboard.today.progressLabel' | t" [attr.aria-valuenow]="doneToday(value)" aria-valuemin="0" [attr.aria-valuemax]="(value.todayRoutines ?? []).length">
                 <div class="h-full rounded-full bg-gradient-to-r from-leaf-500 to-ochre-500 transition-all duration-500" [style.width.%]="(doneToday(value) / (value.todayRoutines ?? []).length) * 100"></div>
               </div>
-              <p class="shrink-0 text-sm font-medium text-ink-soft">{{ doneToday(value) }} of {{ (value.todayRoutines ?? []).length }} done today</p>
+              <p class="shrink-0 text-sm font-medium text-ink-soft">{{ 'dashboard.today.doneCount' | t: { done: doneToday(value), total: (value.todayRoutines ?? []).length } }}</p>
             </div>
             @if (doneToday(value) === (value.todayRoutines ?? []).length) {
-              <p class="mt-3 rounded-2xl bg-leaf-50 px-4 py-3 text-sm font-medium text-leaf-700" role="status">All done for today — well done, {{ value.patient.firstName }}. Come back tomorrow to keep your streak going.</p>
+              <p class="mt-3 rounded-2xl bg-leaf-50 px-4 py-3 text-sm font-medium text-leaf-700" role="status">{{ 'dashboard.today.allDone' | t: { name: value.patient.firstName } }}</p>
             }
           }
 
@@ -279,9 +283,9 @@ interface DashboardNextStep {
                   <div class="min-w-0 flex-1">
                     <p class="font-semibold leading-snug text-ink">{{ routine.label }}</p>
                     <div class="mt-0.5 flex flex-wrap items-center gap-2">
-                      <p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ routineTypeLabel(routine.type) }}</p>
+                      <p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ routineTypeLabel(routine.type) | t }}</p>
                       @if (routine.reference === nextRoutineReference()) {
-                        <span class="rounded-full bg-ochre-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">Up next</span>
+                        <span class="rounded-full bg-ochre-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{{ 'dashboard.routines.upNext' | t }}</span>
                       }
                     </div>
                     @if (routine.instructions) { <p class="mt-1.5 text-xs leading-5 text-ink-soft">{{ routine.instructions }}</p> }
@@ -292,7 +296,7 @@ interface DashboardNextStep {
                       (click)="toggleDone(routine)"
                       [disabled]="tickingReference() === routine.reference"
                       [attr.aria-pressed]="routine.completedToday ? 'true' : 'false'"
-                      [attr.aria-label]="(routine.completedToday ? 'Undo done: ' : 'Mark done: ') + routine.label"
+                      [attr.aria-label]="(routine.completedToday ? 'dashboard.routines.undoDone' : 'dashboard.routines.markDone') | t: { label: routine.label }"
                       class="grid size-10 shrink-0 place-items-center self-center rounded-full ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-60 {{ routine.completedToday ? 'bg-leaf-500 text-white ring-leaf-500' : 'bg-white text-ink-muted ring-ink/15 hover:text-leaf-700 hover:ring-leaf-300' }}"
                     >
                       <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg>
@@ -302,15 +306,15 @@ interface DashboardNextStep {
                 </li>
               }
             </ol>
-            @if (routineError() && !routineManagerOpen()) { <p role="alert" class="mt-3 text-sm font-semibold text-clay-700">{{ routineError() }}</p> }
+            @if (routineError() && !routineManagerOpen()) { <p role="alert" class="mt-3 text-sm font-semibold text-clay-700">{{ routineError() | t }}</p> }
           } @else {
-            <p class="mt-5 text-sm text-ink-soft">No routine added yet. Start with one small habit — tap to add it.</p>
+            <p class="mt-5 text-sm text-ink-soft">{{ 'dashboard.routines.empty' | t }}</p>
           }
 
           @if (availableStarters(value).length) {
             <div class="mt-4" data-starter-routines>
               @if ((value.todayRoutines ?? []).length) {
-                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">Add another</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">{{ 'dashboard.routines.addAnother' | t }}</p>
               }
               <ul class="mt-2 flex flex-wrap gap-2">
                 @for (starter of availableStarters(value); track starter.type) {
@@ -324,7 +328,7 @@ interface DashboardNextStep {
                       <span class="grid size-7 place-items-center rounded-full {{ routineTone(starter.type) }}" aria-hidden="true">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">@for (d of routineIconPaths(starter.type); track $index) { <path [attr.d]="d" /> }</svg>
                       </span>
-                      {{ starter.label }}
+                      {{ starter.labelKey | t }}
                       <span class="text-xs font-medium text-ink-muted">{{ starter.time }}</span>
                     </button>
                   </li>
@@ -339,11 +343,11 @@ interface DashboardNextStep {
                 <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-brand-700" aria-hidden="true">
                   <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                 </span>
-                <p class="min-w-0 text-sm text-ink"><strong class="font-semibold">Want a nudge at the right time?</strong> Turn on reminders on this device.</p>
+                <p class="min-w-0 text-sm text-ink"><strong class="font-semibold">{{ 'dashboard.reminders.question' | t }}</strong> {{ 'dashboard.reminders.body' | t }}</p>
               </div>
               <div class="flex gap-2 sm:shrink-0">
-                <button type="button" (click)="enableReminders()" class="min-h-10 rounded-full bg-brand-700 px-4 text-sm font-semibold text-white hover:bg-brand-800">Turn on</button>
-                <button type="button" (click)="deviceNotifications.dismiss()" class="min-h-10 rounded-full px-3 text-sm font-semibold text-ink-soft hover:bg-white">Not now</button>
+                <button type="button" (click)="enableReminders()" class="min-h-10 rounded-full bg-brand-700 px-4 text-sm font-semibold text-white hover:bg-brand-800">{{ 'dashboard.reminders.turnOn' | t }}</button>
+                <button type="button" (click)="deviceNotifications.dismiss()" class="min-h-10 rounded-full px-3 text-sm font-semibold text-ink-soft hover:bg-white">{{ 'dashboard.reminders.notNow' | t }}</button>
               </div>
             </div>
           }
@@ -351,43 +355,43 @@ interface DashboardNextStep {
           @if (routineManagerOpen()) {
             <div class="mt-5 grid gap-4 border-t border-ink/[0.07] pt-5 lg:grid-cols-[1fr_1.1fr]">
               <form [formGroup]="routineForm" (ngSubmit)="createRoutine()" class="grid gap-3 rounded-2xl bg-sand-50 p-4 ring-1 ring-ink/[0.06]">
-                <h3 class="font-semibold text-ink">Add a routine</h3>
-                <label class="text-sm font-medium text-ink-soft">Type
+                <h3 class="font-semibold text-ink">{{ 'dashboard.routineForm.title' | t }}</h3>
+                <label class="text-sm font-medium text-ink-soft">{{ 'dashboard.routineForm.type' | t }}
                   <select formControlName="type" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink">
-                    @for (type of routineTypes; track type) { <option [value]="type">{{ routineTypeLabel(type) }}</option> }
+                    @for (type of routineTypes; track type) { <option [value]="type">{{ routineTypeLabel(type) | t }}</option> }
                   </select>
                 </label>
-                <label class="text-sm font-medium text-ink-soft">What should SmartClinic show you?
-                  <input formControlName="label" maxlength="120" placeholder="e.g. Take my evening medicine" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
+                <label class="text-sm font-medium text-ink-soft">{{ 'dashboard.routineForm.label' | t }}
+                  <input formControlName="label" maxlength="120" [placeholder]="'dashboard.routineForm.labelPlaceholder' | t" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
                 </label>
                 <div class="grid grid-cols-2 gap-3">
-                  <label class="text-sm font-medium text-ink-soft">Time<input type="time" formControlName="scheduledLocalTime" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" /></label>
-                  <label class="text-sm font-medium text-ink-soft">Time zone<input formControlName="timezone" readonly class="mt-1 min-h-11 w-full rounded-xl border border-ink/10 bg-sand-100 px-3 text-xs text-ink-soft" /></label>
+                  <label class="text-sm font-medium text-ink-soft">{{ 'dashboard.routineForm.time' | t }}<input type="time" formControlName="scheduledLocalTime" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" /></label>
+                  <label class="text-sm font-medium text-ink-soft">{{ 'dashboard.routineForm.timezone' | t }}<input formControlName="timezone" readonly class="mt-1 min-h-11 w-full rounded-xl border border-ink/10 bg-sand-100 px-3 text-xs text-ink-soft" /></label>
                 </div>
-                <label class="text-sm font-medium text-ink-soft">Helpful note (optional)<input formControlName="instructions" maxlength="300" placeholder="Keep it short" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" /></label>
+                <label class="text-sm font-medium text-ink-soft">{{ 'dashboard.routineForm.note' | t }}<input formControlName="instructions" maxlength="300" [placeholder]="'dashboard.routineForm.notePlaceholder' | t" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" /></label>
                 @if (routineForm.controls.type.value === 'MEDICATION') {
                   <label class="flex gap-2 rounded-xl bg-ochre-50 p-3 text-xs leading-5 text-ochre-700 ring-1 ring-ochre-100">
                     <input type="checkbox" formControlName="medicationSafetyAcknowledged" class="mt-1" />
-                    <span>I will follow the prescription or clinician’s instructions. This personal reminder does not replace medical advice.</span>
+                    <span>{{ 'dashboard.routineForm.medicationAck' | t }}</span>
                   </label>
                 }
-                <p class="text-xs leading-5 text-ink-muted">Shown every day. You can pause or remove it anytime. Hydration needs differ; follow any fluid restriction given by your clinician.</p>
-                @if (routineError()) { <p role="alert" class="text-sm font-semibold text-clay-700">{{ routineError() }}</p> }
-                <button [disabled]="routineForm.invalid || routineSaving()" class="min-h-11 rounded-full bg-leaf-700 px-4 font-semibold text-white transition hover:bg-leaf-500 disabled:opacity-50">{{ routineSaving() ? 'Saving…' : 'Add routine' }}</button>
+                <p class="text-xs leading-5 text-ink-muted">{{ 'dashboard.routineForm.help' | t }}</p>
+                @if (routineError()) { <p role="alert" class="text-sm font-semibold text-clay-700">{{ routineError() | t }}</p> }
+                <button [disabled]="routineForm.invalid || routineSaving()" class="min-h-11 rounded-full bg-leaf-700 px-4 font-semibold text-white transition hover:bg-leaf-500 disabled:opacity-50">{{ (routineSaving() ? 'dashboard.routineForm.saving' : 'dashboard.routineForm.submit') | t }}</button>
               </form>
 
               <div class="rounded-2xl bg-white p-4 ring-1 ring-ink/[0.06]">
-                <h3 class="font-semibold text-ink">Your routines</h3>
-                @if (routinesLoading()) { <p role="status" class="mt-3 text-sm text-ink-soft">Loading routines…</p> }
-                @else if (!allRoutines().length) { <p class="mt-3 text-sm text-ink-muted">You have no saved routines.</p> }
+                <h3 class="font-semibold text-ink">{{ 'dashboard.routineList.title' | t }}</h3>
+                @if (routinesLoading()) { <p role="status" class="mt-3 text-sm text-ink-soft">{{ 'dashboard.routineList.loading' | t }}</p> }
+                @else if (!allRoutines().length) { <p class="mt-3 text-sm text-ink-muted">{{ 'dashboard.routineList.empty' | t }}</p> }
                 @else {
                   <ul class="mt-3 divide-y divide-ink/[0.06]">
                     @for (routine of allRoutines(); track routine.reference) {
                       <li class="flex items-center justify-between gap-3 py-3">
-                        <div><p class="text-sm font-semibold text-ink">{{ routine.label }}</p><p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ routine.enabled ? 'Active' : 'Paused' }}</p></div>
+                        <div><p class="text-sm font-semibold text-ink">{{ routine.label }}</p><p class="text-xs text-ink-muted">{{ routine.scheduledLocalTime }} · {{ (routine.enabled ? 'dashboard.routineList.active' : 'dashboard.routineList.paused') | t }}</p></div>
                         <div class="flex gap-3">
-                          <button type="button" (click)="toggleRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-semibold text-brand-700 underline underline-offset-2">{{ routine.enabled ? 'Pause' : 'Resume' }}</button>
-                          @if (routine.source === 'PATIENT') { <button type="button" (click)="deleteRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-semibold text-clay-700 underline underline-offset-2">Remove</button> }
+                          <button type="button" (click)="toggleRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-semibold text-brand-700 underline underline-offset-2">{{ (routine.enabled ? 'dashboard.routineList.pause' : 'dashboard.routineList.resume') | t }}</button>
+                          @if (routine.source === 'PATIENT') { <button type="button" (click)="deleteRoutine(routine)" [disabled]="routineSaving()" class="text-xs font-semibold text-clay-700 underline underline-offset-2">{{ 'dashboard.routineList.remove' | t }}</button> }
                         </div>
                       </li>
                     }
@@ -403,7 +407,7 @@ interface DashboardNextStep {
             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
           </span>
           <div class="min-w-0">
-            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-leaf-700">Tip of the day</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-leaf-700">{{ 'dashboard.tip.eyebrow' | t }}</p>
             <h2 id="tip-heading" class="mt-1 font-semibold text-ink">{{ tip.title }}</h2>
             <p class="mt-1 text-sm leading-6 text-ink-soft">{{ tip.body }}</p>
           </div>
@@ -415,19 +419,19 @@ interface DashboardNextStep {
             <a routerLink="/me/progress" class="group relative flex flex-col justify-between overflow-hidden rounded-[1.5rem] bg-ink p-5 text-white shadow-lift" data-progress-tile>
               <div class="sc-motif pointer-events-none absolute inset-0 opacity-[0.06]" aria-hidden="true"></div>
               <div class="relative">
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ochre-300">My progress</p>
-                <p class="font-display mt-2 text-2xl font-semibold">Level {{ g.level.number }} · {{ g.level.name }}</p>
-                <p class="mt-1 text-sm text-white/70">{{ g.points }} points@if (g.streak.current) { · {{ g.streak.current }}-day streak }</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ochre-300">{{ 'dashboard.progress.eyebrow' | t }}</p>
+                <p class="font-display mt-2 text-2xl font-semibold">{{ 'dashboard.progress.level' | t: { number: g.level.number, name: g.level.name } }}</p>
+                <p class="mt-1 text-sm text-white/70">{{ 'dashboard.progress.points' | t: { points: g.points } }}@if (g.streak.current) { · {{ 'dashboard.today.streak' | t: { days: g.streak.current } }} }</p>
               </div>
               <div class="relative mt-5 flex items-center justify-between gap-3">
                 <span class="flex -space-x-2" aria-hidden="true">
                   @for (b of wellnessBadges(); track b.code) {
                     <span class="grid size-9 place-items-center rounded-full bg-gradient-to-br from-ochre-300 to-ochre-500 text-xs font-bold text-ink ring-2 ring-ink">★</span>
                   } @empty {
-                    <span class="text-sm text-white/60">Your first badge is close.</span>
+                    <span class="text-sm text-white/60">{{ 'dashboard.progress.firstBadge' | t }}</span>
                   }
                 </span>
-                <span class="text-sm font-semibold text-ochre-300 group-hover:underline">See badges →</span>
+                <span class="text-sm font-semibold text-ochre-300 group-hover:underline">{{ 'dashboard.progress.seeBadges' | t }} →</span>
               </div>
             </a>
           }
@@ -436,34 +440,34 @@ interface DashboardNextStep {
         <nav class="mt-10" aria-labelledby="quick-access-heading">
           <div class="mb-4">
             <h2 id="quick-access-heading" class="font-display text-[1.6rem] font-semibold text-ink sm:text-[1.9rem]">
-              What do you need today?
+              {{ 'dashboard.quick.title' | t }}
             </h2>
-            <p class="mt-1 text-sm text-ink-muted">Choose what you want to do. We’ll guide you from there.</p>
+            <p class="mt-1 text-sm text-ink-muted">{{ 'dashboard.quick.intro' | t }}</p>
           </div>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <a routerLink="/me/book" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
               <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.checkup; track $index) { <path [attr.d]="d" /> }</svg></span>
-              <span class="text-[15px] font-semibold leading-snug text-ink">Book a Checkup</span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">{{ 'dashboard.quick.bookCheckup' | t }}</span>
             </a>
             <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" queryParamsHandling="merge" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
               <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.doctor; track $index) { <path [attr.d]="d" /> }</svg></span>
-              <span class="text-[15px] font-semibold leading-snug text-ink">See a Doctor</span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">{{ 'dashboard.quick.seeDoctor' | t }}</span>
             </a>
             <a routerLink="/me/providers" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
               <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.hospital; track $index) { <path [attr.d]="d" /> }</svg></span>
-              <span class="text-[15px] font-semibold leading-snug text-ink">Visit a Hospital</span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">{{ 'dashboard.quick.visitHospital' | t }}</span>
             </a>
             <a routerLink="/me/prescriptions" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
               <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.medicine; track $index) { <path [attr.d]="d" /> }</svg></span>
-              <span class="text-[15px] font-semibold leading-snug text-ink">Get Medicine</span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">{{ 'dashboard.quick.getMedicine' | t }}</span>
             </a>
             <a routerLink="/me/lab-tests" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
               <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.test; track $index) { <path [attr.d]="d" /> }</svg></span>
-              <span class="text-[15px] font-semibold leading-snug text-ink">Get a Test</span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">{{ 'dashboard.quick.getTest' | t }}</span>
             </a>
             <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="sc-tile group flex min-h-[124px] flex-col justify-between rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 text-left shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
               <span class="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white"><svg aria-hidden="true" class="size-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@for (d of icons.bills; track $index) { <path [attr.d]="d" /> }</svg></span>
-              <span class="text-[15px] font-semibold leading-snug text-ink">Pay Bills</span>
+              <span class="text-[15px] font-semibold leading-snug text-ink">{{ 'dashboard.quick.payBills' | t }}</span>
             </a>
           </div>
         </nav>
@@ -471,23 +475,23 @@ interface DashboardNextStep {
         <div class="mt-10 grid gap-4 lg:grid-cols-2">
           <section aria-labelledby="your-care-heading">
             <div class="mb-3 flex items-end justify-between gap-3">
-              <h2 id="your-care-heading" class="font-display text-[1.35rem] font-semibold text-ink">Your care, connected</h2>
-              <a routerLink="/me/care" class="text-sm font-semibold text-brand-700 hover:text-brand-900">View care →</a>
+              <h2 id="your-care-heading" class="font-display text-[1.35rem] font-semibold text-ink">{{ 'dashboard.care.title' | t }}</h2>
+              <a routerLink="/me/care" class="text-sm font-semibold text-brand-700 hover:text-brand-900">{{ 'dashboard.care.viewCare' | t }} →</a>
             </div>
             <div class="sc-card divide-y divide-ink/[0.06] overflow-hidden">
               <a routerLink="/me/providers" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
                 <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5h10v16M14 9h6v12M2 21h20"/><path d="M9 2v4M7 4h4"/></svg></span>
                 <span class="min-w-0 flex-1">
-                  <strong class="block font-semibold text-ink">{{ value.setup.hasConnectedProvider ? 'Hospital connected' : value.setup.hasProviderConnection ? 'Connection in progress' : 'Choose a hospital' }}</strong>
-                  <span class="block text-sm text-ink-muted">Your hospital companion for visits, bills and records</span>
+                  <strong class="block font-semibold text-ink">{{ (value.setup.hasConnectedProvider ? 'dashboard.care.hospitalConnected' : value.setup.hasProviderConnection ? 'dashboard.care.connectionInProgress' : 'dashboard.care.chooseHospital') | t }}</strong>
+                  <span class="block text-sm text-ink-muted">{{ 'dashboard.care.hospitalBody' | t }}</span>
                 </span>
                 <span class="text-ink-muted" aria-hidden="true">›</span>
               </a>
               <a routerLink="/me/care" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
                 <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-clay-50 text-clay-500" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.25-8.45C.9 9.2 2.48 5 6.5 5c2.1 0 3.2 1.2 3.9 2.2C11.1 6.2 12.2 5 14.5 5c4.02 0 5.6 4.2 3.75 7.55C16 16.65 12 21 12 21Z"/></svg></span>
                 <span class="min-w-0 flex-1">
-                  <strong class="block font-semibold text-ink">{{ value.setup.hasCareRequest ? 'Care activity' : 'Start your care' }}</strong>
-                  <span class="block text-sm text-ink-muted">Appointments, requests and conversations</span>
+                  <strong class="block font-semibold text-ink">{{ (value.setup.hasCareRequest ? 'dashboard.care.activity' : 'dashboard.care.start') | t }}</strong>
+                  <span class="block text-sm text-ink-muted">{{ 'dashboard.care.activityBody' | t }}</span>
                 </span>
                 <span class="text-ink-muted" aria-hidden="true">›</span>
               </a>
@@ -496,26 +500,26 @@ interface DashboardNextStep {
 
           <section aria-labelledby="coverage-programmes-heading">
             <div class="mb-3">
-              <h2 id="coverage-programmes-heading" class="font-display text-[1.35rem] font-semibold text-ink">How you pay for care</h2>
+              <h2 id="coverage-programmes-heading" class="font-display text-[1.35rem] font-semibold text-ink">{{ 'dashboard.pay.title' | t }}</h2>
             </div>
             <div class="sc-card divide-y divide-ink/[0.06] overflow-hidden">
               <a routerLink="/me/pay-bills" queryParamsHandling="preserve" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
                 <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12v4"/><path d="M16 13.5h1"/></svg></span>
-                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">Self-pay &amp; SmartClinic Wallet</strong><span class="block text-sm text-ink-muted">Available for eligible bills and services</span></span>
+                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">{{ 'dashboard.pay.selfPay' | t }}</strong><span class="block text-sm text-ink-muted">{{ 'dashboard.pay.selfPayBody' | t }}</span></span>
                 <span class="text-ink-muted" aria-hidden="true">›</span>
               </a>
               <a routerLink="/me/insurance" queryParamsHandling="preserve" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
                 <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="M9 12l2 2 4-4"/></svg></span>
-                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">Health Insurance / HMO</strong><span class="block text-sm text-ink-muted">Add existing cover or request enrollment help</span></span>
+                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">{{ 'dashboard.pay.insurance' | t }}</strong><span class="block text-sm text-ink-muted">{{ 'dashboard.pay.insuranceBody' | t }}</span></span>
                 <span class="text-ink-muted" aria-hidden="true">›</span>
               </a>
               <a routerLink="/healthy-families" queryParamsHandling="preserve" class="flex min-h-[4.5rem] items-center gap-4 p-4 transition hover:bg-sand-50 sm:px-5">
                 <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M2 20a5 5 0 0 1 10 0M12 20a5 5 0 0 1 10 0"/></svg></span>
-                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">School, employer &amp; family programmes</strong><span class="block text-sm text-ink-muted">View relationships connected by a valid invitation</span></span>
+                <span class="min-w-0 flex-1"><strong class="block font-semibold text-ink">{{ 'dashboard.pay.programmes' | t }}</strong><span class="block text-sm text-ink-muted">{{ 'dashboard.pay.programmesBody' | t }}</span></span>
                 <span class="text-ink-muted" aria-hidden="true">›</span>
               </a>
             </div>
-            <p class="mt-2 px-1 text-xs leading-5 text-ink-muted">SmartClinic subscription is a future option and is not currently active.</p>
+            <p class="mt-2 px-1 text-xs leading-5 text-ink-muted">{{ 'dashboard.pay.subscriptionNote' | t }}</p>
           </section>
         </div>
 
@@ -523,28 +527,28 @@ interface DashboardNextStep {
           <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-ochre-50 via-white to-sand-100 p-6 ring-1 ring-ochre-100 sm:p-7 lg:col-span-8" aria-labelledby="health-check-summary-heading">
             <div class="sc-motif-ink pointer-events-none absolute -right-10 -top-10 size-56 rounded-full opacity-[0.07]" aria-hidden="true"></div>
             <div class="relative">
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ochre-700">Invest in yourself</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ochre-700">{{ 'dashboard.healthChecks.eyebrow' | t }}</p>
               <h2 id="health-check-summary-heading" class="font-display mt-2 max-w-xl text-[1.5rem] font-semibold leading-tight text-ink sm:text-[1.75rem]">
-                Your health deserves a place on your priority list.
+                {{ 'dashboard.healthChecks.title' | t }}
               </h2>
               @if (healthChecks()?.items?.length === 0) {
                 <p class="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-soft">
-                  We spend on the things we use every day. A simple Health Check is an investment in the person who uses them all — you.
+                  {{ 'dashboard.healthChecks.emptyBody' | t }}
                 </p>
                 <a routerLink="/me/health-journey" class="mt-5 inline-flex min-h-12 items-center rounded-full bg-ink px-6 text-sm font-semibold text-white transition hover:bg-brand-900">
-                  Check my health →
+                  {{ 'dashboard.healthChecks.cta' | t }} →
                 </a>
               } @else {
-                <p class="mt-2 text-sm text-ink-soft">Your preventive Health Check activity at a glance.</p>
+                <p class="mt-2 text-sm text-ink-soft">{{ 'dashboard.healthChecks.summaryIntro' | t }}</p>
                 <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   @for (item of healthCheckSummary(); track item.label) {
                     <article class="rounded-2xl bg-white/80 p-3.5 ring-1 ring-ink/[0.06]">
                       <p class="font-display text-2xl font-semibold text-ink">{{ item.count }}</p>
-                      <p class="mt-0.5 text-xs font-medium text-ink-muted">{{ item.label }}</p>
+                      <p class="mt-0.5 text-xs font-medium text-ink-muted">{{ item.label | t }}</p>
                     </article>
                   }
                 </div>
-                <a routerLink="/me/health-checks" class="mt-4 inline-block text-sm font-semibold text-brand-700 underline underline-offset-4">View Health Checks →</a>
+                <a routerLink="/me/health-checks" class="mt-4 inline-block text-sm font-semibold text-brand-700 underline underline-offset-4">{{ 'dashboard.healthChecks.viewAll' | t }} →</a>
               }
             </div>
           </section>
@@ -552,13 +556,13 @@ interface DashboardNextStep {
           <section class="sc-card flex flex-col p-6 lg:col-span-4" aria-labelledby="impact-heading">
             <div class="flex items-start justify-between gap-4">
               <span class="grid size-11 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.25-8.45C.9 9.2 2.48 5 6.5 5c2.1 0 3.2 1.2 3.9 2.2C11.1 6.2 12.2 5 14.5 5c4.02 0 5.6 4.2 3.75 7.55C16 16.65 12 21 12 21Z"/><path d="M9 12h6M12 9v6"/></svg></span>
-              <a routerLink="/me/impact" class="text-sm font-semibold text-brand-700 hover:text-brand-900">View →</a>
+              <a routerLink="/me/impact" class="text-sm font-semibold text-brand-700 hover:text-brand-900">{{ 'dashboard.impact.view' | t }} →</a>
             </div>
-            <h2 id="impact-heading" class="font-display mt-4 text-[1.25rem] font-semibold leading-snug text-ink">Help someone access healthcare.</h2>
-            <p class="mt-1 text-sm leading-6 text-ink-muted">Invite someone to SmartClinic and grow your verified impact.</p>
+            <h2 id="impact-heading" class="font-display mt-4 text-[1.25rem] font-semibold leading-snug text-ink">{{ 'dashboard.impact.title' | t }}</h2>
+            <p class="mt-1 text-sm leading-6 text-ink-muted">{{ 'dashboard.impact.body' | t }}</p>
             @if (referrals(); as rewards) {
               <p class="mt-auto pt-4 text-sm font-semibold text-ink">
-                <span class="font-display text-2xl">{{ rewards.balances.availablePoints }}</span> points
+                <span class="font-display text-2xl">{{ rewards.balances.availablePoints }}</span> {{ 'dashboard.impact.points' | t }}
                 @if (rewards.leaderboard.optedIn && rewards.leaderboard.position !== null) { <span class="text-ink-muted">· #{{ rewards.leaderboard.position }}</span> }
               </p>
             }
@@ -569,7 +573,7 @@ interface DashboardNextStep {
           <a
             [href]="supportWhatsappUrl"
             class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 grid size-12 place-items-center overflow-hidden rounded-full bg-[#128c7e] text-xs font-bold text-white shadow-lg focus:ring-4 focus:ring-emerald-200 lg:bottom-4"
-             aria-label="WhatsApp help" title="WhatsApp help">?</a
+             [attr.aria-label]="'dashboard.help.whatsapp' | t" [attr.title]="'dashboard.help.whatsapp' | t">?</a
           >
         }
       }
@@ -578,6 +582,7 @@ interface DashboardNextStep {
 })
 export class PatientDashboardPageComponent {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly i18n = inject(TranslationService);
   private readonly api = inject(PatientDashboardApiService);
   private readonly healthChecksApi = inject(HealthCheckResultsApiService);
   private readonly referralsApi = inject(ReferralsApiService);
@@ -644,10 +649,10 @@ export class PatientDashboardPageComponent {
     const count = (category: string) =>
       items.filter((item) => item.portalCategory === category).length;
     return [
-      { label: 'Awaiting payment', count: count('AWAITING_PAYMENT') },
-      { label: 'Upcoming / active', count: count('UPCOMING_ACTIVE') },
-      { label: 'Completed', count: count('COMPLETED_HISTORY') },
-      { label: 'Needs attention', count: count('NEEDS_ATTENTION') },
+      { label: 'dashboard.healthChecks.awaitingPayment', count: count('AWAITING_PAYMENT') },
+      { label: 'dashboard.healthChecks.upcoming', count: count('UPCOMING_ACTIVE') },
+      { label: 'dashboard.healthChecks.completed', count: count('COMPLETED_HISTORY') },
+      { label: 'dashboard.healthChecks.needsAttention', count: count('NEEDS_ATTENTION') },
     ];
   });
 
@@ -687,14 +692,14 @@ export class PatientDashboardPageComponent {
     this.routineError.set('');
     this.api.getDailyRoutines().pipe(finalize(() => this.routinesLoading.set(false))).subscribe({
       next: ({ items }) => this.allRoutines.set(items),
-      error: () => this.routineError.set('Routines are unavailable right now.'),
+      error: () => this.routineError.set('dashboard.routineError.unavailable'),
     });
   }
   createRoutine(): void {
     if (this.routineForm.invalid || this.routineSaving()) return;
     const value = this.routineForm.getRawValue();
     if (value.type === 'MEDICATION' && !value.medicationSafetyAcknowledged) {
-      this.routineError.set('Please confirm the medication safety note.');
+      this.routineError.set('dashboard.routineError.confirmMedication');
       return;
     }
     this.routineSaving.set(true);
@@ -705,7 +710,7 @@ export class PatientDashboardPageComponent {
         this.loadRoutines();
         this.load();
       },
-      error: () => this.routineError.set('We could not save this routine. Check the details and try again.'),
+      error: () => this.routineError.set('dashboard.routineError.saveFailed'),
     });
   }
   availableStarters(value: PatientDashboard): readonly StarterRoutine[] {
@@ -721,7 +726,7 @@ export class PatientDashboardPageComponent {
     this.api
       .createDailyRoutine({
         type: starter.type,
-        label: starter.label,
+        label: this.i18n.t(starter.labelKey),
         scheduledLocalTime: starter.time,
         timezone: this.routineForm.controls.timezone.value,
         daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
@@ -730,7 +735,7 @@ export class PatientDashboardPageComponent {
       .pipe(finalize(() => this.routineSaving.set(false)))
       .subscribe({
         next: () => this.load(),
-        error: () => this.routineError.set('We could not add this routine. Please try again.'),
+        error: () => this.routineError.set('dashboard.routineError.addFailed'),
       });
   }
   async enableReminders(): Promise<void> {
@@ -749,7 +754,7 @@ export class PatientDashboardPageComponent {
       : this.api.completeRoutineToday(routine.reference);
     request.pipe(finalize(() => this.tickingReference.set(null))).subscribe({
       next: (progress) => this.applyProgress(progress),
-      error: () => this.routineError.set('We could not update today’s routine. Please try again.'),
+      error: () => this.routineError.set('dashboard.routineError.tickFailed'),
     });
   }
   applyProgress(progress: DailyCareProgress): void {
@@ -792,13 +797,13 @@ export class PatientDashboardPageComponent {
   }
   averageMoodLabel(checkIns: readonly DailyCheckIn[]): string {
     const average = checkIns.reduce((sum, item) => sum + item.mood, 0) / checkIns.length;
-    return MOOD_LABELS[Math.min(5, Math.max(1, Math.round(average)))];
+    return this.i18n.t(MOOD_LABELS[Math.min(5, Math.max(1, Math.round(average)))]);
   }
   recapMessage(active: number): string {
-    if (active === 7) return 'A perfect week. That is real commitment to yourself.';
-    if (active >= 4) return 'A strong week. Small steps, repeated, make the difference.';
-    if (active >= 1) return 'Every day you show up counts. Let’s aim for one more day next week.';
-    return 'A fresh week starts tomorrow — one small habit is all it takes.';
+    if (active === 7) return this.i18n.t('dashboard.recap.perfect');
+    if (active >= 4) return this.i18n.t('dashboard.recap.strong');
+    if (active >= 1) return this.i18n.t('dashboard.recap.someDays');
+    return this.i18n.t('dashboard.recap.fresh');
   }
   weekdayInitial(localDate: string): string {
     return new Intl.DateTimeFormat('en-GB', { weekday: 'narrow', timeZone: 'UTC' }).format(new Date(`${localDate}T12:00:00Z`));
@@ -811,7 +816,7 @@ export class PatientDashboardPageComponent {
     this.routineSaving.set(true);
     this.api.updateDailyRoutine(routine.reference, { enabled: !routine.enabled }).pipe(finalize(() => this.routineSaving.set(false))).subscribe({
       next: () => { this.loadRoutines(); this.load(); },
-      error: () => this.routineError.set('We could not update this routine.'),
+      error: () => this.routineError.set('dashboard.routineError.updateFailed'),
     });
   }
   deleteRoutine(routine: PatientDailyRoutine): void {
@@ -819,16 +824,25 @@ export class PatientDashboardPageComponent {
     this.routineSaving.set(true);
     this.api.deleteDailyRoutine(routine.reference).pipe(finalize(() => this.routineSaving.set(false))).subscribe({
       next: () => { this.loadRoutines(); this.load(); },
-      error: () => this.routineError.set('We could not remove this routine.'),
+      error: () => this.routineError.set('dashboard.routineError.removeFailed'),
     });
   }
+  /** Translation key for a routine type. */
   routineTypeLabel(type: PatientDailyRoutineType): string {
-    return ({ HYDRATION: 'Hydration', MOVEMENT: 'Movement', BREAK: 'Take a break', SLEEP: 'Wind-down / sleep', VITAMIN: 'Vitamin', MEDICATION: 'Personal medication' } as const)[type];
+    return ({
+      HYDRATION: 'dashboard.routineType.hydration',
+      MOVEMENT: 'dashboard.routineType.movement',
+      BREAK: 'dashboard.routineType.break',
+      SLEEP: 'dashboard.routineType.sleep',
+      VITAMIN: 'dashboard.routineType.vitamin',
+      MEDICATION: 'dashboard.routineType.medication',
+    } as const)[type];
   }
+  /** Translation key for the greeting; it takes {name}. */
   static greetingFor(hour: number): string {
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'dashboard.greeting.morning';
+    if (hour < 17) return 'dashboard.greeting.afternoon';
+    return 'dashboard.greeting.evening';
   }
   routineIconPaths(type: PatientDailyRoutineType): readonly string[] {
     return ({
@@ -891,16 +905,16 @@ export class PatientDashboardPageComponent {
     switch (detail.type) {
       case 'COMPLETE_PROFILE':
         return {
-          title: 'Complete your profile',
-          message: 'Finish your basic details so SmartClinic can support your care journey.',
-          label: 'Complete Profile',
+          title: 'dashboard.nextStep.completeProfile.title',
+          message: 'dashboard.nextStep.completeProfile.message',
+          label: 'dashboard.nextStep.completeProfile.label',
           route: '/me/profile',
         };
       case 'VIEW_APPOINTMENT':
         return {
-          title: 'Your appointment is today',
-          message: 'You have a scheduled care appointment today.',
-          label: 'View Appointment',
+          title: 'dashboard.nextStep.viewAppointment.title',
+          message: 'dashboard.nextStep.viewAppointment.message',
+          label: 'dashboard.nextStep.viewAppointment.label',
           route:
             resource?.domain === 'CARE_APPOINTMENT' && hasReference
               ? ['/me/care/appointments', resource.reference]
@@ -908,16 +922,16 @@ export class PatientDashboardPageComponent {
         };
       case 'COMPLETE_PAYMENT':
         return {
-          title: 'Complete your payment',
-          message: 'Finish the payment needed to continue this service.',
-          label: 'Continue Payment',
+          title: 'dashboard.nextStep.completePayment.title',
+          message: 'dashboard.nextStep.completePayment.message',
+          label: 'dashboard.nextStep.completePayment.label',
           route: this.paymentContinuationRoute(resource),
         };
       case 'CONTINUE_SELF_CHECK':
         return {
-          title: 'Continue your Self-Check',
-          message: 'Pick up where you stopped and complete your health questions.',
-          label: 'Continue Self-Check',
+          title: 'dashboard.nextStep.continueSelfCheck.title',
+          message: 'dashboard.nextStep.continueSelfCheck.message',
+          label: 'dashboard.nextStep.continueSelfCheck.label',
           route:
             resource?.domain === 'GUIDED_SELF_CHECK' && hasReference
               ? ['/me/self-checks', resource.reference]
@@ -925,9 +939,9 @@ export class PatientDashboardPageComponent {
         };
       case 'VIEW_HEALTH_CHECK':
         return {
-          title: 'Your Health Check',
-          message: 'You have an active Health Check to review.',
-          label: 'View Health Check',
+          title: 'dashboard.nextStep.viewHealthCheck.title',
+          message: 'dashboard.nextStep.viewHealthCheck.message',
+          label: 'dashboard.nextStep.viewHealthCheck.label',
           route:
             resource?.domain === 'HEALTH_CHECK' && hasReference
               ? ['/me/health-checks', resource.reference]
@@ -935,9 +949,9 @@ export class PatientDashboardPageComponent {
         };
       case 'FIND_CARE':
         return {
-          title: 'Continue finding care',
-          message: 'Your care request needs your attention.',
-          label: 'Continue',
+          title: 'dashboard.nextStep.findCare.title',
+          message: 'dashboard.nextStep.findCare.message',
+          label: 'dashboard.nextStep.findCare.label',
           route:
             resource?.domain === 'CARE_REQUEST' && hasReference
               ? ['/me/care', resource.reference]
@@ -945,9 +959,9 @@ export class PatientDashboardPageComponent {
         };
       case 'VIEW_PROVIDER_CONNECTION':
         return {
-          title: 'Your hospital connection',
-          message: 'Review or continue your hospital connection.',
-          label: 'View Connection',
+          title: 'dashboard.nextStep.viewConnection.title',
+          message: 'dashboard.nextStep.viewConnection.message',
+          label: 'dashboard.nextStep.viewConnection.label',
           route:
             resource?.domain === 'PROVIDER_CONNECTION' && hasReference
               ? ['/me/providers', resource.reference]
@@ -955,9 +969,9 @@ export class PatientDashboardPageComponent {
         };
       case 'NONE':
         return {
-          title: 'Start with your health',
-          message: 'Check in on your health and see what SmartClinic recommends for you.',
-          label: 'Explore Stay Well',
+          title: 'dashboard.nextStep.none.title',
+          message: 'dashboard.nextStep.none.message',
+          label: 'dashboard.nextStep.none.label',
           route: '/me/health-journey',
         };
       case 'CONNECT_PROVIDER':
@@ -989,58 +1003,57 @@ export class PatientDashboardPageComponent {
   private legacyNextStep(action: PatientDashboardRecommendedAction): DashboardNextStep {
     const actions: Record<PatientDashboardRecommendedAction, DashboardNextStep> = {
       COMPLETE_PROFILE: {
-        title: 'Complete your profile',
-        message: 'Add your basic details to finish setting up your SmartClinic account.',
-        label: 'Complete profile',
+        title: 'dashboard.nextStep.completeProfile.title',
+        message: 'dashboard.nextStep.completeProfileLegacy.message',
+        label: 'dashboard.nextStep.completeProfileLegacy.label',
         route: '/me/profile',
       },
       CONNECT_PROVIDER: {
-        title: 'Connect your hospital',
-        message:
-          'Choose a hospital or healthcare provider and connect it to your SmartClinic account.',
-        label: 'Choose My Hospital',
+        title: 'dashboard.nextStep.connectProvider.title',
+        message: 'dashboard.nextStep.connectProvider.message',
+        label: 'dashboard.nextStep.connectProvider.label',
         route: '/me/providers/connect',
       },
       VIEW_PROVIDER_CONNECTION: {
-        title: 'Continue your hospital connection',
-        message: 'Review the latest status of the provider connection you started.',
-        label: 'View connection',
+        title: 'dashboard.nextStep.viewConnectionLegacy.title',
+        message: 'dashboard.nextStep.viewConnectionLegacy.message',
+        label: 'dashboard.nextStep.viewConnectionLegacy.label',
         route: '/me/providers',
       },
       FIND_CARE: {
-        title: 'Find the care you need',
-        message: 'Tell SmartClinic what care you need and review appropriate options.',
-        label: 'Find Care',
+        title: 'dashboard.nextStep.findCareLegacy.title',
+        message: 'dashboard.nextStep.findCareLegacy.message',
+        label: 'dashboard.nextStep.findCareLegacy.label',
         route: '/me/request-care',
       },
       VIEW_APPOINTMENT: {
-        title: 'Your appointment is today',
-        message: 'You have a scheduled care appointment today.',
-        label: 'View Appointment',
+        title: 'dashboard.nextStep.viewAppointment.title',
+        message: 'dashboard.nextStep.viewAppointment.message',
+        label: 'dashboard.nextStep.viewAppointment.label',
         route: '/me/care',
       },
       COMPLETE_PAYMENT: {
-        title: 'Complete your payment',
-        message: 'Finish the payment needed to continue this service.',
-        label: 'Continue Payment',
+        title: 'dashboard.nextStep.completePayment.title',
+        message: 'dashboard.nextStep.completePayment.message',
+        label: 'dashboard.nextStep.completePayment.label',
         route: '/me/care',
       },
       CONTINUE_SELF_CHECK: {
-        title: 'Continue your Self-Check',
-        message: 'Pick up where you stopped and complete your health questions.',
-        label: 'Continue Self-Check',
+        title: 'dashboard.nextStep.continueSelfCheck.title',
+        message: 'dashboard.nextStep.continueSelfCheck.message',
+        label: 'dashboard.nextStep.continueSelfCheck.label',
         route: '/me/self-checks',
       },
       VIEW_HEALTH_CHECK: {
-        title: 'Your Health Check',
-        message: 'You have an active Health Check to review.',
-        label: 'View Health Check',
+        title: 'dashboard.nextStep.viewHealthCheck.title',
+        message: 'dashboard.nextStep.viewHealthCheck.message',
+        label: 'dashboard.nextStep.viewHealthCheck.label',
         route: '/me/health-checks',
       },
       NONE: {
-        title: 'What would you like to do?',
-        message: 'Choose preventive health, find care, or connect with your hospital.',
-        label: 'Explore Stay Well',
+        title: 'dashboard.nextStep.noneLegacy.title',
+        message: 'dashboard.nextStep.noneLegacy.message',
+        label: 'dashboard.nextStep.none.label',
         route: '/me/health-journey',
       },
     };
@@ -1051,11 +1064,11 @@ export class PatientDashboardPageComponent {
   }
   checklist(value: PatientDashboard) {
     return [
-      { label: 'SmartClinic account created', complete: value.setup.accountCreated, route: '/me/profile' },
-      { label: 'Complete your profile', complete: value.setup.profileComplete, route: '/me/profile' },
-      { label: 'Connect to a healthcare provider', complete: value.setup.hasConnectedProvider, route: '/me/providers/connect' },
+      { label: 'dashboard.setup.accountCreated', complete: value.setup.accountCreated, route: '/me/profile' },
+      { label: 'dashboard.setup.completeProfile', complete: value.setup.profileComplete, route: '/me/profile' },
+      { label: 'dashboard.setup.connectProvider', complete: value.setup.hasConnectedProvider, route: '/me/providers/connect' },
       {
-        label: 'Book or request your first care service',
+        label: 'dashboard.setup.firstCare',
         complete: value.setup.hasStartedCareJourney,
         route: '/me/health-journey',
       },
@@ -1071,9 +1084,9 @@ export class PatientDashboardPageComponent {
     return (
       (
         {
-          REPORTED_BY_YOU: 'Reported by you',
-          CHECKED_BY_PROVIDER: 'Checked by a provider',
-          CONFIRMED_BY_LABORATORY: 'Confirmed by a laboratory',
+          REPORTED_BY_YOU: this.i18n.t('dashboard.provenance.reportedByYou'),
+          CHECKED_BY_PROVIDER: this.i18n.t('dashboard.provenance.checkedByProvider'),
+          CONFIRMED_BY_LABORATORY: this.i18n.t('dashboard.provenance.confirmedByLaboratory'),
         } as Record<string, string>
       )[value] ?? value
     );
@@ -1104,32 +1117,33 @@ whatsappReferralShareUrl(): string {
   }
 
   return `https://wa.me/?text=${encodeURIComponent(
-    `Join SmartClinic using my invitation: ${inviteUrl}`,
+    this.i18n.t('dashboard.invite.whatsappText', { url: inviteUrl }),
   )}`;
 }
   async copyPatientId(): Promise<void> {
     await this.copy(
       this.dashboard()?.patient.patientReference ?? '',
-      'Patient ID copied.',
+      'dashboard.copy.patientId',
       this.copyFeedback,
     );
   }
   async copyReferralCode(): Promise<void> {
     await this.copy(
       this.referrals()?.referralCode ?? '',
-      'Referral code copied.',
+      'dashboard.copy.referralCode',
       this.referralFeedback,
     );
   }
 async copyReferralLink(): Promise<void> {
   await this.copy(
     this.patientInviteUrl(),
-    'Invite link copied.',
+    'dashboard.copy.inviteLink',
     this.referralFeedback,
   );
 }
   private async copy(
     value: string,
+    /** Translation key shown when the copy works. */
     success: string,
     feedback: { set(value: string): void },
   ): Promise<void> {
@@ -1138,7 +1152,7 @@ async copyReferralLink(): Promise<void> {
       await navigator.clipboard.writeText(value);
       feedback.set(success);
     } catch {
-      feedback.set('Copy was unavailable. Select the value and copy it manually.');
+      feedback.set('dashboard.copy.failed');
     }
   }
 }
