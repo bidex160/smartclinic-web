@@ -1,3 +1,4 @@
+import { isAwaitingProviderApproval, ProviderApprovalNoticeComponent } from '../../../shared/components/provider-approval-notice/provider-approval-notice';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -8,7 +9,7 @@ import { PharmacyFulfillmentApiService } from '../../../core/services/pharmacy-f
 /** Requests this lab or pharmacy passed on, and where each one is now. */
 @Component({
   selector: 'app-provider-referred-out-page',
-  imports: [RouterLink],
+  imports: [ProviderApprovalNoticeComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
@@ -20,7 +21,9 @@ import { PharmacyFulfillmentApiService } from '../../../core/services/pharmacy-f
       @if (loading()) {
         <div role="status" class="mt-6 h-28 animate-pulse rounded-2xl bg-sand-200"><span class="sr-only">Loading…</span></div>
       } @else if (error()) {
+        @if (awaitingApproval()) { <app-provider-approval-notice feature="Referring work to other facilities" /> } @else {
         <p role="alert" class="mt-6 rounded-2xl bg-clay-50 p-5 text-clay-700">Referrals couldn’t be loaded. <button type="button" (click)="load()" class="font-semibold underline">Try again</button></p>
+        }
       } @else if (!items().length) {
         <section class="sc-card mt-6 p-8 text-center">
           <h2 class="font-display text-xl font-semibold text-ink">Nothing referred yet</h2>
@@ -73,6 +76,7 @@ export class ProviderReferredOutPageComponent {
   readonly items = signal<readonly ProviderOrderFulfillment[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
+  readonly awaitingApproval = signal(false);
 
   constructor() {
     this.load();
@@ -81,10 +85,11 @@ export class ProviderReferredOutPageComponent {
   load(): void {
     this.loading.set(true);
     this.error.set(false);
+    this.awaitingApproval.set(false);
     this.api
       .listReferredOut()
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({ next: (page) => this.items.set(page.items), error: () => this.error.set(true) });
+      .subscribe({ next: (page) => this.items.set(page.items), error: (e: unknown) => { this.awaitingApproval.set(isAwaitingProviderApproval(e)); this.error.set(true); } });
   }
 
   hasResults(f: ProviderOrderFulfillment): boolean {

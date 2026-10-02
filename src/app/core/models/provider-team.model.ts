@@ -17,6 +17,8 @@ export interface ProviderMembership {
   readonly roleLabel: string;
   readonly canManageTeam: boolean;
   readonly canSendRequests: boolean;
+  /** True while SmartClinic is still verifying the facility (older APIs omit it). */
+  readonly awaitingApproval?: boolean;
   readonly provider: { readonly providerReference: string; readonly displayName: string; readonly providerType: string };
 }
 

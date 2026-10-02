@@ -1,3 +1,4 @@
+import { isAwaitingProviderApproval, ProviderApprovalNoticeComponent } from '../../../shared/components/provider-approval-notice/provider-approval-notice';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -17,7 +18,7 @@ const EVENTS: readonly { readonly type: string; readonly when: string }[] = [
 /** API keys and a webhook, so a facility's own EMR, lab or pharmacy system can connect. */
 @Component({
   selector: 'app-provider-integrations-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ProviderApprovalNoticeComponent, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
@@ -33,7 +34,9 @@ const EVENTS: readonly { readonly type: string; readonly when: string }[] = [
       } @else if (loading()) {
         <div role="status" class="mt-6 grid gap-3"><div class="h-40 animate-pulse rounded-2xl bg-sand-200"></div><div class="h-40 animate-pulse rounded-2xl bg-sand-200"></div><span class="sr-only">Loading integrations…</span></div>
       } @else if (loadError()) {
+        @if (awaitingApproval()) { <app-provider-approval-notice feature="Connecting your system" /> } @else {
         <p role="alert" class="mt-6 rounded-2xl bg-clay-50 p-5 text-clay-700">Integrations couldn’t be loaded. <button type="button" (click)="load()" class="font-semibold underline">Try again</button></p>
+        }
       } @else {
         <!-- API keys -->
         <section class="sc-card mt-6 p-5 sm:p-6" aria-labelledby="keys-heading">
@@ -198,6 +201,7 @@ export class ProviderIntegrationsPageComponent {
   readonly deliveries = signal<readonly WebhookDeliveryView[]>([]);
   readonly loading = signal(true);
   readonly loadError = signal(false);
+  readonly awaitingApproval = signal(false);
   readonly creating = signal(false);
   readonly newKey = signal<{ key: string } | null>(null);
   readonly newSecret = signal<string | null>(null);
@@ -233,6 +237,7 @@ export class ProviderIntegrationsPageComponent {
     }
     this.loading.set(true);
     this.loadError.set(false);
+    this.awaitingApproval.set(false);
     this.api
       .overview()
       .pipe(finalize(() => this.loading.set(false)))
@@ -242,7 +247,7 @@ export class ProviderIntegrationsPageComponent {
           this.deliveries.set(overview.deliveries);
           if (overview.webhook) this.hookForm.setValue({ url: overview.webhook.url });
         },
-        error: () => this.loadError.set(true),
+        error: (e: unknown) => { this.awaitingApproval.set(isAwaitingProviderApproval(e)); this.loadError.set(true); },
       });
   }
 

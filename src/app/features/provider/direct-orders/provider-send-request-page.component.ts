@@ -1,3 +1,5 @@
+import { isAwaitingProviderApproval, ProviderApprovalNoticeComponent } from '../../../shared/components/provider-approval-notice/provider-approval-notice';
+import { ProviderMembershipService } from '../../../core/services/provider-membership.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -40,7 +42,7 @@ const SPECIALTIES = [
  */
 @Component({
   selector: 'app-provider-send-request-page',
-  imports: [ReactiveFormsModule, RouterLink, QrCodeComponent, QrScannerComponent],
+  imports: [ReactiveFormsModule, RouterLink, QrCodeComponent, QrScannerComponent, ProviderApprovalNoticeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-10">
@@ -87,6 +89,7 @@ const SPECIALTIES = [
           <h1 class="font-display mt-1 text-3xl font-semibold text-ink sm:text-4xl">Send a prescription or test</h1>
           <p class="mt-2 text-ink-soft">Works for any patient with a SmartClinic ID — no appointment or records system needed. They choose a pharmacy or lab near them.</p>
         </header>
+        @if (membership.awaitingApproval()) { <app-provider-approval-notice feature="Sending prescriptions and tests" /> }
 
         <!-- 1. Patient -->
         <section class="sc-card mt-6 p-5 sm:p-6" aria-labelledby="who-heading">
@@ -254,6 +257,7 @@ const SPECIALTIES = [
 })
 export class ProviderSendRequestPageComponent {
   private readonly api = inject(DirectOrdersApiService);
+  readonly membership = inject(ProviderMembershipService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -328,7 +332,13 @@ export class ProviderSendRequestPageComponent {
       .subscribe({
         next: (patient) => this.patient.set(patient),
         error: (error) =>
-          this.lookupError.set(error?.status === 404 ? 'No SmartClinic patient has this ID. Check it with the patient.' : 'We couldn’t check this ID. Try again.'),
+          this.lookupError.set(
+            error?.status === 404
+              ? 'No SmartClinic patient has this ID. Check it with the patient.'
+              : isAwaitingProviderApproval(error)
+                ? 'You can look up patients once SmartClinic has verified your facility.'
+                : 'We couldn’t check this ID. Try again.',
+          ),
       });
   }
 
