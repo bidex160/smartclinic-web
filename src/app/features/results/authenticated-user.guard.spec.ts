@@ -67,6 +67,12 @@ describe('authenticatedUserGuard', () => {
     expect(await result).not.toBe(true);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
+  it('sends a signed-out visitor to sign-in with a way back to the page they asked for', async () => {
+    const { state, router } = setup();
+    state.completeInitialization();
+    await TestBed.runInInjectionContext(() => authenticatedUserGuard({} as never, { url: '/healthy-families' } as never));
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/healthy-families' } });
+  });
   function setup() {
     const router = { createUrlTree: vi.fn(() => ({ redirect: true }) as unknown as UrlTree) };
     TestBed.configureTestingModule({ providers: [{ provide: Router, useValue: router }] });

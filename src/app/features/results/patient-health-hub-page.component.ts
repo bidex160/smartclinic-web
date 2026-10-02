@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { DailyCheckIn } from '../../core/models/patient-dashboard.model';
@@ -21,7 +21,11 @@ const MOOD_LABELS = ['', 'Very low', 'Low', 'Okay', 'Good', 'Great'] as const;
       <section class="sc-card mt-6 p-5" aria-labelledby="week-heading">
         <div class="flex items-baseline justify-between gap-3">
           <h2 id="week-heading" class="font-display text-xl font-semibold text-ink">Your last 7 days</h2>
-          <a routerLink="/me/dashboard" class="text-sm font-semibold text-brand-700">Check in today →</a>
+          @if (checkedInToday()) {
+            <a routerLink="/me/dashboard" class="text-sm font-semibold text-leaf-700" aria-label="Checked in today. Update today's check-in">Checked in today ✓ <span class="text-brand-700">Update</span></a>
+          } @else {
+            <a routerLink="/me/dashboard" class="text-sm font-semibold text-brand-700">Check in today →</a>
+          }
         </div>
         @if (loading()) {
           <p role="status" class="mt-4 text-sm text-ink-muted">Loading your check-ins…</p>
@@ -71,6 +75,8 @@ export class PatientHealthHubPageComponent {
   readonly error = signal(false);
   readonly days = signal<readonly { localDate: string; label: string; initial: string; checkIn: DailyCheckIn | null }[]>([]);
   readonly checkInCount = signal(0);
+  /** The week ends today, so the last day says whether today's check-in is done. */
+  readonly checkedInToday = computed(() => this.days().at(-1)?.checkIn != null);
 
   readonly sections = [
     { label: 'Smart Health Passport', hint: 'Your health story, shared only when you choose', route: '/me/health-passport', icon: ['M5 3h11l3 3v15H5Z', 'M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0', 'M8 18h8'] },

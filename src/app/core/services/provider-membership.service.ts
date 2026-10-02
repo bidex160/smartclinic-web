@@ -16,6 +16,7 @@ export class ProviderMembershipService {
   readonly role = computed<ProviderMemberRole | null>(() => this.membership()?.role ?? null);
   readonly isStaff = computed(() => this.membership()?.isOwner === false);
   readonly canSendRequests = computed(() => this.membership()?.canSendRequests ?? true);
+  readonly awaitingApproval = computed(() => this.membership()?.awaitingApproval === true);
   readonly canManageTeam = computed(() => this.membership()?.canManageTeam ?? true);
   /** Payments and payouts belong to the facility owner. */
   readonly seesMoney = computed(() => !this.isStaff());

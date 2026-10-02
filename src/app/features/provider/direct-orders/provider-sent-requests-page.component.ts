@@ -1,3 +1,4 @@
+import { isAwaitingProviderApproval, ProviderApprovalNoticeComponent } from '../../../shared/components/provider-approval-notice/provider-approval-notice';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -22,7 +23,7 @@ const TONE_CLASS: Record<Tone, string> = {
 /** Everything this provider has sent by SmartClinic ID, with where each one is now. */
 @Component({
   selector: 'app-provider-sent-requests-page',
-  imports: [RouterLink],
+  imports: [ProviderApprovalNoticeComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
@@ -38,7 +39,9 @@ const TONE_CLASS: Record<Tone, string> = {
       @if (loading()) {
         <div role="status" class="mt-6 grid gap-3"><div class="h-28 animate-pulse rounded-2xl bg-sand-200"></div><div class="h-28 animate-pulse rounded-2xl bg-sand-200"></div><span class="sr-only">Loading sent requests…</span></div>
       } @else if (error()) {
+        @if (awaitingApproval()) { <app-provider-approval-notice feature="Sending prescriptions and tests" /> } @else {
         <p role="alert" class="mt-6 rounded-2xl bg-clay-50 p-5 text-clay-700">Sent requests couldn’t be loaded. <button type="button" (click)="load()" class="font-semibold underline">Try again</button></p>
+        }
       } @else if (!items().length) {
         <section class="sc-card mt-6 p-8 text-center">
           <h2 class="font-display text-xl font-semibold text-ink">Nothing sent yet</h2>
@@ -105,6 +108,7 @@ export class ProviderSentRequestsPageComponent {
   readonly items = signal<readonly DirectOrder[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
+  readonly awaitingApproval = signal(false);
   readonly confirming = signal<string | null>(null);
   readonly cancelling = signal(false);
   readonly actionError = signal('');
@@ -116,10 +120,11 @@ export class ProviderSentRequestsPageComponent {
   load(): void {
     this.loading.set(true);
     this.error.set(false);
+    this.awaitingApproval.set(false);
     this.api
       .listSent(1, 50)
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({ next: (page) => this.items.set(page.items), error: () => this.error.set(true) });
+      .subscribe({ next: (page) => this.items.set(page.items), error: (e: unknown) => { this.awaitingApproval.set(isAwaitingProviderApproval(e)); this.error.set(true); } });
   }
 
   status(order: DirectOrder): StatusView {

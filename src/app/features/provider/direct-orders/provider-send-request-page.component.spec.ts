@@ -3,7 +3,10 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { signal } from '@angular/core';
+
 import { DirectOrdersApiService } from '../../../core/services/direct-orders-api.service';
+import { ProviderMembershipService } from '../../../core/services/provider-membership.service';
 import { normaliseSmartClinicId } from './direct-order-quick-picks';
 import { ProviderSendRequestPageComponent } from './provider-send-request-page.component';
 
@@ -28,7 +31,7 @@ const sentOrder = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-async function setup(api: Partial<Record<keyof DirectOrdersApiService, unknown>> = {}) {
+async function setup(api: Partial<Record<keyof DirectOrdersApiService, unknown>> = {}, awaitingApproval = false) {
   const mock = {
     lookupPatient: vi.fn(() => of({ patientReference: 'SCP-ABCD-1234', displayName: 'Adaeze O.' })),
     send: vi.fn(() => of(sentOrder())),
@@ -37,7 +40,11 @@ async function setup(api: Partial<Record<keyof DirectOrdersApiService, unknown>>
   };
   await TestBed.configureTestingModule({
     imports: [ProviderSendRequestPageComponent],
-    providers: [provideRouter([]), { provide: DirectOrdersApiService, useValue: mock }],
+    providers: [
+      provideRouter([]),
+      { provide: DirectOrdersApiService, useValue: mock },
+      { provide: ProviderMembershipService, useValue: { awaitingApproval: signal(awaitingApproval) } },
+    ],
   }).compileComponents();
   const fixture = TestBed.createComponent(ProviderSendRequestPageComponent);
   fixture.detectChanges();
@@ -157,5 +164,14 @@ describe('ProviderSendRequestPageComponent', () => {
     expect(page.recentOfType()).toHaveLength(1);
     page.copyFrom('SC-ORD-ABCDEF123456');
     expect(page.tests()).toEqual([{ name: 'Full blood count (FBC)', instructions: '' }]);
+  });
+  it('explains that sending opens once the facility is verified', async () => {
+    const { el } = await setup({}, true);
+    expect(el.textContent).toContain('Sending prescriptions and tests opens once SmartClinic has verified your facility.');
+  });
+
+  it('shows no verification notice for an approved facility', async () => {
+    const { el } = await setup();
+    expect(el.textContent).not.toContain('opens once SmartClinic has verified');
   });
 });
