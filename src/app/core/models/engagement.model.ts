@@ -52,6 +52,8 @@ export interface WellnessRedeemRules {
   readonly valuePerPointMinor: Readonly<Record<string, number>>;
   readonly maxPercent: number;
   readonly minPoints: number;
+  /** Staff have paused using points for now. */
+  readonly paused?: boolean;
 }
 export interface EngagementOverview extends EngagementSummary {
   readonly pointsRules: Readonly<Record<string, number>>;

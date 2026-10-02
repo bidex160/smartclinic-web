@@ -1041,6 +1041,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/support-callbacks-page.component').then((c) => c.SupportCallbacksPageComponent),
       },
       {
+        path: 'wellness-points',
+        title: 'Wellness points | SmartClinic',
+        loadComponent: () => import('./features/admin/wellness-points-admin-page.component').then((c) => c.WellnessPointsAdminPageComponent),
+      },
+      {
         path: 'hmo-desk',
         title: 'HMO Desk | SmartClinic',
         canActivate: [adminOnlyGuard],
