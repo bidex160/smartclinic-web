@@ -24,29 +24,15 @@ export interface HospitalInvoice {
   readonly items: readonly HospitalInvoiceItem[];
 }
 
-export interface HospitalBillPaymentItemRequest {
-  readonly itemReference: string;
-}
-
 export interface HospitalBillPaymentInitializationRequest {
   readonly hospitalCode: string;
   readonly invoiceReference: string;
-  readonly items: readonly HospitalBillPaymentItemRequest[];
+  readonly items: readonly { readonly itemReference: string }[];
   readonly paymentProvider?: 'PAYSTACK' | 'OPAY';
   readonly paymentEmail?: string;
 }
 
-export type HospitalBillPaymentStatus =
-  | 'PENDING'
-  | 'PAYMENT_RECEIVED_HOSPITAL_PENDING'
-  | 'PAID'
-  | 'FAILED';
-
-export interface HospitalBillPaymentItem {
-  readonly itemReference: string;
-  readonly description: string;
-  readonly amount: string;
-}
+export type HospitalBillPaymentStatus = 'PENDING' | 'FAILED' | 'PAID' | 'PAYMENT_RECEIVED_HOSPITAL_PENDING';
 
 export interface HospitalBillPayment {
   readonly reference: string;
@@ -59,8 +45,8 @@ export interface HospitalBillPayment {
   readonly provider: 'PAYSTACK' | 'OPAY' | string | null;
   readonly checkoutUrl: string | null;
   readonly accessCode: string | null;
-  readonly hospitalNotificationStatus: 'PENDING' | 'SENT' | 'FAILED' | string | null;
+  readonly hospitalNotificationStatus: string | null;
   readonly hospitalNotificationReference: string | null;
   readonly hospitalNotifiedAt: string | null;
-  readonly items: readonly HospitalBillPaymentItem[];
+  readonly items: readonly { readonly itemReference: string; readonly description: string; readonly amount: string }[];
 }
