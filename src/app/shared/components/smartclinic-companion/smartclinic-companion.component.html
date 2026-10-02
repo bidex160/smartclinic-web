@@ -3,16 +3,22 @@
   [class.guide--large]="preferences().largeText"
   [class.guide--still]="preferences().reducedMotion"
   [class.guide--tucked]="typing() && !open()"
+  [class.guide--public]="publicPage()"
   aria-label="SmartClinic guide"
 >
   @if (open()) {
     <section class="guide__panel" role="dialog" aria-modal="false" aria-labelledby="guide-title">
       <header class="guide__header">
         <div class="guide__identity">
-          <span class="guide__face" aria-hidden="true">{{ character().emoji }}</span>
+          <span class="guide__face" [class.is-talking]="voice() === 'playing'" aria-hidden="true">{{ character().emoji }}</span>
           <div>
-            <p class="guide__eyebrow">SMARTCLINIC GUIDE</p>
-            <h2 id="guide-title">{{ character().name }} can help</h2>
+            <h2 id="guide-title">{{ character().name }}</h2>
+            <p class="guide__status">
+              @if (voice() === 'playing') { Speaking… }
+              @else if (thinking()) { Thinking… }
+              @else if (listening()) { Listening… }
+              @else { Your health companion · <span [attr.lang]="language()">{{ languageName() }}</span> }
+            </p>
           </div>
         </div>
         <button type="button" class="guide__icon-button" (click)="toggle()" aria-label="Close guide">×</button>
@@ -22,20 +28,15 @@
         @if (settingsOpen()) {
           <div class="guide__intro">
             <p class="guide__message">
-              Choose a friendly guide. You can change this later. The guide explains the app; it does not replace a doctor or nurse.
+              Choose a friendly guide and the language you speak. Your guide explains the app and gives general health tips. It does not replace a doctor or nurse.
             </p>
             <fieldset>
               <legend>Choose your guide</legend>
               <div class="guide__characters">
                 @for (item of characters; track item.id) {
-                  <button
-                    type="button"
-                    class="guide__character"
-                    [class.is-selected]="preferences().character === item.id"
-                    [attr.aria-pressed]="preferences().character === item.id"
-                    (click)="chooseCharacter(item.id)"
-                  >
-                    <span aria-hidden="true">{{ item.emoji }}</span><strong>{{ item.name }}</strong>
+                  <button type="button" class="guide__character" [class.is-selected]="preferences().character === item.id"
+                    [attr.aria-pressed]="preferences().character === item.id" (click)="chooseCharacter(item.id)">
+                    <span aria-hidden="true">{{ item.emoji }}</span><strong>{{ item.name }}</strong><small>{{ item.voice }}</small>
                   </button>
                 }
               </div>
@@ -43,86 +44,113 @@
             <fieldset>
               <legend>Choose language</legend>
               <div class="guide__language-row">
-                <button type="button" [class.is-selected]="language() === 'en'" (click)="chooseLanguage('en')">English</button>
-                <button type="button" [class.is-selected]="language() === 'pcm'" (click)="chooseLanguage('pcm')">Nigerian Pidgin</button>
+                @for (l of locale.languages().local; track l.code) {
+                  <button type="button" [class.is-selected]="language() === l.code" [attr.aria-pressed]="language() === l.code" [attr.lang]="l.code" (click)="chooseLanguage(l.code)">{{ l.label }}</button>
+                }
               </div>
+              <details class="guide__more">
+                <summary>More languages</summary>
+                <div class="guide__language-row">
+                  @for (l of locale.languages().other; track l.code) {
+                    <button type="button" [class.is-selected]="language() === l.code" [attr.lang]="l.code" (click)="chooseLanguage(l.code)">{{ l.label }}</button>
+                  }
+                </div>
+              </details>
             </fieldset>
             <div class="guide__intro-actions">
-              <button type="button" class="guide__primary" (click)="finishIntroduction()">Use this guide</button>
+              <button type="button" class="guide__primary" (click)="finishIntroduction()">Start talking</button>
               <button type="button" class="guide__link" (click)="skipIntroduction()">Not now</button>
             </div>
           </div>
         } @else {
-          <p class="guide__message" aria-live="polite">{{ welcome() }}</p>
-
-          @if (supportsSpeech) {
-            <button type="button" class="guide__hear" (click)="speaking() ? stopSpeaking() : readAloud()">
-              <span aria-hidden="true">🔊</span>
-              {{ speaking() ? 'Stop voice' : language() === 'pcm' ? 'Hear wetin I talk' : 'Hear this explanation' }}
-            </button>
-          }
-
-          @if (answer(); as currentAnswer) {
-            <div class="guide__answer" aria-live="polite">
-              <strong>{{ currentAnswer.title }}</strong>
-              <p>{{ currentAnswer.body }}</p>
-              @if (currentAnswer.route) {
-                <a
-                  [routerLink]="actionRoute(currentAnswer.route)"
-                  [queryParams]="actionQueryParams(currentAnswer.route)"
-                >{{ currentAnswer.action }} <span aria-hidden="true">→</span></a>
+          <ol class="guide__thread" aria-live="polite">
+            <li class="guide__bubble guide__bubble--guide">
+              <p class="guide__message" [attr.lang]="language()">{{ welcome() }}</p>
+            </li>
+            @for (item of thread(); track item.id) {
+              @if (item.from === 'me') {
+                <li class="guide__bubble guide__bubble--me"><p>{{ item.answer.body }}</p></li>
+              } @else {
+                <li class="guide__bubble guide__bubble--guide guide__answer" [class.is-urgent]="item.answer.urgent" [attr.lang]="item.note ? 'en' : language()">
+                  @if (item.answer.title) { <strong>{{ item.answer.title }}</strong> }
+                  <p>{{ item.answer.body }}</p>
+                  @if (item.answer.urgent) {
+                    <a href="tel:112" class="guide__call">Call 112</a>
+                  }
+                  @if (item.answer.route && item.answer.action) {
+                    <a [routerLink]="actionRoute(item.answer.route)" [queryParams]="actionQueryParams(item.answer.route)">{{ item.answer.action }} <span aria-hidden="true">→</span></a>
+                  }
+                  @if (item.note) { <small class="guide__note">{{ item.note }}</small> }
+                  <button type="button" class="guide__replay" (click)="speakingId() === item.id ? stopSpeaking() : readAloud(item.id)" [attr.aria-label]="speakingId() === item.id ? 'Stop' : 'Hear this message'">
+                    {{ speakingId() === item.id ? (voice() === 'loading' ? '…' : '■') : '🔊' }}
+                  </button>
+                </li>
               }
-            </div>
-          }
+            }
+            @if (thinking()) {
+              <li class="guide__bubble guide__bubble--guide guide__typing" aria-label="{{ character().name }} is thinking"><span></span><span></span><span></span></li>
+            }
+          </ol>
 
-          <div class="guide__quick-actions" aria-label="Things the guide can explain">
-            <button type="button" (click)="explain('stay-well')">Stay Well</button>
-            <button type="button" (click)="explain('find-care')">Find Care</button>
-            <button type="button" (click)="explain('hospital')">My Hospital</button>
-            <button type="button" (click)="explain('appointments')">Appointments</button>
-            <button type="button" (click)="explain('passport')">Health Passport</button>
-            <button type="button" (click)="explain('network')">Points &amp; referrals</button>
-          </div>
+          @if (voiceNote()) { <p class="guide__voice-note" role="status">{{ voiceNote() }}</p> }
 
-          <form class="guide__ask" (ngSubmit)="ask()">
-            <label for="guide-question">{{ language() === 'pcm' ? 'Ask your question' : 'Ask a question' }}</label>
-            <div>
-              <input
-                id="guide-question"
-                name="guide-question"
-                [ngModel]="query()"
-                (ngModelChange)="query.set($event)"
-                placeholder="e.g. How do I find a doctor?"
-                autocomplete="off"
-              />
-              <button type="submit" [disabled]="!query().trim()">Ask</button>
-            </div>
-          </form>
-
-          @if (recentQuestions().length) {<div class="guide__quick-actions" aria-label="Recent help questions">@for (question of recentQuestions(); track question) {<button type="button" (click)="useRecentQuestion(question)">{{ question }}</button>}</div>}
-
-          <div class="guide__tools">
-            <button type="button" (click)="explainThisPage()">Show me this page</button>
+          <div class="guide__big-actions">
             @if (supportsVoiceInput) {
-              <button type="button" (click)="startListening()" [disabled]="listening()">
-                {{ listening() ? 'Listening…' : 'Ask by voice' }}
+              <button type="button" class="guide__mic" [class.is-on]="listening()" (click)="startListening()" [disabled]="listening()">
+                <span aria-hidden="true">🎤</span>{{ listening() ? 'Listening…' : 'Talk to me' }}
+              </button>
+            }
+            @if (supportsSpeech) {
+              <button type="button" class="guide__hear" (click)="speaking() ? stopSpeaking() : readAloud()">
+                <span aria-hidden="true">{{ speaking() ? '■' : '🔊' }}</span>
+                {{ voice() === 'loading' ? 'Getting voice…' : speaking() ? 'Stop' : 'Hear this' }}
               </button>
             }
           </div>
 
-          <details class="guide__settings">
-            <summary>Guide settings</summary>
+          <form class="guide__ask" (ngSubmit)="ask()">
+            <label for="guide-question" class="sr-only">Ask {{ character().name }} anything</label>
             <div>
-              <button type="button" (click)="chooseLanguage(language() === 'en' ? 'pcm' : 'en')">
-                Language: {{ language() === 'en' ? 'English' : 'Nigerian Pidgin' }}
-              </button>
+              <input id="guide-question" name="guide-question" [ngModel]="query()" (ngModelChange)="query.set($event)"
+                [placeholder]="'Ask ' + character().name + ' anything…'" autocomplete="off" [attr.lang]="language()" />
+              <button type="submit" [disabled]="!query().trim() || thinking()" aria-label="Send">➤</button>
+            </div>
+          </form>
+
+          <div class="guide__chips" aria-label="Things I can help with">
+            @for (t of topics; track t.id) {
+              <button type="button" (click)="explain(t.id)">{{ t.label }}</button>
+            }
+            <button type="button" (click)="explainThisPage()">This page</button>
+            @for (question of recentQuestions(); track question) {
+              <button type="button" class="is-recent" (click)="useRecentQuestion(question)">{{ question }}</button>
+            }
+          </div>
+
+          <a routerLink="/help" class="guide__person">
+            <span aria-hidden="true">📞</span>
+            <span><strong>Talk to a person</strong><small>Call, WhatsApp, or we call you back</small></span>
+          </a>
+
+          <details class="guide__settings">
+            <summary>Settings</summary>
+            <div>
+              <p class="guide__settings-label">Language</p>
+              <div class="guide__language-row">
+                @for (l of locale.languages().local; track l.code) {
+                  <button type="button" [class.is-selected]="language() === l.code" [attr.lang]="l.code" (click)="chooseLanguage(l.code)">{{ l.label }}</button>
+                }
+                @for (l of locale.languages().other; track l.code) {
+                  <button type="button" [class.is-selected]="language() === l.code" [attr.lang]="l.code" (click)="chooseLanguage(l.code)">{{ l.label }}</button>
+                }
+              </div>
+              <button type="button" (click)="toggleAutoSpeak()" [attr.aria-pressed]="preferences().autoSpeak">Read answers aloud</button>
               <button type="button" (click)="toggleLargeText()" [attr.aria-pressed]="preferences().largeText">Larger text</button>
               <button type="button" (click)="toggleReducedMotion()" [attr.aria-pressed]="preferences().reducedMotion">Reduce movement</button>
-              <button type="button" (click)="toggleAutoSpeak()" [attr.aria-pressed]="preferences().autoSpeak">Speak explanations automatically</button>
               <button type="button" (click)="settingsOpen.set(true)">Change guide</button>
             </div>
           </details>
-          <p class="guide__safety">For medical emergencies, contact your local emergency service or go to the nearest emergency department.</p>
+          <p class="guide__safety">For emergencies, call 112 or go to the nearest hospital. {{ character().name }} gives general guidance, not a diagnosis.</p>
         }
       </div>
     </section>
@@ -130,18 +158,12 @@
 
   @if (teaserVisible()) {
     <div class="guide__teaser" role="status">
-      <p><strong>Hi, I’m {{ character().name }}.</strong> Tap me any time you need help finding your way.</p>
+      <p><strong>Hi, I’m {{ character().name }}.</strong> I can talk to you in your language. Tap me any time.</p>
       <button type="button" class="guide__link" (click)="skipIntroduction()">Not now</button>
     </div>
   }
 
-  <button
-    type="button"
-    class="guide__launcher"
-    [attr.aria-expanded]="open()"
-    aria-label="Open SmartClinic guide"
-    (click)="toggle()"
-  >
+  <button type="button" class="guide__launcher" [attr.aria-expanded]="open()" aria-label="Open SmartClinic guide" (click)="toggle()">
     <span class="guide__launcher-face" aria-hidden="true">{{ character().emoji }}</span>
     <span>Need help?</span>
   </button>

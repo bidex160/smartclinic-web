@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RWANDA_LOCALES, RwandaLocale, rwandaLocale } from '../../core/config/market-context';
+import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 
 const COPY: Record<RwandaLocale, { title: string; description: string; existing: string; newAccount: string; principle: string }> = {
   en: {
@@ -75,10 +76,18 @@ const COPY: Record<RwandaLocale, { title: string; description: string; existing:
 })
 export class RwandaEntryPageComponent {
   private readonly route = inject(ActivatedRoute);
+  private readonly preferences = inject(LocalePreferencesService);
   readonly languages = RWANDA_LOCALES;
   readonly locale = signal<RwandaLocale>(rwandaLocale(this.route.snapshot.queryParamMap.get('lang')));
   readonly copy = () => COPY[this.locale()];
+  constructor() {
+    // Opening the Rwanda page means Rwanda: remember it for the rest of the app.
+    if (this.preferences.market() !== 'RW') this.preferences.choose('RW', this.locale());
+  }
   readonly authQueryParams = () => ({ market: 'RW', lang: this.locale() });
 
-  changeLanguage(value: string): void { this.locale.set(rwandaLocale(value)); }
+  changeLanguage(value: string): void {
+    this.locale.set(rwandaLocale(value));
+    this.preferences.choose('RW', this.locale());
+  }
 }

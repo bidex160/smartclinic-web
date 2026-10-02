@@ -41,8 +41,22 @@ export interface EngagementSummary {
   };
   readonly quiz: DailyQuiz;
 }
+/** Points you can still spend: lifetime points minus what's been used on Health Checks. */
+export interface WellnessWallet {
+  readonly earnedPoints: number;
+  readonly usedPoints: number;
+  readonly availablePoints: number;
+}
+export interface WellnessRedeemRules {
+  /** Minor units (kobo, pesewas…) per point, by currency. */
+  readonly valuePerPointMinor: Readonly<Record<string, number>>;
+  readonly maxPercent: number;
+  readonly minPoints: number;
+}
 export interface EngagementOverview extends EngagementSummary {
   readonly pointsRules: Readonly<Record<string, number>>;
+  readonly wallet?: WellnessWallet;
+  readonly redeem?: WellnessRedeemRules;
 }
 export interface QuizAnswerResult extends EngagementSummary {
   readonly pointsEarned: number;

@@ -85,8 +85,8 @@ export class HealthCheckResultsApiService {
     return this.http.get<HealthCheckRewardPreview>(`${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/rewards/preview`);
   }
 
-  applyMyHealthCheckRewards(reference: string, points: number): Observable<AppliedHealthCheckRewardRedemption> {
-    return this.http.post<AppliedHealthCheckRewardRedemption>(`${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/rewards/apply`, { points });
+  applyMyHealthCheckRewards(reference: string, points: number, source?: 'REFERRAL' | 'WELLNESS'): Observable<AppliedHealthCheckRewardRedemption> {
+    return this.http.post<AppliedHealthCheckRewardRedemption>(`${this.baseUrl}/me/health-checks/${encodeURIComponent(reference)}/rewards/apply`, { points, ...(source ? { source } : {}) });
   }
 
   releaseMyHealthCheckRewards(reference: string): Observable<ReleasedHealthCheckRewardRedemption> {

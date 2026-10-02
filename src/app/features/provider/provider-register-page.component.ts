@@ -31,6 +31,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
+import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 
 @Component({
   selector: 'app-provider-register-page',
@@ -56,7 +57,7 @@ export class ProviderRegisterPageComponent {
   private readonly locationData =
     inject(LocationDataService);
 
-  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
+  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
   readonly marketHomeRoute = this.market === 'RW' ? '/rw' : '/';
   readonly loginQueryParams = this.market === 'RW'

@@ -5,10 +5,12 @@ import { AuthSessionService } from './core/services/auth-session.service';
 import { filter } from 'rxjs';
 import { SmartClinicCompanionComponent } from "./shared/components/smartclinic-companion/smartclinic-companion.component";
 import { LocationDataService } from './core/services/location-data.service';
+import { AccountLocaleSync, LocalePreferencesService } from './core/services/locale-preferences.service';
+import { LocalePickerComponent } from './shared/components/locale-picker/locale-picker.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent],
+  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent, LocalePickerComponent],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -17,7 +19,9 @@ export class AppComponent {
   private readonly session = inject(AuthSessionService);
   private readonly router = inject(Router);
   private readonly locationDataService = inject(LocationDataService);
-  
+  private readonly locale = inject(LocalePreferencesService);
+  private readonly accountLocale = inject(AccountLocaleSync);
+
 
   readonly menuOpen = signal(false);
 
@@ -40,6 +44,10 @@ export class AppComponent {
       .subscribe((event) => {
         this.currentUrl.set(event.urlAfterRedirects);
         this.menuOpen.set(false);
+        // A link that names a country or language (e.g. /register?market=RW&lang=rw) is remembered.
+        const query = this.router.parseUrl(event.urlAfterRedirects).queryParamMap;
+        if (query.has('market') || query.has('lang')) this.locale.applyQuery(query.get('market'), query.get('lang'));
+        if (this.authState.isPatient()) this.accountLocale.sync();
       });
     void this.locationDataService.ready().catch(() => undefined);
   }

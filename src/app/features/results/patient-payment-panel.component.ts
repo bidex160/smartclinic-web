@@ -12,6 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import PaystackPop from '@paystack/inline-js';
 import { EXTERNAL_NAVIGATOR } from '../../core/config/external-navigation.token';
 import { HealthCheckRewardPreview } from '../../core/models/health-check-reward-redemption.model';
@@ -26,7 +27,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
 
 @Component({
   selector: 'app-patient-payment-panel',
-  imports: [ReactiveFormsModule, PaymentContactEmailComponent],
+  imports: [ReactiveFormsModule, RouterLink, PaymentContactEmailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <section
     class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8"
@@ -93,7 +94,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           } @else if (preview(); as rewards) {
             @if (activePoints() > 0 && redemptionStatus() === 'RESERVED') {
               <div>
-                <p class="mt-3 text-lg font-bold">{{ activePoints() }} points reserved</p>
+                <p class="mt-3 text-lg font-bold">{{ activePoints() }} {{ activeSource() === 'WELLNESS' ? 'wellness points' : 'points' }} reserved</p>
                 <p class="mt-1 text-sm text-ink-soft">
                   These points remain reserved for this Health Check until payment settles or you
                   remove them.
@@ -107,10 +108,36 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   {{ releasing() ? 'Removing points…' : 'Remove points' }}
                 </button>
               </div>
-            } @else if (rewards.availablePoints === 0) {
-              <p class="mt-3 text-ink-soft">You don't have reward points available to use yet.</p>
             } @else {
-              <p class="mt-3">
+              @if (rewards.wellness; as w) {
+                <div class="mt-3 rounded-xl bg-leaf-50 p-4 ring-1 ring-leaf-100" data-wellness-points>
+                  <p class="font-semibold text-ink"><span aria-hidden="true">🌿</span> {{ w.availablePoints }} wellness points</p>
+                  @if (w.maximumRedeemablePoints > 0) {
+                    <p class="mt-1 text-sm text-ink-soft">
+                      Use {{ w.maximumRedeemablePoints }} points to take
+                      <strong class="text-ink">{{ utils.formatMoney(wellnessValue(w.maximumRedeemablePoints, w.valuePerPoint), rewards.currency) }}</strong>
+                      off this Health Check (up to {{ w.maxPercent }}%).
+                    </p>
+                    <button type="button" (click)="useWellnessPoints()" [disabled]="busy()"
+                      class="mt-3 min-h-11 rounded-full bg-leaf-700 px-5 font-bold text-white disabled:opacity-50" data-use-wellness>
+                      {{ applying() ? 'Applying points…' : 'Use ' + w.maximumRedeemablePoints + ' wellness points' }}
+                    </button>
+                  } @else {
+                    <p class="mt-1 text-sm text-ink-soft">
+                      Earn {{ w.minimumPoints - w.availablePoints > 0 ? w.minimumPoints - w.availablePoints : 0 }} more to start using them on a Health Check.
+                      <a routerLink="/me/progress" class="font-semibold text-brand-700 underline">How to earn</a>
+                    </p>
+                  }
+                  <p class="mt-2 text-xs text-ink-muted">Earned for healthy habits like the daily question and check-ins. They aren’t cash.</p>
+                </div>
+              }
+              @if (rewards.availablePoints === 0) {
+                @if (!rewards.wellness) {
+                  <p class="mt-3 text-ink-soft">You don't have reward points available to use yet.</p>
+                }
+              } @else {
+              <p class="mt-4 text-sm font-semibold uppercase tracking-wide text-ink-muted">Referral points</p>
+              <p class="mt-1">
                 <strong>{{ rewards.availablePoints }}</strong> points available
               </p>
               <p class="mt-1 text-sm text-ink-soft">
@@ -145,6 +172,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   {{ applying() ? 'Applying points…' : 'Apply points' }}
                 </button>
               </form>
+              }
             }
             @if (pointsError()) {
               <p role="alert" class="mt-3 text-sm font-semibold text-red-800">
@@ -333,6 +361,30 @@ export class PatientPaymentPanelComponent implements OnInit {
   }
   activePoints() {
     return this.status()?.pointsReserved ?? this.preview()?.activeRedemption?.pointsReserved ?? 0;
+  }
+  activeSource() {
+    return this.preview()?.activeRedemption?.pointSource ?? 'REFERRAL';
+  }
+  /** points × value per point, as a money string ("2000.00"). */
+  wellnessValue(points: number, valuePerPoint: string) {
+    const perMinor = Math.round(Number(valuePerPoint) * 100);
+    return ((points * perMinor) / 100).toFixed(2);
+  }
+  useWellnessPoints() {
+    const w = this.preview()?.wellness;
+    if (!w || !w.maximumRedeemablePoints || this.busy()) return;
+    this.applying.set(true);
+    this.pointsError.set(null);
+    this.api.applyMyHealthCheckRewards(this.reference, w.maximumRedeemablePoints, 'WELLNESS').subscribe({
+      next: () => {
+        this.applying.set(false);
+        this.refreshAll();
+      },
+      error: (e: HttpErrorResponse) => {
+        this.applying.set(false);
+        this.pointsError.set(this.rewardMutationError(e));
+      },
+    });
   }
   redemptionStatus() {
     return this.status()?.redemptionStatus ?? this.preview()?.activeRedemption?.status ?? null;

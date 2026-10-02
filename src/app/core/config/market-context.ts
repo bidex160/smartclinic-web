@@ -28,7 +28,8 @@ export function rwandaLocale(value: string | null | undefined): RwandaLocale {
   return RWANDA_LOCALES.some((locale) => locale.code === value) ? (value as RwandaLocale) : 'en';
 }
 
-export function requestedMarket(value: string | null | undefined): SmartClinicMarketCode {
+/** The country asked for in a link; without one, the remembered country (Nigeria if nothing else is known). */
+export function requestedMarket(value: string | null | undefined, fallback: SmartClinicMarketCode = 'NG'): SmartClinicMarketCode {
   const code = value?.trim().toUpperCase();
-  return code === 'RW' || code === 'GH' ? code : 'NG';
+  return code === 'RW' || code === 'GH' || code === 'NG' ? code : fallback;
 }

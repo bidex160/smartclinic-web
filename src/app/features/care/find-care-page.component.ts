@@ -18,6 +18,7 @@ import { LocationDataService } from '../../core/services/location-data.service';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
 import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
+import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 
 /** Short, non-sensitive notes for known request topics (never patient data in the URL). */
 const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
@@ -451,7 +452,7 @@ export class FindCarePageComponent {
   private readonly locations = inject(LocationDataService);
   private readonly dependantsApi = inject(DependantsApiService);
   private readonly route = inject(ActivatedRoute);
-  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
+  readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
   readonly marketConfiguration = SMARTCLINIC_MARKETS[this.market];
   readonly countries = this.locations.getCountries();
