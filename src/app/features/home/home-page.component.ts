@@ -25,6 +25,12 @@ export class HomePageComponent {
   readonly mySmartClinicRoute = computed(() =>
     this.authState.isPatient() ? '/me/dashboard' : '/login',
   );
+  readonly healthPassportRoute = computed(() =>
+    this.authState.isPatient() ? '/me/health-passport' : '/login',
+  );
+  readonly healthPassportQueryParams = computed(() =>
+    this.authState.isPatient() ? null : { returnUrl: '/me/health-passport' },
+  );
   readonly healthJourneyRoute = computed(() =>
     this.authState.isPatient() ? '/me/health-journey' : '/login',
   );

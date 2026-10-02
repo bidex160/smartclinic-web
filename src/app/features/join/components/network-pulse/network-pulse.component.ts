@@ -16,7 +16,9 @@ interface Summary {
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Shown only once real totals arrive, so visitors never see a box of empty dashes.
   template: `
+    @if (data(); as summary) {
     <section class="network-pulse" aria-label="Live Smart Clinic Network activity">
       <div class="pulse-heading">
         <span class="pulse-dot"></span>
@@ -26,13 +28,14 @@ interface Summary {
         </div>
       </div>
       <div class="pulse-stats">
-        <article><b>{{ data()?.builders ?? '—' }}</b><span>Builders</span></article>
-        <article><b>{{ data()?.organizations ?? '—' }}</b><span>Care providers</span></article>
-        <article><b>{{ data()?.families ?? '—' }}</b><span>Families</span></article>
-        <article><b>{{ data()?.groups ?? '—' }}</b><span>Groups</span></article>
-        <article><b>{{ data()?.peopleReached ?? '—' }}</b><span>People reached</span></article>
+        <article><b>{{ summary.builders }}</b><span>Builders</span></article>
+        <article><b>{{ summary.organizations }}</b><span>Care providers</span></article>
+        <article><b>{{ summary.families }}</b><span>Families</span></article>
+        <article><b>{{ summary.groups }}</b><span>Groups</span></article>
+        <article><b>{{ summary.peopleReached }}</b><span>People reached</span></article>
       </div>
     </section>
+    }
   `,
 styleUrls: ['./../../../join/join.component.scss'],
 })

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { API_CONFIG } from '../config/api-config.token';
-import { HealthCheckPackage } from '../models/health-check-package.model';
+import { HealthCheckCataloguePackage, HealthCheckPackage } from '../models/health-check-package.model';
 import { HealthCheckPackagesApiService } from './health-check-packages-api.service';
 
 describe('HealthCheckPackagesApiService', () => {
@@ -46,6 +46,19 @@ describe('HealthCheckPackagesApiService', () => {
     const request = httpTesting.expectOne('http://api.example.test/api/v1/health-check-packages');
     expect(request.request.method).toBe('GET');
     request.flush(response);
+  });
+
+  it('lists catalogue packages cheapest first, unpriced last, whatever order the API returns', () => {
+    const pkg = (code: string, fromPriceMinor: number | null): HealthCheckCataloguePackage => ({
+      code, name: `${code} Health Check`, description: null, benefits: [], estimatedDurationMinutes: null,
+      isActive: true, includedContents: [], optionalAddons: [], fromPriceMinor, currency: 'NGN', fulfilmentModes: [],
+    });
+    let codes: string[] = [];
+    service.getCatalogue().subscribe((items) => (codes = items.map((item) => item.code)));
+    httpTesting
+      .expectOne('http://api.example.test/api/v1/health-check-packages/catalogue')
+      .flush([pkg('BASIC', 500000), pkg('COMPLETE', 1600000), pkg('CUSTOM', null), pkg('ESSENTIAL', 1000000)]);
+    expect(codes).toEqual(['BASIC', 'ESSENTIAL', 'COMPLETE', 'CUSTOM']);
   });
 
   it('uses the V2 catalogue and sends only configuration selections for quoting', () => {

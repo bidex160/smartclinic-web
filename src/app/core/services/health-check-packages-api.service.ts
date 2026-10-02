@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { API_CONFIG } from '../config/api-config.token';
 import {
@@ -21,10 +21,11 @@ export class HealthCheckPackagesApiService {
     return this.http.get<HealthCheckPackage[]>(`${this.apiConfig.baseUrl}/health-check-packages`);
   }
 
+  /** Packages in ascending order of starting price, so the simplest check is always offered first. */
   getCatalogue(): Observable<HealthCheckCataloguePackage[]> {
-    return this.http.get<HealthCheckCataloguePackage[]>(
-      `${this.apiConfig.baseUrl}/health-check-packages/catalogue`,
-    );
+    return this.http
+      .get<HealthCheckCataloguePackage[]>(`${this.apiConfig.baseUrl}/health-check-packages/catalogue`)
+      .pipe(map((items) => [...items].sort(byStartingPrice)));
   }
 
   getConfigurationQuote(
@@ -46,4 +47,14 @@ export class HealthCheckPackagesApiService {
       { params },
     );
   }
+}
+
+/** Cheapest first; packages without a published price go last; ties keep a stable name order. */
+export function byStartingPrice(a: HealthCheckCataloguePackage, b: HealthCheckCataloguePackage): number {
+  if (a.fromPriceMinor !== b.fromPriceMinor) {
+    if (a.fromPriceMinor === null) return 1;
+    if (b.fromPriceMinor === null) return -1;
+    return a.fromPriceMinor - b.fromPriceMinor;
+  }
+  return a.name.localeCompare(b.name);
 }
