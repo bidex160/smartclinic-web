@@ -90,7 +90,7 @@ interface DashboardNextStep {
       } @else if (dashboard(); as value) {
         <header class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <div>
-            <p class="text-sm font-medium text-ink-muted">{{ today }}</p>
+            <p class="text-sm font-medium text-ink-muted">{{ today() }}</p>
             <h1 class="font-display mt-1 text-[2rem] font-semibold leading-[1.1] text-ink sm:text-[2.6rem]">
               {{ greeting() | t: { name: value.patient.firstName } }}
             </h1>
@@ -625,7 +625,7 @@ export class PatientDashboardPageComponent {
     instructions: ['', Validators.maxLength(300)],
     medicationSafetyAcknowledged: false,
   });
-  readonly today = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+  readonly today = computed(() => this.i18n.formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long' }));
   readonly greeting = signal(PatientDashboardPageComponent.greetingFor(new Date().getHours()));
   readonly nextRoutineReference = computed(() => {
     const routines = this.dashboard()?.todayRoutines ?? [];
@@ -806,10 +806,10 @@ export class PatientDashboardPageComponent {
     return this.i18n.t('dashboard.recap.fresh');
   }
   weekdayInitial(localDate: string): string {
-    return new Intl.DateTimeFormat('en-GB', { weekday: 'narrow', timeZone: 'UTC' }).format(new Date(`${localDate}T12:00:00Z`));
+    return this.i18n.formatDate(new Date(`${localDate}T12:00:00Z`), { weekday: 'narrow', timeZone: 'UTC' });
   }
   weekdayName(localDate: string): string {
-    return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'UTC' }).format(new Date(`${localDate}T12:00:00Z`));
+    return this.i18n.formatDate(new Date(`${localDate}T12:00:00Z`), { weekday: 'long', timeZone: 'UTC' });
   }
   toggleRoutine(routine: PatientDailyRoutine): void {
     if (this.routineSaving()) return;

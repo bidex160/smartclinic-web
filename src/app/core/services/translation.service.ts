@@ -19,6 +19,10 @@ const LOADERS: Readonly<Record<Exclude<AppLanguage, 'en'>, () => Promise<{ defau
   tw: () => import('../../i18n/tw'),
 };
 
+const DATE_LOCALES: Readonly<Record<AppLanguage, string>> = {
+  en: 'en-GB', pcm: 'en-GB', yo: 'yo-NG', ha: 'ha-NG', ig: 'ig-NG', rw: 'rw-RW', fr: 'fr-FR', sw: 'sw-KE', tw: 'ak-GH',
+};
+
 /** "Hello {name}" + { name: 'Ada' } → "Hello Ada". Unknown placeholders are left visible so mistakes are easy to spot. */
 export function interpolate(text: string, params?: TranslationParams): string {
   if (!params) return text;
@@ -42,6 +46,18 @@ export class TranslationService {
       const lang = this.language();
       if (lang !== 'en' && !this.dictionaries()[lang]) void this.load(lang);
     });
+  }
+
+  /** Locale for dates and numbers. Phones without data for a language show English month names instead. */
+  readonly dateLocale = computed(() => DATE_LOCALES[this.language()]);
+
+  formatDate(value: Date | string, options: Intl.DateTimeFormatOptions): string {
+    const date = typeof value === 'string' ? new Date(value) : value;
+    try {
+      return new Intl.DateTimeFormat(this.dateLocale(), options).format(date);
+    } catch {
+      return new Intl.DateTimeFormat('en-GB', options).format(date);
+    }
   }
 
   t(key: string, params?: TranslationParams): string {

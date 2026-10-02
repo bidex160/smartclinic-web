@@ -361,7 +361,7 @@ export class HealthPassportPageComponent {
     return v.map((x) => [x.name, x.strength].filter(Boolean).join(' ')).join(', ');
   }
   date(v: string) {
-    return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(v));
+    return this.i18n.formatDate(v, { dateStyle: 'medium' });
   }
   eventType(v: string) {
     const key = EVENT_TYPE_KEYS[v as HealthPassportTimelineType];
