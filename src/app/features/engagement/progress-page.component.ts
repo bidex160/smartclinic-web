@@ -84,6 +84,9 @@ const EARN: readonly { key: string; label: string }[] = [
             @if (spend(); as sp) {
               <div class="mt-4 rounded-xl bg-leaf-50 p-4 ring-1 ring-leaf-100" data-spendable>
                 <p class="text-sm font-semibold text-ink"><span class="font-display text-2xl">{{ sp.available }}</span> points to spend</p>
+                @if (sp.paused) {
+                  <p class="mt-1 text-sm font-semibold text-clay-700" data-points-paused>Using points is paused for a short while. Your points are safe and you keep earning.</p>
+                }
                 <p class="mt-1 text-sm text-ink-soft">
                   Worth {{ sp.value }} off a Smart Health Check — up to {{ sp.maxPercent }}% of the price, from {{ sp.minPoints }} points.
                   @if (sp.used) { <span>You’ve used {{ sp.used }} so far.</span> }
@@ -160,6 +163,7 @@ export class ProgressPageComponent {
       // The API counts every currency in hundredths (RWF too), so divide by 100 here.
       value: new Intl.NumberFormat('en-NG', { style: 'currency', currency, maximumFractionDigits: 0 }).format((s.wallet.availablePoints * perPoint) / 100),
       maxPercent: s.redeem.maxPercent,
+      paused: Boolean(s.redeem.paused),
       minPoints: s.redeem.minPoints,
     };
   });
