@@ -127,7 +127,7 @@ describe('PatientRegisterPageComponent', () => {
 
     expect(fixture.componentInstance.form.controls.countryCode.value).toBe('RW');
     expect(fixture.componentInstance.phonePlaceholder).toContain('+250');
-    expect(fixture.componentInstance.countries.map(country => country.isoCode)).toEqual(['NG', 'RW']);
+    expect(fixture.componentInstance.countries.map(country => country.isoCode)).toEqual(['GH', 'NG', 'RW']);
     const login = fixture.nativeElement.querySelector('a[href^="/login"]');
     expect(login.getAttribute('href')).toBe('/login?market=RW&lang=fr');
   });

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { catchError, finalize, of } from 'rxjs';
 
 import {
   BLOOD_GROUPS,
@@ -10,13 +11,16 @@ import {
   PatientHealthBasics,
 } from '../../core/models/health-basics.model';
 import { HealthBasicsApiService } from '../../core/services/health-basics-api.service';
+import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
+import { HelpOptionsComponent } from '../../shared/components/help-options/help-options.component';
+import { formatMinor } from '../provider/care-money';
 
 const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
 
 /** "My health basics" on the Me page: view, then edit in place. */
 @Component({
   selector: 'app-health-basics-card',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink, HelpOptionsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="sc-card p-5 sm:p-6" aria-labelledby="health-basics-heading">
@@ -51,7 +55,7 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
             </select>
           </label>
           <label class="text-sm font-medium text-ink-soft sm:col-span-2">Allergies
-            <input formControlName="allergies" maxlength="500" placeholder="e.g. Penicillin, peanuts — or leave blank" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
+            <input formControlName="allergies" maxlength="500" placeholder="e.g. Penicillin, peanuts — or type None" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
           </label>
           <label class="text-sm font-medium text-ink-soft sm:col-span-2">Ongoing conditions
             <input formControlName="conditions" maxlength="500" placeholder="e.g. Asthma, hypertension — or leave blank" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
@@ -92,8 +96,32 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
             </dd>
           </div>
         </dl>
-        @if (isEmpty()) {
-          <p class="mt-4 rounded-xl bg-ochre-50 p-3 text-sm text-ochre-700">Tip: knowing your genotype and blood group matters in an emergency. If you don’t know them, ask for them at your next Health Check.</p>
+        @if (missingNumbers(); as missing) {
+          <div class="mt-5 rounded-2xl bg-ochre-50 p-4 sm:p-5" data-know-your-numbers>
+            <p class="font-semibold text-ink">Don’t know your {{ missing }}? Find out once, keep it for life.</p>
+            <p class="mt-1 text-sm text-ink-soft">
+              It matters in an emergency, before surgery or a transfusion, and when planning a family. It’s a quick blood test.
+              @if (testPrice(); as price) { <span class="font-semibold text-ink">Standard price: {{ price }}.</span> }
+            </p>
+            <div class="mt-4 grid gap-2 sm:grid-cols-2">
+              <a routerLink="/me/request-care" [queryParams]="testLink('HOME_VISIT')" class="flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-ink/[0.08] hover:ring-brand-300" data-test-at-home>
+                <span aria-hidden="true" class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
+                  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+                </span>
+                <span><span class="block font-semibold text-ink">Get tested at home</span><span class="block text-xs text-ink-muted">A trained person comes to you</span></span>
+              </a>
+              <a routerLink="/me/request-care" [queryParams]="testLink('IN_PERSON')" class="flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-ink/[0.08] hover:ring-brand-300" data-test-at-lab>
+                <span aria-hidden="true" class="grid size-9 shrink-0 place-items-center rounded-full bg-leaf-50 text-leaf-700">
+                  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6"/><path d="M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/></svg>
+                </span>
+                <span><span class="block font-semibold text-ink">Go to a lab near you</span><span class="block text-xs text-ink-muted">Pick a place and time</span></span>
+              </a>
+            </div>
+            <p class="mt-3 text-xs text-ink-muted">When your result is ready, add it here — or your lab can add it for you. Already know? <button type="button" (click)="startEditing()" class="font-semibold text-brand-700 underline underline-offset-2">Add it now</button>.</p>
+            <div class="mt-4">
+              <app-help-options topic="TEST_OR_RESULTS" title="Rather arrange it by phone?" hint="Call or WhatsApp us, or leave your number and we’ll book the test with you." />
+            </div>
+          </div>
         }
       }
     </section>
@@ -102,6 +130,7 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
 export class HealthBasicsCardComponent {
   private readonly api = inject(HealthBasicsApiService);
   private readonly fb = inject(FormBuilder);
+  private readonly catalogue = inject(ServiceCatalogueApiService);
 
   readonly bloodGroups = BLOOD_GROUPS;
   readonly genotypes = GENOTYPES;
@@ -122,11 +151,52 @@ export class HealthBasicsCardComponent {
     emergencyContactRelationship: ['', Validators.maxLength(60)],
   });
 
+  /** Standard catalogue prices, so people know roughly what it costs before asking. */
+  private readonly labPrices = signal<readonly { code: string; minor: number; currency: string }[]>([]);
+  readonly testPrice = computed(() => {
+    const b = this.basics();
+    const wanted = [!b?.bloodGroup && 'LAB_BLOOD_GROUP', !b?.genotype && 'LAB_GENOTYPE'].filter(Boolean);
+    const prices = this.labPrices().filter((p) => wanted.includes(p.code));
+    if (!prices.length || prices.length !== wanted.length || new Set(prices.map((p) => p.currency)).size !== 1) return null;
+    return formatMinor(prices.reduce((sum, p) => sum + p.minor, 0), prices[0].currency) + (prices.length > 1 ? ' for both' : '');
+  });
+
+  /** "blood group and genotype", "genotype", … or null when both are known. */
+  readonly missingNumbers = computed(() => {
+    const b = this.basics();
+    const missing = [!b?.bloodGroup && 'blood group', !b?.genotype && 'genotype'].filter(Boolean);
+    return missing.length ? missing.join(' and ') : null;
+  });
+
   constructor() {
     this.api
       .get()
       .pipe(finalize(() => this.loading.set(false)))
-      .subscribe({ next: (value) => this.basics.set(value), error: () => this.loadError.set(true) });
+      .subscribe({
+        next: (value) => {
+          this.basics.set(value);
+          if (this.missingNumbers()) this.loadLabPrices();
+        },
+        error: () => this.loadError.set(true),
+      });
+  }
+
+  /** No health details in the link: only which test and where. */
+  testLink(mode: 'HOME_VISIT' | 'IN_PERSON') {
+    return { serviceCode: 'LAB_REQUEST', topic: 'blood-group-genotype', mode };
+  }
+
+  private loadLabPrices(): void {
+    this.catalogue
+      .list('LAB_TEST')
+      .pipe(catchError(() => of([])))
+      .subscribe((items) => {
+        this.labPrices.set(
+          items
+            .filter((i) => i.code === 'LAB_BLOOD_GROUP' || i.code === 'LAB_GENOTYPE')
+            .map((i) => ({ code: i.code, minor: i.standardPriceMinor, currency: i.currency })),
+        );
+      });
   }
 
   isEmpty(): boolean {

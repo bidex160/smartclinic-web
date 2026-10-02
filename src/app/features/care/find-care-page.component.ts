@@ -19,6 +19,11 @@ import { DependantsApiService } from '../../core/services/dependants-api.service
 import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 
+/** Short, non-sensitive notes for known request topics (never patient data in the URL). */
+const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
+  'blood-group-genotype': 'Blood group and haemoglobin genotype tests, please.',
+};
+
 @Component({
   selector: 'app-find-care-page',
   imports: [ReactiveFormsModule, RouterLink],
@@ -615,7 +620,11 @@ export class FindCarePageComponent {
       .pipe(finalize(() => this.servicesLoading.set(false)))
       .subscribe({
         next: (v) => {
-          this.services.set(v.filter((service) => !['BASIC_MEDICATIONS', 'LAB_REQUEST'].includes(service.code)));
+          // Lab tests and medicines usually come through a clinician, so they stay off the menu.
+          // The one exception: a direct link for the blood group & genotype screen, which needs no prescription.
+          const screeningLink = this.route.snapshot.queryParamMap.get('serviceCode') === 'LAB_REQUEST'
+            && this.route.snapshot.queryParamMap.get('topic') === 'blood-group-genotype';
+          this.services.set(v.filter((service) => !['BASIC_MEDICATIONS', ...(screeningLink ? [] : ['LAB_REQUEST'])].includes(service.code)));
           this.servicesLoaded.set(true);
           this.applyRequestedServiceCode();
           if (this.draftRestored && !this.requestedServiceIsValid() && !this.draftDiscoveryStarted) {
@@ -638,7 +647,26 @@ export class FindCarePageComponent {
     if (!requested || !this.services().some((service) => service.code === requested)) return;
     if (this.form.controls.serviceCode.value === requested) return;
     this.form.controls.serviceCode.setValue(requested);
+    this.applyRequestedTopicAndMode();
     this.serviceChanged();
+  }
+
+  /** Links like "Find out your genotype" arrive with a topic and a place; fill them in so the patient only confirms. */
+  private applyRequestedTopicAndMode(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const note = REQUEST_TOPIC_NOTES[params.get('topic') ?? ''];
+    if (note && !this.form.controls.notes.value.trim()) this.form.controls.notes.setValue(note);
+    // Places come with the provider list, which loads after the service is set; choose it then.
+    this.pendingDeliveryMode = params.get('mode') as CareDeliveryMode | null;
+  }
+  private pendingDeliveryMode: CareDeliveryMode | null = null;
+  private applyPendingDeliveryMode(): void {
+    const mode = this.pendingDeliveryMode;
+    this.pendingDeliveryMode = null;
+    if (mode && !this.form.controls.deliveryMode.value && this.deliveryModes().includes(mode)) {
+      this.form.controls.deliveryMode.setValue(mode);
+      this.deliveryModeChanged();
+    }
   }
 
    requestedServiceIsValid(): boolean {
@@ -705,6 +733,7 @@ export class FindCarePageComponent {
             if (!this.doctorJourney() && this.form.controls.deliveryMode.value && !available.includes(this.form.controls.deliveryMode.value)) this.form.controls.deliveryMode.setValue('');
           // }
           this.providers.set(deliveryMode ? p.items : []);
+          if (!deliveryMode) this.applyPendingDeliveryMode();
         },
         error: () => {
           this.providers.set([]);

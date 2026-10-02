@@ -18,7 +18,7 @@ import { AuthApiService } from '../../core/services/auth-api.service';
 import { LocationDataService } from '../../core/services/location-data.service';
 import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
-import { requestedMarket, rwandaLocale } from '../../core/config/market-context';
+import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 
 @Component({
   selector: 'app-patient-register-page',
@@ -33,7 +33,7 @@ export class PatientRegisterPageComponent {
   private readonly locationData = inject(LocationDataService);
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
   readonly defaultCountryCode = this.market;
-  readonly phonePlaceholder = this.market === 'RW' ? 'e.g. +250 7XX XXX XXX' : 'e.g. +234 800 000 0000';
+  readonly phonePlaceholder = `e.g. ${SMARTCLINIC_MARKETS[this.market].examplePhone}`;
 
   private readonly referralCode =
     this.route.snapshot.queryParamMap.get('ref')?.trim() || null;

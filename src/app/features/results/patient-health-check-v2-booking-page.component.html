@@ -62,19 +62,23 @@
               <a routerLink="/me/family" class="mt-3 inline-block text-sm font-bold text-brand-700 underline">Add a dependant</a>
             </fieldset>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
-              <label class="font-bold"
-                >Choose a checkup
-                <select
-                  formControlName="packageCode"
-                  (change)="packageChanged()"
-                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
-                >
-                  <option value="">Choose a checkup</option>
+              <fieldset class="sm:col-span-2">
+                <legend class="font-bold">Choose a checkup</legend>
+                <p class="mt-1 text-sm text-ink-soft">Not sure? Basic covers the essentials most adults need once a year.</p>
+                <div class="mt-3 grid gap-3 sm:grid-cols-3" data-package-choices>
                   @for (item of packages(); track item.code) {
-                    <option [value]="item.code">{{ packageLabel(item, $index) }}</option>
+                    <label class="relative flex cursor-pointer flex-col gap-1 rounded-2xl border-2 bg-white p-4 transition {{ form.controls.packageCode.value === item.code ? 'border-brand-700 bg-brand-50' : 'border-ink/10 hover:border-brand-300' }}">
+                      <input type="radio" formControlName="packageCode" [value]="item.code" (change)="packageChanged()" class="sr-only" />
+                      <span class="flex items-start justify-between gap-2">
+                        <span class="font-display text-lg font-semibold text-ink">{{ packageLabel(item, $index) }}</span>
+                        @if (form.controls.packageCode.value === item.code) { <span class="rounded-full bg-brand-700 px-2 py-0.5 text-xs font-bold text-white">Chosen</span> }
+                      </span>
+                      @if (item.fromPriceMinor !== null && item.currency) { <span class="text-sm text-ink-soft">From <strong class="text-ink">{{ price(item.fromPriceMinor, item.currency) }}</strong></span> }
+                      <span class="text-sm text-ink-soft">{{ item.includedContents.length }} checks included@if (item.estimatedDurationMinutes) { · about {{ item.estimatedDurationMinutes }} min }</span>
+                    </label>
                   }
-                </select>
-              </label>
+                </div>
+              </fieldset>
               @if (selectedPackage(); as selected) {
                 <section class="rounded-2xl border border-brand-100 bg-brand-50 p-4 sm:col-span-2">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -93,19 +97,24 @@
                   }
                 </section>
               }
-              <label class="font-bold"
-                >Where should we do it?
-                <select
-                  formControlName="fulfilmentModeCode"
-                  (change)="fulfilmentChanged()"
-                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
-                >
-                  <option value="">Choose home or health centre</option>
-                  @for (item of modes(); track item.code) {
-                    <option [value]="item.code">{{ item.name }}</option>
-                  }
-                </select>
-              </label>
+              <fieldset class="sm:col-span-2">
+                <legend class="font-bold">Where should we do it?</legend>
+                @if (!modes().length) {
+                  <p class="mt-2 text-sm text-ink-soft">Choose a checkup first.</p>
+                } @else {
+                  <div class="mt-3 grid gap-3 sm:grid-cols-2" data-place-choices>
+                    @for (item of modes(); track item.code) {
+                      <label class="flex cursor-pointer gap-3 rounded-2xl border-2 bg-white p-4 transition {{ form.controls.fulfilmentModeCode.value === item.code ? 'border-brand-700 bg-brand-50' : 'border-ink/10 hover:border-brand-300' }}">
+                        <input type="radio" formControlName="fulfilmentModeCode" [value]="item.code" (change)="fulfilmentChanged()" class="mt-1 size-4 accent-brand-700" />
+                        <span>
+                          <span class="block font-semibold text-ink">{{ item.code === 'HOME_VISIT' ? 'At home' : 'At a health centre' }}</span>
+                          <span class="mt-0.5 block text-sm text-ink-soft">{{ item.code === 'HOME_VISIT' ? 'A health worker comes to you. A small travel fee may apply.' : 'Go to a clinic or lab near you at the time you choose.' }}</span>
+                        </span>
+                      </label>
+                    }
+                  </div>
+                }
+              </fieldset>
               <label class="font-bold"
                 >Suggested date<input
                   type="date"
@@ -113,13 +122,20 @@
                   (change)="contextChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
               /></label>
-              <label class="font-bold"
-                >Suggested time<input
-                  type="time"
-                  formControlName="preferredTime"
-                  (change)="contextChanged()"
-                  class="mt-2 min-h-12 w-full rounded-xl border p-3"
-              /></label>
+              <div>
+                <label class="font-bold"
+                  >Suggested time<input
+                    type="time"
+                    formControlName="preferredTime"
+                    (change)="contextChanged()"
+                    class="mt-2 min-h-12 w-full rounded-xl border p-3"
+                /></label>
+                <div class="mt-2 flex flex-wrap gap-2" role="group" aria-label="Quick times">
+                  @for (slot of timeSlots; track slot.time) {
+                    <button type="button" (click)="pickTime(slot.time)" [attr.aria-pressed]="form.controls.preferredTime.value === slot.time" class="min-h-10 rounded-full border px-3 text-sm font-semibold {{ form.controls.preferredTime.value === slot.time ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-ink/15 text-ink-soft' }}">{{ slot.label }}</button>
+                  }
+                </div>
+              </div>
             </div>
             <div formGroupName="address" class="mt-6 grid gap-5 sm:grid-cols-2">
               <label class="font-bold"
@@ -180,6 +196,9 @@
             >
               {{ discovering() ? 'Checking availability…' : 'Continue' }}
             </button>
+            <div class="mt-6">
+              <app-help-options topic="BOOK_CHECKUP" title="Rather book by phone?" hint="Our team can choose the right checkup with you and book it, at home or at a clinic." />
+            </div>
             @if (discoveryError()) {
               <p tabindex="-1" role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
                 {{ discoveryError() }}

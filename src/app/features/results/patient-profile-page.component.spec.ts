@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { HealthCheckResultsApiService } from '../../core/services/health-check-results-api.service';
 import { HealthBasicsApiService } from '../../core/services/health-basics-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
 import { PatientProfilePageComponent } from './patient-profile-page.component';
 
 describe('PatientProfilePageComponent', () => {
@@ -18,6 +19,12 @@ describe('PatientProfilePageComponent', () => {
     source: 'SELF_REPORTED' as const, updatedAt: null,
   };
 
+  const labTests = [
+    { code: 'LAB_BLOOD_GROUP', standardPriceMinor: 250000, currency: 'NGN' },
+    { code: 'LAB_GENOTYPE', standardPriceMinor: 300000, currency: 'NGN' },
+    { code: 'LAB_FBC', standardPriceMinor: 900000, currency: 'NGN' },
+  ];
+
   async function setup(email: string | null) {
     const dashboardApi = { updateProfile: vi.fn((body: Record<string, unknown>) => of({ ...profile(email), patient: { ...profile(email).patient, ...body } })) };
     const basicsApi = {
@@ -31,6 +38,7 @@ describe('PatientProfilePageComponent', () => {
         { provide: HealthCheckResultsApiService, useValue: { getMyProfile: () => of(profile(email)) } },
         { provide: PatientDashboardApiService, useValue: dashboardApi },
         { provide: HealthBasicsApiService, useValue: basicsApi },
+        { provide: ServiceCatalogueApiService, useValue: { list: () => of(labTests) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientProfilePageComponent);
@@ -107,6 +115,18 @@ describe('PatientProfilePageComponent', () => {
       emergencyContactName: null, emergencyContactPhone: null, emergencyContactRelationship: null,
     });
     expect(card.querySelector('[data-health-basics]')!.textContent).toContain('AS');
+  });
+
+  it('shows how to get tested when blood group or genotype is unknown, with no health details in the link', async () => {
+    const { fixture } = await setup('ada@example.test');
+    const panel = (fixture.nativeElement as HTMLElement).querySelector('[data-know-your-numbers]') as HTMLElement;
+    expect(panel.textContent).toContain('Don’t know your blood group and genotype?');
+    expect(panel.textContent).toContain("₦5,500.00 for both");
+    const home = panel.querySelector('[data-test-at-home]') as HTMLAnchorElement;
+    const lab = panel.querySelector('[data-test-at-lab]') as HTMLAnchorElement;
+    expect(home.getAttribute('href')).toBe('/me/request-care?serviceCode=LAB_REQUEST&topic=blood-group-genotype&mode=HOME_VISIT');
+    expect(lab.getAttribute('href')).toContain('mode=IN_PERSON');
+    expect(panel.querySelector('app-help-options')).not.toBeNull();
   });
 
   it('links to the SmartClinic card', async () => {

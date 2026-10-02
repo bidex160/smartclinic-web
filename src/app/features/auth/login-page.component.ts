@@ -7,7 +7,7 @@ import { AuthStateService } from '../../core/services/auth-state.service';
 import { AuthApiService } from '../../core/services/auth-api.service';
 import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-panel.component';
-import { requestedMarket, rwandaLocale } from '../../core/config/market-context';
+import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 @Component({
   selector: 'app-login-page',
   standalone: true,
@@ -263,9 +263,7 @@ export class LoginPageComponent {
   readonly registrationQueryParams = this.authFlowQueryParams();
   readonly hasReferral = Boolean(this.route.snapshot.queryParamMap.get('ref')?.trim());
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'));
-  readonly identifierPlaceholder = this.market === 'RW'
-    ? 'you@example.com or +250 7XX XXX XXX'
-    : 'you@example.com or +234 801 234 5678';
+  readonly identifierPlaceholder = `you@example.com or ${SMARTCLINIC_MARKETS[this.market].examplePhone}`;
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
   readonly marketHomeRoute = this.market === 'RW' ? '/rw' : '/';
 

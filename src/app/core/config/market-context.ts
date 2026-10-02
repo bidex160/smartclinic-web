@@ -1,4 +1,4 @@
-export type SmartClinicMarketCode = 'NG' | 'RW';
+export type SmartClinicMarketCode = 'NG' | 'GH' | 'RW';
 export type RwandaLocale = 'en' | 'rw' | 'fr' | 'sw';
 
 export interface SmartClinicMarket {
@@ -7,11 +7,14 @@ export interface SmartClinicMarket {
   readonly callingCode: string;
   readonly currency: string;
   readonly timezone: string;
+  /** A sample local phone number for placeholders. */
+  readonly examplePhone: string;
 }
 
 export const SMARTCLINIC_MARKETS: Readonly<Record<SmartClinicMarketCode, SmartClinicMarket>> = {
-  NG: { code: 'NG', countryName: 'Nigeria', callingCode: '+234', currency: 'NGN', timezone: 'Africa/Lagos' },
-  RW: { code: 'RW', countryName: 'Rwanda', callingCode: '+250', currency: 'RWF', timezone: 'Africa/Kigali' },
+  NG: { code: 'NG', countryName: 'Nigeria', callingCode: '+234', currency: 'NGN', timezone: 'Africa/Lagos', examplePhone: '+234 801 234 5678' },
+  GH: { code: 'GH', countryName: 'Ghana', callingCode: '+233', currency: 'GHS', timezone: 'Africa/Accra', examplePhone: '+233 24 123 4567' },
+  RW: { code: 'RW', countryName: 'Rwanda', callingCode: '+250', currency: 'RWF', timezone: 'Africa/Kigali', examplePhone: '+250 788 123 456' },
 };
 
 export const RWANDA_LOCALES: readonly { readonly code: RwandaLocale; readonly label: string }[] = [
@@ -26,5 +29,6 @@ export function rwandaLocale(value: string | null | undefined): RwandaLocale {
 }
 
 export function requestedMarket(value: string | null | undefined): SmartClinicMarketCode {
-  return value?.trim().toUpperCase() === 'RW' ? 'RW' : 'NG';
+  const code = value?.trim().toUpperCase();
+  return code === 'RW' || code === 'GH' ? code : 'NG';
 }

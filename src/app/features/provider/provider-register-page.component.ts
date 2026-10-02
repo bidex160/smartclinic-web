@@ -30,7 +30,7 @@ import { ReferralTargetType } from '../../core/models/referral.model';
 import { LocationDataService } from '../../core/services/location-data.service';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
-import { requestedMarket, rwandaLocale } from '../../core/config/market-context';
+import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 
 @Component({
   selector: 'app-provider-register-page',
@@ -63,9 +63,7 @@ export class ProviderRegisterPageComponent {
     ? { market: 'RW', lang: this.marketLanguage }
     : null;
   readonly defaultCountryCode = this.market;
-  readonly phonePlaceholder = this.market === 'RW'
-    ? 'e.g. +250 788 123 456'
-    : 'e.g. +234 801 234 5678';
+  readonly phonePlaceholder = `e.g. ${SMARTCLINIC_MARKETS[this.market].examplePhone}`;
 
   private readonly errorSummary =
     viewChild<ElementRef<HTMLElement>>(

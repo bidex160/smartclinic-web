@@ -46,11 +46,13 @@ describe('FindCarePageComponent', () => {
     serviceResponse: Observable<typeof services> = of(services),
     doctorJourney = false,
     market: 'NG' | 'RW' = 'NG',
+    extraParams: Record<string, string> = {},
+    providerResponse = provider,
   ) {
     const find = {
       getServices: vi.fn(() => serviceResponse),
       getProviders: vi.fn(() =>
-        of({ items: [provider], page: 1, limit: 50, total: 1, totalPages: 1 }),
+        of({ items: [providerResponse], page: 1, limit: 50, total: 1, totalPages: 1 }),
       ),
     };
     const care = {
@@ -85,8 +87,8 @@ describe('FindCarePageComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { queryParamMap: convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}), ...(market === 'RW' ? { market: 'RW', lang: 'rw' } : {}) }) },
-            queryParamMap: of(convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}), ...(market === 'RW' ? { market: 'RW', lang: 'rw' } : {}) })),
+            snapshot: { queryParamMap: convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}), ...(market === 'RW' ? { market: 'RW', lang: 'rw' } : {}), ...extraParams }) },
+            queryParamMap: of(convertToParamMap({ ...(serviceCode ? { serviceCode } : {}), ...(doctorJourney ? { journey: 'doctor' } : {}), ...(market === 'RW' ? { market: 'RW', lang: 'rw' } : {}), ...extraParams })),
           },
         },
         { provide: FindCareApiService, useValue: find },
@@ -166,6 +168,26 @@ describe('FindCarePageComponent', () => {
     const c = fixture.componentInstance;
     expect(c.form.controls.serviceCode.value).toBe('DENTAL');
     expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'DENTAL', limit: 50 });
+  });
+
+  describe('the blood group & genotype link', () => {
+    const withLab = [...services, { code: 'LAB_REQUEST', name: 'Basic Lab Test', description: 'Basic tests', providerCount: 1 }];
+    const lab = { ...provider, services: [{ ...provider.services[0], code: 'LAB_REQUEST', name: 'Basic Lab Test' }] };
+
+    it('opens the lab request with the tests noted and the chosen place picked once places load', async () => {
+      const { fixture, find } = await setup(true, [], 'LAB_REQUEST', of(withLab), false, 'NG', { topic: 'blood-group-genotype', mode: 'HOME_VISIT' }, lab);
+      const c = fixture.componentInstance;
+      expect(c.form.controls.serviceCode.value).toBe('LAB_REQUEST');
+      expect(c.form.controls.notes.value).toContain('haemoglobin genotype');
+      expect(c.form.controls.deliveryMode.value).toBe('HOME_VISIT');
+      expect(find.getProviders).toHaveBeenCalledWith({ serviceCode: 'LAB_REQUEST', limit: 50 }); // next, the patient picks their area
+    });
+
+    it('keeps lab tests off the menu for any other visit', async () => {
+      const { fixture } = await setup(true, [], 'LAB_REQUEST', of(withLab));
+      expect(fixture.componentInstance.form.controls.serviceCode.value).toBe('');
+      expect(fixture.componentInstance.services().some((x) => x.code === 'LAB_REQUEST')).toBe(false);
+    });
   });
 
   it('ignores an invalid serviceCode and leaves normal service selection available', async () => {

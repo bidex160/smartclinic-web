@@ -3,7 +3,7 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from './market-con
 describe('market context', () => {
   it('defines Rwanda without changing the global identity model', () => {
     expect(SMARTCLINIC_MARKETS.RW).toEqual({
-      code: 'RW', countryName: 'Rwanda', callingCode: '+250', currency: 'RWF', timezone: 'Africa/Kigali',
+      code: 'RW', countryName: 'Rwanda', callingCode: '+250', currency: 'RWF', timezone: 'Africa/Kigali', examplePhone: '+250 788 123 456',
     });
   });
 

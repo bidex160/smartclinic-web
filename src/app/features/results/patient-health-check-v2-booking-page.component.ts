@@ -1,3 +1,4 @@
+import { HelpOptionsComponent } from '../../shared/components/help-options/help-options.component';
 import { NgTemplateOutlet } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '@angular/core';
@@ -28,7 +29,7 @@ type BookingStep = 1 | 2 | 3 | 4;
 
 @Component({
   selector: 'app-patient-health-check-v2-booking-page',
-  imports: [ReactiveFormsModule, RouterLink, NgTemplateOutlet, PatientPaymentPanelComponent],
+  imports: [ReactiveFormsModule, RouterLink, NgTemplateOutlet, PatientPaymentPanelComponent, HelpOptionsComponent],
   templateUrl: './patient-health-check-v2-booking-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -192,6 +193,26 @@ export class PatientHealthCheckV2BookingPageComponent {
   }
 
   selectedPackage(): HealthCheckCataloguePackage | null { return this.packages().find(item => item.code === this.form.controls.packageCode.value) ?? null; }
+
+  readonly timeSlots = [
+    { label: 'Morning', time: '09:00' },
+    { label: 'Midday', time: '12:00' },
+    { label: 'Afternoon', time: '15:00' },
+    { label: 'Evening', time: '17:30' },
+  ] as const;
+
+  pickTime(time: string): void {
+    this.form.controls.preferredTime.setValue(time);
+    this.contextChanged();
+  }
+
+  price(minor: number, currency: string): string {
+    try {
+      return new Intl.NumberFormat('en-NG', { style: 'currency', currency, maximumFractionDigits: 0 }).format(minor / 100);
+    } catch {
+      return `${currency} ${(minor / 100).toLocaleString()}`;
+    }
+  }
 
   packageSummary(p: HealthCheckCataloguePackage, _index: number): string {
     const summaries: Record<string, string> = {
