@@ -1,55 +1,29 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-
 import { AuthStateService } from '../../core/services/auth-state.service';
-import { PatientProviderConnectionsApiService } from '../../core/services/patient-provider-connections-api.service';
-import { PatientWalletApiService } from '../../core/services/patient-wallet-api.service';
+import { HospitalBillPaymentsApiService } from '../../core/services/hospital-bill-payments-api.service';
 import { PatientPayBillsPageComponent } from './patient-pay-bills-page.component';
 
 describe('PatientPayBillsPageComponent', () => {
-  const connection = {
-    reference: 'SC-PPC-BELHAM',
-    status: 'CONNECTED',
-    externalPatientReference: 'SMHB-001',
-    provider: { displayName: 'Smartclinic Healthstation Belham', providerType: 'HOSPITAL' },
-  };
-
-  async function setup(paymentStatus: string, itemCount: number, amountMinor: number | null) {
-    const companion = {
-      requests: [{ orderReference: 'SC-ORD-1', type: 'PRESCRIPTION', serviceUnit: 'Main Pharmacy', paymentStatus, amountMinor, currency: amountMinor === null ? null : 'NGN' }],
-      consolidatedPayment: { itemCount, amountMinor, currency: amountMinor === null ? null : 'NGN' },
-      servicePass: null,
-    };
-    await TestBed.configureTestingModule({
-      imports: [PatientPayBillsPageComponent],
-      providers: [
-        provideRouter([]),
-        { provide: PatientProviderConnectionsApiService, useValue: { listMine: () => of({ items: [connection] }), companion: () => of(companion), settleWallet: vi.fn() } },
-        { provide: PatientWalletApiService, useValue: { mine: () => of({ balanceMinor: 0, currency: 'NGN' }) } },
-        { provide: AuthStateService, useValue: { currentUser: () => ({ email: 'patient@example.test' }) } },
-      ],
-    }).compileComponents();
-    const fixture = TestBed.createComponent(PatientPayBillsPageComponent);
-    fixture.detectChanges();
-    return fixture;
+  const hospital = { hospitalCode: 'AKTH', name: 'AKTH', logo: '/akth.svg', patientReference: 'SCP-1', externalPatientReference: '146' };
+  const invoice = { hospital, patient: { displayName: 'Ada Patient', externalReference: '146' }, reference: '1467709', date: null, currency: 'NGN', total: '150.00', outstanding: '150.00', items: [{ itemReference: 'A', description: 'Consultation', amount: '100.00', payable: true }, { itemReference: 'B', description: 'Paid item', amount: '50.00', payable: false }] };
+  async function setup() {
+    const api = { getHospitals: vi.fn(() => of([hospital])), getInvoice: vi.fn(() => of(invoice)), initializePayment: vi.fn(() => of({ reference: 'SC-HBP-1', hospitalCode: 'AKTH', invoiceReference: '1467709', amount: '100.00', currency: 'NGN', status: 'PENDING', provider: 'PAYSTACK', checkoutUrl: null, accessCode: null })), verifyPayment: vi.fn(() => of({})) };
+    await TestBed.configureTestingModule({ imports: [PatientPayBillsPageComponent], providers: [provideRouter([]), { provide: HospitalBillPaymentsApiService, useValue: api }, { provide: AuthStateService, useValue: { currentUser: () => ({ email: 'patient@example.test' }) } }] }).compileComponents();
+    return { fixture: TestBed.createComponent(PatientPayBillsPageComponent), api };
   }
-
-  it('shows a truthful price-pending state instead of saying there is nothing to pay', async () => {
-    const fixture = await setup('NOT_PRICED', 0, null);
-    const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Price pending');
-    expect(text).not.toContain('Nothing to pay at this hospital');
-    expect(text).not.toContain('Pay securely with OPay');
+  it('loads connected hospitals and then the invoice with invoiceReference', async () => {
+    const { fixture, api } = await setup(); fixture.detectChanges();
+    expect(api.getHospitals).toHaveBeenCalled(); fixture.componentInstance.selectHospital(hospital); fixture.componentInstance.invoiceReference.set('1467709'); fixture.componentInstance.loadInvoice();
+    expect(api.getInvoice).toHaveBeenCalledWith('AKTH', '1467709');
   });
-
-  it('reveals payment providers only after the patient chooses a payable bill', async () => {
-    const fixture = await setup('PAYMENT_REQUIRED', 1, 500000);
-    expect(fixture.nativeElement.textContent).not.toContain('Pay securely with OPay');
-    const button = [...fixture.nativeElement.querySelectorAll('button')].find((item: HTMLButtonElement) => item.textContent.includes('Choose payment method')) as HTMLButtonElement;
-    button.click();
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Pay securely with OPay');
-    expect(fixture.nativeElement.textContent).toContain('Continue to secure payment');
+  it('selects only payable items and calculates the display total', async () => {
+    const { fixture } = await setup(); fixture.detectChanges(); fixture.componentInstance.selectHospital(hospital); fixture.componentInstance.invoice.set(invoice); fixture.componentInstance.toggleItem(invoice.items[0]); fixture.componentInstance.toggleItem(invoice.items[1]);
+    expect(fixture.componentInstance.selectedItems()).toEqual(['A']); expect(fixture.componentInstance.selectedTotal()).toBe('100.00');
+  });
+  it('initializes with item references rather than wallet fields', async () => {
+    const { fixture, api } = await setup(); fixture.detectChanges(); fixture.componentInstance.selectHospital(hospital); fixture.componentInstance.invoice.set(invoice); fixture.componentInstance.toggleItem(invoice.items[0]); fixture.componentInstance.pay();
+    expect(api.initializePayment).toHaveBeenCalledWith(expect.objectContaining({ hospitalCode: 'AKTH', invoiceReference: '1467709', items: [{ itemReference: 'A' }] }));
   });
 });

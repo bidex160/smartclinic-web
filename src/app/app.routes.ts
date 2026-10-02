@@ -429,6 +429,8 @@ export const routes: Routes = [
       },
       {
         path: 'pay-bills',
+        title: 'Pay Bills | SmartClinic',
+        canActivate: [authenticatedUserGuard],
         loadComponent: () =>
           import('./features/results/patient-pay-bills-page.component').then(
             (m) => m.PatientPayBillsPageComponent,
