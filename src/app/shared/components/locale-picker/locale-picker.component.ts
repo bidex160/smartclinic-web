@@ -2,10 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 
 import { SmartClinicMarketCode } from '../../../core/config/market-context';
 import { AppLanguage, LocalePreferencesService, MARKET_LABELS } from '../../../core/services/locale-preferences.service';
+import { TranslatePipe } from '../../../core/services/translation.service';
 
 /** "🇷🇼 Rwanda · Ikinyarwanda" — tap to change country and language. */
 @Component({
   selector: 'app-locale-picker',
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="relative inline-block text-left">
@@ -18,7 +20,7 @@ import { AppLanguage, LocalePreferencesService, MARKET_LABELS } from '../../../c
       @if (open()) {
         <div [id]="panelId" role="dialog" aria-label="Country and language"
           class="absolute z-50 w-[min(20rem,calc(100vw-2rem))] rounded-2xl bg-white p-4 text-ink shadow-lift ring-1 ring-ink/10 {{ align() === 'right' ? 'right-0' : 'left-0' }} {{ direction() === 'up' ? 'bottom-full mb-2' : 'mt-2' }}" data-locale-panel>
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">Country</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">{{ 'common.locale.country' | t }}</p>
           <div class="mt-2 grid grid-cols-3 gap-2" role="radiogroup" aria-label="Country">
             @for (m of markets; track m) {
               <button type="button" role="radio" [attr.aria-checked]="locale.market() === m" (click)="pickMarket(m)"
@@ -27,7 +29,7 @@ import { AppLanguage, LocalePreferencesService, MARKET_LABELS } from '../../../c
               </button>
             }
           </div>
-          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">Language</p>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">{{ 'common.locale.language' | t }}</p>
           <div class="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Language">
             @for (l of locale.languages().local; track l.code) {
               <button type="button" role="radio" [attr.aria-checked]="locale.language() === l.code" (click)="pickLanguage(l.code)" [attr.lang]="l.code"
@@ -35,14 +37,14 @@ import { AppLanguage, LocalePreferencesService, MARKET_LABELS } from '../../../c
             }
           </div>
           <details class="mt-2">
-            <summary class="cursor-pointer py-1 text-xs font-semibold text-brand-700">More languages</summary>
+            <summary class="cursor-pointer py-1 text-xs font-semibold text-brand-700">{{ 'common.locale.more' | t }}</summary>
             <div class="mt-2 flex flex-wrap gap-2">
               @for (l of locale.languages().other; track l.code) {
                 <button type="button" (click)="pickLanguage(l.code)" [attr.lang]="l.code" class="min-h-9 rounded-full px-3 text-xs font-semibold ring-1 ring-ink/10 hover:bg-sand-50" [attr.data-language]="l.code">{{ l.label }}</button>
               }
             </div>
           </details>
-          <p class="mt-3 text-xs leading-5 text-ink-muted">Your guide speaks this language. Some screens are still in English while we translate them.</p>
+          <p class="mt-3 text-xs leading-5 text-ink-muted">{{ 'common.locale.note' | t }}</p>
         </div>
       }
     </div>

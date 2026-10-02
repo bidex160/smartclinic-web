@@ -29,7 +29,7 @@
         <a routerLink="/" class="brand" aria-label="SmartClinic home">
           <img class="size-9 rounded-xl" src="/assets/fanvico.png" alt="" />
 
-          <span><strong class="font-display text-lg font-semibold tracking-normal">SmartClinic</strong><small>Health companion</small></span>
+          <span><strong class="font-display text-lg font-semibold tracking-normal">SmartClinic</strong><small>{{ 'common.brand.tagline' | t }}</small></span>
         </a>
 
         <!-- <a class="brand" href="#top">
@@ -40,7 +40,7 @@
           <a
             [routerLink]="mySmartClinicRoute()"
             class="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-200"
-            >My SmartClinic</a
+            >{{ 'common.nav.mySmartClinic' | t }}</a
           >
           <button
             type="button"
@@ -49,7 +49,7 @@
             aria-controls="desktop-navigation"
             class="min-h-11 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink hover:bg-white focus:outline-none focus:ring-4 focus:ring-brand-200"
           >
-            Menu
+            {{ 'common.nav.menu' | t }}
           </button>
         </nav>
 
@@ -60,8 +60,8 @@
           aria-controls="mobile-navigation"
           class="min-h-11 rounded-full border border-ink/15 px-4 font-semibold text-ink md:hidden"
         >
-          Menu
-        </button>
+            {{ 'common.nav.menu' | t }}
+          </button>
       </div>
 
       @if (menuOpen()) {
@@ -75,27 +75,27 @@
               [routerLink]="mySmartClinicRoute()"
               (click)="menuOpen.set(false)"
               class="rounded-lg bg-brand-700 px-3 py-3 text-center font-bold text-white"
-              >My SmartClinic</a
+              >{{ 'common.nav.mySmartClinic' | t }}</a
             >
             <a
               routerLink="/request-care"
               (click)="menuOpen.set(false)"
               class="rounded-lg px-3 py-3 font-bold text-brand-800"
-              >Find Care</a
+              >{{ 'common.nav.findCare' | t }}</a
             >
             <a
               routerLink="/health-check/packages"
               (click)="menuOpen.set(false)"
               class="rounded-lg px-3 py-3 font-bold text-brand-800"
             >
-              Health Checks
-            </a>
+                  {{ 'common.nav.healthChecks' | t }}
+                </a>
 
             <a
               routerLink="/provider/register"
               (click)="menuOpen.set(false)"
               class="rounded-lg px-3 py-3 font-bold text-brand-800"
-              >For healthcare providers</a
+              >{{ 'common.nav.providers' | t }}</a
             >
             @if (authState.authenticated()) {
               @if (authState.canManagePricing()) {
@@ -104,7 +104,7 @@
                   (click)="menuOpen.set(false)"
                   class="rounded-lg px-3 py-3 font-bold text-brand-800"
                 >
-                  Admin Portal
+                  {{ 'common.nav.adminPortal' | t }}
                 </a>
               }
 
@@ -114,7 +114,7 @@
                   (click)="menuOpen.set(false)"
                   class="rounded-lg px-3 py-3 font-bold text-brand-800"
                 >
-                  Provider Portal
+                  {{ 'common.nav.providerPortal' | t }}
                 </a>
               }
 
@@ -124,7 +124,7 @@
                   (click)="menuOpen.set(false)"
                   class="rounded-lg px-3 py-3 font-bold text-brand-800"
                 >
-                  My Health
+                  {{ 'common.nav.myHealth' | t }}
                 </a>
               }
 
@@ -133,8 +133,8 @@
                 (click)="logout()"
                 class="rounded-lg px-3 py-3 text-left font-bold text-brand-800"
               >
-                Sign out
-              </button>
+                  {{ 'common.nav.signOut' | t }}
+                </button>
             }
           </div>
         </nav>
@@ -149,17 +149,17 @@
             <a
               routerLink="/request-care"
               class="rounded-lg px-4 py-2 font-semibold text-brand-800 hover:bg-brand-50"
-              >Find Care</a
+              >{{ 'common.nav.findCare' | t }}</a
             >
             <a
               routerLink="/health-check/packages"
               class="rounded-lg px-4 py-2 font-semibold text-brand-800 hover:bg-brand-50"
-              >Health Checks</a
+              >{{ 'common.nav.healthChecks' | t }}</a
             >
             <a
               routerLink="/provider/register"
               class="rounded-lg px-4 py-2 font-semibold text-brand-800 hover:bg-brand-50"
-              >For healthcare providers</a
+              >{{ 'common.nav.providers' | t }}</a
             >
             @if (authState.authenticated()) {
               <button
@@ -167,8 +167,8 @@
                 (click)="logout()"
                 class="rounded-lg px-4 py-2 font-semibold text-brand-800 hover:bg-brand-50"
               >
-                Sign out
-              </button>
+                  {{ 'common.nav.signOut' | t }}
+                </button>
             }
           </div>
         </nav>
@@ -189,13 +189,13 @@
       >
         <div class="flex flex-wrap items-center gap-3">
           <app-locale-picker tone="dark" direction="up" />
-          <p>&copy; 2026 Smart Clinic Exchange. Your health journey, made clearer.</p>
+          <p>{{ 'common.footer.copyright' | t }}</p>
         </div>
         <nav aria-label="Footer" class="flex flex-wrap gap-x-5 gap-y-2">
-          <a routerLink="/help" class="font-semibold text-white hover:underline">Get help: call, WhatsApp or call-back</a>
-          <a routerLink="/developers" class="hover:underline">Connect your hospital</a>
+          <a routerLink="/help" class="font-semibold text-white hover:underline">{{ 'common.footer.help' | t }}</a>
+          <a routerLink="/developers" class="hover:underline">{{ 'common.footer.connectHospital' | t }}</a>
         </nav>
-        <p>Connecting care. Building access. Creating ownership.</p>
+        <p>{{ 'common.footer.motto' | t }}</p>
       </div>
     </footer>
   </div>

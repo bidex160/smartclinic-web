@@ -17,10 +17,11 @@ import { DeviceNotificationsService } from '../../core/services/device-notificat
 import { AuthStateService } from '../../core/services/auth-state.service';
 import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-self-check-operations-api.service';
 import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-patient-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent, TranslatePipe],
   template: `
     <aside
       class="fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col overflow-hidden bg-ink text-white lg:flex"
@@ -35,7 +36,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
         <img class="size-10 rounded-xl bg-white/10 p-1" src="/assets/fanvico.png" alt="SmartClinic Logo" />
         <span>
           <strong class="font-display block text-[17px] font-semibold leading-tight text-white">SmartClinic</strong>
-          <small class="block text-[11px] font-semibold uppercase tracking-[0.18em] text-ochre-300">Health companion</small>
+          <small class="block text-[11px] font-semibold uppercase tracking-[0.18em] text-ochre-300">{{ 'common.brand.tagline' | t }}</small>
         </span>
       </a>
 
@@ -44,7 +45,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           <span class="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-ochre-300 to-clay-500 text-sm font-bold text-ink" aria-hidden="true">{{ initials() }}</span>
           <span class="min-w-0">
             <span class="block truncate text-sm font-semibold">{{ user.displayName }}</span>
-            <span class="block text-xs text-white/60">Personal health space</span>
+            <span class="block text-xs text-white/60">{{ 'common.brand.space' | t }}</span>
           </span>
         </div>
       }
@@ -53,7 +54,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
         @for (group of navigationGroups(); track group.label) {
           <section class="mb-3" [attr.data-navigation-group]="group.label">
             <h2 class="px-3 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white/45">
-              {{ group.label }}
+              {{ menuLabel(group.label) }}
             </h2>
             <div class="grid gap-0.5">
               @for (item of group.items; track item.route) {
@@ -66,7 +67,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
                   <svg aria-hidden="true" class="size-[18px] shrink-0 text-white/50 transition group-hover:text-ochre-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     @for (d of iconFor(item.route); track $index) { <path [attr.d]="d" /> }
                   </svg>
-                  {{ item.label }}
+                  {{ menuLabel(item.label) }}
                 </a>
               }
             </div>
@@ -80,7 +81,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
           (click)="logout()"
           class="min-h-10 flex-1 rounded-xl px-3 text-left text-sm font-semibold text-white/75 transition hover:bg-white/[0.08] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre-300"
         >
-          Sign out
+          {{ 'common.nav.signOut' | t }}
         </button>
         <div class="rounded-xl bg-white">
           <app-notification-bell />
@@ -104,7 +105,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
             aria-controls="patient-mobile-nav"
             class="grid size-11 place-items-center rounded-full text-ink transition hover:bg-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
-            <span class="sr-only">Menu</span>
+            <span class="sr-only">{{ 'common.nav.menu' | t }}</span>
             <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
               @if (menuOpen()) { <path d="M6 6l12 12M18 6 6 18" /> } @else { <path d="M4 7h16M4 12h16M4 17h10" /> }
             </svg>
@@ -123,19 +124,19 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               <svg aria-hidden="true" class="size-5 shrink-0 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                 @for (d of iconFor(item.route); track $index) { <path [attr.d]="d" /> }
               </svg>
-              {{ item.label }}
+              {{ menuLabel(item.label) }}
             </a>
           }
 
-          <a routerLink="/me/notifications" (click)="menuOpen.set(false)" class="rounded-xl px-3 py-3 font-medium text-ink hover:bg-white">Notifications</a>
+          <a routerLink="/me/notifications" (click)="menuOpen.set(false)" class="rounded-xl px-3 py-3 font-medium text-ink hover:bg-white">{{ 'common.nav.notifications' | t }}</a>
 
           <button
             type="button"
             (click)="logout()"
             class="rounded-xl px-3 py-3 text-left font-semibold text-clay-700 hover:bg-white"
           >
-            Sign out
-          </button>
+          {{ 'common.nav.signOut' | t }}
+        </button>
         </nav>
       }
     </header>
@@ -168,7 +169,7 @@ import { NotificationBellComponent } from '../../shared/components/notification-
               @for (d of bottomIcons[item.key]; track $index) { <path [attr.d]="d" /> }
             </svg>
           </span>
-          <span class="truncate">{{ item.label }}</span>
+          <span class="truncate">{{ menuLabel(item.label) }}</span>
         </a>
       }
     </nav>
@@ -186,6 +187,14 @@ export class PatientLayoutComponent implements OnInit {
 
   readonly menuOpen = signal(false);
   readonly currentUrl = signal(this.router.url);
+  private readonly i18n = inject(TranslationService);
+
+  /** Menu labels stay in English in code; this shows them in the person's language. */
+  menuLabel(label: string): string {
+    const key = 'common.menu.' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const text = this.i18n.t(key);
+    return text === key ? label : text;
+  }
 
   readonly bottomNavigation = [
     { key: 'home', label: 'Home', route: '/me/dashboard' },
@@ -263,6 +272,7 @@ export class PatientLayoutComponent implements OnInit {
           { label: 'Guided Self-Checks', route: '/me/self-checks', exact: false },
           { label: 'My Health Checks', route: '/me/health-checks', exact: true },
           { label: 'Book Health Check', route: '/me/book', exact: true },
+          { label: 'My progress', route: '/me/progress', exact: true },
         ],
       },
       {
