@@ -9,10 +9,11 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 import { AuthVisualPanelComponent } from '../../shared/components/auth-visual-panel.component';
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, AuthVisualPanelComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthVisualPanelComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
    
@@ -27,9 +28,9 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
            lg:grid-cols-[1.08fr_.92fr]"
   >
     <app-auth-visual-panel
-      eyebrow="Your SmartClinic"
-      title="Your health journey continues here."
-      description="Sign in to manage Health Checks, care requests, providers, prescriptions and your SmartClinic health journey."
+      [eyebrow]="'auth.login.panelEyebrow' | t"
+      [title]="'auth.login.panelTitle' | t"
+      [description]="'auth.login.panelDescription' | t"
     />
 
     <section
@@ -46,16 +47,15 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
                    bg-brand-50 px-3 py-1.5 text-sm font-bold text-brand-700"
           >
             <span class="h-2 w-2 rounded-full bg-brand-500"></span>
-            SmartClinic secure access
+            {{ 'auth.login.badge' | t }}
           </div>
 
           <h1 class="mt-5 font-display text-[2.1rem] font-semibold leading-tight text-ink">
-            Welcome back
+            {{ 'auth.login.title' | t }}
           </h1>
 
           <p class="mt-3 leading-7 text-ink-soft">
-            Sign in with the email address or phone number linked
-            to your SmartClinic account.
+            {{ 'auth.login.intro' | t }}
           </p>
         </div>
 
@@ -71,16 +71,16 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
 
             <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 grid gap-5" novalidate>
               <p class="text-sm text-ink-soft">
-                New to SmartClinic?
+                {{ 'auth.login.newToSmartClinic' | t }}
                 <a
                   routerLink="/register"
                   [queryParams]="registrationQueryParams"
                   class="font-bold text-brand-700 underline"
-                  >Create an account</a
+                  >{{ 'auth.login.createAccountLink' | t }}</a
                 >
               </p>
               <div>
-                <label for="identifier" class="font-bold"> Email or phone number </label>
+                <label for="identifier" class="font-bold">{{ 'auth.login.identifierLabel' | t }}</label>
 
           <input
             id="identifier"
@@ -92,15 +92,15 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
           />
 
           @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
-            <p class="mt-2 text-sm text-clay-700">Email or phone number is required.</p>
+            <p class="mt-2 text-sm text-clay-700">{{ 'auth.login.identifierRequired' | t }}</p>
           }
           <p class="mt-2 text-sm text-ink-soft">
-            Use the email address or phone number linked to your SmartClinic account.
+            {{ 'auth.login.identifierHint' | t }}
           </p>
         </div>
 
         <div>
-          <label for="password" class="font-bold"> Password </label>
+          <label for="password" class="font-bold">{{ 'auth.login.passwordLabel' | t }}</label>
 
           <div class="relative mt-2">
             <input
@@ -108,7 +108,7 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
               autocomplete="current-password"
-              placeholder="Enter your password"
+              [placeholder]="'auth.login.passwordPlaceholder' | t"
               class="min-h-12 w-full rounded-xl border border-ink/15 bg-white px-4 pr-12 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100"
             />
 
@@ -116,8 +116,8 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
               type="button"
               (click)="showPassword.update((value) => !value)"
               class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-ink-muted transition hover:text-brand-700 focus:outline-none focus:text-brand-700"
-              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
-              [attr.title]="showPassword() ? 'Hide password' : 'Show password'"
+              [attr.aria-label]="(showPassword() ? 'auth.login.hidePassword' : 'auth.login.showPassword') | t"
+              [attr.title]="(showPassword() ? 'auth.login.hidePassword' : 'auth.login.showPassword') | t"
             >
               @if (showPassword()) {
                 <!-- Eye slash -->
@@ -162,11 +162,11 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
             routerLink="/forgot-password"
             [queryParams]="registrationQueryParams"
             class="mt-2 inline-block text-sm font-bold text-brand-700 underline"
-            >Forgot password?</a
+            >{{ 'auth.login.forgotPassword' | t }}</a
           >
 
           @if (form.controls.password.touched && form.controls.password.invalid) {
-            <p class="mt-2 text-sm text-clay-700">Password is required.</p>
+            <p class="mt-2 text-sm text-clay-700">{{ 'auth.login.passwordRequired' | t }}</p>
           }
         </div>
 
@@ -185,7 +185,7 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
          disabled:hover:translate-y-0"
 >
   <span class="relative z-10">
-    {{ authState.loading() ? 'Signing in…' : 'Sign in' }}
+    {{ (authState.loading() ? 'auth.login.submitting' : 'auth.login.submit') | t }}
   </span>
 
   <span
@@ -197,48 +197,48 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
       </form>
 
       <section class="mt-7 rounded-2xl border border-brand-100 bg-brand-50/60 p-5" aria-labelledby="provider-access-heading">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Healthcare provider?</p>
-        <h2 id="provider-access-heading" class="mt-2 font-display text-xl font-semibold text-ink">Join or access your provider workspace.</h2>
-        <p class="mt-2 text-sm leading-6 text-ink-soft">For clinics, pharmacies, laboratories, hospitals and health professionals.</p>
-        <a routerLink="/provider/register" [queryParams]="registrationQueryParams" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-700">Join SmartClinic as a provider →</a>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{{ 'auth.login.providerEyebrow' | t }}</p>
+        <h2 id="provider-access-heading" class="mt-2 font-display text-xl font-semibold text-ink">{{ 'auth.login.providerTitle' | t }}</h2>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">{{ 'auth.login.providerText' | t }}</p>
+        <a routerLink="/provider/register" [queryParams]="registrationQueryParams" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-700">{{ 'auth.login.providerLink' | t }}</a>
       </section>
 
       <section
         class="mt-7 rounded-2xl border border-brand-100 bg-gradient-to-br from-sand-50 via-white to-amber-50/50 p-5"
         aria-labelledby="create-account-heading"
       >
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">New to SmartClinic?</p>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{{ 'auth.login.newToSmartClinic' | t }}</p>
         <h2 id="create-account-heading" class="mt-2 font-display text-xl font-semibold text-ink">
-          Keep your healthcare together.
+          {{ 'auth.login.createTitle' | t }}
         </h2>
         <p class="mt-2 text-sm leading-6 text-ink-soft">
-          Create your SmartClinic account for appointments, tests, prescriptions and hospital connections.
+          {{ 'auth.login.createText' | t }}
         </p>
         <a
           routerLink="/register"
           [queryParams]="registrationQueryParams"
           class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-brand-200 bg-white px-5 py-3 font-bold text-brand-700 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-brand-100"
         >
-          Create my SmartClinic account →
+          {{ 'auth.login.createLink' | t }}
         </a>
         @if (hasReferral) {
           <div class="mt-4 flex items-start gap-3 rounded-xl bg-white/80 px-4 py-3 text-sm text-ink-soft">
             <span class="mt-0.5 text-amber-500" aria-hidden="true">✦</span>
             <p>
-              <span class="font-bold text-ink">You were invited to SmartClinic.</span>
-              Your invitation will be carried into account creation automatically.
+              <span class="font-bold text-ink">{{ 'auth.login.invitedTitle' | t }}</span>
+              {{ 'auth.login.invitedText' | t }}
             </p>
           </div>
         } @else {
           <p class="mt-4 text-center text-sm text-ink-muted">
-            Have an invitation link? Open it first and SmartClinic will carry your referral automatically.
+            {{ 'auth.login.invitationHint' | t }}
           </p>
         }
       </section>
 
       <div class="mt-6 text-center">
         <a [routerLink]="marketHomeRoute" class="text-sm font-bold text-brand-700 underline underline-offset-4">
-          Back to SmartClinic
+          {{ 'auth.login.back' | t }}
         </a>
       </div>
 
@@ -257,6 +257,7 @@ export class LoginPageComponent {
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly i18n = inject(TranslationService);
 
   errorMessage: string | null = null;
 
@@ -264,7 +265,9 @@ export class LoginPageComponent {
   readonly registrationQueryParams = this.authFlowQueryParams();
   readonly hasReferral = Boolean(this.route.snapshot.queryParamMap.get('ref')?.trim());
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
-  readonly identifierPlaceholder = `you@example.com or ${SMARTCLINIC_MARKETS[this.market].examplePhone}`;
+  get identifierPlaceholder(): string {
+    return this.i18n.t('auth.login.identifierPlaceholder', { phone: SMARTCLINIC_MARKETS[this.market].examplePhone });
+  }
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
   readonly marketHomeRoute = this.market === 'RW' ? '/rw' : '/';
 
@@ -344,7 +347,7 @@ export class LoginPageComponent {
         },
 
         error: () => {
-          this.errorMessage = 'We could not sign you in. Check your login details and try again.';
+          this.errorMessage = this.i18n.t('auth.login.error');
         },
       });
   }
