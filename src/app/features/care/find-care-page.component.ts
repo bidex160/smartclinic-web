@@ -19,6 +19,7 @@ import { DependantsApiService } from '../../core/services/dependants-api.service
 import { Dependant, HealthCheckParticipantSelection } from '../../core/models/dependant.model';
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 
 /** Short, non-sensitive notes for known request topics (never patient data in the URL). */
 const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
@@ -27,28 +28,28 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
 
 @Component({
   selector: 'app-find-care-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
     <header class="relative overflow-hidden rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8">
       <div class="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-brand-100/60 blur-3xl"></div>
       <div class="relative">
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">SmartClinic care network</p>
-        <h1 class="font-display mt-2 text-4xl font-semibold text-ink">{{ doctorJourney() ? 'See a Doctor' : 'Find Care' }}</h1>
-        <p class="mt-3 max-w-2xl text-ink-soft">{{ doctorJourney() ? 'Choose how you want to see a doctor. You do not need to know a specialty before you start.' : 'Tell us what you need. We’ll help coordinate the right provider, delivery option and next step.' }}</p>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">{{ 'care.header.eyebrow' | t }}</p>
+        <h1 class="font-display mt-2 text-4xl font-semibold text-ink">{{ doctorJourney() ? ('care.header.seeDoctor' | t) : 'Find Care' }}</h1>
+        <p class="mt-3 max-w-2xl text-ink-soft">{{ (doctorJourney() ? 'care.header.doctorIntro' : 'care.header.intro') | t }}</p>
         @if (doctorJourney()) {
-          <section class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Doctor options">
+          <section class="mt-6 grid gap-3 sm:grid-cols-3" [attr.aria-label]="'care.doctor.optionsLabel' | t">
             <button type="button" (click)="chooseDoctorMode('NOW')" [attr.aria-pressed]="doctorMode() === 'NOW'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-ink/[0.08]" [class.ring-4]="doctorMode() === 'NOW'" [class.ring-brand-300]="doctorMode() === 'NOW'" [class.bg-brand-50]="doctorMode() === 'NOW'">
-              <strong class="block text-lg text-ink">Talk to a Doctor Now</strong><span class="mt-1 block text-sm text-ink-soft">Start with an available doctor online.</span>
-              @if (doctorMode() === 'NOW') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a doctor below</span> }
+              <strong class="block text-lg text-ink">{{ 'care.doctor.nowTitle' | t }}</strong><span class="mt-1 block text-sm text-ink-soft">{{ 'care.doctor.nowText' | t }}</span>
+              @if (doctorMode() === 'NOW') { <span class="mt-3 block font-bold text-brand-700">{{ 'care.doctor.nowSelected' | t }}</span> }
             </button>
             <button type="button" (click)="chooseDoctorMode('LATER')" [attr.aria-pressed]="doctorMode() === 'LATER'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-ink/[0.08]" [class.ring-4]="doctorMode() === 'LATER'" [class.ring-brand-300]="doctorMode() === 'LATER'" [class.bg-brand-50]="doctorMode() === 'LATER'">
-              <strong class="block text-lg text-ink">Book for Later</strong><span class="mt-1 block text-sm text-ink-soft">Choose a date or time that suits you.</span>
-              @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">Selected — choose your preferred time below</span> }
+              <strong class="block text-lg text-ink">{{ 'care.doctor.laterTitle' | t }}</strong><span class="mt-1 block text-sm text-ink-soft">{{ 'care.doctor.laterText' | t }}</span>
+              @if (doctorMode() === 'LATER') { <span class="mt-3 block font-bold text-brand-700">{{ 'care.doctor.laterSelected' | t }}</span> }
             </button>
             <button type="button" (click)="openInstitutionCare()" [attr.aria-pressed]="doctorMode() === 'HOSPITAL'" class="min-h-28 rounded-2xl border bg-white p-5 text-left ring-1 ring-ink/[0.08]" [class.ring-4]="doctorMode() === 'HOSPITAL'" [class.ring-brand-300]="doctorMode() === 'HOSPITAL'" [class.bg-brand-50]="doctorMode() === 'HOSPITAL'">
-              <strong class="block text-lg text-ink">Visit a Hospital</strong><span class="mt-1 block text-sm text-ink-soft">Browse hospitals first, then choose the service or doctor you need there.</span>
-              @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">Selected — choose a hospital below</span> }
+              <strong class="block text-lg text-ink">{{ 'care.doctor.hospitalTitle' | t }}</strong><span class="mt-1 block text-sm text-ink-soft">{{ 'care.doctor.hospitalText' | t }}</span>
+              @if (doctorMode() === 'HOSPITAL') { <span class="mt-3 block font-bold text-brand-700">{{ 'care.doctor.hospitalSelected' | t }}</span> }
             </button>
           </section>
         }
@@ -57,109 +58,109 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
     <aside class="mt-4 flex gap-3 rounded-2xl border border-clay-100 bg-clay-50 p-4 text-clay-700" role="note" aria-labelledby="emergency-guidance-heading" data-emergency-guidance>
       <svg aria-hidden="true" class="mt-0.5 size-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
       <div class="min-w-0">
-        <h2 id="emergency-guidance-heading" class="font-semibold text-ink">Is this an emergency?</h2>
+        <h2 id="emergency-guidance-heading" class="font-semibold text-ink">{{ 'care.emergency.title' | t }}</h2>
         <p class="mt-1 text-sm leading-6">
-          Chest pain, difficulty breathing, heavy bleeding, seizures, fainting or signs of stroke need help now.
-          Call your local emergency number (<a href="tel:112" class="font-bold underline underline-offset-2">112</a> in Nigeria) or go to the nearest emergency unit.
-          Don't wait for a Care Request.
+          {{ 'care.emergency.signs' | t }}
+          {{ 'care.emergency.callBefore' | t }}<a href="tel:112" class="font-bold underline underline-offset-2">112</a>{{ 'care.emergency.callAfter' | t }}
+          {{ 'care.emergency.dontWait' | t }}
         </p>
       </div>
     </aside>
     @if (success(); as request) {
       <section class="mt-6 rounded-[2rem] border border-green-200 bg-green-50 p-7 shadow-sm">
-        <h2 class="font-display text-2xl font-semibold text-green-950">Care Request submitted</h2>
+        <h2 class="font-display text-2xl font-semibold text-green-950">{{ 'care.success.title' | t }}</h2>
         <dl class="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
-            <dt class="text-sm text-ink-soft">Reference</dt>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.reference' | t }}</dt>
             <dd class="font-bold">{{ request.reference }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-ink-soft">Status</dt>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.status' | t }}</dt>
             <dd>{{ statusLabel(request.status) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-ink-soft">Service</dt>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.service' | t }}</dt>
             <dd>{{ request.service.name }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-ink-soft">Care type</dt>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.careType' | t }}</dt>
             <dd>{{ deliveryModeLabel(request.deliveryMode) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-ink-soft">Care for</dt>
-            <dd>{{ request.participant?.displayName ?? 'You' }}</dd>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.careFor' | t }}</dt>
+            <dd>{{ request.participant?.displayName ?? ('care.success.you' | t) }}</dd>
           </div>
           <div>
-            <dt class="text-sm text-ink-soft">Service price</dt>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.servicePrice' | t }}</dt>
             <dd class="font-bold">
               {{
                 request.service.price
                   ? formatPrice(request.service.price.priceMinor, request.service.price.currency)
-                  : 'Price will be determined when a Provider is assigned.'
+                  : ('care.price.pending' | t)
               }}
             </dd>
           </div>
           <div>
-            <dt class="text-sm text-ink-soft">Preferred provider</dt>
-            <dd>{{ request.preferredProvider?.displayName || 'SmartClinic will match you' }}</dd>
+            <dt class="text-sm text-ink-soft">{{ 'care.success.preferredProvider' | t }}</dt>
+            <dd>{{ request.preferredProvider?.displayName || ('care.success.smartClinicMatch' | t) }}</dd>
           </div>
           @if (request.geography; as geography) {
             <div>
-              <dt class="text-sm text-ink-soft">Requested location</dt>
+              <dt class="text-sm text-ink-soft">{{ 'care.success.requestedLocation' | t }}</dt>
               <dd>
                 {{ geography.city }}, {{ geography.stateOrRegion }}, {{ geography.countryCode }}
               </dd>
             </div>
           } @else if (request.deliveryMode === 'VIRTUAL') {
             <div>
-              <dt class="text-sm text-ink-soft">Location</dt>
-              <dd>Virtual care</dd>
+              <dt class="text-sm text-ink-soft">{{ 'care.success.location' | t }}</dt>
+              <dd>{{ 'care.success.virtualCare' | t }}</dd>
             </div>
           }
         </dl>
         <p class="mt-5 text-ink-soft">
-          SmartClinic will keep the next step here in My Care. You do not need to start again.
+          {{ 'care.success.nextStep' | t }}
         </p>
         <a
           [routerLink]="['/me/care', request.reference]"
           class="mt-5 inline-flex min-h-12 items-center rounded-xl bg-brand-700 px-5 py-3 font-bold text-white focus:ring-4 focus:ring-brand-200"
-          >View My Care</a
+          >{{ 'care.success.viewMyCare' | t }}</a
         >
       </section>
     } @else {
       @if (showIntentChooser()) {
         <section class="mt-6" aria-labelledby="care-intent-heading" data-care-intent>
-          <h2 id="care-intent-heading" class="font-display text-2xl font-semibold text-ink">What’s going on?</h2>
-          <p class="mt-1 text-sm text-ink-muted">Choose what fits best — SmartClinic will guide you from there.</p>
+          <h2 id="care-intent-heading" class="font-display text-2xl font-semibold text-ink">{{ 'care.intent.title' | t }}</h2>
+          <p class="mt-1 text-sm text-ink-muted">{{ 'care.intent.subtitle' | t }}</p>
           <ul class="mt-4 grid gap-3 sm:grid-cols-2">
             <li>
               <a routerLink="/me/request-care" [queryParams]="{ serviceCode: 'EMERGENCY_CONSULTATION', journey: 'doctor' }" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
                 <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-clay-50 text-clay-500" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v5a4 4 0 0 0 8 0V3M10 12v3a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="9" r="2"/></svg></span>
-                <span><strong class="block text-ink">I’m feeling unwell</strong><span class="text-sm text-ink-muted">See a doctor online or at a hospital</span></span>
+                <span><strong class="block text-ink">{{ 'care.intent.unwellTitle' | t }}</strong><span class="text-sm text-ink-muted">{{ 'care.intent.unwellText' | t }}</span></span>
               </a>
             </li>
             <li>
               <a routerLink="/me/lab-tests" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
                 <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9"/></svg></span>
-                <span><strong class="block text-ink">I need a test or scan</strong><span class="text-sm text-ink-muted">Lab tests, imaging and your results</span></span>
+                <span><strong class="block text-ink">{{ 'care.intent.testTitle' | t }}</strong><span class="text-sm text-ink-muted">{{ 'care.intent.testText' | t }}</span></span>
               </a>
             </li>
             <li>
               <a routerLink="/me/prescriptions" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
                 <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-leaf-50 text-leaf-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 7ZM7 10l7 7"/></svg></span>
-                <span><strong class="block text-ink">I need medicine</strong><span class="text-sm text-ink-muted">Your prescriptions and pharmacy</span></span>
+                <span><strong class="block text-ink">{{ 'care.intent.medicineTitle' | t }}</strong><span class="text-sm text-ink-muted">{{ 'care.intent.medicineText' | t }}</span></span>
               </a>
             </li>
             <li>
               <a routerLink="/me/fasttrack/new" class="sc-tile flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-4 shadow-card">
                 <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-ochre-50 text-ochre-700" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4ZM8 3v6M16 3v6M4 10h16"/></svg></span>
-                <span><strong class="block text-ink">I already have an appointment</strong><span class="text-sm text-ink-muted">Ask for FastTrack handling</span></span>
+                <span><strong class="block text-ink">{{ 'care.intent.appointmentTitle' | t }}</strong><span class="text-sm text-ink-muted">{{ 'care.intent.appointmentText' | t }}</span></span>
               </a>
             </li>
             <li class="sm:col-span-2">
               <button type="button" (click)="intentChosen.set(true)" class="sc-tile flex min-h-16 w-full items-center gap-4 rounded-[1.25rem] border border-dashed border-ink/15 bg-sand-50 p-4 text-left">
                 <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-white text-ink-soft" aria-hidden="true"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-                <span><strong class="block text-ink">Something else</strong><span class="text-sm text-ink-muted">Choose a care service yourself — dental, eye care, follow-ups and more</span></span>
+                <span><strong class="block text-ink">{{ 'care.intent.otherTitle' | t }}</strong><span class="text-sm text-ink-muted">{{ 'care.intent.otherText' | t }}</span></span>
               </button>
             </li>
           </ul>
@@ -167,24 +168,24 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
       }
       <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 grid gap-5" [class.hidden]="showIntentChooser()" novalidate>
         <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
-          <legend class="px-2 text-xl font-bold">1. What do you need?</legend>
+          <legend class="px-2 text-xl font-bold">{{ 'care.service.heading' | t }}</legend>
           @if (servicesLoading()) {
-            <p role="status" class="mt-3">Loading care services…</p>
+            <p role="status" class="mt-3">{{ 'care.service.loading' | t }}</p>
           } @else if (servicesError()) {
             <p role="alert" class="mt-3 text-red-700">
-              We couldn't load care services.
+              {{ 'care.service.loadError' | t }}
               <button type="button" (click)="loadServices()" class="font-bold underline">
-                Try again
+                {{ 'care.service.tryAgain' | t }}
               </button>
             </p>
           } @else {
             <label class="mt-3 block font-semibold"
-              >Care service<select
+              >{{ 'care.service.label' | t }}<select
                 formControlName="serviceCode"
                 (change)="serviceChanged()"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3"
               >
-                <option value="">Select the care you need</option>
+                <option value="">{{ 'care.service.placeholder' | t }}</option>
                 @for (s of services(); track s.code) {
                   <option [value]="s.code">{{ s.name }}</option>
                 }
@@ -196,7 +197,7 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
           }
         </fieldset>
         <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
-          <legend class="px-2 text-xl font-bold">Who is this care request for?</legend>
+          <legend class="px-2 text-xl font-bold">{{ 'care.participant.heading' | t }}</legend>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
               ><input
@@ -205,7 +206,7 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
                 [checked]="participant().kind === 'SELF'"
                 (change)="selectParticipant({ kind: 'SELF' })"
               />
-              <span>Me</span></label
+              <span>{{ 'care.participant.me' | t }}</span></label
             >
             @for (dependant of dependants(); track dependant.patientReference) {
               <label class="flex cursor-pointer items-center gap-3 rounded-2xl border p-4"
@@ -228,17 +229,17 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
           <a
             routerLink="/me/family"
             class="mt-2 inline-block text-sm font-semibold text-brand-700 underline"
-            >Add someone</a
+            >{{ 'care.participant.add' | t }}</a
           >
           @if (dependantsError()) {
             <p class="mt-2 text-sm text-ink-soft">
-              Dependants could not be loaded. You can still request care for yourself.
+              {{ 'care.participant.loadError' | t }}
             </p>
           }
         </fieldset>
         @if (!doctorJourney()) {
         <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
-          <legend class="px-2 text-xl font-bold">2. Delivery mode</legend>
+          <legend class="px-2 text-xl font-bold">{{ 'care.mode.heading' | t }}</legend>
           @if (deliveryModes().length) {
             <div class="mt-3 grid gap-3 sm:grid-cols-3">
               @for (mode of deliveryModes(); track mode) {
@@ -264,44 +265,44 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
             </div>
           } @else {
             <p class="mt-3 text-sm text-ink-soft">
-              Choose a care service to see supported delivery modes.
+              {{ 'care.mode.chooseService' | t }}
             </p>
           }
         </fieldset>
         }
         @if (requiresGeography()) {
           <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
-            <legend class="px-2 text-xl font-bold">3. Location</legend>
+            <legend class="px-2 text-xl font-bold">{{ 'care.location.heading' | t }}</legend>
             <div class="mt-3 grid gap-5 md:grid-cols-3">
               <label class="font-semibold"
-                >Country<select
+                >{{ 'care.location.country' | t }}<select
                   formControlName="countryCode"
                   (change)="countryChanged($any($event.target).value)"
                   class="mt-2 min-h-12 w-full rounded-xl border px-3"
                 >
-                  <option value="">Select country</option>
+                  <option value="">{{ 'care.location.selectCountry' | t }}</option>
                   @for (c of countries; track c.isoCode) {
                     <option [value]="c.isoCode">{{ c.name }}</option>
                   }
                 </select></label
               ><label class="font-semibold"
-                >State / Region<select
+                >{{ 'care.location.state' | t }}<select
                   [formControl]="requestStateCode"
                   (change)="stateChanged($any($event.target).value)"
                   class="mt-2 min-h-12 w-full rounded-xl border px-3"
                 >
-                  <option value="">Select state or region</option>
+                  <option value="">{{ 'care.location.selectState' | t }}</option>
                   @for (s of states(); track s.isoCode) {
                     <option [value]="s.isoCode">{{ s.name }}</option>
                   }
                 </select></label
               ><label class="font-semibold"
-                >City<select
+                >{{ 'care.location.city' | t }}<select
                   formControlName="city"
                   (change)="discoverProviders()"
                   class="mt-2 min-h-12 w-full rounded-xl border px-3"
                 >
-                  <option value="">Select city</option>
+                  <option value="">{{ 'care.location.selectCity' | t }}</option>
                   @for (c of cities(); track c.name) {
                     <option [value]="c.name">{{ c.name }}</option>
                   }
@@ -312,131 +313,129 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
         }
         <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
-            {{ requiresGeography() ? '4' : '3' }}. Preferred provider
+            {{ 'care.provider.heading' | t: { step: requiresGeography() ? 4 : 3 } }}
           </legend>
           <label class="mt-3 block font-semibold"
-            >Provider<select
+            >{{ 'care.provider.label' | t }}<select
               formControlName="preferredProviderReference"
               class="mt-2 min-h-12 w-full rounded-xl border px-3"
             >
-              <option value="">No preference — help me choose</option>
+              <option value="">{{ 'care.provider.noPreference' | t }}</option>
               @for (p of providers(); track p.providerReference) {
                 <option [value]="p.providerReference">{{ providerLabel(p) }}</option>
               }
             </select></label
           >
           @if (providersLoading()) {
-            <p role="status" class="mt-3 text-sm">Finding matching providers…</p>
+            <p role="status" class="mt-3 text-sm">{{ 'care.provider.finding' | t }}</p>
           } @else if (providerSearchReady() && !providers().length) {
             <div class="mt-3 rounded-xl bg-sand-50 p-4">
-              <p class="font-bold">No matching clinician is available right now.</p>
-              <p class="mt-1 text-sm text-ink-soft">@if(hostInstitutionReference()){This hospital has no approved virtual clinician matching this service at the moment. You can still send the request and SmartClinic will keep it in matching, or return to Hospitals & clinics to choose another option.} @else {You can still send the request with “No preference”. SmartClinic will keep matching instead of ending your care journey.}</p>
+              <p class="font-bold">{{ 'care.provider.noneTitle' | t }}</p>
+              <p class="mt-1 text-sm text-ink-soft">{{ (hostInstitutionReference() ? 'care.provider.noneHospital' : 'care.provider.noneGeneral') | t }}</p>
             </div>
           }
           @if (providersError()) {
             <p role="alert" class="mt-3 text-red-700">
-              Provider results are unavailable. Change a filter or try again.
+              {{ 'care.provider.error' | t }}
             </p>
           }
           @if (selectedProviderPrice(); as price) {
             <div class="mt-4 rounded-xl bg-brand-50 p-4">
               <p class="text-sm text-ink-soft">
-                {{ deliveryModeLabel(form.controls.deliveryMode.value || 'IN_PERSON') }} service
-                price
+                {{ 'care.provider.servicePrice' | t: { mode: deliveryModeLabel(form.controls.deliveryMode.value || 'IN_PERSON') } }}
               </p>
               <p class="mt-1 text-xl font-bold">
                 {{ formatPrice(price.priceMinor, price.currency) }}
               </p>
               <p class="mt-1 text-xs text-ink-muted">
-                The backend confirms and snapshots the authoritative request price.
+                {{ 'care.provider.priceNote' | t }}
               </p>
             </div>
           } @else if (
             !form.controls.preferredProviderReference.value && form.controls.deliveryMode.value
           ) {
             <p class="mt-4 rounded-xl bg-sand-50 p-4 text-sm">
-              Price will be determined when a Provider is assigned.
+              {{ 'care.price.pending' | t }}
             </p>
           }
         </fieldset>
         <fieldset class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm">
           <legend class="px-2 text-xl font-bold">
-            {{ doctorJourney() ? 'Anything else?' : (requiresGeography() ? '5. Optional request details' : '4. Optional request details') }}
+            {{ doctorJourney() ? ('care.details.doctorHeading' | t) : ('care.details.heading' | t: { step: requiresGeography() ? 5 : 4 }) }}
           </legend>
           @if (doctorJourney() && doctorMode() === 'NOW') {
             <div class="mt-2 rounded-2xl border border-green-200 bg-green-50 p-4">
-              <p class="font-black text-green-950">As soon as possible</p>
-              <p class="mt-1 text-sm text-green-900">No time to enter. Choose a doctor and send the request. If they accept, you pay and SmartClinic confirms the consultation automatically.</p>
+              <p class="font-black text-green-950">{{ 'care.details.asap' | t }}</p>
+              <p class="mt-1 text-sm text-green-900">{{ 'care.details.asapText' | t }}</p>
             </div>
           } @else if (doctorJourney()) {
-            <p class="mt-2 text-sm text-ink-soft">Choose when you would like the consultation. Your doctor can accept that time or suggest another.</p>
+            <p class="mt-2 text-sm text-ink-soft">{{ 'care.details.chooseTime' | t }}</p>
             @if (form.controls.preferredDate.value && form.controls.preferredTime.value) {
               <div class="mt-4 rounded-2xl border border-brand-200 bg-brand-50 p-4">
-                <p class="text-xs font-bold uppercase tracking-wide text-brand-700">Recommended time</p>
+                <p class="text-xs font-bold uppercase tracking-wide text-brand-700">{{ 'care.details.recommendedTime' | t }}</p>
                 <p class="mt-1 text-lg font-black text-ink">{{ form.controls.preferredDate.value }} · {{ form.controls.preferredTime.value }}</p>
-                <p class="mt-1 text-sm text-ink-soft">Your doctor can accept this time or suggest another.</p>
+                <p class="mt-1 text-sm text-ink-soft">{{ 'care.details.recommendedNote' | t }}</p>
               </div>
             }
           }
           @if (!doctorJourney() || doctorMode() !== 'NOW') {
           <div class="mt-3 grid gap-5 sm:grid-cols-2">
             <label class="font-semibold"
-              >Preferred date (optional)<input
+              >{{ 'care.details.preferredDate' | t }}<input
                 type="date"
                 formControlName="preferredDate"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3" /></label
             ><label class="font-semibold"
-              >Preferred time (optional)<input
+              >{{ 'care.details.preferredTime' | t }}<input
                 type="time"
                 formControlName="preferredTime"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3" /></label
             ><label class="font-semibold"
-              >Contact method<select
+              >{{ 'care.details.contactMethod' | t }}<select
                 formControlName="contactMethod"
                 class="mt-2 min-h-12 w-full rounded-xl border px-3"
               >
-                <option value="EMAIL">Email</option>
-                <option value="PHONE">Phone</option>
+                <option value="EMAIL">{{ 'care.details.email' | t }}</option>
+                <option value="PHONE">{{ 'care.details.phone' | t }}</option>
                 <option value="WHATSAPP">WhatsApp</option>
               </select></label
             ><label class="font-semibold sm:col-span-2"
-              >Notes (optional)<textarea
+              >{{ 'care.details.notesOptional' | t }}<textarea
                 formControlName="notes"
                 maxlength="4000"
                 rows="4"
-                placeholder="Share useful non-emergency request details"
+                [placeholder]="'care.details.notesPlaceholder' | t"
                 class="mt-2 w-full rounded-xl border p-3"
               ></textarea>
             </label>
           </div>
           } @else {
             <div class="mt-4 grid gap-5 sm:grid-cols-2">
-              <label class="font-semibold">Contact method<select formControlName="contactMethod" class="mt-2 min-h-12 w-full rounded-xl border px-3"><option value="EMAIL">Email</option><option value="PHONE">Phone</option><option value="WHATSAPP">WhatsApp</option></select></label>
-              <label class="font-semibold sm:col-span-2">Notes <span class="font-normal text-ink-muted">(optional)</span><textarea formControlName="notes" maxlength="4000" rows="3" placeholder="What would you like the doctor to know?" class="mt-2 w-full rounded-xl border p-3"></textarea></label>
+              <label class="font-semibold">{{ 'care.details.contactMethod' | t }}<select formControlName="contactMethod" class="mt-2 min-h-12 w-full rounded-xl border px-3"><option value="EMAIL">{{ 'care.details.email' | t }}</option><option value="PHONE">{{ 'care.details.phone' | t }}</option><option value="WHATSAPP">WhatsApp</option></select></label>
+              <label class="font-semibold sm:col-span-2">{{ 'care.details.notes' | t }} <span class="font-normal text-ink-muted">{{ 'care.details.optional' | t }}</span><textarea formControlName="notes" maxlength="4000" rows="3" [placeholder]="'care.details.doctorNotesPlaceholder' | t" class="mt-2 w-full rounded-xl border p-3"></textarea></label>
             </div>
           }
         </fieldset>
         @if (error()) {
-          <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-800">{{ error() }}</p>
+          <p role="alert" class="rounded-xl bg-red-50 p-4 text-red-800">{{ error()! | t }}</p>
         }
         <button
           type="submit"
           [disabled]="submitting()"
           class="min-h-12 rounded-xl bg-brand-700 px-6 py-3 font-bold text-white disabled:opacity-60"
         >
-          {{ submitting() ? 'Requesting consultation…' : (doctorJourney() ? 'Continue with this doctor →' : 'Submit Care Request') }}
+          {{ (submitting() ? 'care.submit.requesting' : doctorJourney() ? 'care.submit.continueDoctor' : 'care.submit.submit') | t }}
         </button>
       </form>
       <aside class="mt-8 rounded-2xl border border-brand-100 bg-brand-50 p-5">
-        <h2 class="font-bold text-ink">Already have an appointment?</h2>
+        <h2 class="font-bold text-ink">{{ 'care.fastTrack.title' | t }}</h2>
         <p class="mt-1 text-sm text-ink-soft">
-          Request FastTrack for priority appointment handling. Clinical urgency and medical triage
-          always take priority.
+          {{ 'care.fastTrack.text' | t }}
         </p>
         <a
           routerLink="/me/fasttrack/new"
           class="mt-3 inline-block font-bold text-brand-800 underline"
-          >I already have an appointment — request FastTrack</a
+          >{{ 'care.fastTrack.link' | t }}</a
         >
       </aside>
     }
@@ -452,6 +451,7 @@ export class FindCarePageComponent {
   private readonly locations = inject(LocationDataService);
   private readonly dependantsApi = inject(DependantsApiService);
   private readonly route = inject(ActivatedRoute);
+  private readonly i18n = inject(TranslationService);
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
   readonly marketConfiguration = SMARTCLINIC_MARKETS[this.market];
@@ -482,6 +482,7 @@ export class FindCarePageComponent {
   readonly providersLoading = signal(false);
   readonly providersError = signal(false);
   readonly submitting = signal(false);
+  /** Translation key of the current error message. */
   readonly error = signal<string | null>(null);
   readonly success = signal<CareRequest | null>(null);
   readonly dependants = signal<readonly Dependant[]>([]);
@@ -759,19 +760,22 @@ export class FindCarePageComponent {
     }
   }
   deliveryModeLabel(mode: CareDeliveryMode) {
-    return careDeliveryModeLabel(mode);
+    const key = ({ IN_PERSON: 'care.mode.inPerson', VIRTUAL: 'care.mode.virtual', HOME_VISIT: 'care.mode.homeVisit' } as Record<string, string>)[mode];
+    return key ? this.i18n.t(key) : careDeliveryModeLabel(mode);
   }
   deliveryModeHelp(mode: CareDeliveryMode) {
-    return mode === 'VIRTUAL'
-      ? 'Consult online from anywhere; no service location is required.'
-      : mode === 'HOME_VISIT'
-        ? 'Care at your selected service area.'
-        : 'Attend an eligible provider location.';
+    return this.i18n.t(
+      mode === 'VIRTUAL'
+        ? 'care.mode.virtualHelp'
+        : mode === 'HOME_VISIT'
+          ? 'care.mode.homeVisitHelp'
+          : 'care.mode.inPersonHelp',
+    );
   }
   providerLabel(p: PublicFindCareProvider) {
     const fast = p.services.find((s) => s.code === this.form.controls.serviceCode.value)
       ?.supportsFastTrack
-      ? ' · FastTrack available'
+      ? ` · ${this.i18n.t('care.provider.fastTrack')}`
       : '';
     const option = p.services
       .find((s) => s.code === this.form.controls.serviceCode.value)
@@ -843,8 +847,8 @@ export class FindCarePageComponent {
           if (e?.status === 409) this.discoverProviders();
           this.error.set(
             e?.status === 409
-              ? 'That provider or service is no longer available. We refreshed provider discovery; review your selection and try again.'
-              : 'We could not submit your Care Request. Review the details and try again.',
+              ? 'care.error.unavailable'
+              : 'care.error.submitFailed',
           );
         },
       });
@@ -853,9 +857,9 @@ export class FindCarePageComponent {
     return (
       (
         {
-          MATCHING: 'Finding a provider',
-          AWAITING_PROVIDER_RESPONSE: 'Waiting for provider',
-          PROVIDER_ACCEPTED: 'Provider accepted',
+          MATCHING: this.i18n.t('care.status.matching'),
+          AWAITING_PROVIDER_RESPONSE: this.i18n.t('care.status.awaitingProvider'),
+          PROVIDER_ACCEPTED: this.i18n.t('care.status.providerAccepted'),
         } as Record<string, string>
       )[status] ??
       status
