@@ -261,13 +261,13 @@ export class PayBillsPageComponent {
     this.selectedItems.set([]);
     this.payment.set(null);
     this.paymentError.set(null);
-    this.api
-      .getInvoice(hospital.hospitalCode)
-      .pipe(finalize(() => this.invoiceLoading.set(false)))
-      .subscribe({
-        next: (invoice) => this.invoice.set(invoice),
-        error: (error: unknown) => this.invoiceError.set(this.readableInvoiceError(error)),
-      });
+    // this.api
+    //   .getInvoice(hospital.hospitalCode)
+    //   .pipe(finalize(() => this.invoiceLoading.set(false)))
+    //   .subscribe({
+    //     next: (invoice) => this.invoice.set(invoice),
+    //     error: (error: unknown) => this.invoiceError.set(this.readableInvoiceError(error)),
+    //   });
   }
   isSelected(item: HospitalInvoiceItem): boolean {
     return this.selectedItems().includes(item.itemReference);
