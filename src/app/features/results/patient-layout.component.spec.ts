@@ -137,6 +137,7 @@ describe('PatientLayoutComponent', () => {
           ['Guided Self-Checks', '/me/self-checks'],
           ['My Health Checks', '/me/health-checks'],
           ['Book Health Check', '/me/book'],
+          ['My progress', '/me/progress'],
         ],
       },
       {
