@@ -24,12 +24,13 @@ import { formatEarningMoney } from '../provider/provider-earning-presentation';
 import { PatientPaymentPanelComponent } from './patient-payment-panel.component';
 import { AssistedMatchingApiService } from '../../core/services/assisted-matching-api.service';
 import { AssistedMatchContact } from '../../core/models/assisted-match.model';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 
 type BookingStep = 1 | 2 | 3 | 4;
 
 @Component({
   selector: 'app-patient-health-check-v2-booking-page',
-  imports: [ReactiveFormsModule, RouterLink, NgTemplateOutlet, PatientPaymentPanelComponent, HelpOptionsComponent],
+  imports: [ReactiveFormsModule, RouterLink, NgTemplateOutlet, PatientPaymentPanelComponent, HelpOptionsComponent, TranslatePipe],
   templateUrl: './patient-health-check-v2-booking-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -43,8 +44,11 @@ export class PatientHealthCheckV2BookingPageComponent {
   private readonly providerInvitations = inject(ProviderRecruitmentInvitationsApiService);
   private readonly dependantsApi = inject(DependantsApiService);
   private readonly assistedMatching = inject(AssistedMatchingApiService);
+  private readonly i18n = inject(TranslationService);
 
   readonly steps = ['Your checkup', 'Provider', 'Options', 'Review & Pay'] as const;
+  /** Translation keys for `steps`, in the same order. */
+  readonly stepKeys = ['booking.steps.checkup', 'booking.steps.provider', 'booking.steps.options', 'booking.steps.review'] as const;
   readonly currentStep = signal<BookingStep>(1);
   readonly packages = signal<readonly HealthCheckCataloguePackage[]>([]);
   readonly catalogueLoading = signal(true);
@@ -145,7 +149,7 @@ export class PatientHealthCheckV2BookingPageComponent {
 
   loadDependants(): void { this.dependantsLoading.set(true); this.dependantsError.set(false); this.dependantsApi.getDependants().pipe(finalize(() => this.dependantsLoading.set(false))).subscribe({ next: result => this.dependants.set(result.items), error: () => this.dependantsError.set(true) }); }
   selectParticipant(value: string): void { const selected = this.dependants().find(item => item.patientReference === value); this.participant.set(selected ? { kind: 'DEPENDANT', patientReference: selected.patientReference, displayName: selected.displayName } : { kind: 'SELF' }); this.contextChanged(); }
-  participantName(): string { const selected=this.participant(); return selected.kind==='SELF'?'You':selected.displayName; }
+  participantName(): string { const selected=this.participant(); return selected.kind==='SELF'?this.i18n.t('booking.review.you'):selected.displayName; }
   participantSelected(reference:string):boolean { const selected=this.participant(); return selected.kind==='DEPENDANT'&&selected.patientReference===reference; }
   private participantRequest(): { participantPatientReference: string } | Record<string, never> { const selected=this.participant(); return selected.kind==='DEPENDANT'?{participantPatientReference:selected.patientReference}:{}; }
 
@@ -195,10 +199,10 @@ export class PatientHealthCheckV2BookingPageComponent {
   selectedPackage(): HealthCheckCataloguePackage | null { return this.packages().find(item => item.code === this.form.controls.packageCode.value) ?? null; }
 
   readonly timeSlots = [
-    { label: 'Morning', time: '09:00' },
-    { label: 'Midday', time: '12:00' },
-    { label: 'Afternoon', time: '15:00' },
-    { label: 'Evening', time: '17:30' },
+    { label: 'Morning', key: 'booking.when.morning', time: '09:00' },
+    { label: 'Midday', key: 'booking.when.midday', time: '12:00' },
+    { label: 'Afternoon', key: 'booking.when.afternoon', time: '15:00' },
+    { label: 'Evening', key: 'booking.when.evening', time: '17:30' },
   ] as const;
 
   pickTime(time: string): void {
@@ -346,7 +350,7 @@ export class PatientHealthCheckV2BookingPageComponent {
           const safeClientMessage =
             error.status >= 400 && error.status < 500 && typeof backendMessage === 'string'
               ? backendMessage
-              : 'We couldn’t check availability right now. Please try again.';
+              : this.i18n.t('booking.errors.discovery');
           this.discoveryError.set(safeClientMessage);
           this.focusCurrentStep();
         },
@@ -430,7 +434,7 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.quote.set(null);
           this.quoteError.set(
             message ||
-            'This option is no longer available. Review your provider, location or add-ons and try again.',
+            this.i18n.t('booking.errors.quote'),
           );
           this.focusCurrentStep();
         },
@@ -490,7 +494,7 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.createError.set(
             typeof message === 'string' && error.status >= 400 && error.status < 500
               ? message
-              : 'We could not create this checkup right now. Please try again or return to Options and confirm your choices.',
+              : this.i18n.t('booking.errors.create'),
           );
           this.invalidateQuote();
           this.goToStep(3);
@@ -522,7 +526,7 @@ export class PatientHealthCheckV2BookingPageComponent {
 
   requestAssistedMatch(contactPreference: AssistedMatchContact='NOTIFY'): void {
     if(this.assistedMatchingBusy())return; const v=this.form.getRawValue(); this.assistedMatchingBusy.set(true);this.assistedMatchError.set('');
-    this.assistedMatching.create({serviceKind:'HEALTH_CHECK',packageCode:v.packageCode,fulfilmentModeCode:v.fulfilmentModeCode,preferredDate:v.preferredDate,preferredTime:v.preferredTime,preferredTimezone:v.timezone,countryCode:v.address.countryCode.toUpperCase(),stateOrRegion:v.address.stateOrRegion,city:v.address.city,postalCode:v.address.postalCode||undefined,contactPreference}).pipe(finalize(()=>this.assistedMatchingBusy.set(false))).subscribe({next:x=>this.assistedMatchReference.set(x.reference),error:()=>this.assistedMatchError.set('We could not start the assisted search. Please try again.')});
+    this.assistedMatching.create({serviceKind:'HEALTH_CHECK',packageCode:v.packageCode,fulfilmentModeCode:v.fulfilmentModeCode,preferredDate:v.preferredDate,preferredTime:v.preferredTime,preferredTimezone:v.timezone,countryCode:v.address.countryCode.toUpperCase(),stateOrRegion:v.address.stateOrRegion,city:v.address.city,postalCode:v.address.postalCode||undefined,contactPreference}).pipe(finalize(()=>this.assistedMatchingBusy.set(false))).subscribe({next:x=>this.assistedMatchReference.set(x.reference),error:()=>this.assistedMatchError.set(this.i18n.t('booking.errors.assisted'))});
   }
 
   openProviderInvitation(): void {
@@ -603,7 +607,7 @@ export class PatientHealthCheckV2BookingPageComponent {
 
     if (!context) {
       this.providerInvitationError.set(
-        'The Health Check invitation context is unavailable. Please close this window and try again.',
+        this.i18n.t('booking.errors.inviteContext'),
       );
 
       return;
@@ -619,7 +623,7 @@ export class PatientHealthCheckV2BookingPageComponent {
 
     if (!email && !phone) {
       this.providerInvitationContactError.set(
-        'Provide either an email address or phone number for the provider.',
+        this.i18n.t('booking.errors.inviteContact'),
       );
 
       return;
@@ -664,7 +668,7 @@ export class PatientHealthCheckV2BookingPageComponent {
           this.providerInvitationError.set(
             (error.status === 400 || error.status === 409) && typeof message === 'string'
               ? message
-              : 'The provider invitation could not be submitted. Please try again.',
+              : this.i18n.t('booking.errors.inviteFailed'),
           );
         },
       });
