@@ -294,6 +294,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'family/kids/:ref',
+        title: 'Kids corner | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/family/kids-corner-page.component').then((c) => c.KidsCornerPageComponent),
+      },
+      {
         path: 'family',
         title: 'Family & Dependants | SmartClinic',
         canActivate: [authenticatedUserGuard],
