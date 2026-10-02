@@ -1,3 +1,4 @@
+import { ReminderSettingsCardComponent } from '../family/reminder-settings-card.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -11,7 +12,7 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
 
 @Component({
   selector: 'app-patient-profile-page',
-  imports: [RouterLink, ReactiveFormsModule, HealthBasicsCardComponent],
+  imports: [ReminderSettingsCardComponent, RouterLink, ReactiveFormsModule, HealthBasicsCardComponent],
   template: `<main class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Me</p>
     <div class="mt-1 flex flex-wrap items-end justify-between gap-3">
@@ -97,6 +98,7 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
 
       <div class="mt-4">
         <app-health-basics-card />
+        <app-reminder-settings-card />
       </div>
     }
 

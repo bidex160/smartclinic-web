@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthStateService } from './core/services/auth-state.service';
 import { AuthSessionService } from './core/services/auth-session.service';
@@ -8,6 +8,7 @@ import { LocationDataService } from './core/services/location-data.service';
 import { AccountLocaleSync, LocalePreferencesService } from './core/services/locale-preferences.service';
 import { LocalePickerComponent } from './shared/components/locale-picker/locale-picker.component';
 import { TranslatePipe } from './core/services/translation.service';
+import { NudgesApiService } from './core/services/family-kids-api.service';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,8 @@ export class AppComponent {
   private readonly locationDataService = inject(LocationDataService);
   private readonly locale = inject(LocalePreferencesService);
   private readonly accountLocale = inject(AccountLocaleSync);
+  private readonly nudges = inject(NudgesApiService);
+  private lastSyncedLanguage: string | null = null;
 
 
   readonly menuOpen = signal(false);
@@ -51,6 +54,18 @@ export class AppComponent {
         if (this.authState.isPatient()) this.accountLocale.sync();
       });
     void this.locationDataService.ready().catch(() => undefined);
+    // Daily reminders are written on the server, so it needs to know the person's language.
+    effect(() => {
+      const language = this.locale.language();
+      const patient = this.authState.isPatient();
+      untracked(() => {
+        if (!patient || !this.nudges.available() || language === this.lastSyncedLanguage) return;
+        const first = this.lastSyncedLanguage === null;
+        this.lastSyncedLanguage = language;
+        if (first && language === 'en') return; // default already
+        this.nudges.update({ language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lagos' }).subscribe({ error: () => undefined });
+      });
+    });
   }
 
   logout(): void {

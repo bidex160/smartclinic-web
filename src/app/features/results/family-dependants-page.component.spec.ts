@@ -3,6 +3,9 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { DependantsApiService } from '../../core/services/dependants-api.service';
+import { FamilyKidsApiService } from '../../core/services/family-kids-api.service';
+
+const familyApi = { provide: FamilyKidsApiService, useValue: { overview: () => of({ today: '2026-10-03', familyStreak: { current: 0, best: 0, activeToday: false }, children: [] }) } };
 import { FamilyDependantsPageComponent } from './family-dependants-page.component';
 
 describe('FamilyDependantsPageComponent', () => {
@@ -21,6 +24,7 @@ describe('FamilyDependantsPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FamilyDependantsPageComponent],
       providers: [
+        familyApi,
         provideRouter([]),
         {
           provide: DependantsApiService,
@@ -39,7 +43,7 @@ describe('FamilyDependantsPageComponent', () => {
     vi.stubGlobal('confirm', vi.fn(() => true));
     await TestBed.configureTestingModule({
       imports: [FamilyDependantsPageComponent],
-      providers: [provideRouter([]), { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [dependant] }), removeDependant } }],
+      providers: [provideRouter([]), familyApi, { provide: DependantsApiService, useValue: { getDependants: () => of({ items: [dependant] }), removeDependant } }],
     }).compileComponents();
     const fixture = TestBed.createComponent(FamilyDependantsPageComponent);
     fixture.detectChanges();
@@ -53,6 +57,7 @@ describe('FamilyDependantsPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FamilyDependantsPageComponent],
       providers: [
+        familyApi,
         provideRouter([]),
         {
           provide: DependantsApiService,
@@ -88,6 +93,7 @@ describe('FamilyDependantsPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FamilyDependantsPageComponent],
       providers: [
+        familyApi,
         provideRouter([]),
         {
           provide: DependantsApiService,

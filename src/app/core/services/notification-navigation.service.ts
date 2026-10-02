@@ -13,6 +13,11 @@ export class NotificationNavigationService {
         case 'CARE_APPOINTMENT': return reference ? ['/me/care/appointments', reference] : ['/me/appointments'];
         // Tests open in place; prescriptions are redirected to their medicines page there.
         case 'CLINICAL_ORDER': return reference ? ['/me/orders', reference] : ['/me/orders'];
+        // Daily nudges and check-up reminders carry the screen to open.
+        case 'WELLNESS': {
+          const route = notification.metadata?.['route'];
+          return typeof route === 'string' && /^\/me\/[A-Za-z0-9/_-]+$/.test(route) ? [route] : ['/me/progress'];
+        }
         default: return null;
       }
     }
