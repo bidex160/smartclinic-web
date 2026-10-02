@@ -24,20 +24,21 @@ import { HealthCheckResultsApiService } from '../../core/services/health-check-r
 import { UtilsService } from '../../core/services/utils.service';
 import { safePaystackCheckoutUrl } from '../booking/paystack-checkout-url';
 import { PaymentContactEmailComponent } from '../../shared/components/payment-contact-email.component';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-patient-payment-panel',
-  imports: [ReactiveFormsModule, RouterLink, PaymentContactEmailComponent],
+  imports: [ReactiveFormsModule, RouterLink, PaymentContactEmailComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <section
     class="rounded-[2rem] border border-ink/[0.08] bg-white p-6 shadow-sm sm:p-8"
     aria-labelledby="patient-payment-heading"
   >
-    <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">Secure checkout</p>
-    <h2 id="patient-payment-heading" class="font-display mt-2 text-2xl font-semibold text-ink">Payment</h2>
-    <p class="mt-2 text-sm text-ink-soft">Review your total, apply eligible rewards and choose how you would like to complete payment.</p>
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-700">{{ 'booking.payment.eyebrow' | t }}</p>
+    <h2 id="patient-payment-heading" class="font-display mt-2 text-2xl font-semibold text-ink">{{ 'booking.payment.title' | t }}</h2>
+    <p class="mt-2 text-sm text-ink-soft">{{ 'booking.payment.intro' | t }}</p>
     @if (statusLoading()) {
-      <p role="status" class="mt-4">Loading payment status…</p>
+      <p role="status" class="mt-4">{{ 'booking.payment.loadingStatus' | t }}</p>
     }
     @if (error()) {
       <div role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">{{ error() }}</div>
@@ -46,14 +47,14 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
       @if (payment.fundingStatus === 'SETTLED') {
         <div role="status" class="mt-4 rounded-xl bg-green-50 p-4 text-green-950">
           <strong>{{
-            payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)
-              ? 'Paid with reward points'
-              : 'Payment confirmed'
+            (payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)
+              ? 'booking.payment.paidWithPoints'
+              : 'booking.payment.confirmed') | t
           }}</strong>
           <p class="mt-1">
             {{
               payment.redemptionStatus === 'SETTLED' && isZero(payment.remainingExternalAmount)
-                ? 'Your Health Check has been paid for with reward points.'
+                ? ('booking.payment.paidWithPointsBody' | t)
                 : matchingCopy(payment.bookingStatus)
             }}
           </p>
@@ -64,10 +65,10 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         @if (payment.pointsReserved > 0) {
           <div class="mt-5 rounded-xl border p-4">
             <p class="flex justify-between gap-4">
-              <span>Reward points used</span><strong>{{ payment.pointsReserved }} points</strong>
+              <span>{{ 'booking.payment.pointsUsed' | t }}</span><strong>{{ 'booking.payment.pointsCount' | t: { points: payment.pointsReserved } }}</strong>
             </p>
             <p class="mt-2 flex justify-between gap-4">
-              <span>Reward value</span
+              <span>{{ 'booking.payment.rewardValue' | t }}</span
               ><strong>−{{ utils.formatMoney(payment.pointsAmount, payment.currency) }}</strong>
             </p>
           </div>
@@ -77,27 +78,26 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           class="mt-5 rounded-xl border border-brand-100 bg-brand-50/40 p-5"
           aria-labelledby="patient-rewards-heading"
         >
-          <h3 id="patient-rewards-heading" class="font-bold text-ink">Your rewards</h3>
+          <h3 id="patient-rewards-heading" class="font-bold text-ink">{{ 'booking.payment.rewardsTitle' | t }}</h3>
           @if (rewardsLoading()) {
-            <p role="status" class="mt-3">Loading your reward points…</p>
+            <p role="status" class="mt-3">{{ 'booking.payment.loadingRewards' | t }}</p>
           } @else if (rewardsError()) {
             <div role="alert" class="mt-3">
-              <p>Reward points are temporarily unavailable. You can continue without them.</p>
+              <p>{{ 'booking.payment.rewardsError' | t }}</p>
               <button
                 type="button"
                 (click)="loadRewards()"
                 class="mt-2 font-bold text-brand-700 underline"
               >
-                Try rewards again
+                {{ 'booking.payment.rewardsRetry' | t }}
               </button>
             </div>
           } @else if (preview(); as rewards) {
             @if (activePoints() > 0 && redemptionStatus() === 'RESERVED') {
               <div>
-                <p class="mt-3 text-lg font-bold">{{ activePoints() }} {{ activeSource() === 'WELLNESS' ? 'wellness points' : 'points' }} reserved</p>
+                <p class="mt-3 text-lg font-bold">{{ (activeSource() === 'WELLNESS' ? 'booking.payment.reservedWellness' : 'booking.payment.reserved') | t: { points: activePoints() } }}</p>
                 <p class="mt-1 text-sm text-ink-soft">
-                  These points remain reserved for this Health Check until payment settles or you
-                  remove them.
+                  {{ 'booking.payment.reservedBody' | t }}
                 </p>
                 <button
                   type="button"
@@ -105,44 +105,43 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   [disabled]="busy()"
                   class="mt-3 font-bold text-red-700 underline disabled:opacity-50"
                 >
-                  {{ releasing() ? 'Removing points…' : 'Remove points' }}
+                  {{ (releasing() ? 'booking.payment.removing' : 'booking.payment.remove') | t }}
                 </button>
               </div>
             } @else {
               @if (rewards.wellness; as w) {
                 <div class="mt-3 rounded-xl bg-leaf-50 p-4 ring-1 ring-leaf-100" data-wellness-points>
-                  <p class="font-semibold text-ink"><span aria-hidden="true">🌿</span> {{ w.availablePoints }} wellness points</p>
+                  <p class="font-semibold text-ink"><span aria-hidden="true">🌿</span> {{ 'booking.payment.wellnessBalance' | t: { points: w.availablePoints } }}</p>
                   @if (w.maximumRedeemablePoints > 0) {
                     <p class="mt-1 text-sm text-ink-soft">
-                      Use {{ w.maximumRedeemablePoints }} points to take
+                      {{ 'booking.payment.wellnessUseBefore' | t: { points: w.maximumRedeemablePoints } }}
                       <strong class="text-ink">{{ utils.formatMoney(wellnessValue(w.maximumRedeemablePoints, w.valuePerPoint), rewards.currency) }}</strong>
-                      off this Health Check (up to {{ w.maxPercent }}%).
+                      {{ 'booking.payment.wellnessUseAfter' | t: { percent: w.maxPercent } }}
                     </p>
                     <button type="button" (click)="useWellnessPoints()" [disabled]="busy()"
                       class="mt-3 min-h-11 rounded-full bg-leaf-700 px-5 font-bold text-white disabled:opacity-50" data-use-wellness>
-                      {{ applying() ? 'Applying points…' : 'Use ' + w.maximumRedeemablePoints + ' wellness points' }}
+                      {{ applying() ? ('booking.payment.applying' | t) : ('booking.payment.useWellness' | t: { points: w.maximumRedeemablePoints }) }}
                     </button>
                   } @else {
                     <p class="mt-1 text-sm text-ink-soft">
-                      Earn {{ w.minimumPoints - w.availablePoints > 0 ? w.minimumPoints - w.availablePoints : 0 }} more to start using them on a Health Check.
-                      <a routerLink="/me/progress" class="font-semibold text-brand-700 underline">How to earn</a>
+                      {{ 'booking.payment.earnMore' | t: { points: w.minimumPoints - w.availablePoints > 0 ? w.minimumPoints - w.availablePoints : 0 } }}
+                      <a routerLink="/me/progress" class="font-semibold text-brand-700 underline">{{ 'booking.payment.howToEarn' | t }}</a>
                     </p>
                   }
-                  <p class="mt-2 text-xs text-ink-muted">Earned for healthy habits like the daily question and check-ins. They aren’t cash.</p>
+                  <p class="mt-2 text-xs text-ink-muted">{{ 'booking.payment.wellnessNote' | t }}</p>
                 </div>
               }
               @if (rewards.availablePoints === 0) {
                 @if (!rewards.wellness) {
-                  <p class="mt-3 text-ink-soft">You don't have reward points available to use yet.</p>
+                  <p class="mt-3 text-ink-soft">{{ 'booking.payment.noPoints' | t }}</p>
                 }
               } @else {
-              <p class="mt-4 text-sm font-semibold uppercase tracking-wide text-ink-muted">Referral points</p>
+              <p class="mt-4 text-sm font-semibold uppercase tracking-wide text-ink-muted">{{ 'booking.payment.referralTitle' | t }}</p>
               <p class="mt-1">
-                <strong>{{ rewards.availablePoints }}</strong> points available
+                <strong>{{ rewards.availablePoints }}</strong> {{ 'booking.payment.referralAvailable' | t }}
               </p>
               <p class="mt-1 text-sm text-ink-soft">
-                Maximum you can use for this Health Check:
-                {{ rewards.maximumRedeemablePoints }} points
+                {{ 'booking.payment.maxForCheck' | t: { points: rewards.maximumRedeemablePoints } }}
               </p>
               <form
                 [formGroup]="pointsForm"
@@ -150,26 +149,26 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                 class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
               >
                 <label class="flex-1 font-semibold"
-                  >Points to use<input
+                  >{{ 'booking.payment.pointsToUse' | t }}<input
                     type="number"
                     min="1"
                     step="1"
                     formControlName="points"
                     class="mt-1 w-full rounded-lg border bg-white p-3"
-                    placeholder="e.g. 500" /></label
+                    [placeholder]="'booking.payment.pointsPlaceholder' | t" /></label
                 ><button
                   type="button"
                   (click)="useMaximum()"
                   [disabled]="busy()"
                   class="min-h-11 rounded-lg border border-brand-700 px-4 font-bold text-brand-700"
                 >
-                  Use maximum</button
+                  {{ 'booking.payment.useMaximum' | t }}</button
                 ><button
                   type="submit"
                   [disabled]="pointsForm.invalid || busy()"
                   class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white disabled:opacity-50"
                 >
-                  {{ applying() ? 'Applying points…' : 'Apply points' }}
+                  {{ (applying() ? 'booking.payment.applying' : 'booking.payment.apply') | t }}
                 </button>
               </form>
               }
@@ -183,26 +182,26 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
 
         <section class="mt-5 rounded-xl border p-5" aria-labelledby="payment-summary-heading">
-          <h3 id="payment-summary-heading" class="font-bold">Payment summary</h3>
+          <h3 id="payment-summary-heading" class="font-bold">{{ 'booking.payment.summaryTitle' | t }}</h3>
           <dl class="mt-3 grid gap-2">
             @if (bookingTotal(); as total) {
               <div class="flex justify-between gap-4">
-                <dt>Health Check total</dt>
+                <dt>{{ 'booking.payment.total' | t }}</dt>
                 <dd class="font-bold">{{ utils.formatMoney(total, paymentCurrency()) }}</dd>
               </div>
             }
             @if (activePoints() > 0) {
               <div class="flex justify-between gap-4">
-                <dt>Reward points</dt>
-                <dd>{{ activePoints() }} points</dd>
+                <dt>{{ 'booking.payment.rewardPoints' | t }}</dt>
+                <dd>{{ 'booking.payment.pointsCount' | t: { points: activePoints() } }}</dd>
               </div>
               <div class="flex justify-between gap-4">
-                <dt>Reward value</dt>
+                <dt>{{ 'booking.payment.rewardValue' | t }}</dt>
                 <dd>−{{ utils.formatMoney(pointsAmount(), paymentCurrency()) }}</dd>
               </div>
             }
             <div class="flex justify-between gap-4 border-t pt-2">
-              <dt class="font-bold">Remaining to pay</dt>
+              <dt class="font-bold">{{ 'booking.payment.remaining' | t }}</dt>
               <dd class="font-bold">
                 {{ utils.formatMoney(remainingAmount(), paymentCurrency()) }}
               </dd>
@@ -211,7 +210,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </section>
 
         <fieldset [disabled]="busy()" class="mt-5">
-          <legend class="text-xl font-bold text-ink">How would you like to pay?</legend>
+          <legend class="text-xl font-bold text-ink">{{ 'booking.payment.howPay' | t }}</legend>
           <div class="mt-3 grid gap-3 md:grid-cols-3">
             @for (option of options; track option.value) {
               <label
@@ -224,17 +223,16 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                   [value]="option.value"
                   [checked]="selected() === option.value"
                   (change)="select(option.value)"
-                /><strong class="ml-2">{{ option.label }}</strong
+                /><strong class="ml-2">{{ option.labelKey | t }}</strong
                 ><span class="mt-2 block text-sm text-ink-soft">{{
-                  option.description
+                  option.descriptionKey | t
                 }}</span></label
               >
             }
           </div>
         </fieldset>
         <p class="mt-4 text-sm text-ink-soft">
-          Your request is sent to your selected provider after funding is settled. Pay later does
-          not send the request or reserve an appointment.
+          {{ 'booking.payment.requestNote' | t }}
         </p>
         @if (selected() !== 'PAY_LATER') {
           <app-payment-contact-email />
@@ -249,25 +247,23 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
         </button>
         @if (payLater()) {
           <div role="status" class="mt-5 rounded-xl bg-amber-50 p-4 text-amber-950">
-            <strong>Booking saved — payment still required</strong>
+            <strong>{{ 'booking.payment.payLaterTitle' | t }}</strong>
             @if (activePoints() > 0) {
-              <p class="mt-1">{{ activePoints() }} points are reserved for this booking.</p>
+              <p class="mt-1">{{ 'booking.payment.payLaterPoints' | t: { points: activePoints() } }}</p>
             }
             <p class="mt-1">
-              Your request has not been sent to the selected provider. Choose Pay now or Payment
-              link when you are ready.
+              {{ 'booking.payment.payLaterBody' | t }}
             </p>
           </div>
         }
         @if (checkoutUrl()) {
           <div class="mt-5 rounded-xl bg-brand-50 p-4">
-            <h3 class="font-bold">Payment link ready</h3>
+            <h3 class="font-bold">{{ 'booking.payment.linkReady' | t }}</h3>
             <p class="mt-1 text-sm">
-              This hosted link is only for payment and does not provide access to your SmartClinic
-              account.
+              {{ 'booking.payment.linkNote' | t }}
             </p>
             <input
-              aria-label="Payment link"
+              [attr.aria-label]="'booking.payment.linkLabel' | t"
               readonly
               [value]="checkoutUrl()"
               class="mt-3 w-full rounded-lg border bg-white p-3 text-sm"
@@ -278,13 +274,13 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
                 (click)="openPaymentPage()"
                 class="min-h-11 rounded-lg bg-brand-700 px-4 font-bold text-white"
               >
-                Open secure payment page</button
+                {{ 'booking.payment.openPage' | t }}</button
               ><button
                 type="button"
                 (click)="copyLink()"
                 class="min-h-11 rounded-lg border border-brand-700 px-4 font-bold text-brand-700"
               >
-                Copy payment link
+                {{ 'booking.payment.copyLink' | t }}
               </button>
             </div>
             <p aria-live="polite" class="mt-2 text-sm">{{ copyFeedback() }}</p>
@@ -296,7 +292,7 @@ import { PaymentContactEmailComponent } from '../../shared/components/payment-co
           [disabled]="refreshing()"
           class="mt-4 block font-bold text-brand-700 underline"
         >
-          {{ refreshing() ? 'Checking payment status…' : 'Check payment status' }}
+          {{ (refreshing() ? 'booking.payment.checking' : 'booking.payment.check') | t }}
         </button>
       }
     }
@@ -316,6 +312,7 @@ export class PatientPaymentPanelComponent implements OnInit {
   private readonly navigateExternal = inject(EXTERNAL_NAVIGATOR);
   private readonly fb = inject(FormBuilder);
   readonly utils = inject(UtilsService);
+  private readonly i18n = inject(TranslationService);
   popup = new PaystackPop();
   readonly selected = signal<PublicBookingCheckoutOption>('PAY_NOW');
   readonly status = signal<PublicBookingPaymentStatus | null>(null);
@@ -337,16 +334,26 @@ export class PatientPaymentPanelComponent implements OnInit {
   });
   readonly busy = computed(() => this.pending() || this.applying() || this.releasing());
   readonly options = [
-    { value: 'PAY_NOW' as const, label: 'Pay now', description: 'Pay securely with Paystack.' },
+    {
+      value: 'PAY_NOW' as const,
+      label: 'Pay now',
+      description: 'Pay securely with Paystack.',
+      labelKey: 'booking.payment.option.payNow',
+      descriptionKey: 'booking.payment.option.payNowHint',
+    },
     {
       value: 'PAYMENT_LINK' as const,
       label: 'Payment link',
       description: 'Open or share a secure hosted checkout link.',
+      labelKey: 'booking.payment.option.paymentLink',
+      descriptionKey: 'booking.payment.option.paymentLinkHint',
     },
     {
       value: 'PAY_LATER' as const,
       label: 'Pay later',
       description: 'Keep this booking awaiting payment and return later.',
+      labelKey: 'booking.payment.option.payLater',
+      descriptionKey: 'booking.payment.option.payLaterHint',
     },
   ];
   ngOnInit() {
@@ -413,17 +420,19 @@ export class PatientPaymentPanelComponent implements OnInit {
     if (this.selected() === 'PAY_NOW') {
       const remaining = this.remainingAmount();
       return this.activePoints() > 0 && remaining
-        ? `Pay ${this.utils.formatMoney(remaining, this.paymentCurrency())}`
-        : 'Pay securely';
+        ? this.i18n.t('booking.payment.action.payAmount', { amount: this.utils.formatMoney(remaining, this.paymentCurrency()) })
+        : this.i18n.t('booking.payment.action.paySecurely');
     }
-    return this.selected() === 'PAYMENT_LINK' ? 'Get payment link' : 'Pay later';
+    return this.i18n.t(this.selected() === 'PAYMENT_LINK' ? 'booking.payment.action.getLink' : 'booking.payment.action.payLater');
   }
   pendingLabel() {
-    return this.selected() === 'PAY_NOW'
-      ? 'Preparing secure payment…'
-      : this.selected() === 'PAYMENT_LINK'
-        ? 'Creating payment link…'
-        : 'Saving booking…';
+    return this.i18n.t(
+      this.selected() === 'PAY_NOW'
+        ? 'booking.payment.action.preparing'
+        : this.selected() === 'PAYMENT_LINK'
+          ? 'booking.payment.action.creatingLink'
+          : 'booking.payment.action.saving',
+    );
   }
   useMaximum() {
     const max = this.preview()?.maximumRedeemablePoints;
@@ -435,7 +444,7 @@ export class PatientPaymentPanelComponent implements OnInit {
     if (!rewards || this.pointsForm.invalid || this.busy()) return;
     if (points > rewards.maximumRedeemablePoints || points > rewards.availablePoints) {
       this.pointsError.set(
-        `Enter no more than ${Math.min(rewards.maximumRedeemablePoints, rewards.availablePoints)} points.`,
+        this.i18n.t('booking.payment.errors.enterNoMore', { points: Math.min(rewards.maximumRedeemablePoints, rewards.availablePoints) }),
       );
       return;
     }
@@ -468,8 +477,8 @@ export class PatientPaymentPanelComponent implements OnInit {
         this.releasing.set(false);
         this.pointsError.set(
           e.status === 409
-            ? "These points can't be changed while a payment is in progress."
-            : 'We could not remove the reserved points. Try again.',
+            ? this.i18n.t('booking.payment.errors.pointsLocked')
+            : this.i18n.t('booking.payment.errors.removeFailed'),
         );
       },
     });
@@ -514,7 +523,7 @@ export class PatientPaymentPanelComponent implements OnInit {
         },
         error: () => {
           this.pending.set(false);
-          this.fail('We could not refresh payment details. Try again.');
+          this.fail(this.i18n.t('booking.payment.errors.refreshFailed'));
         },
       });
     } else this.startPayment(option);
@@ -536,7 +545,7 @@ export class PatientPaymentPanelComponent implements OnInit {
           return;
         }
         if (result.bookingReference !== this.reference || result.checkoutOption !== option)
-          return this.fail('We could not start payment. Try again.');
+          return this.fail(this.i18n.t('booking.payment.errors.startFailed'));
         if (option === 'PAY_LATER') {
           this.payLater.set(true);
           this.refreshAll();
@@ -544,18 +553,16 @@ export class PatientPaymentPanelComponent implements OnInit {
         }
         if (option === 'PAYMENT_LINK') {
           const url = safePaystackCheckoutUrl(result.checkoutUrl);
-          if (!url) return this.fail('We could not create a secure payment link. Try again.');
+          if (!url) return this.fail(this.i18n.t('booking.payment.errors.linkFailed'));
           this.checkoutUrl.set(url);
           this.refreshAll();
           return;
         }
-        if (!result.accessCode) return this.fail('We could not start payment. Try again.');
+        if (!result.accessCode) return this.fail(this.i18n.t('booking.payment.errors.startFailed'));
         this.popup.resumeTransaction(result.accessCode, {
           onSuccess: () => this.verify(),
           onError: () =>
-            this.fail(
-              'Payment was not completed. Your reward points remain reserved and you can try again.',
-            ),
+            this.fail(this.i18n.t('booking.payment.errors.notCompleted')),
         });
       },
       error: (error: HttpErrorResponse) => {
@@ -563,8 +570,8 @@ export class PatientPaymentPanelComponent implements OnInit {
         this.fail(
           error.status === 400 &&
             error.error?.message === 'A valid payment email is required to continue'
-            ? error.error.message
-            : 'We could not start payment. Try again.',
+            ? this.i18n.t('booking.payment.errors.emailRequired')
+            : this.i18n.t('booking.payment.errors.startFailed'),
         );
       },
     });
@@ -581,7 +588,7 @@ export class PatientPaymentPanelComponent implements OnInit {
       },
       error: () => {
         this.refreshing.set(false);
-        this.fail('We could not verify the payment yet. Refresh or try again.');
+        this.fail(this.i18n.t('booking.payment.errors.verifyFailed'));
       },
     });
   }
@@ -598,7 +605,7 @@ export class PatientPaymentPanelComponent implements OnInit {
       error: () => {
         this.statusLoading.set(false);
         this.refreshing.set(false);
-        this.fail('We could not load payment status. Try again.');
+        this.fail(this.i18n.t('booking.payment.errors.loadFailed'));
       },
     });
   }
@@ -615,9 +622,9 @@ export class PatientPaymentPanelComponent implements OnInit {
   }
   private rewardMutationError(e: HttpErrorResponse) {
     if (e.status === 409)
-      return 'These points could not be applied. Check your available points and payment status, then try again.';
-    if (e.status === 404) return 'This Health Check is no longer available for reward redemption.';
-    return 'We could not apply your reward points. Try again.';
+      return this.i18n.t('booking.payment.errors.applyConflict');
+    if (e.status === 404) return this.i18n.t('booking.payment.errors.applyGone');
+    return this.i18n.t('booking.payment.errors.applyFailed');
   }
   openPaymentPage() {
     const url = safePaystackCheckoutUrl(this.checkoutUrl());
@@ -628,14 +635,12 @@ export class PatientPaymentPanelComponent implements OnInit {
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
-      this.copyFeedback.set('Payment link copied.');
+      this.copyFeedback.set(this.i18n.t('booking.payment.copied'));
     } catch {
-      this.copyFeedback.set('Copy was unavailable. Select and copy the link manually.');
+      this.copyFeedback.set(this.i18n.t('booking.payment.copyFailed'));
     }
   }
   matchingCopy(status: string) {
-    return status === 'SCHEDULED'
-      ? 'Your appointment is scheduled.'
-      : "Your selected provider has received your request. We'll update you when they respond.";
+    return this.i18n.t(status === 'SCHEDULED' ? 'booking.payment.scheduled' : 'booking.payment.received');
   }
 }
