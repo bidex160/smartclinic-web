@@ -12,6 +12,7 @@ import {
 } from '../../core/models/health-basics.model';
 import { HealthBasicsApiService } from '../../core/services/health-basics-api.service';
 import { ServiceCatalogueApiService } from '../../core/services/service-catalogue-api.service';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 import { HelpOptionsComponent } from '../../shared/components/help-options/help-options.component';
 import { formatMinor } from '../provider/care-money';
 
@@ -20,106 +21,106 @@ const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,29}$/;
 /** "My health basics" on the Me page: view, then edit in place. */
 @Component({
   selector: 'app-health-basics-card',
-  imports: [ReactiveFormsModule, RouterLink, HelpOptionsComponent],
+  imports: [ReactiveFormsModule, RouterLink, HelpOptionsComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="sc-card p-5 sm:p-6" aria-labelledby="health-basics-heading">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="health-basics-heading" class="font-display text-xl font-semibold text-ink">My health basics</h2>
-          <p class="mt-1 text-sm text-ink-muted">Shown on your SmartClinic card, so staff can help you faster. You add these yourself — they are not clinically verified.</p>
+          <h2 id="health-basics-heading" class="font-display text-xl font-semibold text-ink">{{ 'passport.basics.title' | t }}</h2>
+          <p class="mt-1 text-sm text-ink-muted">{{ 'passport.basics.intro' | t }}</p>
         </div>
         @if (!editing() && !loading() && !loadError()) {
           <button type="button" (click)="startEditing()" class="rounded-full border border-ink/15 px-4 py-2 text-sm font-semibold text-ink hover:bg-sand-50">
-            {{ isEmpty() ? 'Add details' : 'Edit' }}
+            {{ (isEmpty() ? 'passport.basics.addDetails' : 'passport.basics.edit') | t }}
           </button>
         }
       </div>
 
       @if (loading()) {
-        <p role="status" class="mt-4 text-sm text-ink-muted">Loading your health basics…</p>
+        <p role="status" class="mt-4 text-sm text-ink-muted">{{ 'passport.basics.loading' | t }}</p>
       } @else if (loadError()) {
-        <p role="alert" class="mt-4 text-sm text-clay-700">Your health basics are unavailable right now.</p>
+        <p role="alert" class="mt-4 text-sm text-clay-700">{{ 'passport.basics.loadError' | t }}</p>
       } @else if (editing()) {
         <form [formGroup]="form" (ngSubmit)="save()" class="mt-5 grid gap-4 sm:grid-cols-2" novalidate>
-          <label class="text-sm font-medium text-ink-soft">Blood group
+          <label class="text-sm font-medium text-ink-soft">{{ 'passport.basics.bloodGroup' | t }}
             <select formControlName="bloodGroup" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink">
-              <option value="">I don’t know</option>
+              <option value="">{{ 'passport.basics.dontKnow' | t }}</option>
               @for (group of bloodGroups; track group) { <option [value]="group">{{ group }}</option> }
             </select>
           </label>
-          <label class="text-sm font-medium text-ink-soft">Genotype
+          <label class="text-sm font-medium text-ink-soft">{{ 'passport.basics.genotype' | t }}
             <select formControlName="genotype" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink">
-              <option value="">I don’t know</option>
+              <option value="">{{ 'passport.basics.dontKnow' | t }}</option>
               @for (genotype of genotypes; track genotype) { <option [value]="genotype">{{ genotype }}</option> }
             </select>
           </label>
-          <label class="text-sm font-medium text-ink-soft sm:col-span-2">Allergies
-            <input formControlName="allergies" maxlength="500" placeholder="e.g. Penicillin, peanuts — or type None" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
+          <label class="text-sm font-medium text-ink-soft sm:col-span-2">{{ 'passport.basics.allergies' | t }}
+            <input formControlName="allergies" maxlength="500" [placeholder]="'passport.basics.allergiesPlaceholder' | t" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
           </label>
-          <label class="text-sm font-medium text-ink-soft sm:col-span-2">Ongoing conditions
-            <input formControlName="conditions" maxlength="500" placeholder="e.g. Asthma, hypertension — or leave blank" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
+          <label class="text-sm font-medium text-ink-soft sm:col-span-2">{{ 'passport.basics.conditions' | t }}
+            <input formControlName="conditions" maxlength="500" [placeholder]="'passport.basics.conditionsPlaceholder' | t" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
           </label>
           <fieldset class="grid gap-4 sm:col-span-2 sm:grid-cols-3">
-            <legend class="mb-1 text-sm font-semibold text-ink">Emergency contact</legend>
-            <label class="text-sm font-medium text-ink-soft">Name
+            <legend class="mb-1 text-sm font-semibold text-ink">{{ 'passport.basics.emergencyContact' | t }}</legend>
+            <label class="text-sm font-medium text-ink-soft">{{ 'passport.basics.contactName' | t }}
               <input formControlName="emergencyContactName" maxlength="120" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
             </label>
-            <label class="text-sm font-medium text-ink-soft">Phone
+            <label class="text-sm font-medium text-ink-soft">{{ 'passport.basics.contactPhone' | t }}
               <input formControlName="emergencyContactPhone" type="tel" placeholder="+234…" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
               @if (form.controls.emergencyContactPhone.invalid && form.controls.emergencyContactPhone.touched) {
-                <span class="mt-1 block text-xs font-semibold text-clay-700">Enter a valid phone number.</span>
+                <span class="mt-1 block text-xs font-semibold text-clay-700">{{ 'passport.basics.phoneInvalid' | t }}</span>
               }
             </label>
-            <label class="text-sm font-medium text-ink-soft">Relationship
-              <input formControlName="emergencyContactRelationship" maxlength="60" placeholder="e.g. Sister" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
+            <label class="text-sm font-medium text-ink-soft">{{ 'passport.basics.relationship' | t }}
+              <input formControlName="emergencyContactRelationship" maxlength="60" [placeholder]="'passport.basics.relationshipPlaceholder' | t" class="mt-1 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3 text-ink" />
             </label>
           </fieldset>
-          @if (saveError()) { <p role="alert" class="text-sm font-semibold text-clay-700 sm:col-span-2">{{ saveError() }}</p> }
+          @if (saveError()) { <p role="alert" class="text-sm font-semibold text-clay-700 sm:col-span-2">{{ saveError() | t }}</p> }
           <div class="flex gap-2 sm:col-span-2">
-            <button type="submit" [disabled]="form.invalid || saving()" class="min-h-11 rounded-full bg-ink px-6 font-semibold text-white hover:bg-brand-900 disabled:opacity-50">{{ saving() ? 'Saving…' : 'Save' }}</button>
-            <button type="button" (click)="editing.set(false)" class="min-h-11 rounded-full px-4 font-semibold text-ink-soft hover:bg-sand-50">Cancel</button>
+            <button type="submit" [disabled]="form.invalid || saving()" class="min-h-11 rounded-full bg-ink px-6 font-semibold text-white hover:bg-brand-900 disabled:opacity-50">{{ (saving() ? 'passport.basics.saving' : 'passport.basics.save') | t }}</button>
+            <button type="button" (click)="editing.set(false)" class="min-h-11 rounded-full px-4 font-semibold text-ink-soft hover:bg-sand-50">{{ 'passport.basics.cancel' | t }}</button>
           </div>
         </form>
       } @else if (basics(); as b) {
         <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4" data-health-basics>
-          <div><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">Blood group</dt><dd class="mt-1 font-display text-2xl font-semibold text-ink">{{ b.bloodGroup ?? '—' }}</dd></div>
-          <div><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">Genotype</dt><dd class="mt-1 font-display text-2xl font-semibold text-ink">{{ b.genotype ?? '—' }}</dd></div>
-          <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">Allergies</dt><dd class="mt-1 font-semibold text-ink">{{ b.allergies ?? 'None added' }}</dd></div>
-          <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">Ongoing conditions</dt><dd class="mt-1 font-semibold text-ink">{{ b.conditions ?? 'None added' }}</dd></div>
-          <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">Emergency contact</dt>
+          <div><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{ 'passport.basics.bloodGroup' | t }}</dt><dd class="mt-1 font-display text-2xl font-semibold text-ink">{{ b.bloodGroup ?? '—' }}</dd></div>
+          <div><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{ 'passport.basics.genotype' | t }}</dt><dd class="mt-1 font-display text-2xl font-semibold text-ink">{{ b.genotype ?? '—' }}</dd></div>
+          <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{ 'passport.basics.allergies' | t }}</dt><dd class="mt-1 font-semibold text-ink">{{ b.allergies ?? ('passport.basics.noneAdded' | t) }}</dd></div>
+          <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{ 'passport.basics.conditions' | t }}</dt><dd class="mt-1 font-semibold text-ink">{{ b.conditions ?? ('passport.basics.noneAdded' | t) }}</dd></div>
+          <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{ 'passport.basics.emergencyContact' | t }}</dt>
             <dd class="mt-1 font-semibold text-ink">
               @if (b.emergencyContactName || b.emergencyContactPhone) {
-                {{ b.emergencyContactName ?? 'Contact' }}@if (b.emergencyContactRelationship) { <span class="font-normal text-ink-muted"> ({{ b.emergencyContactRelationship }})</span> }
+                {{ b.emergencyContactName ?? ('passport.basics.contact' | t) }}@if (b.emergencyContactRelationship) { <span class="font-normal text-ink-muted"> ({{ b.emergencyContactRelationship }})</span> }
                 @if (b.emergencyContactPhone) { · <a [href]="'tel:' + b.emergencyContactPhone" class="text-brand-700 underline underline-offset-2">{{ b.emergencyContactPhone }}</a> }
-              } @else { None added }
+              } @else { {{ 'passport.basics.noneAdded' | t }} }
             </dd>
           </div>
         </dl>
         @if (missingNumbers(); as missing) {
           <div class="mt-5 rounded-2xl bg-ochre-50 p-4 sm:p-5" data-know-your-numbers>
-            <p class="font-semibold text-ink">Don’t know your {{ missing }}? Find out once, keep it for life.</p>
+            <p class="font-semibold text-ink">{{ missing | t }}</p>
             <p class="mt-1 text-sm text-ink-soft">
-              It matters in an emergency, before surgery or a transfusion, and when planning a family. It’s a quick blood test.
-              @if (testPrice(); as price) { <span class="font-semibold text-ink">Standard price: {{ price }}.</span> }
+              {{ 'passport.know.why' | t }}
+              @if (testPrice(); as price) { <span class="font-semibold text-ink">{{ 'passport.know.price' | t: { price } }}</span> }
             </p>
             <div class="mt-4 grid gap-2 sm:grid-cols-2">
               <a routerLink="/me/request-care" [queryParams]="testLink('HOME_VISIT')" class="flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-ink/[0.08] hover:ring-brand-300" data-test-at-home>
                 <span aria-hidden="true" class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
                   <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
                 </span>
-                <span><span class="block font-semibold text-ink">Get tested at home</span><span class="block text-xs text-ink-muted">A trained person comes to you</span></span>
+                <span><span class="block font-semibold text-ink">{{ 'passport.know.atHome' | t }}</span><span class="block text-xs text-ink-muted">{{ 'passport.know.atHomeHint' | t }}</span></span>
               </a>
               <a routerLink="/me/request-care" [queryParams]="testLink('IN_PERSON')" class="flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-ink/[0.08] hover:ring-brand-300" data-test-at-lab>
                 <span aria-hidden="true" class="grid size-9 shrink-0 place-items-center rounded-full bg-leaf-50 text-leaf-700">
                   <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6"/><path d="M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/></svg>
                 </span>
-                <span><span class="block font-semibold text-ink">Go to a lab near you</span><span class="block text-xs text-ink-muted">Pick a place and time</span></span>
+                <span><span class="block font-semibold text-ink">{{ 'passport.know.atLab' | t }}</span><span class="block text-xs text-ink-muted">{{ 'passport.know.atLabHint' | t }}</span></span>
               </a>
             </div>
-            <p class="mt-3 text-xs text-ink-muted">When your result is ready, add it here — or your lab can add it for you. Already know? <button type="button" (click)="startEditing()" class="font-semibold text-brand-700 underline underline-offset-2">Add it now</button>.</p>
+            <p class="mt-3 text-xs text-ink-muted">{{ 'passport.know.addLater' | t }} <button type="button" (click)="startEditing()" class="font-semibold text-brand-700 underline underline-offset-2">{{ 'passport.know.addNow' | t }}</button>.</p>
             <div class="mt-4">
-              <app-help-options topic="TEST_OR_RESULTS" title="Rather arrange it by phone?" hint="Call or WhatsApp us, or leave your number and we’ll book the test with you." />
+              <app-help-options topic="TEST_OR_RESULTS" [title]="'passport.know.phoneTitle' | t" [hint]="'passport.know.phoneHint' | t" />
             </div>
           </div>
         }
@@ -131,6 +132,7 @@ export class HealthBasicsCardComponent {
   private readonly api = inject(HealthBasicsApiService);
   private readonly fb = inject(FormBuilder);
   private readonly catalogue = inject(ServiceCatalogueApiService);
+  private readonly i18n = inject(TranslationService);
 
   readonly bloodGroups = BLOOD_GROUPS;
   readonly genotypes = GENOTYPES;
@@ -139,6 +141,7 @@ export class HealthBasicsCardComponent {
   readonly loadError = signal(false);
   readonly editing = signal(false);
   readonly saving = signal(false);
+  /** Translation key of the save error, or '' when none. */
   readonly saveError = signal('');
 
   readonly form = this.fb.nonNullable.group({
@@ -158,14 +161,17 @@ export class HealthBasicsCardComponent {
     const wanted = [!b?.bloodGroup && 'LAB_BLOOD_GROUP', !b?.genotype && 'LAB_GENOTYPE'].filter(Boolean);
     const prices = this.labPrices().filter((p) => wanted.includes(p.code));
     if (!prices.length || prices.length !== wanted.length || new Set(prices.map((p) => p.currency)).size !== 1) return null;
-    return formatMinor(prices.reduce((sum, p) => sum + p.minor, 0), prices[0].currency) + (prices.length > 1 ? ' for both' : '');
+    const price = formatMinor(prices.reduce((sum, p) => sum + p.minor, 0), prices[0].currency);
+    return prices.length > 1 ? this.i18n.t('passport.know.priceBoth', { price }) : price;
   });
 
-  /** "blood group and genotype", "genotype", … or null when both are known. */
+  /** Translation key of the "Don't know your …?" heading, or null when both are known. */
   readonly missingNumbers = computed(() => {
     const b = this.basics();
-    const missing = [!b?.bloodGroup && 'blood group', !b?.genotype && 'genotype'].filter(Boolean);
-    return missing.length ? missing.join(' and ') : null;
+    if (!b?.bloodGroup && !b?.genotype) return 'passport.know.titleBoth';
+    if (!b?.bloodGroup) return 'passport.know.titleBloodGroup';
+    if (!b?.genotype) return 'passport.know.titleGenotype';
+    return null;
   });
 
   constructor() {
@@ -241,7 +247,7 @@ export class HealthBasicsCardComponent {
           this.basics.set(saved);
           this.editing.set(false);
         },
-        error: () => this.saveError.set('We could not save your health basics. Check the details and try again.'),
+        error: () => this.saveError.set('passport.basics.saveError'),
       });
   }
 }
