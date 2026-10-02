@@ -20,10 +20,11 @@ import { safeInternalReturnUrl } from '../../core/auth/safe-return-url';
 import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-patient-register-page',
-  imports: [ReactiveFormsModule, RouterLink, AuthVisualPanelComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthVisualPanelComponent, TranslatePipe],
   templateUrl: './patient-register-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -32,9 +33,12 @@ export class PatientRegisterPageComponent {
   private readonly api = inject(AuthApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly locationData = inject(LocationDataService);
+  private readonly i18n = inject(TranslationService);
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
   readonly defaultCountryCode = this.market;
-  readonly phonePlaceholder = `e.g. ${SMARTCLINIC_MARKETS[this.market].examplePhone}`;
+  get phonePlaceholder(): string {
+    return this.i18n.t('auth.register.phonePlaceholder', { phone: SMARTCLINIC_MARKETS[this.market].examplePhone });
+  }
 
   private readonly referralCode =
     this.route.snapshot.queryParamMap.get('ref')?.trim() || null;
@@ -161,7 +165,7 @@ export class PatientRegisterPageComponent {
     const value = this.form.getRawValue();
 
     if(!value.email.trim().toLowerCase() && !value.phone.trim()){
-      this.error.set('Either email or phone number is required')
+      this.error.set(this.i18n.t('auth.register.contactRequired'))
      return
     }
 
@@ -215,12 +219,12 @@ export class PatientRegisterPageComponent {
           this.error.set(
             message || 
             (this.referralCode && error.status === 400
-              ? 'This referral link is no longer valid. Ask the person who invited you for a new link.'
+              ? this.i18n.t('auth.register.referralInvalid')
               : error.status === 409
-                ? 'An account already exists with this email or phone number. Sign in instead.'
+                ? this.i18n.t('auth.register.accountExists')
                 : error.status === 0
-                  ? 'SmartClinic could not be reached. Check your connection and try again.'
-                  : 'We could not create your account. Check the form and try again.'),
+                  ? this.i18n.t('auth.register.unreachable')
+                  : this.i18n.t('auth.register.failed')),
           );
         },
       });
@@ -259,20 +263,20 @@ export class PatientRegisterPageComponent {
   if (score <= 2) {
     return {
       level: 1,
-      label: 'Weak',
+      label: this.i18n.t('auth.register.strengthWeak'),
     };
   }
 
   if (score <= 4) {
     return {
       level: 2,
-      label: 'Good',
+      label: this.i18n.t('auth.register.strengthGood'),
     };
   }
 
   return {
     level: 3,
-    label: 'Strong',
+    label: this.i18n.t('auth.register.strengthStrong'),
   };
 }
 }

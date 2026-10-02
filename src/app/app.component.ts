@@ -7,10 +7,11 @@ import { SmartClinicCompanionComponent } from "./shared/components/smartclinic-c
 import { LocationDataService } from './core/services/location-data.service';
 import { AccountLocaleSync, LocalePreferencesService } from './core/services/locale-preferences.service';
 import { LocalePickerComponent } from './shared/components/locale-picker/locale-picker.component';
+import { TranslatePipe } from './core/services/translation.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent, LocalePickerComponent],
+  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent, LocalePickerComponent, TranslatePipe],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

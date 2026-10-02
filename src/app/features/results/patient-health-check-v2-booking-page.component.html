@@ -1,13 +1,13 @@
 <main class="mx-auto max-w-5xl px-5 py-8 sm:px-8">
-  <a routerLink="/me" class="font-bold text-brand-700">← Back to home</a>
+  <a routerLink="/me" class="font-bold text-brand-700">{{ 'booking.header.back' | t }}</a>
   <header class="mt-5">
-    <p class="font-bold uppercase tracking-wider text-brand-700">Book a Checkup</p>
-    <h1 class="font-display mt-2 text-3xl font-semibold">Choose your checkup</h1>
-    <p class="mt-2 text-ink-soft">A few simple choices, then you can review and pay.</p>
+    <p class="font-bold uppercase tracking-wider text-brand-700">{{ 'booking.header.eyebrow' | t }}</p>
+    <h1 class="font-display mt-2 text-3xl font-semibold">{{ 'booking.header.title' | t }}</h1>
+    <p class="mt-2 text-ink-soft">{{ 'booking.header.intro' | t }}</p>
   </header>
 
-  <nav aria-label="Booking progress" class="mt-6 rounded-2xl border bg-white p-4">
-    <p class="font-bold">Step {{ currentStep() }} of 4</p>
+  <nav [attr.aria-label]="'booking.progress.label' | t" class="mt-6 rounded-2xl border bg-white p-4">
+    <p class="font-bold">{{ 'booking.progress.step' | t: { current: currentStep(), total: steps.length } }}</p>
     <ol class="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
       @for (label of steps; track label; let index = $index) {
         <li
@@ -17,19 +17,19 @@
           [attr.aria-current]="currentStep() === index + 1 ? 'step' : null"
         >
           <span class="block text-xs">{{ index + 1 }}</span
-          ><strong>{{ label }}</strong>
+          ><strong>{{ stepKeys[index] | t }}</strong>
         </li>
       }
     </ol>
   </nav>
 
   @if (catalogueLoading()) {
-    <p role="status" class="mt-6 rounded-xl border bg-white p-5">Loading Health Check options…</p>
+    <p role="status" class="mt-6 rounded-xl border bg-white p-5">{{ 'booking.catalogue.loading' | t }}</p>
   } @else if (catalogueError()) {
     <div role="alert" class="mt-6 rounded-xl bg-red-50 p-5">
-      <p>Health Check options are unavailable.</p>
+      <p>{{ 'booking.catalogue.error' | t }}</p>
       <button type="button" (click)="loadCatalogue()" class="mt-2 font-bold underline">
-        Try again
+        {{ 'booking.catalogue.retry' | t }}
       </button>
     </div>
   } @else {
@@ -41,14 +41,14 @@
             (ngSubmit)="discover(1)"
             class="rounded-2xl border bg-white p-5 sm:p-6"
           >
-            <h2 class="font-display text-2xl font-semibold">Your checkup</h2>
-            <p class="mt-2 text-ink-soft">Choose who it is for, the checkup you want and where you want it done.</p>
+            <h2 class="font-display text-2xl font-semibold">{{ 'booking.checkup.title' | t }}</h2>
+            <p class="mt-2 text-ink-soft">{{ 'booking.checkup.intro' | t }}</p>
             <fieldset class="mt-5">
-              <legend class="font-bold">Who is this for?</legend>
+              <legend class="font-bold">{{ 'booking.who.legend' | t }}</legend>
               <div class="mt-3 grid gap-3 sm:grid-cols-2">
                 <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
                   <input type="radio" name="health-check-participant" value="SELF" [checked]="participant().kind === 'SELF'" (change)="selectParticipant('SELF')" />
-                  <strong>Me</strong>
+                  <strong>{{ 'booking.who.me' | t }}</strong>
                 </label>
                 @for (item of dependants(); track item.patientReference) {
                   <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4">
@@ -57,24 +57,24 @@
                   </label>
                 }
               </div>
-              @if (dependantsLoading()) { <p role="status" class="mt-2 text-sm text-ink-soft">Loading dependants…</p> }
-              @else if (dependantsError()) { <p class="mt-2 text-sm text-ink-soft">Dependants could not be loaded. You can continue booking for yourself.</p> }
-              <a routerLink="/me/family" class="mt-3 inline-block text-sm font-bold text-brand-700 underline">Add a dependant</a>
+              @if (dependantsLoading()) { <p role="status" class="mt-2 text-sm text-ink-soft">{{ 'booking.who.loadingDependants' | t }}</p> }
+              @else if (dependantsError()) { <p class="mt-2 text-sm text-ink-soft">{{ 'booking.who.dependantsError' | t }}</p> }
+              <a routerLink="/me/family" class="mt-3 inline-block text-sm font-bold text-brand-700 underline">{{ 'booking.who.addDependant' | t }}</a>
             </fieldset>
             <div class="mt-5 grid gap-5 sm:grid-cols-2">
               <fieldset class="sm:col-span-2">
-                <legend class="font-bold">Choose a checkup</legend>
-                <p class="mt-1 text-sm text-ink-soft">Not sure? Basic covers the essentials most adults need once a year.</p>
+                <legend class="font-bold">{{ 'booking.package.legend' | t }}</legend>
+                <p class="mt-1 text-sm text-ink-soft">{{ 'booking.package.hint' | t }}</p>
                 <div class="mt-3 grid gap-3 sm:grid-cols-3" data-package-choices>
                   @for (item of packages(); track item.code) {
                     <label class="relative flex cursor-pointer flex-col gap-1 rounded-2xl border-2 bg-white p-4 transition {{ form.controls.packageCode.value === item.code ? 'border-brand-700 bg-brand-50' : 'border-ink/10 hover:border-brand-300' }}">
                       <input type="radio" formControlName="packageCode" [value]="item.code" (change)="packageChanged()" class="sr-only" />
                       <span class="flex items-start justify-between gap-2">
                         <span class="font-display text-lg font-semibold text-ink">{{ packageLabel(item, $index) }}</span>
-                        @if (form.controls.packageCode.value === item.code) { <span class="rounded-full bg-brand-700 px-2 py-0.5 text-xs font-bold text-white">Chosen</span> }
+                        @if (form.controls.packageCode.value === item.code) { <span class="rounded-full bg-brand-700 px-2 py-0.5 text-xs font-bold text-white">{{ 'booking.package.chosen' | t }}</span> }
                       </span>
-                      @if (item.fromPriceMinor !== null && item.currency) { <span class="text-sm text-ink-soft">From <strong class="text-ink">{{ price(item.fromPriceMinor, item.currency) }}</strong></span> }
-                      <span class="text-sm text-ink-soft">{{ item.includedContents.length }} checks included@if (item.estimatedDurationMinutes) { · about {{ item.estimatedDurationMinutes }} min }</span>
+                      @if (item.fromPriceMinor !== null && item.currency) { <span class="text-sm text-ink-soft">{{ 'booking.package.from' | t }} <strong class="text-ink">{{ price(item.fromPriceMinor, item.currency) }}</strong></span> }
+                      <span class="text-sm text-ink-soft">{{ 'booking.package.checksIncluded' | t: { count: item.includedContents.length } }}@if (item.estimatedDurationMinutes) { · {{ 'booking.package.aboutMinutes' | t: { minutes: item.estimatedDurationMinutes } }} }</span>
                     </label>
                   }
                 </div>
@@ -82,8 +82,8 @@
               @if (selectedPackage(); as selected) {
                 <section class="rounded-2xl border border-brand-100 bg-brand-50 p-4 sm:col-span-2">
                   <div class="flex flex-wrap items-start justify-between gap-2">
-                    <div><p class="text-xs font-bold uppercase tracking-wide text-brand-700">What this checkup includes</p><h3 class="mt-1 text-lg font-black text-ink">{{ packageLabel(selected, 0) }}</h3></div>
-                    @if (selected.estimatedDurationMinutes) { <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-ink-soft">About {{ selected.estimatedDurationMinutes }} min</span> }
+                    <div><p class="text-xs font-bold uppercase tracking-wide text-brand-700">{{ 'booking.package.includesTitle' | t }}</p><h3 class="mt-1 text-lg font-black text-ink">{{ packageLabel(selected, 0) }}</h3></div>
+                    @if (selected.estimatedDurationMinutes) { <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-ink-soft">{{ 'booking.package.aboutMinutesBadge' | t: { minutes: selected.estimatedDurationMinutes } }}</span> }
                   </div>
                   <p class="mt-2 text-sm text-ink-soft">{{ packageSummary(selected, 0) }}</p>
                   @if (selected.includedContents.length) {
@@ -93,22 +93,22 @@
                       }
                     </ul>
                   } @else {
-                    <p class="mt-3 rounded-xl bg-white p-3 text-sm text-ink-soft">The provider will see the package specification before confirming this checkup.</p>
+                    <p class="mt-3 rounded-xl bg-white p-3 text-sm text-ink-soft">{{ 'booking.package.noContents' | t }}</p>
                   }
                 </section>
               }
               <fieldset class="sm:col-span-2">
-                <legend class="font-bold">Where should we do it?</legend>
+                <legend class="font-bold">{{ 'booking.place.legend' | t }}</legend>
                 @if (!modes().length) {
-                  <p class="mt-2 text-sm text-ink-soft">Choose a checkup first.</p>
+                  <p class="mt-2 text-sm text-ink-soft">{{ 'booking.place.chooseCheckupFirst' | t }}</p>
                 } @else {
                   <div class="mt-3 grid gap-3 sm:grid-cols-2" data-place-choices>
                     @for (item of modes(); track item.code) {
                       <label class="flex cursor-pointer gap-3 rounded-2xl border-2 bg-white p-4 transition {{ form.controls.fulfilmentModeCode.value === item.code ? 'border-brand-700 bg-brand-50' : 'border-ink/10 hover:border-brand-300' }}">
                         <input type="radio" formControlName="fulfilmentModeCode" [value]="item.code" (change)="fulfilmentChanged()" class="mt-1 size-4 accent-brand-700" />
                         <span>
-                          <span class="block font-semibold text-ink">{{ item.code === 'HOME_VISIT' ? 'At home' : 'At a health centre' }}</span>
-                          <span class="mt-0.5 block text-sm text-ink-soft">{{ item.code === 'HOME_VISIT' ? 'A health worker comes to you. A small travel fee may apply.' : 'Go to a clinic or lab near you at the time you choose.' }}</span>
+                          <span class="block font-semibold text-ink">{{ (item.code === 'HOME_VISIT' ? 'booking.place.home' : 'booking.place.centre') | t }}</span>
+                          <span class="mt-0.5 block text-sm text-ink-soft">{{ (item.code === 'HOME_VISIT' ? 'booking.place.homeHint' : 'booking.place.centreHint') | t }}</span>
                         </span>
                       </label>
                     }
@@ -116,7 +116,7 @@
                 }
               </fieldset>
               <label class="font-bold"
-                >Suggested date<input
+                >{{ 'booking.when.date' | t }}<input
                   type="date"
                   formControlName="preferredDate"
                   (change)="contextChanged()"
@@ -124,41 +124,41 @@
               /></label>
               <div>
                 <label class="font-bold"
-                  >Suggested time<input
+                  >{{ 'booking.when.time' | t }}<input
                     type="time"
                     formControlName="preferredTime"
                     (change)="contextChanged()"
                     class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 /></label>
-                <div class="mt-2 flex flex-wrap gap-2" role="group" aria-label="Quick times">
+                <div class="mt-2 flex flex-wrap gap-2" role="group" [attr.aria-label]="'booking.when.quickTimes' | t">
                   @for (slot of timeSlots; track slot.time) {
-                    <button type="button" (click)="pickTime(slot.time)" [attr.aria-pressed]="form.controls.preferredTime.value === slot.time" class="min-h-10 rounded-full border px-3 text-sm font-semibold {{ form.controls.preferredTime.value === slot.time ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-ink/15 text-ink-soft' }}">{{ slot.label }}</button>
+                    <button type="button" (click)="pickTime(slot.time)" [attr.aria-pressed]="form.controls.preferredTime.value === slot.time" class="min-h-10 rounded-full border px-3 text-sm font-semibold {{ form.controls.preferredTime.value === slot.time ? 'border-brand-700 bg-brand-50 text-brand-800' : 'border-ink/15 text-ink-soft' }}">{{ slot.key | t }}</button>
                   }
                 </div>
               </div>
             </div>
             <div formGroupName="address" class="mt-6 grid gap-5 sm:grid-cols-2">
               <label class="font-bold"
-                >State
+                >{{ 'booking.address.state' | t }}
                 <select
                   formControlName="stateOrRegion"
                   (change)="stateChanged($any($event.target).value)"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 >
-                  <option value="">Select state</option>
+                  <option value="">{{ 'booking.address.selectState' | t }}</option>
                   @for (state of states(); track state.isoCode) {
                     <option [value]="state.name">{{ state.name }}</option>
                   }
                 </select>
               </label>
               <label class="font-bold"
-                >City / Area
+                >{{ 'booking.address.city' | t }}
                 <select
                   formControlName="city"
                   (change)="contextChanged()"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3 disabled:bg-slate-100"
                 >
-                  <option value="">Select city / area</option>
+                  <option value="">{{ 'booking.address.selectCity' | t }}</option>
                   @for (city of cities(); track city.name) {
                     <option [value]="city.name">{{ city.name }}</option>
                   }
@@ -166,22 +166,22 @@
               </label>
               @if (isHomeVisit()) {
                 <label class="font-bold"
-                  >Street address<input
+                  >{{ 'booking.address.street' | t }}<input
                     formControlName="addressLine1"
                     (input)="contextChanged()"
                     placeholder="12 Ring Road"
                     class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 /></label>
                 <label class="font-bold"
-                  >Address line 2 / landmark <span class="font-normal">(optional)</span
+                  >{{ 'booking.address.line2' | t }} <span class="font-normal">{{ 'booking.address.optional' | t }}</span
                   ><input
                     formControlName="addressLine2"
                     (input)="contextChanged()"
-                    placeholder="Opposite Central Pharmacy"
+                    [placeholder]="'booking.address.line2Placeholder' | t"
                     class="mt-2 min-h-12 w-full rounded-xl border p-3"
                 /></label>
                 <label class="font-bold"
-                  >Postal code <span class="font-normal">(optional)</span
+                  >{{ 'booking.address.postalCode' | t }} <span class="font-normal">{{ 'booking.address.optional' | t }}</span
                   ><input
                     formControlName="postalCode"
                     (input)="contextChanged()"
@@ -194,10 +194,10 @@
               [disabled]="form.invalid || discovering()"
               class="mt-6 min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
             >
-              {{ discovering() ? 'Checking availability…' : 'Continue' }}
+              {{ (discovering() ? 'booking.checkup.checking' : 'booking.actions.continue') | t }}
             </button>
             <div class="mt-6">
-              <app-help-options topic="BOOK_CHECKUP" title="Rather book by phone?" hint="Our team can choose the right checkup with you and book it, at home or at a clinic." />
+              <app-help-options topic="BOOK_CHECKUP" [title]="'booking.help.title' | t" [hint]="'booking.help.hint' | t" />
             </div>
             @if (discoveryError()) {
               <p tabindex="-1" role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
@@ -206,32 +206,31 @@
             }
           @if (discovered() && !offerings().length) {
   <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
-    <h3 class="font-bold text-ink">No matching provider for this exact choice yet</h3>
-    <p class="mt-1 text-ink-soft">SmartClinic couldn't match this checkup, location and time exactly. Your checkup is still available.</p>
+    <h3 class="font-bold text-ink">{{ 'booking.noMatch.title' | t }}</h3>
+    <p class="mt-1 text-ink-soft">{{ 'booking.noMatch.intro' | t }}</p>
     <div class="mt-4 rounded-2xl border border-brand-200 bg-white p-4">
       @if (assistedMatchReference()) {
-        <p class="font-black text-ink">SmartClinic is finding an option for you ✓</p>
-        <p class="mt-1 text-sm text-ink-soft">You can leave this page. We will keep this request in the matching queue and escalate it for agent review if automation cannot find a suitable option.</p>
-        <p class="mt-2 text-xs font-bold text-ink-muted">Reference {{ assistedMatchReference() }}</p>
+        <p class="font-black text-ink">{{ 'booking.noMatch.findingTitle' | t }}</p>
+        <p class="mt-1 text-sm text-ink-soft">{{ 'booking.noMatch.findingBody' | t }}</p>
+        <p class="mt-2 text-xs font-bold text-ink-muted">{{ 'booking.noMatch.reference' | t: { reference: assistedMatchReference() } }}</p>
       } @else {
-        <p class="font-black text-ink">Let SmartClinic find one for me</p>
-        <p class="mt-1 text-sm text-ink-soft">We'll keep searching beyond the exact match and escalate the request if needed. You won't have to start again.</p>
+        <p class="font-black text-ink">{{ 'booking.noMatch.letUsFindTitle' | t }}</p>
+        <p class="mt-1 text-sm text-ink-soft">{{ 'booking.noMatch.letUsFindBody' | t }}</p>
         <div class="mt-3 grid gap-2 sm:grid-cols-3">
-          <button type="button" (click)="requestAssistedMatch('NOTIFY')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl bg-brand-700 px-4 font-bold text-white">{{ assistedMatchingBusy() ? 'Starting search…' : 'Keep searching' }}</button>
-          <button type="button" (click)="requestAssistedMatch('CALL')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-ink">Have an agent call me</button>
-          <button type="button" (click)="requestAssistedMatch('WHATSAPP')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-ink">WhatsApp me</button>
+          <button type="button" (click)="requestAssistedMatch('NOTIFY')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl bg-brand-700 px-4 font-bold text-white">{{ (assistedMatchingBusy() ? 'booking.noMatch.starting' : 'booking.noMatch.keepSearching') | t }}</button>
+          <button type="button" (click)="requestAssistedMatch('CALL')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-ink">{{ 'booking.noMatch.callMe' | t }}</button>
+          <button type="button" (click)="requestAssistedMatch('WHATSAPP')" [disabled]="assistedMatchingBusy()" class="min-h-11 rounded-xl border border-brand-200 px-4 font-bold text-ink">{{ 'booking.noMatch.whatsappMe' | t }}</button>
         </div>
         @if(assistedMatchError()){<p class="mt-2 text-sm font-semibold text-red-700">{{ assistedMatchError() }}</p>}
       }
     </div>
     <div class="mt-4 grid gap-2 sm:grid-cols-2">
-      <button type="button" (click)="backTo(1)" class="min-h-11 rounded-xl border border-amber-300 bg-white px-4 font-bold text-ink">Change time or location</button>
-      <a routerLink="/me/hospitals" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-200 bg-white px-4 font-bold text-brand-800">Browse hospitals</a>
+      <button type="button" (click)="backTo(1)" class="min-h-11 rounded-xl border border-amber-300 bg-white px-4 font-bold text-ink">{{ 'booking.noMatch.changeTimeOrPlace' | t }}</button>
+      <a routerLink="/me/hospitals" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-brand-200 bg-white px-4 font-bold text-brand-800">{{ 'booking.noMatch.browseHospitals' | t }}</a>
     </div>
 
     <p class="mt-3 text-sm text-ink-soft">
-      Know a hospital, clinic or diagnostic centre that could provide this service?
-      Invite them to join SmartClinic Network.
+      {{ 'booking.noMatch.knowProvider' | t }}
     </p>
 
     <!-- Reward incentive -->
@@ -246,12 +245,11 @@
 
         <div>
           <p class="text-sm font-bold text-ink">
-            Earn rewards for growing the network
+            {{ 'booking.noMatch.rewardTitle' | t }}
           </p>
 
           <p class="mt-0.5 text-sm text-ink-soft">
-            Invite a provider to SmartClinic Network. You may earn reward points
-            when an eligible provider successfully joins through your invitation.
+            {{ 'booking.noMatch.rewardBody' | t }}
           </p>
         </div>
       </div>
@@ -262,7 +260,7 @@
       (click)="openProviderInvitation()"
       class="mt-4 min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white"
     >
-      Invite a provider
+      {{ 'booking.noMatch.invite' | t }}
     </button>
   </div>
 }
@@ -270,8 +268,8 @@
         }
         @case (2) {
           <section class="rounded-2xl border bg-white p-5 sm:p-6">
-            <h2 class="font-display text-2xl font-semibold">Choose where to get your checkup</h2>
-            <p class="mt-2 text-ink-soft">We found more than one available option. Choose the one you prefer.</p>
+            <h2 class="font-display text-2xl font-semibold">{{ 'booking.offers.title' | t }}</h2>
+            <p class="mt-2 text-ink-soft">{{ 'booking.offers.intro' | t }}</p>
             <div class="mt-5 grid gap-4">
               @for (offering of offerings(); track offeringKey(offering)) {
                 <button
@@ -282,16 +280,15 @@
                 >
                   <strong class="text-lg">{{ offering.providerName }}</strong>
                   <span class="mt-2 block"
-                    >From {{ money(offering.basePackagePriceMinor, offering.currency) }}</span
+                    >{{ 'booking.offers.from' | t: { price: money(offering.basePackagePriceMinor, offering.currency) } }}</span
                   >
                   <span class="mt-1 block text-sm text-ink-soft"
-                    >{{ offering.fulfilmentMode.name }} · Fulfilment fee
-                    {{ money(offering.fulfilmentMode.fulfilmentFeeMinor, offering.currency) }}</span
+                    >{{ offering.fulfilmentMode.name }} · {{ 'booking.offers.fulfilmentFee' | t: { fee: money(offering.fulfilmentMode.fulfilmentFeeMinor, offering.currency) } }}</span
                   >
                   @if (offering.travelFeeMinor > 0) {
                     <span class="mt-1 block text-sm font-semibold text-brand-800">
-                      Includes {{ money(offering.travelFeeMinor, offering.currency) }} travel
-                      @if (offering.travelDistanceKm !== null) { · about {{ offering.travelDistanceKm }} km }
+                      {{ 'booking.offers.includesTravel' | t: { amount: money(offering.travelFeeMinor, offering.currency) } }}
+                      @if (offering.travelDistanceKm !== null) { · {{ 'booking.offers.aboutKm' | t: { km: offering.travelDistanceKm } }} }
                     </span>
                   }
                 </button>
@@ -299,14 +296,14 @@
             </div>
             <div class="mt-5 flex items-center justify-between gap-3">
               <button type="button" (click)="discover(page() - 1)" [disabled]="page() <= 1">
-                Previous page</button
-              ><span>Page {{ page() }} of {{ totalPages() || 1 }}</span
+                {{ 'booking.offers.previousPage' | t }}</button
+              ><span>{{ 'booking.offers.pageOf' | t: { page: page(), total: totalPages() || 1 } }}</span
               ><button
                 type="button"
                 (click)="discover(page() + 1)"
                 [disabled]="page() >= totalPages()"
               >
-                Next page
+                {{ 'booking.offers.nextPage' | t }}
               </button>
             </div>
             <div class="mt-6 flex flex-wrap justify-between gap-3">
@@ -315,14 +312,14 @@
                 (click)="backTo(1)"
                 class="min-h-12 rounded-xl border px-5 font-bold"
               >
-                Back</button
+                {{ 'booking.actions.back' | t }}</button
               ><button
                 type="button"
                 (click)="continueToCustomise()"
                 [disabled]="!selectedOffering()"
                 class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
               >
-                Continue
+                {{ 'booking.actions.continue' | t }}
               </button>
             </div>
           </section>
@@ -330,11 +327,11 @@
         @case (3) {
           @if (selectedOffering(); as offering) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
-              <h2 class="font-display text-2xl font-semibold">Anything else?</h2>
-              <p class="mt-2 text-ink-soft">Confirm where you will attend and add extras only if you want them.</p>
+              <h2 class="font-display text-2xl font-semibold">{{ 'booking.extras.title' | t }}</h2>
+              <p class="mt-2 text-ink-soft">{{ 'booking.extras.intro' | t }}</p>
               @if (offering.fulfilmentMode.code === 'PROVIDER_LOCATION') {
                 <fieldset class="mt-5">
-                  <legend class="font-bold">Where will you attend?</legend>
+                  <legend class="font-bold">{{ 'booking.extras.whereAttend' | t }}</legend>
                   @for (location of offering.locations; track location.reference) {
                     <label class="mt-3 flex cursor-pointer gap-3 rounded-xl border p-4"
                       ><input
@@ -355,8 +352,8 @@
               }
               @if (offering.addons.length) {
                 <fieldset class="mt-6">
-                  <legend class="font-bold">Want to add anything?</legend>
-                  <p class="mt-1 text-sm text-ink-soft">Optional — you can continue without adding anything.</p>
+                  <legend class="font-bold">{{ 'booking.extras.addLegend' | t }}</legend>
+                  <p class="mt-1 text-sm text-ink-soft">{{ 'booking.extras.addHint' | t }}</p>
                   @for (addon of offering.addons; track addon.code) {
                     <label
                       class="mt-3 flex cursor-pointer justify-between gap-4 rounded-xl border p-4"
@@ -372,7 +369,7 @@
                   }
                 </fieldset>
               } @else {
-                <p class="mt-5 text-ink-soft">No optional add-ons are available.</p>
+                <p class="mt-5 text-ink-soft">{{ 'booking.extras.noAddons' | t }}</p>
               }
               @if (quoteError()) {
                 <p role="alert" class="mt-4 rounded-xl bg-red-50 p-4 text-red-900">
@@ -385,7 +382,7 @@
                   (click)="backTo(2)"
                   class="min-h-12 rounded-xl border px-5 font-bold"
                 >
-                  Back</button
+                  {{ 'booking.actions.back' | t }}</button
                 ><button
                   type="button"
                   (click)="reviewBooking()"
@@ -395,7 +392,7 @@
                   "
                   class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
                 >
-                  {{ quoting() ? 'Confirming price…' : 'Review & Pay' }}
+                  {{ (quoting() ? 'booking.extras.confirmingPrice' : 'booking.extras.review') | t }}
                 </button>
               </div>
             </section>
@@ -404,30 +401,29 @@
         @case (4) {
           @if (quote(); as confirmed) {
             <section class="rounded-2xl border bg-white p-5 sm:p-6">
-              <h2 class="font-display text-2xl font-semibold">Review & Pay</h2>
-              <p class="mt-2 text-ink-soft">Check the important details below. If they look right, continue to payment.</p>
+              <h2 class="font-display text-2xl font-semibold">{{ 'booking.review.title' | t }}</h2>
+              <p class="mt-2 text-ink-soft">{{ 'booking.review.intro' | t }}</p>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt class="text-sm text-ink-soft">Participant</dt>
+                  <dt class="text-sm text-ink-soft">{{ 'booking.review.participant' | t }}</dt>
                   <dd class="font-bold">{{ participantName() }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-ink-soft">Health Check</dt>
+                  <dt class="text-sm text-ink-soft">{{ 'booking.review.healthCheck' | t }}</dt>
                   <dd class="font-bold">{{ confirmed.package.name }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-ink-soft">Provider</dt>
+                  <dt class="text-sm text-ink-soft">{{ 'booking.review.provider' | t }}</dt>
                   <dd class="font-bold">{{ confirmed.provider.name }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-ink-soft">How you’ll attend</dt>
+                  <dt class="text-sm text-ink-soft">{{ 'booking.review.howAttend' | t }}</dt>
                   <dd class="font-bold">{{ confirmed.fulfilmentMode.name }}</dd>
                 </div>
                 <div>
-                  <dt class="text-sm text-ink-soft">Preferred appointment</dt>
+                  <dt class="text-sm text-ink-soft">{{ 'booking.review.preferred' | t }}</dt>
                   <dd class="font-bold">
-                    {{ form.controls.preferredDate.value }} at
-                    {{ form.controls.preferredTime.value }}
+                    {{ 'booking.review.dateAtTime' | t: { date: form.controls.preferredDate.value, time: form.controls.preferredTime.value } }}
                   </dd>
                 </div>
                 @if (
@@ -436,7 +432,7 @@
                   as location
                 ) {
                   <div class="sm:col-span-2">
-                    <dt class="text-sm text-ink-soft">Provider location</dt>
+                    <dt class="text-sm text-ink-soft">{{ 'booking.review.providerLocation' | t }}</dt>
                     <dd class="font-bold">
                       {{ location.name }}, {{ location.addressLine1 }}, {{ location.city }}
                     </dd>
@@ -444,7 +440,7 @@
                 }
                 @if (confirmed.fulfilmentMode.code === 'HOME_VISIT') {
                   <div class="sm:col-span-2">
-                    <dt class="text-sm text-ink-soft">Home visit address</dt>
+                    <dt class="text-sm text-ink-soft">{{ 'booking.review.homeAddress' | t }}</dt>
                     <dd class="font-bold">
                       {{ form.controls.address.controls.addressLine1.value }},
                       {{ form.controls.address.controls.city.value }},
@@ -455,7 +451,7 @@
               </dl>
               @if (confirmed.includedContents.length) {
                 <details class="mt-5 rounded-xl border border-ink/[0.08] p-4">
-                  <summary class="cursor-pointer font-bold text-brand-800">What’s included?</summary>
+                  <summary class="cursor-pointer font-bold text-brand-800">{{ 'booking.review.included' | t }}</summary>
                 <ul class="mt-2 list-disc pl-5">
                   @for (item of confirmed.includedContents; track item.code) {
                     <li>{{ item.name }}</li>
@@ -464,7 +460,7 @@
                 </details>
               }
               @if (confirmed.selectedAddons.length) {
-                <h3 class="mt-5 font-bold">Selected add-ons</h3>
+                <h3 class="mt-5 font-bold">{{ 'booking.review.addons' | t }}</h3>
                 <ul class="mt-2 list-disc pl-5">
                   @for (item of confirmed.selectedAddons; track item.code) {
                     <li>{{ item.name }}</li>
@@ -482,14 +478,14 @@
                     (click)="backTo(3)"
                     class="min-h-12 rounded-xl border px-5 font-bold"
                   >
-                    Back</button
+                    {{ 'booking.actions.back' | t }}</button
                   ><button
                     type="button"
                     (click)="createBooking()"
                     [disabled]="creating()"
                     class="min-h-12 rounded-xl bg-brand-700 px-6 font-bold text-white disabled:opacity-50"
                   >
-                    {{ creating() ? 'Preparing payment…' : 'Pay for Checkup' }}
+                    {{ (creating() ? 'booking.review.preparingPayment' : 'booking.review.pay') | t }}
                   </button>
                 </div>
               }
@@ -497,28 +493,27 @@
                 <p role="alert" class="mt-4 text-red-800">{{ createError() }}</p>
               }
               @if (created(); as booking) {
-                <div class="mt-6 rounded-xl bg-green-50 p-4"><strong>Health Check for</strong><p>{{ booking.participant.displayName || ((booking.participant.firstName || booking.participant.givenName) + ' ' + (booking.participant.lastName || booking.participant.familyName)) }}</p></div>
+                <div class="mt-6 rounded-xl bg-green-50 p-4"><strong>{{ 'booking.review.healthCheckFor' | t }}</strong><p>{{ booking.participant.displayName || ((booking.participant.firstName || booking.participant.givenName) + ' ' + (booking.participant.lastName || booking.participant.familyName)) }}</p></div>
                 <div id="booking-payment" tabindex="-1" class="mt-6 scroll-mt-4 outline-none">
                   <app-patient-payment-panel [reference]="booking.bookingReference" />
                 </div>
                 <section id="booking-success" tabindex="-1" class="mt-6 scroll-mt-4 rounded-2xl bg-brand-50 p-5 outline-none ring-1 ring-brand-100">
-                  <h3 class="text-xl font-bold text-ink">After payment</h3>
+                  <h3 class="text-xl font-bold text-ink">{{ 'booking.after.title' | t }}</h3>
                   <p class="mt-2 text-ink-soft">
-                    We’ll keep this checkup in My Health so you can return to the booking and see what happens next.
+                    {{ 'booking.after.body' | t }}
                   </p>
                   <div class="mt-4 rounded-xl bg-white p-4 ring-1 ring-ink/[0.08]">
-                    <strong>Keep your health checks on track</strong>
+                    <strong>{{ 'booking.after.trackTitle' | t }}</strong>
                     <p class="mt-1 text-sm text-ink-soft">
-                      After this checkup is completed, SmartClinic can help you remember when it is time to check again.
-                      No automatic booking or charge will be made.
+                      {{ 'booking.after.trackBody' | t }}
                     </p>
                   </div>
                   <div class="mt-4 flex flex-wrap gap-3">
                     <a routerLink="/me/health-checks" class="inline-flex min-h-11 items-center rounded-xl bg-brand-700 px-5 font-bold text-white">
-                      View My Checkups
+                      {{ 'booking.after.viewCheckups' | t }}
                     </a>
                     <a routerLink="/me" class="inline-flex min-h-11 items-center rounded-xl border border-brand-200 bg-white px-5 font-bold text-brand-800">
-                      Back to Home
+                      {{ 'booking.after.backHome' | t }}
                     </a>
                   </div>
                 </section>
@@ -541,10 +536,10 @@
       >
         <div class="flex items-start justify-between gap-4">
           <div>
-            <h2 class="font-display text-2xl font-semibold">Invite a provider</h2>
+            <h2 class="font-display text-2xl font-semibold">{{ 'booking.invite.title' | t }}</h2>
 
             <p class="mt-1 text-ink-soft">
-              Invite a hospital, clinic or diagnostic centre to join SmartClinic Network.
+              {{ 'booking.invite.intro' | t }}
             </p>
           </div>
 
@@ -552,7 +547,7 @@
             type="button"
             (click)="closeProviderInvitation()"
             class="rounded-lg p-2 text-ink-muted hover:bg-sand-100 hover:text-slate-900"
-            aria-label="Close provider invitation"
+            [attr.aria-label]="'booking.invite.close' | t"
           >
             ✕
           </button>
@@ -563,7 +558,7 @@
             <div class="grid gap-2 sm:grid-cols-2">
               <div>
                 <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  Health Check
+                  {{ 'booking.invite.healthCheck' | t }}
                 </span>
 
                 <strong class="mt-1 block">
@@ -573,7 +568,7 @@
 
               <div>
                 <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  Location
+                  {{ 'booking.invite.location' | t }}
                 </span>
 
                 <strong class="mt-1 block">
@@ -583,7 +578,7 @@
 
               <div>
                 <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  Fulfilment
+                  {{ 'booking.invite.fulfilment' | t }}
                 </span>
 
                 <strong class="mt-1 block">
@@ -593,13 +588,11 @@
 
               <div>
                 <span class="block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  Preferred appointment
+                  {{ 'booking.invite.preferred' | t }}
                 </span>
 
                 <strong class="mt-1 block">
-                  {{ context.preferredDate }}
-                  at
-                  {{ context.preferredTime }}
+                  {{ 'booking.review.dateAtTime' | t: { date: context.preferredDate, time: context.preferredTime } }}
                 </strong>
               </div>
             </div>
@@ -608,15 +601,14 @@
 
         @if (providerInvitationSuccess(); as invitation) {
           <div role="status" class="mt-5 rounded-xl bg-green-50 p-4 text-green-900">
-            <h3 class="font-bold">Invitation submitted</h3>
+            <h3 class="font-bold">{{ 'booking.invite.submittedTitle' | t }}</h3>
 
             <p class="mt-1 text-sm">
-              Thanks. We'll use the provider details you supplied to help grow the SmartClinic
-              Network in your area.
+              {{ 'booking.invite.submittedBody' | t }}
             </p>
 
             <p class="mt-2 text-xs text-green-800">
-              Invitation reference: {{ invitation.reference }}
+              {{ 'booking.invite.reference' | t: { reference: invitation.reference } }}
             </p>
 
             <button
@@ -624,7 +616,7 @@
               (click)="closeProviderInvitation()"
               class="mt-4 min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white"
             >
-              Done
+              {{ 'booking.invite.done' | t }}
             </button>
           </div>
         } @else {
@@ -635,22 +627,21 @@
           >
           <div class="rounded-xl border border-purple-200 bg-purple-50 p-4">
   <p class="text-sm font-semibold text-ink">
-    🎁 Your invitation can earn rewards
+    {{ 'booking.invite.rewardTitle' | t }}
   </p>
 
   <p class="mt-1 text-sm text-ink-soft">
-    If an eligible provider successfully joins SmartClinic Network through
-    your invitation, you may qualify for reward points.
+    {{ 'booking.invite.rewardBody' | t }}
   </p>
 </div>
             <div class="grid gap-5">
               <label class="font-bold">
-                Provider or organisation name
+                {{ 'booking.invite.orgName' | t }}
 
                 <input
                   type="text"
                   formControlName="organisationName"
-                  placeholder="e.g. Eket General Hospital"
+                  [placeholder]="'booking.invite.orgPlaceholder' | t"
                   autocomplete="organization"
                   class="mt-2 min-h-12 w-full rounded-xl border p-3 font-normal"
                 />
@@ -660,20 +651,20 @@
                   providerInviteForm.controls.organisationName.invalid
                 ) {
                   <span class="mt-1 block text-sm font-normal text-red-700">
-                    Provider or organisation name is required.
+                    {{ 'booking.invite.orgRequired' | t }}
                   </span>
                 }
               </label>
 
               <div class="grid gap-5 sm:grid-cols-2">
                 <label class="font-bold">
-                  Email
-                  <span class="font-normal text-ink-muted">(optional)</span>
+                  {{ 'booking.invite.email' | t }}
+                  <span class="font-normal text-ink-muted">{{ 'booking.invite.optional' | t }}</span>
 
                   <input
                     type="email"
                     formControlName="email"
-                    placeholder="e.g. contact@hospital.com"
+                    [placeholder]="'booking.invite.emailPlaceholder' | t"
                     autocomplete="email"
                     class="mt-2 min-h-12 w-full rounded-xl border p-3 font-normal"
                   />
@@ -683,19 +674,19 @@
                     providerInviteForm.controls.email.hasError('email')
                   ) {
                     <span class="mt-1 block text-sm font-normal text-red-700">
-                      Enter a valid email address.
+                      {{ 'booking.invite.emailInvalid' | t }}
                     </span>
                   }
                 </label>
 
                 <label class="font-bold">
-                  Phone number
-                  <span class="font-normal text-ink-muted">(optional)</span>
+                  {{ 'booking.invite.phone' | t }}
+                  <span class="font-normal text-ink-muted">{{ 'booking.invite.optional' | t }}</span>
 
                   <input
                     type="tel"
                     formControlName="phone"
-                    placeholder="e.g. +234 803 123 4567"
+                    [placeholder]="'booking.invite.phonePlaceholder' | t"
                     autocomplete="tel"
                     class="mt-2 min-h-12 w-full rounded-xl border p-3 font-normal"
                   />
@@ -703,7 +694,7 @@
               </div>
 
               <p class="-mt-2 text-sm text-ink-soft">
-                Provide at least an email address or phone number so we can contact the provider.
+                {{ 'booking.invite.contactHint' | t }}
               </p>
 
               @if (providerInvitationContactError()) {
@@ -726,7 +717,7 @@
                 [disabled]="submittingProviderInvitation()"
                 class="min-h-11 rounded-xl border bg-white px-5 font-bold disabled:opacity-50"
               >
-                Cancel
+                {{ 'booking.invite.cancel' | t }}
               </button>
 
               <button
@@ -734,7 +725,7 @@
                 [disabled]="submittingProviderInvitation()"
                 class="min-h-11 rounded-xl bg-brand-700 px-5 font-bold text-white disabled:opacity-50"
               >
-                {{ submittingProviderInvitation() ? 'Sending invitation…' : 'Send invitation' }}
+                {{ (submittingProviderInvitation() ? 'booking.invite.sending' : 'booking.invite.send') | t }}
               </button>
             </div>
           </form>
@@ -745,22 +736,22 @@
 
   <ng-template #breakdown let-item
     ><section class="mt-5 rounded-xl bg-brand-50 p-5">
-      <h3 class="font-bold">Price summary</h3>
+      <h3 class="font-bold">{{ 'booking.price.title' | t }}</h3>
       <dl class="mt-3 grid gap-2">
         <div class="flex justify-between">
-          <dt>Health Check</dt>
+          <dt>{{ 'booking.price.healthCheck' | t }}</dt>
           <dd>{{ money(item.pricing.basePackagePriceMinor, item.pricing.currency) }}</dd>
         </div>
         <div class="flex justify-between">
-          <dt>Add-ons</dt>
+          <dt>{{ 'booking.price.addons' | t }}</dt>
           <dd>{{ money(item.pricing.clinicalAddonsTotalMinor, item.pricing.currency) }}</dd>
         </div>
         <div class="flex justify-between">
-          <dt>Fulfilment fee</dt>
+          <dt>{{ 'booking.price.fulfilmentFee' | t }}</dt>
           <dd>{{ money(item.pricing.fulfilmentFeeMinor, item.pricing.currency) }}</dd>
         </div>
         <div class="flex justify-between border-t pt-3 text-xl font-bold">
-          <dt>Total</dt>
+          <dt>{{ 'booking.price.total' | t }}</dt>
           <dd>{{ money(item.pricing.totalMinor, item.pricing.currency) }}</dd>
         </div>
       </dl>

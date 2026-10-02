@@ -6,16 +6,27 @@ import {
   HealthPassportOverview,
   HealthPassportProvenance,
   HealthPassportTimelineItem,
+  HealthPassportTimelineType,
 } from '../../core/models/health-passport.model';
 import { PatientHealthBasics } from '../../core/models/health-basics.model';
 import { EngagementApiService } from '../../core/services/engagement-api.service';
 import { HealthBasicsApiService } from '../../core/services/health-basics-api.service';
 import { HealthPassportApiService } from '../../core/services/health-passport-api.service';
+import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 import { QrCodeComponent } from '../../shared/components/qr-code.component';
 import { PassportMeterComponent } from '../engagement/passport-meter.component';
+/** Known timeline event types; anything new falls back to a readable form of the code. */
+const EVENT_TYPE_KEYS: Readonly<Record<HealthPassportTimelineType, string>> = {
+  SELF_CHECK_COMPLETED: 'passport.timeline.type.selfCheckCompleted',
+  HEALTH_CHECK_COMPLETED: 'passport.timeline.type.healthCheckCompleted',
+  GENERAL_CARE_COMPLETED: 'passport.timeline.type.generalCareCompleted',
+  CLINICAL_RECORD_FINALIZED: 'passport.timeline.type.clinicalRecordFinalized',
+  PRESCRIPTION_ISSUED: 'passport.timeline.type.prescriptionIssued',
+  MEDICATION_DISPENSED: 'passport.timeline.type.medicationDispensed',
+};
 @Component({
   selector: 'app-health-passport-page',
-  imports: [RouterLink, QrCodeComponent, PassportMeterComponent],
+  imports: [RouterLink, QrCodeComponent, PassportMeterComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     .sc-passport-page { background-image: repeating-linear-gradient(135deg, rgba(29,21,48,.025) 0 2px, transparent 2px 9px); }
@@ -28,12 +39,12 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
       <div role="status" class="grid animate-pulse gap-4">
         <div class="h-72 rounded-[2rem] bg-sand-200"></div>
         <div class="h-32 rounded-2xl bg-sand-200"></div>
-        <span class="sr-only">Loading your Health Passport…</span>
+        <span class="sr-only">{{ 'passport.page.loading' | t }}</span>
       </div>
     } @else if (error()) {
       <div role="alert" class="rounded-2xl bg-clay-50 p-6 text-clay-700">
-        <p>Your Health Passport is unavailable right now.</p>
-        <button type="button" (click)="load()" class="mt-3 font-bold text-brand-700 underline">Try again</button>
+        <p>{{ 'passport.page.unavailable' | t }}</p>
+        <button type="button" (click)="load()" class="mt-3 font-bold text-brand-700 underline">{{ 'passport.page.tryAgain' | t }}</button>
       </div>
     } @else if (passport(); as p) {
       <!-- The identity page: looks and reads like a passport, holds what staff need first. -->
@@ -44,43 +55,43 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
             <span class="flex items-center gap-2">
               <img src="/assets/fanvico.png" alt="" class="size-8 rounded-lg bg-white/10 p-0.5" />
               <span>
-                <span class="block text-[10px] font-semibold uppercase tracking-[0.22em] text-ochre-300">SmartClinic Network</span>
+                <span class="block text-[10px] font-semibold uppercase tracking-[0.22em] text-ochre-300">{{ 'passport.identity.network' | t }}</span>
                 <span class="font-display block text-lg font-semibold leading-tight">Smart Health Passport</span>
               </span>
             </span>
-            <span class="hidden text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 sm:block">Personal health record<br />Carried by you</span>
+            <span class="hidden text-right text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 sm:block">{{ 'passport.identity.personalRecord' | t }}<br />{{ 'passport.identity.carriedByYou' | t }}</span>
           </div>
         </div>
 
         <div class="sc-passport-page grid gap-6 p-5 sm:grid-cols-[auto_1fr] sm:p-7">
           <div class="flex items-start gap-4 sm:flex-col sm:items-center">
             <div class="w-32 shrink-0 rounded-2xl bg-white p-1.5 shadow-card ring-1 ring-ink/10 sm:w-40">
-              <app-qr-code [value]="p.patient.patientReference" [label]="'SmartClinic ID ' + p.patient.patientReference" />
+              <app-qr-code [value]="p.patient.patientReference" [label]="'passport.identity.qrLabel' | t: { id: p.patient.patientReference }" />
             </div>
             <div class="sm:text-center">
               <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">SmartClinic ID</p>
               <p class="font-mono text-lg font-bold tracking-[0.08em] text-ink" data-passport-id>{{ p.patient.patientReference }}</p>
-              <a routerLink="/me/card" class="mt-1 inline-flex min-h-9 items-center text-sm font-semibold text-brand-700">Show my card →</a>
+              <a routerLink="/me/card" class="mt-1 inline-flex min-h-9 items-center text-sm font-semibold text-brand-700">{{ 'passport.identity.showCard' | t }}</a>
             </div>
           </div>
 
           <div class="min-w-0">
             <dl class="grid grid-cols-2 gap-x-4 gap-y-3">
               <div class="col-span-2">
-                <dt class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Holder</dt>
+                <dt class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{{ 'passport.identity.holder' | t }}</dt>
                 <dd id="passport-holder" class="font-display text-2xl font-semibold text-ink sm:text-3xl">{{ p.patient.givenName }} {{ p.patient.familyName }}</dd>
               </div>
               <div>
-                <dt class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Date of birth</dt>
+                <dt class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{{ 'passport.identity.dateOfBirth' | t }}</dt>
                 <dd class="font-semibold text-ink">{{ p.patient.dateOfBirth ? date(p.patient.dateOfBirth) : '—' }}</dd>
               </div>
               <div>
-                <dt class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Checks completed</dt>
+                <dt class="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{{ 'passport.identity.checksCompleted' | t }}</dt>
                 <dd class="font-semibold text-ink">{{ p.summary.completedHealthChecks + p.summary.completedSelfChecks }}</dd>
               </div>
             </dl>
 
-            <h2 class="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Essentials</h2>
+            <h2 class="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-brand-700">{{ 'passport.essentials.title' | t }}</h2>
             <dl class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4" data-passport-essentials>
               @for (e of essentials(); track e.label) {
                 <div class="rounded-xl p-3 {{ e.value ? 'bg-white ring-1 ring-ink/[0.08]' : 'border border-dashed border-ochre-300 bg-ochre-50' }}">
@@ -93,13 +104,13 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
                 </div>
               }
             </dl>
-            <p class="mt-2 text-xs text-ink-muted">Essentials are added by you. Results from a lab or clinic carry their own stamp below.</p>
+            <p class="mt-2 text-xs text-ink-muted">{{ 'passport.essentials.note' | t }}</p>
 
             @if (engagement(); as g) {
               <div class="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-sand-50 p-4">
                 <app-passport-meter [summary]="g" />
                 <a routerLink="/me/progress" class="inline-flex min-h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white">
-                  Level {{ g.level.number }} · {{ g.points }} pts
+                  {{ 'passport.identity.level' | t: { level: g.level.number, points: g.points } }}
                 </a>
               </div>
             }
@@ -107,9 +118,9 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
             <div class="mt-5 flex flex-wrap gap-2">
               <a routerLink="/me/health-records/sharing/new" class="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-700 px-5 text-sm font-semibold text-white hover:bg-brand-800">
                 <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
-                Share with a doctor
+                {{ 'passport.identity.share' | t }}
               </a>
-              <a routerLink="/me/health-records/sharing" class="inline-flex min-h-11 items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink hover:bg-sand-50">Who can see it</a>
+              <a routerLink="/me/health-records/sharing" class="inline-flex min-h-11 items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink hover:bg-sand-50">{{ 'passport.identity.whoCanSee' | t }}</a>
             </div>
           </div>
         </div>
@@ -118,24 +129,24 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
 
       @if (p.currentNextAction; as action) {
         <section class="mt-6 rounded-2xl border-2 border-brand-300 bg-brand-50 p-5 sm:p-6">
-          <p class="text-sm font-bold uppercase text-brand-700">Your next action</p>
+          <p class="text-sm font-bold uppercase text-brand-700">{{ 'passport.nextAction.title' | t }}</p>
           <h2 class="font-display mt-2 text-xl font-semibold">{{ action.title }}</h2>
           <p class="mt-2">{{ action.message }}</p>
           @if (action.cta.type === 'FIND_CARE') {
             <a routerLink="/me/request-care" class="mt-4 inline-flex min-h-11 items-center rounded-full bg-brand-700 px-5 font-bold text-white">Find Care</a>
           } @else if (action.cta.type === 'HEALTH_CHECK_PACKAGE') {
-            <a routerLink="/health-check/packages" class="mt-4 inline-flex min-h-11 items-center rounded-full bg-brand-700 px-5 font-bold text-white">View Health Checks</a>
+            <a routerLink="/health-check/packages" class="mt-4 inline-flex min-h-11 items-center rounded-full bg-brand-700 px-5 font-bold text-white">{{ 'passport.nextAction.viewHealthChecks' | t }}</a>
           }
         </section>
       }
 
       <section class="mt-8" aria-labelledby="measurements-heading">
         <div class="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="measurements-heading" class="font-display text-2xl font-semibold">Stamped readings</h2>
-          <p class="flex flex-wrap gap-3 text-xs text-ink-muted" aria-label="Stamp key">
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-leaf-700"></span>Lab confirmed</span>
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-brand-700"></span>Checked by a provider</span>
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-ochre-500"></span>Reported by you</span>
+          <h2 id="measurements-heading" class="font-display text-2xl font-semibold">{{ 'passport.readings.title' | t }}</h2>
+          <p class="flex flex-wrap gap-3 text-xs text-ink-muted" [attr.aria-label]="'passport.readings.stampKey' | t">
+            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-leaf-700"></span>{{ 'passport.stamp.labConfirmed' | t }}</span>
+            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-brand-700"></span>{{ 'passport.provenance.checkedByProvider' | t }}</span>
+            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-ochre-500"></span>{{ 'passport.provenance.reportedByYou' | t }}</span>
           </p>
         </div>
         @if (p.latestMeasurements.length) {
@@ -154,17 +165,17 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
           </div>
         } @else {
           <p class="mt-4 rounded-2xl bg-white p-5 text-ink-soft ring-1 ring-ink/[0.06]">
-            No readings yet. A <a routerLink="/me/book" class="font-semibold text-brand-700 underline">Smart Health Check</a> adds blood pressure, sugar, weight and more — each one stamped by the clinic or lab that took it.
+            {{ 'passport.readings.emptyStart' | t }} <a routerLink="/me/book" class="font-semibold text-brand-700 underline">Smart Health Check</a> {{ 'passport.readings.emptyEnd' | t }}
           </p>
         }
       </section>
 
       <section class="mt-8 rounded-2xl bg-white p-5 ring-1 ring-ink/[0.06] sm:p-6">
-        <h2 class="font-display text-2xl font-semibold">Reported health history</h2>
-        <p class="mt-2 text-ink-soft">What you told us in your latest completed Self-Check.</p>
+        <h2 class="font-display text-2xl font-semibold">{{ 'passport.history.title' | t }}</h2>
+        <p class="mt-2 text-ink-soft">{{ 'passport.history.intro' | t }}</p>
         @if (!p.reportedHealthHistory.length) {
           <p class="mt-4 rounded-xl bg-sand-50 p-4">
-            Nothing yet. <a routerLink="/me/self-checks" class="font-semibold text-brand-700 underline">Take a Guided Self-Check</a> — it takes about five minutes.
+            {{ 'passport.history.nothingYet' | t }} <a routerLink="/me/self-checks" class="font-semibold text-brand-700 underline">{{ 'passport.history.takeSelfCheck' | t }}</a> {{ 'passport.history.takesFiveMinutes' | t }}
           </p>
         } @else {
           <dl class="mt-5 grid gap-5 sm:grid-cols-2">
@@ -172,7 +183,7 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
               <div>
                 <dt class="font-bold">{{ item.label }}</dt>
                 <dd class="mt-1 whitespace-pre-line text-ink-soft">{{ historyValue(item.value, item.answerState) }}</dd>
-                <dd class="mt-1 text-sm text-ink-muted">Reported by you · {{ date(item.reportedAt) }}</dd>
+                <dd class="mt-1 text-sm text-ink-muted">{{ 'passport.history.reportedOn' | t: { date: date(item.reportedAt) } }}</dd>
               </div>
             }
           </dl>
@@ -181,13 +192,13 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
       @if (p.recentMedicationContext.length) {
         <section class="mt-8">
           <div class="flex justify-between gap-4">
-            <h2 class="font-display text-2xl font-semibold">Recent prescriptions</h2>
-            <a routerLink="/me/prescriptions" class="font-bold text-brand-700">View all</a>
+            <h2 class="font-display text-2xl font-semibold">{{ 'passport.prescriptions.title' | t }}</h2>
+            <a routerLink="/me/prescriptions" class="font-bold text-brand-700">{{ 'passport.prescriptions.viewAll' | t }}</a>
           </div>
           <div class="mt-4 grid gap-3">
             @for (rx of p.recentMedicationContext; track rx.orderReference) {
               <article class="rounded-2xl bg-white p-5 ring-1 ring-ink/[0.06]">
-                <h3 class="font-bold">Prescription from {{ rx.provider.displayName }}</h3>
+                <h3 class="font-bold">{{ 'passport.prescriptions.from' | t: { provider: rx.provider.displayName } }}</h3>
                 <p class="mt-1 text-sm text-ink-muted">{{ date(rx.issuedAt) }}</p>
                 <p class="mt-3">{{ medicineNames(rx.medicines) }}</p>
               </article>
@@ -197,18 +208,18 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
       }
       <section class="mt-8">
         <div class="flex flex-wrap items-end justify-between gap-4">
-          <h2 class="font-display text-2xl font-semibold">Health timeline</h2>
-          <a routerLink="/me/self-checks" class="font-bold text-brand-700">My Self-Checks</a>
+          <h2 class="font-display text-2xl font-semibold">{{ 'passport.timeline.title' | t }}</h2>
+          <a routerLink="/me/self-checks" class="font-bold text-brand-700">{{ 'passport.timeline.mySelfChecks' | t }}</a>
         </div>
         @if (timelineLoading()) {
-          <p role="status" class="mt-4 rounded-xl bg-white p-5 ring-1 ring-ink/[0.06]">Loading health activity…</p>
+          <p role="status" class="mt-4 rounded-xl bg-white p-5 ring-1 ring-ink/[0.06]">{{ 'passport.timeline.loading' | t }}</p>
         } @else if (timelineError()) {
           <div role="alert" class="mt-4 rounded-xl bg-clay-50 p-5">
-            <p>We couldn't load your health timeline.</p>
-            <button type="button" (click)="loadTimeline(page())" class="mt-2 font-bold text-brand-700 underline">Try again</button>
+            <p>{{ 'passport.timeline.loadError' | t }}</p>
+            <button type="button" (click)="loadTimeline(page())" class="mt-2 font-bold text-brand-700 underline">{{ 'passport.page.tryAgain' | t }}</button>
           </div>
         } @else if (!timeline().length) {
-          <p class="mt-4 rounded-2xl bg-white p-6 ring-1 ring-ink/[0.06]">Your health activity will appear here as you complete care.</p>
+          <p class="mt-4 rounded-2xl bg-white p-6 ring-1 ring-ink/[0.06]">{{ 'passport.timeline.empty' | t }}</p>
         } @else {
           <ol class="relative mt-5 grid gap-4 border-l-2 border-dashed border-sand-200 pl-6">
             @for (event of timeline(); track event.eventKey) {
@@ -222,15 +233,15 @@ import { PassportMeterComponent } from '../engagement/passport-meter.component';
                   @if (event.provenance) { · {{ provenance(event.provenance) }} }
                 </p>
                 @if (eventLink(event); as link) {
-                  <a [routerLink]="link" class="mt-3 inline-block font-bold text-brand-700">View details →</a>
+                  <a [routerLink]="link" class="mt-3 inline-block font-bold text-brand-700">{{ 'passport.timeline.viewDetails' | t }}</a>
                 }
               </li>
             }
           </ol>
           <div class="mt-5 flex items-center justify-between">
-            <button type="button" (click)="loadTimeline(page() - 1)" [disabled]="page() <= 1" class="min-h-10 rounded-full border px-4 font-bold disabled:opacity-40">Previous</button>
-            <span class="text-sm text-ink-muted">Page {{ page() }} of {{ totalPages() || 1 }}</span>
-            <button type="button" (click)="loadTimeline(page() + 1)" [disabled]="page() >= totalPages()" class="min-h-10 rounded-full border px-4 font-bold disabled:opacity-40">Next</button>
+            <button type="button" (click)="loadTimeline(page() - 1)" [disabled]="page() <= 1" class="min-h-10 rounded-full border px-4 font-bold disabled:opacity-40">{{ 'passport.timeline.previous' | t }}</button>
+            <span class="text-sm text-ink-muted">{{ 'passport.timeline.page' | t: { page: page(), total: totalPages() || 1 } }}</span>
+            <button type="button" (click)="loadTimeline(page() + 1)" [disabled]="page() >= totalPages()" class="min-h-10 rounded-full border px-4 font-bold disabled:opacity-40">{{ 'passport.timeline.next' | t }}</button>
           </div>
         }
       </section>
@@ -241,6 +252,7 @@ export class HealthPassportPageComponent {
   private readonly api = inject(HealthPassportApiService);
   private readonly basicsApi = inject(HealthBasicsApiService);
   private readonly engagementApi = inject(EngagementApiService);
+  private readonly i18n = inject(TranslationService);
   readonly passport = signal<HealthPassportOverview | null>(null);
   readonly basics = signal<PatientHealthBasics | null>(null);
   /** Optional extras: if they fail, the passport still shows. */
@@ -250,11 +262,12 @@ export class HealthPassportPageComponent {
     const contact = b?.emergencyContactName || b?.emergencyContactPhone
       ? [b.emergencyContactName, b.emergencyContactPhone].filter(Boolean).join(' · ')
       : null;
+    const t = (key: string) => this.i18n.t(key);
     return [
-      { label: 'Blood group', value: b?.bloodGroup ?? null, empty: 'Find out', fix: '/me/profile', big: true },
-      { label: 'Genotype', value: b?.genotype ?? null, empty: 'Find out', fix: '/me/profile', big: true },
-      { label: 'Allergies', value: b?.allergies ?? null, empty: 'Add', fix: '/me/profile', big: false },
-      { label: 'Emergency contact', value: contact, empty: 'Add', fix: '/me/profile', big: false },
+      { label: t('passport.basics.bloodGroup'), value: b?.bloodGroup ?? null, empty: t('passport.essentials.findOut'), fix: '/me/profile', big: true },
+      { label: t('passport.basics.genotype'), value: b?.genotype ?? null, empty: t('passport.essentials.findOut'), fix: '/me/profile', big: true },
+      { label: t('passport.basics.allergies'), value: b?.allergies ?? null, empty: t('passport.essentials.add'), fix: '/me/profile', big: false },
+      { label: t('passport.basics.emergencyContact'), value: contact, empty: t('passport.essentials.add'), fix: '/me/profile', big: false },
     ];
   });
   /** Decorative machine-readable line, built only from the name and ID already on screen. */
@@ -292,7 +305,7 @@ export class HealthPassportPageComponent {
     this.engagementApi.overview().pipe(catchError(() => of(null))).subscribe();
   }
   stampText(v: HealthPassportProvenance) {
-    return ({ REPORTED_BY_YOU: 'Self reported', CHECKED_BY_PROVIDER: 'Checked by provider', CONFIRMED_BY_LABORATORY: 'Lab confirmed' } as const)[v];
+    return this.i18n.t(({ REPORTED_BY_YOU: 'passport.stamp.selfReported', CHECKED_BY_PROVIDER: 'passport.stamp.checkedByProvider', CONFIRMED_BY_LABORATORY: 'passport.stamp.labConfirmed' } as const)[v]);
   }
   stampTone(v: HealthPassportProvenance) {
     return ({ REPORTED_BY_YOU: 'text-ochre-500', CHECKED_BY_PROVIDER: 'text-brand-700', CONFIRMED_BY_LABORATORY: 'text-leaf-700' } as const)[v];
@@ -317,13 +330,15 @@ export class HealthPassportPageComponent {
       });
   }
   provenance(v: HealthPassportProvenance) {
-    return (
-      {
-        REPORTED_BY_YOU: 'Reported by you',
-        CHECKED_BY_PROVIDER: 'Checked by a provider',
-        CONFIRMED_BY_LABORATORY: 'Confirmed by a laboratory',
-      } as const
-    )[v];
+    return this.i18n.t(
+      (
+        {
+          REPORTED_BY_YOU: 'passport.provenance.reportedByYou',
+          CHECKED_BY_PROVIDER: 'passport.provenance.checkedByProvider',
+          CONFIRMED_BY_LABORATORY: 'passport.provenance.confirmedByLaboratory',
+        } as const
+      )[v],
+    );
   }
   measurementLabel(v: string) {
     return v
@@ -335,20 +350,22 @@ export class HealthPassportPageComponent {
     const v = m.value;
     if ('systolic' in v && 'diastolic' in v) return `${v['systolic']}/${v['diastolic']} ${m.unit}`;
     if ('primary' in v && 'secondary' in v) return `${v['primary']}/${v['secondary']} ${m.unit}`;
-    return `${v['value'] ?? 'Not provided'} ${m.unit}`.trim();
+    return `${v['value'] ?? this.i18n.t('passport.value.notProvided')} ${m.unit}`.trim();
   }
   historyValue(v: unknown, state: string) {
-    if (state === 'DONT_KNOW') return "I don't know";
+    if (state === 'DONT_KNOW') return this.i18n.t('passport.history.dontKnow');
     if (Array.isArray(v)) return v.join(', ');
-    return typeof v === 'string' || typeof v === 'number' ? String(v) : 'Not provided';
+    return typeof v === 'string' || typeof v === 'number' ? String(v) : this.i18n.t('passport.value.notProvided');
   }
   medicineNames(v: readonly { name: string; strength: string | null }[]) {
     return v.map((x) => [x.name, x.strength].filter(Boolean).join(' ')).join(', ');
   }
   date(v: string) {
-    return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(v));
+    return this.i18n.formatDate(v, { dateStyle: 'medium' });
   }
   eventType(v: string) {
+    const key = EVENT_TYPE_KEYS[v as HealthPassportTimelineType];
+    if (key) return this.i18n.t(key);
     return v
       .replaceAll('_', ' ')
       .toLowerCase()

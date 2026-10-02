@@ -1,0 +1,117 @@
+import type { Dictionary } from '../types';
+
+/** Smart Health Passport page and the "My health basics" card — en. */
+const passport: Dictionary = {
+  // Page states
+  'passport.page.loading': 'Loading your Health Passport…',
+  'passport.page.unavailable': 'Your Health Passport is unavailable right now.',
+  'passport.page.tryAgain': 'Try again',
+  // Identity page (looks like a passport)
+  'passport.identity.network': 'SmartClinic Network',
+  'passport.identity.personalRecord': 'Personal health record',
+  'passport.identity.carriedByYou': 'Carried by you',
+  'passport.identity.qrLabel': 'SmartClinic ID {id}',
+  'passport.identity.showCard': 'Show my card →',
+  'passport.identity.holder': 'Holder',
+  'passport.identity.dateOfBirth': 'Date of birth',
+  'passport.identity.checksCompleted': 'Checks completed',
+  'passport.identity.level': 'Level {level} · {points} pts',
+  'passport.identity.share': 'Share with a doctor',
+  'passport.identity.whoCanSee': 'Who can see it',
+  // Essentials (blood group, genotype, allergies, emergency contact)
+  'passport.essentials.title': 'Essentials',
+  'passport.essentials.findOut': 'Find out',
+  'passport.essentials.add': 'Add',
+  'passport.essentials.note': 'Essentials are added by you. Results from a lab or clinic carry their own stamp below.',
+  // Next action
+  'passport.nextAction.title': 'Your next action',
+  'passport.nextAction.viewHealthChecks': 'View Health Checks',
+  // Stamped readings
+  'passport.readings.title': 'Stamped readings',
+  'passport.readings.stampKey': 'Stamp key',
+  // "No readings yet. A [Smart Health Check] adds blood pressure, …"
+  'passport.readings.emptyStart': 'No readings yet. A',
+  'passport.readings.emptyEnd': 'adds blood pressure, sugar, weight and more — each one stamped by the clinic or lab that took it.',
+  'passport.value.notProvided': 'Not provided',
+  // Stamps: printed small inside a round stamp, keep very short
+  'passport.stamp.selfReported': 'Self reported',
+  'passport.stamp.checkedByProvider': 'Checked by provider',
+  'passport.stamp.labConfirmed': 'Lab confirmed',
+  // Where a reading came from
+  'passport.provenance.reportedByYou': 'Reported by you',
+  'passport.provenance.checkedByProvider': 'Checked by a provider',
+  'passport.provenance.confirmedByLaboratory': 'Confirmed by a laboratory',
+  // Reported health history
+  'passport.history.title': 'Reported health history',
+  'passport.history.intro': 'What you told us in your latest completed Self-Check.',
+  // "Nothing yet. [Take a Guided Self-Check] — it takes about five minutes."
+  'passport.history.nothingYet': 'Nothing yet.',
+  'passport.history.takeSelfCheck': 'Take a Guided Self-Check',
+  'passport.history.takesFiveMinutes': '— it takes about five minutes.',
+  'passport.history.dontKnow': "I don't know",
+  'passport.history.reportedOn': 'Reported by you · {date}',
+  // Recent prescriptions
+  'passport.prescriptions.title': 'Recent prescriptions',
+  'passport.prescriptions.viewAll': 'View all',
+  'passport.prescriptions.from': 'Prescription from {provider}',
+  // Health timeline
+  'passport.timeline.title': 'Health timeline',
+  'passport.timeline.mySelfChecks': 'My Self-Checks',
+  'passport.timeline.loading': 'Loading health activity…',
+  'passport.timeline.loadError': "We couldn't load your health timeline.",
+  'passport.timeline.empty': 'Your health activity will appear here as you complete care.',
+  'passport.timeline.viewDetails': 'View details →',
+  'passport.timeline.previous': 'Previous',
+  'passport.timeline.next': 'Next',
+  'passport.timeline.page': 'Page {page} of {total}',
+  'passport.timeline.type.selfCheckCompleted': 'Self check completed',
+  'passport.timeline.type.healthCheckCompleted': 'Health check completed',
+  'passport.timeline.type.generalCareCompleted': 'General care completed',
+  'passport.timeline.type.clinicalRecordFinalized': 'Clinical record finalized',
+  'passport.timeline.type.prescriptionIssued': 'Prescription issued',
+  'passport.timeline.type.medicationDispensed': 'Medication dispensed',
+  // "My health basics" card
+  'passport.basics.title': 'My health basics',
+  'passport.basics.intro': 'Shown on your SmartClinic card, so staff can help you faster. You add these yourself — they are not clinically verified.',
+  'passport.basics.addDetails': 'Add details',
+  'passport.basics.edit': 'Edit',
+  'passport.basics.loading': 'Loading your health basics…',
+  'passport.basics.loadError': 'Your health basics are unavailable right now.',
+  'passport.basics.bloodGroup': 'Blood group',
+  'passport.basics.genotype': 'Genotype',
+  'passport.basics.dontKnow': 'I don’t know',
+  'passport.basics.allergies': 'Allergies',
+  'passport.basics.allergiesPlaceholder': 'e.g. Penicillin, peanuts — or type None',
+  'passport.basics.conditions': 'Ongoing conditions',
+  'passport.basics.conditionsPlaceholder': 'e.g. Asthma, hypertension — or leave blank',
+  'passport.basics.emergencyContact': 'Emergency contact',
+  'passport.basics.contactName': 'Name',
+  'passport.basics.contactPhone': 'Phone',
+  'passport.basics.phoneInvalid': 'Enter a valid phone number.',
+  'passport.basics.relationship': 'Relationship',
+  'passport.basics.relationshipPlaceholder': 'e.g. Sister',
+  'passport.basics.saving': 'Saving…',
+  'passport.basics.save': 'Save',
+  'passport.basics.cancel': 'Cancel',
+  'passport.basics.saveError': 'We could not save your health basics. Check the details and try again.',
+  'passport.basics.noneAdded': 'None added',
+  'passport.basics.contact': 'Contact',
+  // "Don't know your genotype?" panel
+  'passport.know.titleBoth': 'Don’t know your blood group and genotype? Find out once, keep it for life.',
+  'passport.know.titleBloodGroup': 'Don’t know your blood group? Find out once, keep it for life.',
+  'passport.know.titleGenotype': 'Don’t know your genotype? Find out once, keep it for life.',
+  'passport.know.why': 'It matters in an emergency, before surgery or a transfusion, and when planning a family. It’s a quick blood test.',
+  'passport.know.price': 'Standard price: {price}.',
+  'passport.know.priceBoth': '{price} for both',
+  'passport.know.atHome': 'Get tested at home',
+  'passport.know.atHomeHint': 'A trained person comes to you',
+  'passport.know.atLab': 'Go to a lab near you',
+  'passport.know.atLabHint': 'Pick a place and time',
+  // "When your result is ready, … Already know? [Add it now]."
+  'passport.know.addLater': 'When your result is ready, add it here — or your lab can add it for you. Already know?',
+  'passport.know.addNow': 'Add it now',
+  'passport.know.phoneTitle': 'Rather arrange it by phone?',
+  'passport.know.phoneHint': 'Call or WhatsApp us, or leave your number and we’ll book the test with you.',
+};
+
+export default passport;
