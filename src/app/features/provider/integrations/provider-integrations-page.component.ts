@@ -178,11 +178,23 @@ const EVENTS: readonly { readonly type: string; readonly when: string }[] = [
               <p class="mt-1 text-sm text-ink-soft">Send a test request by a patient’s SmartClinic ID. The patient approves it in their app and picks any lab or pharmacy on SmartClinic.</p>
             </div>
           </div>
-          <pre class="mt-4 overflow-x-auto rounded-2xl bg-ink p-4 text-xs leading-relaxed text-white/90" data-curl><code>{{ curlExample }}</code></pre>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <button type="button" (click)="copy(curlExample)" class="min-h-10 rounded-full border border-ink/15 bg-white px-4 text-sm font-semibold text-ink hover:bg-sand-50">Copy example</button>
+          <div class="mt-4 inline-flex rounded-full bg-sand-100 p-1" role="group" aria-label="API format">
+            <button type="button" (click)="format.set('json')" [attr.aria-pressed]="format() === 'json'" class="min-h-10 rounded-full px-4 text-sm font-semibold {{ format() === 'json' ? 'bg-white text-ink shadow-sm' : 'text-ink-soft' }}">Simple JSON</button>
+            <button type="button" (click)="format.set('fhir')" [attr.aria-pressed]="format() === 'fhir'" class="min-h-10 rounded-full px-4 text-sm font-semibold {{ format() === 'fhir' ? 'bg-white text-ink shadow-sm' : 'text-ink-soft' }}">HL7 FHIR R4</button>
           </div>
-          <p class="mt-3 text-sm text-ink-muted">Also: <span class="font-mono">GET /integrations/requests</span>, <span class="font-mono">GET /integrations/requests/&#123;reference&#125;</span>, <span class="font-mono">POST /integrations/requests/&#123;reference&#125;/cancel</span>, <span class="font-mono">GET /integrations/patients/&#123;SmartClinic ID&#125;</span>.</p>
+          @if (format() === 'fhir') {
+            <p class="mt-3 text-sm text-ink-soft">For EMRs that already speak FHIR. Same key. Base URL <span class="break-all font-mono text-ink">{{ fhirBase }}</span></p>
+          }
+          <pre class="mt-3 overflow-x-auto rounded-2xl bg-ink p-4 text-xs leading-relaxed text-white/90" data-curl><code>{{ format() === 'fhir' ? fhirExample : curlExample }}</code></pre>
+          <div class="mt-3 flex flex-wrap items-center gap-3">
+            <button type="button" (click)="copy(format() === 'fhir' ? fhirExample : curlExample)" class="min-h-10 rounded-full border border-ink/15 bg-white px-4 text-sm font-semibold text-ink hover:bg-sand-50">Copy example</button>
+            <a routerLink="/developers" class="text-sm font-semibold text-brand-700 underline underline-offset-4">Full guide for your IT team →</a>
+          </div>
+          @if (format() === 'fhir') {
+            <p class="mt-3 text-sm text-ink-muted">Also: <span class="font-mono">GET /metadata</span>, <span class="font-mono">Patient?identifier=</span>, <span class="font-mono">MedicationRequest</span>, <span class="font-mono">DiagnosticReport?based-on=</span>, <span class="font-mono">POST</span> a Bundle, <span class="font-mono">$cancel</span>.</p>
+          } @else {
+            <p class="mt-3 text-sm text-ink-muted">Also: <span class="font-mono">GET /integrations/requests</span>, <span class="font-mono">GET /integrations/requests/&#123;reference&#125;</span>, <span class="font-mono">POST /integrations/requests/&#123;reference&#125;/cancel</span>, <span class="font-mono">GET /integrations/patients/&#123;SmartClinic ID&#125;</span>.</p>
+          }
         </section>
 
         <p aria-live="polite" class="mt-4 text-sm font-semibold text-leaf-700">{{ copied() }}</p>
@@ -224,6 +236,17 @@ export class ProviderIntegrationsPageComponent {
     `  -H "Content-Type: application/json" \\`,
     `  -d '{"patientReference":"SCP-ABCD-1234","type":"LABORATORY",`,
     `       "diagnosticItems":[{"name":"Malaria parasite (MP)"}]}'`,
+  ].join('\n');
+  readonly format = signal<'json' | 'fhir'>('json');
+  readonly fhirBase = `${this.api.base}/fhir/r4`;
+  readonly fhirExample = [
+    `curl -X POST ${this.fhirBase}/ServiceRequest \\`,
+    `  -H "Authorization: Bearer $SMARTCLINIC_KEY" \\`,
+    `  -H "Content-Type: application/fhir+json" \\`,
+    `  -d '{"resourceType":"ServiceRequest","status":"active","intent":"order",`,
+    `       "category":[{"coding":[{"system":"http://snomed.info/sct","code":"108252007"}]}],`,
+    `       "code":{"text":"Malaria parasite (MP)"},`,
+    `       "subject":{"reference":"Patient/SCP-ABCD-1234"}}'`,
   ].join('\n');
 
   constructor() {

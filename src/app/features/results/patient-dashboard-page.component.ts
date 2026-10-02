@@ -25,6 +25,9 @@ import { PendingRequestsCardComponent } from './pending-requests-card.component'
 import { tipForDate } from './daily-tips';
 import { ReferralsApiService } from '../../core/services/referrals-api.service';
 
+import { EngagementApiService } from '../../core/services/engagement-api.service';
+import { DailyQuizCardComponent } from '../engagement/daily-quiz-card.component';
+import { PassportMeterComponent } from '../engagement/passport-meter.component';
 interface StarterRoutine {
   readonly type: PatientDailyRoutineType;
   readonly label: string;
@@ -63,7 +66,7 @@ interface DashboardNextStep {
 
 @Component({
   selector: 'app-patient-dashboard-page',
-  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent, PendingRequestsCardComponent],
+  imports: [RouterLink, ReactiveFormsModule, DailyCheckInComponent, VisitDayCardComponent, PendingRequestsCardComponent, DailyQuizCardComponent, PassportMeterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-6xl px-4 pb-10 pt-5 sm:px-8 sm:pt-8 lg:pt-10">
@@ -162,10 +165,14 @@ interface DashboardNextStep {
               <h2 id="passport-heading" class="font-display mt-3 text-[1.45rem] font-semibold leading-tight">Your health story, wherever you go.</h2>
               <p class="mt-2 text-sm leading-relaxed text-white/70">Records, results, prescriptions and care history in one place — shared only when you choose.</p>
               <div class="mt-auto flex flex-wrap items-end justify-between gap-3 pt-6">
-                <div>
-                  <p class="text-[11px] uppercase tracking-[0.16em] text-white/55">Holder</p>
-                  <p class="font-semibold">{{ value.patient.displayName }}</p>
-                </div>
+                @if (engagement(); as g) {
+                  <app-passport-meter [summary]="g" tone="dark" />
+                } @else {
+                  <div>
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-white/55">Holder</p>
+                    <p class="font-semibold">{{ value.patient.displayName }}</p>
+                  </div>
+                }
                 <a routerLink="/me/health-passport" class="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full bg-white/15 px-4 text-sm font-semibold ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25">
                   Open Health Passport <span aria-hidden="true">→</span>
                 </a>
@@ -402,6 +409,30 @@ interface DashboardNextStep {
           </div>
         </section>
 
+        <div class="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <app-daily-quiz-card />
+          @if (engagement(); as g) {
+            <a routerLink="/me/progress" class="group relative flex flex-col justify-between overflow-hidden rounded-[1.5rem] bg-ink p-5 text-white shadow-lift" data-progress-tile>
+              <div class="sc-motif pointer-events-none absolute inset-0 opacity-[0.06]" aria-hidden="true"></div>
+              <div class="relative">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ochre-300">My progress</p>
+                <p class="font-display mt-2 text-2xl font-semibold">Level {{ g.level.number }} · {{ g.level.name }}</p>
+                <p class="mt-1 text-sm text-white/70">{{ g.points }} points@if (g.streak.current) { · {{ g.streak.current }}-day streak }</p>
+              </div>
+              <div class="relative mt-5 flex items-center justify-between gap-3">
+                <span class="flex -space-x-2" aria-hidden="true">
+                  @for (b of wellnessBadges(); track b.code) {
+                    <span class="grid size-9 place-items-center rounded-full bg-gradient-to-br from-ochre-300 to-ochre-500 text-xs font-bold text-ink ring-2 ring-ink">★</span>
+                  } @empty {
+                    <span class="text-sm text-white/60">Your first badge is close.</span>
+                  }
+                </span>
+                <span class="text-sm font-semibold text-ochre-300 group-hover:underline">See badges →</span>
+              </div>
+            </a>
+          }
+        </div>
+
         <nav class="mt-10" aria-labelledby="quick-access-heading">
           <div class="mb-4">
             <h2 id="quick-access-heading" class="font-display text-[1.6rem] font-semibold text-ink sm:text-[1.9rem]">
@@ -551,6 +582,9 @@ export class PatientDashboardPageComponent {
   private readonly healthChecksApi = inject(HealthCheckResultsApiService);
   private readonly referralsApi = inject(ReferralsApiService);
   private readonly passportApi = inject(HealthPassportApiService);
+  private readonly engagementApi = inject(EngagementApiService);
+  readonly engagement = this.engagementApi.latest;
+  readonly wellnessBadges = computed(() => (this.engagement()?.badges ?? []).filter((b) => b.earned).slice(0, 4));
   private readonly publicSiteConfig = inject(PUBLIC_SITE_CONFIG, { optional: true });
   readonly dashboard = signal<PatientDashboard | null>(null);
   readonly loading = signal(true);
@@ -719,6 +753,8 @@ export class PatientDashboardPageComponent {
     });
   }
   applyProgress(progress: DailyCareProgress): void {
+    // Check-ins and routines earn wellness points; refresh quietly if the numbers are on screen.
+    if (this.engagement()) this.engagementApi.overview().subscribe({ error: () => undefined });
     const done = new Set(progress.completedReferences);
     this.dashboard.update((value) =>
       value

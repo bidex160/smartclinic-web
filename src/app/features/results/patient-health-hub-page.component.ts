@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { DailyCheckIn } from '../../core/models/patient-dashboard.model';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
+import { DailyQuizCardComponent } from '../engagement/daily-quiz-card.component';
 
 const MOOD_TONES = ['', 'bg-clay-100 text-clay-700', 'bg-ochre-100 text-ochre-700', 'bg-sand-200 text-ink-soft', 'bg-leaf-100 text-leaf-700', 'bg-leaf-300 text-leaf-700'] as const;
 const MOOD_LABELS = ['', 'Very low', 'Low', 'Okay', 'Good', 'Great'] as const;
@@ -10,7 +11,7 @@ const MOOD_LABELS = ['', 'Very low', 'Low', 'Okay', 'Good', 'Great'] as const;
 /** The "Health" tab: everything about staying well and your health story in one place. */
 @Component({
   selector: 'app-patient-health-hub-page',
-  imports: [RouterLink],
+  imports: [RouterLink, DailyQuizCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-8 sm:pt-10">
@@ -49,6 +50,8 @@ const MOOD_LABELS = ['', 'Very low', 'Low', 'Okay', 'Good', 'Great'] as const;
         }
       </section>
 
+      <div class="mt-4"><app-daily-quiz-card /></div>
+
       <nav class="mt-4 grid gap-3 sm:grid-cols-2" aria-label="Health sections">
         @for (item of sections; track item.route) {
           <a [routerLink]="item.route" class="sc-tile flex items-start gap-4 rounded-[1.25rem] border border-ink/[0.07] bg-white p-5 shadow-card">
@@ -84,6 +87,7 @@ export class PatientHealthHubPageComponent {
     { label: 'Guided Self-Checks', hint: 'Understand your health from home', route: '/me/self-checks', icon: ['M9 11l2 2 4-4', 'M5 4h14v16H5Z'] },
     { label: 'Health Checks', hint: 'Book a checkup and see your results', route: '/me/health-checks', icon: ['M3 12h4l2-5 4 10 2-5h6'] },
     { label: 'Daily routines', hint: 'Water, movement, rest and reminders', route: '/me/dashboard', icon: ['M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z'] },
+    { label: 'My progress', hint: 'Points, level, streak and badges', route: '/me/progress', icon: ['M8 21h8M12 17v4', 'M7 4h10v5a5 5 0 0 1-10 0Z', 'M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3'] },
     { label: 'Family health', hint: 'Care for the people you look after', route: '/me/family', icon: ['M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z', 'M2 20a5 5 0 0 1 10 0M12 20a5 5 0 0 1 10 0'] },
   ] as const;
 

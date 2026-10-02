@@ -14,6 +14,25 @@ const RWANDA_PROVINCES = [
   { name: 'Southern Province', districts: ['Gisagara', 'Huye', 'Kamonyi', 'Muhanga', 'Nyamagabe', 'Nyanza', 'Nyaruguru', 'Ruhango'] },
   { name: 'Western Province', districts: ['Karongi', 'Ngororero', 'Nyabihu', 'Nyamasheke', 'Rubavu', 'Rusizi', 'Rutsiro'] },
 ] as const;
+/** Ghana's 16 regions, each with its capital first and other main towns. */
+const GHANA_REGIONS = [
+  { name: 'Greater Accra', towns: ['Accra', 'Tema', 'Madina', 'Adenta', 'Ashaiman', 'Dodowa', 'Ada'] },
+  { name: 'Ashanti', towns: ['Kumasi', 'Obuasi', 'Ejisu', 'Mampong', 'Konongo', 'Bekwai'] },
+  { name: 'Central', towns: ['Cape Coast', 'Kasoa', 'Winneba', 'Mankessim', 'Saltpond', 'Elmina'] },
+  { name: 'Western', towns: ['Sekondi-Takoradi', 'Tarkwa', 'Prestea', 'Axim'] },
+  { name: 'Western North', towns: ['Sefwi Wiawso', 'Bibiani', 'Enchi'] },
+  { name: 'Eastern', towns: ['Koforidua', 'Nkawkaw', 'Akim Oda', 'Nsawam', 'Somanya', 'Suhum'] },
+  { name: 'Volta', towns: ['Ho', 'Hohoe', 'Keta', 'Aflao', 'Kpando'] },
+  { name: 'Oti', towns: ['Dambai', 'Nkwanta', 'Jasikan', 'Kadjebi'] },
+  { name: 'Northern', towns: ['Tamale', 'Yendi', 'Savelugu', 'Bimbilla'] },
+  { name: 'Savannah', towns: ['Damongo', 'Bole', 'Salaga', 'Buipe'] },
+  { name: 'North East', towns: ['Nalerigu', 'Walewale', 'Gambaga'] },
+  { name: 'Upper East', towns: ['Bolgatanga', 'Bawku', 'Navrongo', 'Zebilla'] },
+  { name: 'Upper West', towns: ['Wa', 'Tumu', 'Lawra', 'Jirapa'] },
+  { name: 'Bono', towns: ['Sunyani', 'Berekum', 'Dormaa Ahenkro', 'Wenchi'] },
+  { name: 'Bono East', towns: ['Techiman', 'Kintampo', 'Atebubu', 'Nkoranza'] },
+  { name: 'Ahafo', towns: ['Goaso', 'Bechem', 'Duayaw Nkwanta', 'Kenyasi'] },
+] as const;
 
 @Injectable({ providedIn: 'root' })
 export class LocationDataService {
@@ -24,7 +43,7 @@ export class LocationDataService {
   private loading: Promise<NigeriaLocationCache> | null = null;
 
   getCountries(): ICountry[] {
-    return Country.getAllCountries().filter((country) => ['NG', 'RW'].includes(country.isoCode));
+    return Country.getAllCountries().filter((country) => ['NG', 'GH', 'RW'].includes(country.isoCode));
   }
 
   async getStatesApi(): Promise<NigeriaLocationCache[]> {
@@ -40,6 +59,9 @@ export class LocationDataService {
     if (countryCode === 'RW') return RWANDA_PROVINCES.map((province) => ({
       name: province.name, isoCode: province.name, countryCode: 'RW',
     }));
+    if (countryCode === 'GH') return GHANA_REGIONS.map((region) => ({
+      name: region.name, isoCode: region.name, countryCode: 'GH',
+    }));
     if (countryCode !== 'NG') return [];
     return this.readCache().states.map((state) => ({
       name: state.name,
@@ -52,6 +74,10 @@ export class LocationDataService {
     if (countryCode === 'RW' && stateCode) {
       const province = RWANDA_PROVINCES.find((item) => item.name === stateCode);
       return (province?.districts ?? []).map((name) => ({ name, stateCode, countryCode: 'RW' }));
+    }
+    if (countryCode === 'GH' && stateCode) {
+      const region = GHANA_REGIONS.find((item) => item.name === stateCode);
+      return (region?.towns ?? []).map((name) => ({ name, stateCode, countryCode: 'GH' }));
     }
     if (countryCode !== 'NG' || !stateCode) return [];
     const state = this.readCache().states.find((item) => item.name === stateCode);

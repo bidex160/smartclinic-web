@@ -3,6 +3,10 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { signal } from '@angular/core';
+import { EMPTY } from 'rxjs';
+
+import { EngagementApiService } from '../../core/services/engagement-api.service';
 import { PatientDashboardApiService } from '../../core/services/patient-dashboard-api.service';
 import { PatientHealthHubPageComponent } from './patient-health-hub-page.component';
 
@@ -11,7 +15,11 @@ describe('PatientHealthHubPageComponent', () => {
     const api = { getCheckIns: vi.fn(() => (items === 'error' ? throwError(() => new Error('down')) : of({ items }))) };
     await TestBed.configureTestingModule({
       imports: [PatientHealthHubPageComponent],
-      providers: [provideRouter([]), { provide: PatientDashboardApiService, useValue: api }],
+      providers: [
+        provideRouter([]),
+        { provide: PatientDashboardApiService, useValue: api },
+        { provide: EngagementApiService, useValue: { latest: signal(null), overview: () => EMPTY } },
+      ],
     }).compileComponents();
     const fixture = TestBed.createComponent(PatientHealthHubPageComponent);
     fixture.detectChanges();
@@ -36,13 +44,13 @@ describe('PatientHealthHubPageComponent', () => {
   it('links to every part of staying well', async () => {
     const { fixture } = await setup([]);
     const hrefs = [...fixture.nativeElement.querySelectorAll('nav[aria-label="Health sections"] a')].map((a: HTMLAnchorElement) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['/me/health-passport', '/me/health-records', '/me/self-checks', '/me/health-checks', '/me/dashboard', '/me/family']);
+    expect(hrefs).toEqual(['/me/health-passport', '/me/health-records', '/me/self-checks', '/me/health-checks', '/me/dashboard', '/me/progress', '/me/family']);
     expect(fixture.nativeElement.textContent).toContain('No check-ins yet');
   });
 
   it('keeps the page usable when check-ins fail to load', async () => {
     const { fixture } = await setup('error');
     expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('unavailable');
-    expect(fixture.nativeElement.querySelectorAll('nav[aria-label="Health sections"] a')).toHaveLength(6);
+    expect(fixture.nativeElement.querySelectorAll('nav[aria-label="Health sections"] a')).toHaveLength(7);
   });
 });

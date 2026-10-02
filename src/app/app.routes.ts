@@ -30,6 +30,17 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'help',
+    title: 'Get help | SmartClinic',
+    loadComponent: () => import('./features/help/help-page.component').then((component) => component.HelpPageComponent),
+  },
+  {
+    path: 'developers',
+    title: 'Connect your hospital | SmartClinic',
+    loadComponent: () =>
+      import('./features/developers/developers-page.component').then((component) => component.DevelopersPageComponent),
+  },
+  {
     path: 'join',
     data: { preload: true },
     title: 'Join the SmartClinic network | SmartClinic',
@@ -256,6 +267,12 @@ export const routes: Routes = [
           import('./features/results/health-passport-page.component').then(
             (c) => c.HealthPassportPageComponent,
           ),
+      },
+      {
+        path: 'progress',
+        title: 'My progress | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/engagement/progress-page.component').then((c) => c.ProgressPageComponent),
       },
 
       {
@@ -1017,6 +1034,11 @@ export const routes: Routes = [
         title: 'Partner Control Centre | SmartClinic',
         canActivate: [adminOnlyGuard],
         loadComponent: () => import('./features/admin/partner-admin-page.component').then((c) => c.PartnerAdminPageComponent),
+      },
+      {
+        path: 'callbacks',
+        title: 'Call-back requests | SmartClinic',
+        loadComponent: () => import('./features/admin/support-callbacks-page.component').then((c) => c.SupportCallbacksPageComponent),
       },
       {
         path: 'hmo-desk',
