@@ -19,9 +19,12 @@ import { GuidedSelfCheckOperationsApiService } from '../../core/services/guided-
 import { NotificationBellComponent } from '../../shared/components/notification-bell.component';
 import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
 
+import { LanguageBarComponent } from '../../shared/components/locale-picker/language-bar.component';
+import { LocalePickerComponent } from '../../shared/components/locale-picker/locale-picker.component';
+
 @Component({
   selector: 'app-patient-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent, TranslatePipe, LocalePickerComponent, LanguageBarComponent],
   template: `
     <aside
       class="fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col overflow-hidden bg-ink text-white lg:flex"
@@ -75,7 +78,10 @@ import { TranslatePipe, TranslationService } from '../../core/services/translati
         }
       </nav>
 
-      <div class="relative flex items-center gap-2 border-t border-white/10 px-5 py-4">
+      <div class="relative border-t border-white/10 px-5 pt-3">
+        <app-locale-picker tone="dark" direction="up" />
+      </div>
+      <div class="relative flex items-center gap-2 px-5 py-4">
         <button
           type="button"
           (click)="logout()"
@@ -97,6 +103,7 @@ import { TranslatePipe, TranslationService } from '../../core/services/translati
         </a>
 
         <div class="flex items-center gap-1.5">
+          <app-locale-picker [compact]="true" align="right" />
           <app-notification-bell />
           <button
             type="button"
@@ -140,6 +147,7 @@ import { TranslatePipe, TranslationService } from '../../core/services/translati
         </nav>
       }
     </header>
+    <app-language-bar class="block lg:ml-[17rem]" />
 
     <div
       data-patient-content

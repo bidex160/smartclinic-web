@@ -4,7 +4,7 @@ import type { Dictionary } from '../types';
 const auth: Dictionary = {
   'auth.login.panelEyebrow': 'Your SmartClinic',
   'auth.login.panelTitle': 'Your health journey go continue for here.',
-  'auth.login.panelDescription': 'Sign in make you fit manage your health checks, care request, providers, prescription and your SmartClinic health journey.',
+  'auth.login.panelDescription': 'Sign in make you fit manage your health checks, care request, hospitals, prescription and your SmartClinic health journey.',
   'auth.login.badge': 'SmartClinic safe entrance',
   'auth.login.title': 'Welcome back',
   'auth.login.intro': 'Sign in with di email or phone number wey dey your SmartClinic account.',
@@ -37,7 +37,7 @@ const auth: Dictionary = {
 
   'auth.register.panelEyebrow': 'Your health, all for one place',
   'auth.register.panelTitle': 'Open one account for your SmartClinic journey.',
-  'auth.register.panelDescription': 'Manage your health checks, care request, prescription, providers and your health information from one safe account.',
+  'auth.register.panelDescription': 'Manage your health checks, care request, prescription, hospitals and your health information from one safe account.',
   'auth.register.successTitle': 'Account don open',
   'auth.register.successText': 'Your SmartClinic account don ready. Sign in make you see your health checks.',
   'auth.register.signIn': 'Sign in',

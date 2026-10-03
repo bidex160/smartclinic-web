@@ -19,7 +19,7 @@ const care: Dictionary = {
   'care.doctor.hospitalSelected': 'Byahiswemo — hitamo ibitaro hepfo',
   // Emergency warning
   'care.emergency.title': 'Ese ni ikibazo cyihutirwa?',
-  'care.emergency.signs': 'Kubabara mu gatuza, guhumeka nabi, kuva amaraso menshi, kugagara (seizure), guta ubwenge cyangwa ibimenyetso bya stroke bisaba ubufasha ako kanya.',
+  'care.emergency.signs': 'Kubabara mu gatuza, guhumeka nabi, kuva amaraso menshi, kugagara (seizure), guta ubwenge cyangwa ibimenyetso by’ikibazo cy’imitsi yo mu bwonko (stroke) bisaba ubufasha ako kanya.',
   'care.emergency.callBefore': 'Hamagara nimero y’ubutabazi (',
   'care.emergency.callAfter': ' muri Nigeria) cyangwa ujye aho bakira indembe hafi yawe.',
   'care.emergency.dontWait': 'Ntutegereze ubusabe bw’ubuvuzi.',
@@ -105,7 +105,7 @@ const care: Dictionary = {
   'care.details.doctorHeading': 'Hari ikindi?',
   'care.details.heading': '{step}. Ibindi bisobanuro (si ngombwa)',
   'care.details.asap': 'Vuba bishoboka',
-  'care.details.asapText': 'Ntugomba gushyiramo isaha. Hitamo muganga wohereze ubusabe. Nabyemera, uzishyura maze SmartClinic yemeze igihe cyo kubonana ako kanya.',
+  'care.details.asapText': 'Ntugomba gushyiramo isaha. Hitamo muganga wohereze ubusabe. Muganga nabyemera, uzishyura maze SmartClinic yemeze igihe cyo kubonana ako kanya.',
   'care.details.chooseTime': 'Hitamo igihe wifuza kubonana na muganga. Muganga wawe ashobora kwemera icyo gihe cyangwa agatanga ikindi.',
   'care.details.recommendedTime': 'Igihe gisabwe',
   'care.details.recommendedNote': 'Muganga wawe ashobora kwemera iki gihe cyangwa agatanga ikindi.',

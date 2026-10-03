@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Pays",
   "common.locale.language": "Langue",
   "common.locale.more": "Plus de langues",
+  "common.locale.pick": "Votre langue :",
+  "common.locale.keep": "Garder cette langue",
+  "common.locale.report": "Signaler un mot incorrect",
+  "common.locale.reportShown": "Quels mots sont incorrects ?",
+  "common.locale.reportBetter": "Mots plus justes (facultatif)",
+  "common.locale.reportSend": "Envoyer",
+  "common.locale.reportThanks": "Merci ! Nous allons corriger.",
   "common.locale.note": "Votre guide parle cette langue. Certains écrans sont encore en anglais pendant que nous les traduisons.",
 };
 

@@ -37,8 +37,8 @@ const care: Dictionary = {
   'care.success.requestedLocation': 'Mahali ulipoomba',
   'care.success.location': 'Mahali',
   'care.success.virtualCare': 'Huduma mtandaoni',
-  'care.success.nextStep': 'SmartClinic itaweka hatua inayofuata hapa kwenye My Care. Huhitaji kuanza upya.',
-  'care.success.viewMyCare': 'Angalia My Care',
+  'care.success.nextStep': 'SmartClinic itaweka hatua inayofuata hapa kwenye Huduma yangu. Huhitaji kuanza upya.',
+  'care.success.viewMyCare': 'Angalia Huduma yangu',
   'care.price.pending': 'Bei itajulikana mtoa huduma atakapopangwa.',
   // Status
   'care.status.matching': 'Tunatafuta mtoa huduma',

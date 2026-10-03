@@ -22,5 +22,7 @@ In TypeScript use `inject(TranslationService).t('namespace.key', { name })`.
    Twi Asante with ɛ and ɔ; Hausa standard with ƙ ɗ ɓ ƴ; Igbo with ị ọ ụ ṅ; Yoruba with tone marks and ẹ ọ ṣ.
    Pidgin as written by BBC News Pidgin.
 6. Buttons: a verb, 1–3 words. Don't make buttons much longer than the English.
-7. Not a native speaker? The draft still goes in — but everything in `yo, ha, ig, rw, tw` must be checked by a native
-   speaker before launch (see the review sheet).
+7. Quality without waiting for reviewers: every language is checked by back-translation (translate to English
+   from the target text alone, compare with the source, fix meaning, leftover English, garbled wording and spelling).
+   Medical facts, emergency text (112), doses, disclaimers and payment wording are checked strictly. Users can report
+   a word that reads wrong; fix it here.

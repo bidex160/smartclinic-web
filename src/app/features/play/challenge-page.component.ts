@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 
 import { ChallengeDetail, PlayApiService } from '../../core/services/play-api.service';
 import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
+import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 import { LeaderboardComponent } from './leaderboard.component';
 import { THEME_EMOJI } from './play-page.component';
 import { ShareButtonsComponent } from './share-buttons.component';
@@ -86,6 +87,7 @@ export class ChallengePageComponent {
   private readonly router = inject(Router);
   private readonly i18n = inject(TranslationService);
   private readonly doc = inject(DOCUMENT);
+  private readonly locale = inject(LocalePreferencesService);
   readonly emoji = THEME_EMOJI;
   readonly code = this.route.snapshot.paramMap.get('code') ?? '';
   readonly inviteFirst = signal(this.route.snapshot.queryParamMap.has('invite'));
@@ -110,7 +112,7 @@ export class ChallengePageComponent {
   });
   readonly inviteUrl = computed(() => {
     const ref = this.referral();
-    return `${this.doc.location?.origin ?? ''}/play/c/${this.code}${ref ? `?ref=${encodeURIComponent(ref)}` : ''}`;
+    return `${this.doc.location?.origin ?? ''}/play/c/${this.code}?${ref ? `ref=${encodeURIComponent(ref)}&` : ''}${this.locale.shareParams()}`;
   });
   readonly inviteText = computed(() => {
     const c = this.c();

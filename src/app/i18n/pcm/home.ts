@@ -24,7 +24,7 @@ const home: Dictionary = {
   'home.hero.passportText': 'Your records — na only when you agree person go see am.',
   // Everyday actions
   'home.actions.title': 'Wetin you need today?',
-  'home.actions.subtitle': 'Healthcare wey easy. Choose one and SmartClinic go show you the way.',
+  'home.actions.subtitle': 'Healthcare wey easy. Choose one and SmartClinic go show you di way.',
   'home.actions.navLabel': 'Wetin you fit do',
   'home.actions.bookCheckup': 'Book Checkup',
   'home.actions.seeDoctor': 'See Doctor',
@@ -43,25 +43,25 @@ const home: Dictionary = {
     'Things to do every day for water, exercise, rest and medicine. Guided Self-Checks and Smart Health Checks so you go dey ahead.',
   'home.companion.getCareTitle': 'Get care',
   'home.companion.getCareText':
-    'See doctor, do test, get medicine, and use SmartClinic as your padi inside the hospitals wey join us.',
+    'See doctor, do test, get medicine, and use SmartClinic as your padi inside di hospitals wey join us.',
   'home.companion.storyTitle': 'Keep your story',
   'home.companion.storyText':
     'Your Smart Health Passport dey keep your records, results and prescriptions together — and na you go decide who go see dem.',
   // Portal
-  'home.portal.photoAlt': 'People for the SmartClinic team',
+  'home.portal.photoAlt': 'Pipo for di SmartClinic team',
   'home.portal.title': 'All your care, for one place.',
   'home.portal.text':
     'Appointment, results, prescription, hospitals and your Smart Health Passport — with friendly guide anytime you need help to find your way.',
   'home.portal.appointments': 'Appointments',
   'home.portal.resultsRecords': 'Results & Records',
   'home.portal.prescriptions': 'Prescriptions',
-  'home.portal.team': 'The SmartClinic team',
+  'home.portal.team': 'Di SmartClinic team',
   'home.portal.teamCaption': 'We dey here to guide you',
   // Healthy Families
   'home.families.eyebrow': 'Healthy Families',
   'home.families.title': 'Health wey dey grow with your family.',
   'home.families.text':
-    'Add your pikin dem and people wey you love to one SmartClinic account, keep their checks and records together, and join school, work and family programmes when dem invite you.',
+    'Add your pikin dem and pipo wey you love to one SmartClinic account, keep dia checks and records together, and join school, work and family programmes when dem invite you.',
   'home.families.cta': 'See Healthy Families',
   'home.families.childAlt': 'Small pikin wey dey smile',
   'home.families.girlAlt': 'Small girl wey dey happy with gift',
@@ -71,8 +71,8 @@ const home: Dictionary = {
   // Smart Health Checks
   'home.services.eyebrow': 'Invest for yourself',
   'home.services.intro':
-    'We dey spend money on things wey we dey use every day. Simple check na one of the best thing wey you fit do for yourself — choose one and we go help you arrange where and when.',
-  'home.services.loading': 'We dey load the Health Checks wey dey…',
+    'We dey spend money on things wey we dey use every day. Simple check na one of di best thing wey you fit do for yourself — choose one and we go help you arrange where and when.',
+  'home.services.loading': 'We dey load di Health Checks wey dey…',
   'home.services.error': 'Health Check options no dey available now. Try again small time.',
   'home.services.retry': 'Try again',
   'home.services.empty':
@@ -95,12 +95,12 @@ const home: Dictionary = {
   // Impact
   'home.impact.eyebrow': 'Wetin community dey do',
   'home.impact.title': 'Healthcare dey grow when communities join hand.',
-  'home.impact.text': 'See how people and communities dey help more patients reach care.',
+  'home.impact.text': 'See how pipo and communities dey help more patients reach care.',
   'home.impact.cta': 'See Impact',
   // Providers
   'home.providers.eyebrow': 'For hospitals and health workers',
   'home.providers.title': 'Bring your services come SmartClinic.',
-  'home.providers.join': 'Join the network',
+  'home.providers.join': 'Join di network',
   'home.providers.signIn': 'Hospital sign in',
   // FAQ
   'home.faq.title': 'Questions & help',
@@ -110,19 +110,19 @@ const home: Dictionary = {
     'SmartClinic na your own health padi. E dey help you stay well every day, find care when you need am, connect with hospitals wey join us and keep your health records together.',
   'home.faq.healthChecksQuestion': 'How Health Checks dey work?',
   'home.faq.healthChecksAnswer':
-    'Choose one package wey dey, look the hospitals and how dem fit do am for you, then confirm your booking with the price wey dem give you now.',
+    'Choose one package wey dey, look di hospitals and how dem fit do am for you, then confirm your booking with di price wey dem give you now.',
   'home.faq.fromHomeQuestion': 'I fit use SmartClinic from my house?',
   'home.faq.fromHomeAnswer':
-    'You fit start with Guided Self-Check from your house. Home visit go also show if the hospital wey you choose dey do am.',
+    'You fit start with Guided Self-Check from your house. Home visit go also show if di hospital wey you choose dey do am.',
   'home.faq.providersQuestion': 'How una dey choose hospitals?',
   'home.faq.providersAnswer':
-    'Hospitals dey apply to join SmartClinic Network, and we dey check dem well before their services go show for here.',
+    'Hospitals dey apply to join SmartClinic Network, and we dey check dem well before dia services go show for here.',
   'home.faq.accessQuestion': 'How I go enter My SmartClinic?',
   'home.faq.accessAnswer':
-    'Press Open My SmartClinic, then sign in with the email or phone number wey dey your account.',
+    'Press Open My SmartClinic, then sign in with di email or phone number wey dey your account.',
   'home.faq.helpQuestion': 'How I fit get help?',
   'home.faq.helpAnswer':
-    'Sign in to see the care wey you dey get now. WhatsApp help go show here when we don set correct support number.',
+    'Sign in to see di care wey you dey get now. WhatsApp help go show here when we don set correct support number.',
 };
 
 export default home;

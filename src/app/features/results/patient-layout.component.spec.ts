@@ -218,7 +218,7 @@ describe('PatientLayoutComponent', () => {
     );
 
     expect(dashboard.getAttribute('routerlinkactive')).toBe('bg-white/15');
-    expect(fixture.nativeElement.querySelector('aside button').textContent).toContain('Sign out');
+    expect(Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('aside button')).map((b) => b.textContent).join(' ')).toContain('Sign out');
   });
 
   it('keeps this browser subscribed on load and stops push before signing out', async () => {

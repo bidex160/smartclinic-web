@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Igihugu",
   "common.locale.language": "Ururimi",
   "common.locale.more": "Izindi ndimi",
+  "common.locale.pick": "Ururimi rwawe:",
+  "common.locale.keep": "Komeza ururimi",
+  "common.locale.report": "Tubwire ijambo ritanditse neza",
+  "common.locale.reportShown": "Ni ayahe magambo atanditse neza?",
+  "common.locale.reportBetter": "Amagambo meza kurushaho (si ngombwa)",
+  "common.locale.reportSend": "Ohereza",
+  "common.locale.reportThanks": "Murakoze! Tuzabikosora.",
   "common.locale.note": "Umuyobozi wawe avuga uru rurimi. Zimwe mu mpapuro ziracyari mu Cyongereza mu gihe tukizihindura.",
 };
 

@@ -5,7 +5,9 @@ import { finalize } from 'rxjs';
 
 import { clock, HealthWordView, LetterMark, letterStates, PlayApiService, shareGrid } from '../../core/services/play-api.service';
 import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
+import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 import { ShareButtonsComponent } from './share-buttons.component';
+import { HowToPlayComponent } from './how-to-play.component';
 
 const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
 
@@ -15,7 +17,7 @@ const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
  */
 @Component({
   selector: 'app-health-word-game',
-  imports: [TranslatePipe, ShareButtonsComponent],
+  imports: [TranslatePipe, ShareButtonsComponent, HowToPlayComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host { display: block; }
@@ -37,6 +39,9 @@ const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
         </div>
         @if (game(); as g) {
           <div class="flex items-center gap-2">
+            @if (g.started) {
+              <button type="button" (click)="showHelp.set(!showHelp())" [attr.aria-expanded]="showHelp()" class="grid size-8 place-items-center rounded-full bg-white/15 text-sm font-bold text-white hover:bg-white/25" [attr.aria-label]="'play.how.title' | t" data-how-open>?</button>
+            }
             @if (g.stats.streak) { <span class="rounded-full bg-white/10 px-3 py-1 text-sm font-semibold" data-word-streak>🔥 {{ g.stats.streak }}</span> }
             <span class="min-w-16 rounded-full bg-ochre-300 px-3 py-1 text-center font-mono text-sm font-bold text-ink" role="timer" [attr.aria-label]="'play.word.timeLabel' | t: { time: time() }" data-word-timer>⏱ {{ time() }}</span>
           </div>
@@ -52,19 +57,18 @@ const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
           <p class="text-center text-sm text-ink-soft">{{ 'play.word.hint' | t: { category: ('play.category.' + g.category) | t } }}</p>
 
           @if (!g.started) {
-            <div class="mx-auto mt-5 max-w-sm text-center">
-              <p class="text-ink-soft">{{ 'play.word.rules' | t: { tries: g.maxGuesses } }}</p>
-              <div class="mt-4 flex justify-center gap-1.5" aria-hidden="true">
-                <span class="grid size-10 place-items-center rounded-lg bg-leaf-500 font-bold text-white">H</span>
-                <span class="grid size-10 place-items-center rounded-lg bg-ochre-300 font-bold text-ink">E</span>
-                <span class="grid size-10 place-items-center rounded-lg bg-ink/30 font-bold text-white">A</span>
+            <div class="mx-auto mt-4 max-w-md">
+              <app-how-to-play [tries]="g.maxGuesses" />
+              <div class="mt-4 text-center">
+                <button type="button" (click)="start()" [disabled]="busy()" class="inline-flex min-h-12 items-center rounded-full bg-brand-700 px-8 text-base font-semibold text-white shadow-card disabled:opacity-50" data-word-start>
+                  {{ 'play.word.start' | t }}
+                </button>
               </div>
-              <p class="mt-2 text-xs text-ink-muted">{{ 'play.word.legend' | t }}</p>
-              <button type="button" (click)="start()" [disabled]="busy()" class="mt-5 inline-flex min-h-12 items-center rounded-full bg-brand-700 px-8 text-base font-semibold text-white shadow-card disabled:opacity-50" data-word-start>
-                {{ 'play.word.start' | t }}
-              </button>
             </div>
           } @else {
+            @if (showHelp()) {
+              <div class="mx-auto mt-3 max-w-md"><app-how-to-play [tries]="g.maxGuesses" [closable]="true" (closed)="showHelp.set(false)" /></div>
+            }
             <div class="mx-auto mt-3 grid w-full max-w-[15.5rem] gap-1.5 sm:mt-4 sm:max-w-[19rem]" role="grid" [attr.aria-label]="'play.word.boardLabel' | t">
               @for (row of grid(); track $index; let r = $index) {
                 <div class="grid grid-cols-5 gap-1.5 {{ r === g.rows.length && shake() ? 'shake' : '' }}" role="row">
@@ -132,6 +136,7 @@ export class HealthWordGameComponent {
   private readonly api = inject(PlayApiService);
   private readonly i18n = inject(TranslationService);
   private readonly doc = inject(DOCUMENT);
+  private readonly locale = inject(LocalePreferencesService);
   readonly keyRows = KEY_ROWS;
 
   readonly game = signal<HealthWordView | null>(null);
@@ -139,6 +144,7 @@ export class HealthWordGameComponent {
   readonly busy = signal(false);
   readonly error = signal('');
   readonly shake = signal(false);
+  readonly showHelp = signal(false);
   readonly justGuessed = signal(false);
   readonly announce = signal('');
   private readonly now = signal(Date.now());
@@ -164,7 +170,7 @@ export class HealthWordGameComponent {
   readonly grid2 = computed(() => shareGrid(this.game()?.rows ?? []));
   readonly shareUrl = computed(() => {
     const code = this.game()?.inviteCode;
-    return `${this.doc.location?.origin ?? ''}/play${code ? `?ref=${encodeURIComponent(code)}` : ''}`;
+    return `${this.doc.location?.origin ?? ''}/play?${code ? `ref=${encodeURIComponent(code)}&` : ''}${this.locale.shareParams()}`;
   });
   readonly shareText = computed(() => {
     const g = this.game();

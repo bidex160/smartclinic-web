@@ -38,6 +38,21 @@ const play: Dictionary = {
   'play.word.shareAsk': 'Aika sakamakonka, ka ga ko abokanka za su iya doke shi:',
   'play.word.tomorrow': 'Sabuwar Health Word za ta zo gobe.',
 
+  // How to play
+  'play.how.title': 'Yadda ake wasa',
+  'play.how.step1': 'Yi hasashen kalmar lafiya ta yau mai haruffa biyar. Kana da gwaji {tries}.',
+  'play.how.step2': 'Rubuta kalma mai haruffa biyar, sannan ka danna Aika.',
+  'play.how.step3': 'Launuka suna nuna yadda ka kusa. Ka yi amfani da su wajen hasashenka na gaba.',
+  'play.how.examples': 'Misalai',
+  'play.how.exHit': 'Kore: {letter} yana cikin kalmar, a wurinsa daidai.',
+  'play.how.exNear': 'Rawaya: {letter} yana cikin kalmar, amma a wani wuri.',
+  'play.how.exMiss': 'Toka-toka: {letter} ba ya cikin kalmar.',
+  'play.how.clock': 'Agogo zai fara aiki idan ka danna Yi wasa. Gaggawa ta fi kyau a ƙalubale.',
+  'play.how.daily': 'Sabuwar kalma ɗaya a rana, iri ɗaya ga kowa. Aika sakamakonka ka kwatanta.',
+  'play.how.english': 'Kalmar tana kasancewa da Turanci a koyaushe. Manuniya za ta gaya maka batun.',
+  'play.how.points': 'Ka kammala don samun maki 5, ka warware ta don samun wasu 5.',
+  'play.how.gotIt': 'Na gane',
+
   'play.category.body': 'jiki',
   'play.category.food': 'abinci da abin sha',
   'play.category.move': 'motsa jiki',
@@ -55,7 +70,7 @@ const play: Dictionary = {
   // Sharing
   'play.share.whatsapp': 'WhatsApp',
   'play.share.more': 'Aika',
-  'play.share.copy': 'Kwafi hanyar',
+  'play.share.copy': 'Kwafi mahaɗar',
   'play.share.copied': 'An kwafa ✓',
   'play.share.wordLine': 'SmartClinic Health Word #{n} {score} ⏱ {time}',
   'play.share.wordInvite': 'Za ka iya doke ni? Yi wasa kyauta:',
@@ -71,13 +86,13 @@ const play: Dictionary = {
   'play.theme.ALL_ROUND': 'Komai da komai',
   'play.theme.WORD': 'Gasar Health Word',
   'play.theme.QUIZ': 'Zakarun tambaya',
-  'play.theme.ACTIVE_DAYS': 'Kwanakin aiki',
+  'play.theme.ACTIVE_DAYS': 'Kwanakin ƙwazo',
   'play.themeHint.ALL_ROUND': 'Komai yana ƙirguwa',
   'play.themeHint.WORD': 'Gwaji mafi kaɗan, lokaci mafi sauri',
   'play.themeHint.QUIZ': 'Tambayar yau da kullum',
   'play.themeHint.ACTIVE_DAYS': 'Check-in da ayyukan yau da kullum',
   'play.rules.ALL_ROUND': 'Kowace rana: 10 don check-in ko aikin yau da kullum, 5 don tambayar yau da wasu 5 idan ka amsa daidai, 5 don Health Word da wasu 5 idan ka warware.',
-  'play.rules.WORD': 'Kowace rana: warware Health Word don samun 10, da 2 ga kowane gwajin da ya rage maka. Yin wasa ba tare da warwarewa ba yana ba da 2. Idan maki ɗaya ne, wanda ya fi sauri shi ne ya yi nasara.',
+  'play.rules.WORD': 'Kowace rana: warware Health Word don samun 10, da 2 ga kowane gwajin da ya rage maka. Yin wasa ba tare da warwarewa ba yana ba da 2. Idan maki sun yi daidai, wanda ya fi sauri shi ne ya yi nasara.',
   'play.rules.QUIZ': 'Kowace rana: 5 don amsa tambayar yau da wasu 10 idan ka amsa daidai.',
   'play.rules.ACTIVE_DAYS': 'Kowace rana: 5 don check-in ɗinka da 5 don yin alamar aikin yau da kullum.',
 
@@ -91,7 +106,7 @@ const play: Dictionary = {
   'play.form.howLong': 'Har tsawon wane lokaci?',
   'play.form.days': 'Kwana {n}',
   'play.form.tomorrow': 'Fara gobe ba yau ba',
-  'play.form.privacy': 'Abokai suna ganin sunanka na farko, baƙi ɗaya, makinka da kwanakin aikinka. Ba su ganin bayanan lafiyarka ko kaɗan.',
+  'play.form.privacy': 'Abokai suna ganin sunanka na farko, harafin farko na sunan iyalinka, makinka da kwanakin ƙwazonka. Ba sa ganin bayanan lafiyarka ko kaɗan.',
   'play.form.create': 'Ƙirƙira ka gayyata',
   'play.form.cancel': 'Soke',
 
@@ -113,11 +128,11 @@ const play: Dictionary = {
   'play.challenge.again': 'Fara wani ƙalubale',
   'play.challenge.leave': 'Fita daga ƙalubalen',
   'play.challenge.leaveConfirm': 'Za ka fita daga wannan ƙalubale? Za a cire makinka daga jadawalin.',
-  'play.challenge.notFound': 'Ba mu sami wannan ƙalubale ba. Duba hanyar.',
+  'play.challenge.notFound': 'Ba mu sami wannan ƙalubale ba. Duba mahaɗar.',
 
   'play.invite.titleDuel': 'Gayyaci abokin gasarka',
   'play.invite.titleGroup': 'Gayyaci abokanka',
-  'play.invite.body': 'Aika hanyar ta WhatsApp, ta saƙon rubutu, ko zuwa kowace ƙungiya. Abokan da ba su taɓa shiga SmartClinic ba za su iya shiga kyauta.',
+  'play.invite.body': 'Aika mahaɗar ta WhatsApp, ta saƙon rubutu, ko zuwa kowace ƙungiya. Abokan da ba su taɓa shiga SmartClinic ba za su iya shiga kyauta.',
 
   'play.join.title': '{name} ya ƙalubalance ka!',
   'play.join.cta': 'Karɓi ƙalubalen',
@@ -126,7 +141,7 @@ const play: Dictionary = {
 
   'play.board.place': 'Matsayi na {n}',
   'play.board.you': 'kai',
-  'play.board.activeDays': 'Kwanakin aiki {n}',
+  'play.board.activeDays': 'Kwanakin ƙwazo {n}',
   'play.board.today': 'yau',
 
   // Friends this week

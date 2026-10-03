@@ -38,6 +38,21 @@ const play: Dictionary = {
   'play.word.shareAsk': 'Share your result and see if your friends can beat it:',
   'play.word.tomorrow': 'A new Health Word comes tomorrow.',
 
+  // How to play
+  'play.how.title': 'How to play',
+  'play.how.step1': 'Guess today’s five-letter health word. You have {tries} tries.',
+  'play.how.step2': 'Type a five-letter word and press Enter.',
+  'play.how.step3': 'The colours show how close you are. Use them for your next guess.',
+  'play.how.examples': 'Examples',
+  'play.how.exHit': 'Green: {letter} is in the word, in the right place.',
+  'play.how.exNear': 'Yellow: {letter} is in the word, but in another place.',
+  'play.how.exMiss': 'Grey: {letter} is not in the word.',
+  'play.how.clock': 'The clock starts when you press Play. Faster is better in challenges.',
+  'play.how.daily': 'One new word a day, the same for everyone. Share your result and compare.',
+  'play.how.english': 'The word is always in English. The hint tells you the topic.',
+  'play.how.points': 'Finish for 5 points, solve it for 5 more.',
+  'play.how.gotIt': 'Got it',
+
   'play.category.body': 'the body',
   'play.category.food': 'food and drink',
   'play.category.move': 'moving your body',

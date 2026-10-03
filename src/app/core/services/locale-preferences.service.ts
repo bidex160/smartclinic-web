@@ -39,8 +39,12 @@ export const MARKET_LABELS: Readonly<Record<SmartClinicMarketCode, { name: strin
   RW: { name: 'Rwanda', flag: '🇷🇼' },
 };
 
-/** How we know the country: picked by the person, from their account, or guessed from the phone's clock. */
-export type LocaleSource = 'chosen' | 'account' | 'clock';
+/**
+ * How we know the country and language, strongest first:
+ * picked by the person > their account > the link they opened (the sharer's language) > their phone's settings > the phone's clock.
+ */
+export type LocaleSource = 'chosen' | 'account' | 'link' | 'device' | 'clock';
+const SOURCES: readonly LocaleSource[] = ['chosen', 'account', 'link', 'device', 'clock'];
 
 const STORAGE_KEY = 'smartclinic-locale-v1';
 const OLD_GUIDE_KEY = 'smartclinic-guide-preferences-v1';
@@ -57,6 +61,29 @@ export function isMarket(value: unknown): value is SmartClinicMarketCode {
 
 export function isLanguage(value: unknown): value is AppLanguage {
   return typeof value === 'string' && value in APP_LANGUAGES;
+}
+
+/** "rw-RW", "en-RW", "fr" → the country and a supported language, if the phone says so. */
+export function localeFromDevice(languages: readonly string[] | undefined, timezone: string | undefined): { market: SmartClinicMarketCode; language: AppLanguage; fromDevice: boolean } {
+  const tags = (languages ?? []).map((t) => String(t).trim()).filter(Boolean);
+  let market: SmartClinicMarketCode | null = null;
+  for (const tag of tags) {
+    const [lang, region] = tag.split(/[-_]/);
+    const r = region?.toUpperCase();
+    if (isMarket(r)) { market = r; break; }
+    if (lang?.toLowerCase() === 'rw') { market = 'RW'; break; }
+    if (['yo', 'ha', 'ig', 'pcm'].includes(lang?.toLowerCase())) { market = 'NG'; break; }
+    if (['tw', 'ak'].includes(lang?.toLowerCase())) { market = 'GH'; break; }
+  }
+  const fromDevice = market !== null;
+  const m = market ?? marketFromTimezone(timezone);
+  // The phone's own language, if we have it for this country; otherwise the country's main language.
+  for (const tag of tags) {
+    let lang = tag.split(/[-_]/)[0]?.toLowerCase();
+    if (lang === 'ak') lang = 'tw';
+    if (isLanguage(lang) && MARKET_LANGUAGES[m].includes(lang)) return { market: m, language: lang, fromDevice: fromDevice || lang !== 'en' };
+  }
+  return { market: m, language: MARKET_LANGUAGES[m][0], fromDevice };
 }
 
 /**
@@ -86,17 +113,45 @@ export class LocalePreferencesService {
     this.set({ ...this.state(), language, source: 'chosen' });
   }
 
-  /** Links like /register?market=RW&lang=rw carry an explicit choice. */
+  /** Query string for links we share, so friends open them in the same language: "lang=rw&market=RW". */
+  shareParams(): string {
+    return `lang=${this.language()}&market=${this.market()}`;
+  }
+
+  /** True until the person has picked a language themselves; we then offer a one-tap choice. */
+  readonly guessed = computed(() => this.state().source !== 'chosen');
+
+  /**
+   * Links like /play?lang=rw&market=RW carry the sharer's language, so everyone who opens the same
+   * link sees the same language. It never overrides a language the person picked themselves.
+   */
   applyQuery(market: string | null | undefined, lang: string | null | undefined): void {
+    if (this.source() === 'chosen') return;
     const m = market?.trim().toUpperCase();
-    if (isMarket(m)) this.choose(m, isLanguage(lang) ? lang : undefined);
-    else if (isLanguage(lang)) this.chooseLanguage(lang);
+    const l = lang?.trim().toLowerCase();
+    if (isMarket(m)) {
+      const language = isLanguage(l) ? l : MARKET_LANGUAGES[m].includes(this.language()) ? this.language() : MARKET_LANGUAGES[m][0];
+      this.set({ market: m, language, source: 'link' });
+    } else if (isLanguage(l)) {
+      this.set({ ...this.state(), language: l, source: 'link' });
+    }
+  }
+
+  /** Keep the current guess, and stop asking. */
+  confirm(): void {
+    this.set({ ...this.state(), source: 'chosen' });
+  }
+
+  /** The language saved on the account (from another phone) beats any guess, but not a pick on this phone. */
+  applyAccountLanguage(language: string | null | undefined): void {
+    if (!isLanguage(language) || this.source() === 'chosen' || this.language() === language) return;
+    this.set({ ...this.state(), language, source: 'account' });
   }
 
   /** After sign-in: the country on the account beats a guess, but never the person's own pick. */
   applyAccountCountry(countryCode: string | null | undefined): void {
     const m = countryCode?.trim().toUpperCase();
-    if (!isMarket(m) || this.source() === 'chosen' || (this.source() === 'account' && this.market() === m)) return;
+    if (!isMarket(m) || this.source() === 'chosen' || this.market() === m) return;
     const language = MARKET_LANGUAGES[m].includes(this.language()) ? this.language() : MARKET_LANGUAGES[m][0];
     this.set({ market: m, language, source: 'account' });
   }
@@ -119,7 +174,7 @@ export class LocalePreferencesService {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
       if (saved && isMarket(saved.market) && isLanguage(saved.language)) {
-        return { market: saved.market, language: saved.language, source: saved.source === 'chosen' || saved.source === 'account' ? saved.source : 'clock' };
+        return { market: saved.market, language: saved.language, source: SOURCES.includes(saved.source) ? saved.source : 'clock' };
       }
     } catch {
       /* fall through */
@@ -130,8 +185,15 @@ export class LocalePreferencesService {
     } catch {
       timezone = undefined;
     }
-    const market = marketFromTimezone(timezone);
-    let language: AppLanguage = MARKET_LANGUAGES[market][0];
+    let deviceLanguages: readonly string[] = [];
+    try {
+      deviceLanguages = navigator.languages?.length ? navigator.languages : navigator.language ? [navigator.language] : [];
+    } catch {
+      deviceLanguages = [];
+    }
+    const guess = localeFromDevice(deviceLanguages, timezone);
+    const market = guess.market;
+    let language: AppLanguage = guess.language;
     try {
       // People who already chose Pidgin for the old guide keep it.
       const old = JSON.parse(localStorage.getItem(OLD_GUIDE_KEY) ?? 'null');
@@ -139,7 +201,7 @@ export class LocalePreferencesService {
     } catch {
       /* ignore */
     }
-    return { market, language, source: 'clock' };
+    return { market, language, source: guess.fromDevice ? 'device' : 'clock' };
   }
 }
 
@@ -160,5 +222,9 @@ export class AccountLocaleSync {
     this.http
       .get<{ patient?: { countryCode?: string | null } }>(`${this.base}/me/profile`)
       .subscribe({ next: (p) => this.locale.applyAccountCountry(p.patient?.countryCode), error: () => undefined });
+    // The language saved with the daily reminder settings follows the person to a new phone.
+    this.http
+      .get<{ language?: string | null; updatedAt?: string }>(`${this.base}/me/nudges`)
+      .subscribe({ next: (n) => this.locale.applyAccountLanguage(n.language && n.language !== 'en' ? n.language : null), error: () => undefined });
   }
 }

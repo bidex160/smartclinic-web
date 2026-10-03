@@ -41,7 +41,7 @@ const common: Dictionary = {
   "common.menu.coverage-programmes": "Bima & programu",
   "common.menu.health-insurance-hmo": "Bima ya afya / HMO",
   "common.menu.healthy-families": "Familia zenye afya",
-  "common.menu.impact": "Matokeo",
+  "common.menu.impact": "Mchango",
   "common.menu.my-impact": "Mchango wangu",
   "common.menu.referrals-rewards": "Waalike & zawadi",
   "common.menu.account": "Akaunti",
@@ -54,7 +54,14 @@ const common: Dictionary = {
   "common.locale.country": "Nchi",
   "common.locale.language": "Lugha",
   "common.locale.more": "Lugha zaidi",
-  "common.locale.note": "Mwongozo wako anazungumza lugha hii. Baadhi ya kurasa bado ziko kwa Kiingereza tunapozitafsiri.",
+  "common.locale.pick": "Lugha yako:",
+  "common.locale.keep": "Endelea na lugha hii",
+  "common.locale.report": "Ripoti neno lisilo sahihi",
+  "common.locale.reportShown": "Ni maneno gani si sahihi?",
+  "common.locale.reportBetter": "Maneno bora zaidi (si lazima)",
+  "common.locale.reportSend": "Tuma",
+  "common.locale.reportThanks": "Asante! Tutarekebisha.",
+  "common.locale.note": "Mwongozaji wako anazungumza lugha hii. Baadhi ya kurasa bado ziko kwa Kiingereza tunapozitafsiri.",
 };
 
 export default common;

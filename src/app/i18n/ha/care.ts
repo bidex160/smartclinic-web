@@ -92,7 +92,7 @@ const care: Dictionary = {
   'care.provider.noPreference': 'Kowa ma — taimaka min zaɓa',
   'care.provider.finding': 'Ana neman masu bada kulawa da suka dace…',
   'care.provider.noneTitle': 'Babu ma’aikacin lafiya da ya dace a yanzu.',
-  'care.provider.noneHospital': 'Wannan asibiti ba shi da ma’aikacin lafiya na intanet da aka amince da shi don wannan sabis a yanzu. Har yanzu kuna iya aika buƙatar, SmartClinic za ta ci gaba da nema, ko ku koma Asibitoci da shagunan lafiya don zaɓar wani.',
+  'care.provider.noneHospital': 'Wannan asibiti ba shi da ma’aikacin lafiya na intanet da aka amince da shi don wannan sabis a yanzu. Har yanzu kuna iya aika buƙatar, SmartClinic za ta ci gaba da nema, ko ku koma Asibitoci da ɗakunan shan magani don zaɓar wani.',
   'care.provider.noneGeneral': 'Har yanzu kuna iya aika buƙatar da “Kowa ma”. SmartClinic za ta ci gaba da nema; kulawarku ba za ta tsaya ba.',
   'care.provider.error': 'Ba a samu sakamakon masu bada kulawa ba. Canza zaɓi ko sake gwadawa.',
   'care.provider.servicePrice': 'Farashin sabis: {mode}',

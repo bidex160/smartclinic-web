@@ -39,7 +39,7 @@ const common: Dictionary = {
   "common.menu.fasttrack": "FastTrack",
   "common.menu.my-providers": "Me ayaresafoɔ",
   "common.menu.coverage-programmes": "Ahobanbɔ & nhyehyɛeɛ",
-  "common.menu.health-insurance-hmo": "Apɔmuden insurance / HMO",
+  "common.menu.health-insurance-hmo": "Apɔmuden insuransi / HMO",
   "common.menu.healthy-families": "Abusua a wɔwɔ apɔmuden",
   "common.menu.impact": "Nsunsuansoɔ",
   "common.menu.my-impact": "Me nsunsuansoɔ",
@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Ɔman",
   "common.locale.language": "Kasa",
   "common.locale.more": "Kasa foforɔ",
+  "common.locale.pick": "Wo kasa:",
+  "common.locale.keep": "Fa kasa yi",
+  "common.locale.report": "Ka asɛmfua a ɛnteɛ kyerɛ yɛn",
+  "common.locale.reportShown": "Nsɛmfua bɛn na ɛnteɛ?",
+  "common.locale.reportBetter": "Nsɛmfua a ɛyɛ papa (ɛnhia)",
+  "common.locale.reportSend": "Soma",
+  "common.locale.reportThanks": "Meda wo ase! Yɛbɛsiesie.",
   "common.locale.note": "Wo kwankyerɛfoɔ ka kasa yi. Nkrataafa bi da so wɔ Borɔfo mu berɛ a yɛrekyerɛ aseɛ.",
 };
 

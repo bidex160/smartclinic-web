@@ -10,9 +10,11 @@ import { LocalePickerComponent } from './shared/components/locale-picker/locale-
 import { TranslatePipe } from './core/services/translation.service';
 import { NudgesApiService } from './core/services/family-kids-api.service';
 
+import { LanguageBarComponent } from './shared/components/locale-picker/language-bar.component';
+
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent, LocalePickerComponent, TranslatePipe],
+  imports: [RouterLink, RouterOutlet, SmartClinicCompanionComponent, LocalePickerComponent, LanguageBarComponent, TranslatePipe],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -48,7 +50,7 @@ export class AppComponent {
       .subscribe((event) => {
         this.currentUrl.set(event.urlAfterRedirects);
         this.menuOpen.set(false);
-        // A link that names a country or language (e.g. /register?market=RW&lang=rw) is remembered.
+        // A link that names a country or language (e.g. a shared /play?lang=rw) sets it, unless the person picked one.
         const query = this.router.parseUrl(event.urlAfterRedirects).queryParamMap;
         if (query.has('market') || query.has('lang')) this.locale.applyQuery(query.get('market'), query.get('lang'));
         if (this.authState.isPatient()) this.accountLocale.sync();
@@ -57,9 +59,11 @@ export class AppComponent {
     // Daily reminders are written on the server, so it needs to know the person's language.
     effect(() => {
       const language = this.locale.language();
+      const chosen = this.locale.source() === 'chosen';
       const patient = this.authState.isPatient();
       untracked(() => {
-        if (!patient || !this.nudges.available() || language === this.lastSyncedLanguage) return;
+        // Only a language the person picked is saved to the account, so a wrong guess never follows them.
+        if (!patient || !chosen || !this.nudges.available() || language === this.lastSyncedLanguage) return;
         const first = this.lastSyncedLanguage === null;
         this.lastSyncedLanguage = language;
         if (first && language === 'en') return; // default already

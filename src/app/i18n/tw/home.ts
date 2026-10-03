@@ -4,7 +4,7 @@ import type { Dictionary } from '../types';
 const home: Dictionary = {
   // Hero
   'home.hero.eyebrow': 'Wo ankasa w’apɔwmuden yɔnko',
-  'home.hero.titleStart': 'Tena ase apɔw mu. Nya ayaresa.',
+  'home.hero.titleStart': 'Ma wo ho nyɛ den. Nya ayaresa.',
   'home.hero.titleHighlight': 'Fa w’apɔwmuden ho nsɛm nyinaa',
   'home.hero.titleEnd': 'sie faako.',
   'home.hero.intro':
@@ -38,7 +38,7 @@ const home: Dictionary = {
   'home.companion.title': 'Ayaresa a ɛne wo nantew.',
   'home.companion.intro':
     'Ayarefo baako. Apɔwmuden kwan baako. Dɔkota nhyiam, aduru krataa, nhwehwɛmu ne wo nsɛm nyinaa tena faako ma wo — ɛnyɛ nkrataa pii mu.',
-  'home.companion.stayWellTitle': 'Tena ase apɔw mu',
+  'home.companion.stayWellTitle': 'Ma wo ho nyɛ den',
   'home.companion.stayWellText':
     'Da biara nneyɛe ma nsuo, apɔw mu teɛteɛ, ahomegye ne aduru. Guided Self-Checks ne Smart Health Checks sɛnea ɛbɛyɛ a wobɛhu ntɛm.',
   'home.companion.getCareTitle': 'Nya ayaresa',

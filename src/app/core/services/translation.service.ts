@@ -66,6 +66,19 @@ export class TranslationService {
     return interpolate(text, params);
   }
 
+  /** Keys whose text (in the current language) contains these words: helps staff find what to fix. */
+  findKeys(text: string, max = 5): string[] {
+    const needle = text.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (needle.length < 3) return [];
+    const dict = this.dictionaries()[this.language()] ?? EN;
+    const out: string[] = [];
+    for (const [key, value] of Object.entries(dict)) {
+      if (value.toLowerCase().replace(/\s+/g, ' ').includes(needle)) out.push(key);
+      if (out.length >= max) break;
+    }
+    return out;
+  }
+
   private async load(lang: Exclude<AppLanguage, 'en'>): Promise<void> {
     try {
       const module = await LOADERS[lang]();

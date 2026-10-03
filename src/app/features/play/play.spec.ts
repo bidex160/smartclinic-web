@@ -94,7 +94,7 @@ describe('Health Word game', () => {
     const text = decodeURIComponent(wa.split('text=')[1]);
     expect(text).toContain('SmartClinic Health Word #3 1/6 ⏱ 1:12');
     expect(text).toContain('🟩🟩🟩🟩🟩');
-    expect(text).toContain('/play?ref=SC-ABC123');
+    expect(text).toMatch(/\/play\?ref=SC-ABC123&lang=\w+&market=\w+/);
     expect(text).not.toContain('SLEEP');
     expect(el.querySelector('[data-word-keyboard]')).toBeNull();
   });
@@ -157,7 +157,7 @@ describe('Challenge page', () => {
     expect(el.querySelector('[data-leaderboard]')!.textContent).toContain('Ada O.');
     const wa = decodeURIComponent((el.querySelector('[data-invite] [data-share-whatsapp]') as HTMLAnchorElement).href.split('text=')[1]);
     expect(wa).toContain('I challenge you! Health Word battle, 7 days');
-    expect(wa).toContain('/play/c/MNWA2E5C?ref=SC-ABC123');
+    expect(wa).toMatch(/\/play\/c\/MNWA2E5C\?ref=SC-ABC123&lang=\w+&market=\w+/);
   });
 
   it('lets someone who was invited accept, with no board shown before joining', () => {

@@ -28,7 +28,7 @@ const auth: Dictionary = {
   'auth.login.providerLink': 'Shiga SmartClinic a matsayin mai ba da kulawa →',
   'auth.login.createTitle': 'Ku haɗa duk kulawar lafiyarku wuri ɗaya.',
   'auth.login.createText': 'Ku buɗe asusun SmartClinic don ganawa da likita, gwaje-gwaje, takardun magani da haɗuwa da asibitoci.',
-  'auth.login.createLink': 'Buɗe asusun SmartClinic na →',
+  'auth.login.createLink': 'Buɗe asusun SmartClinic ɗina →',
   'auth.login.invitedTitle': 'An gayyace ku zuwa SmartClinic.',
   'auth.login.invitedText': 'Gayyatarku za ta shiga cikin sabon asusunku kai tsaye.',
   'auth.login.invitationHint': 'Kuna da hanyar haɗin gayyata (link)? Ku fara buɗe ta, SmartClinic za ta ɗauki gayyatarku kai tsaye.',

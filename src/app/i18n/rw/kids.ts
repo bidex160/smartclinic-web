@@ -114,7 +114,7 @@ const kids: Dictionary = {
   'kids.quiz.q18.question': 'Kuki duhabwa inkingo?',
   'kids.quiz.q18.a0': 'Kugira ngo duhabwe impano', 'kids.quiz.q18.a1': 'Kugira ngo duhabwe bombo', 'kids.quiz.q18.a2': 'Kugira ngo turindwe indwara',
   'kids.quiz.q19.question': 'Ni iki cyiza gukora buri munsi?',
-  'kids.quiz.q19.a0': 'Kureba televiziyo umunsi wose', 'kids.quiz.q19.a1': 'Kunyeganyega no gukina', 'kids.quiz.q19.a2': 'Kuguma mu buriri umunsi wose',
+  'kids.quiz.q19.a0': 'Kureba televiziyo umunsi wose', 'kids.quiz.q19.a1': 'Kunyeganyeza umubiri no gukina', 'kids.quiz.q19.a2': 'Kuguma mu buriri umunsi wose',
   'kids.quiz.q20.question': 'Imiti ibikwa he?',
   'kids.quiz.q20.a0': 'Hejuru, kure y’abana bato', 'kids.quiz.q20.a1': 'Hamwe n’ibikinisho', 'kids.quiz.q20.a2': 'Ku ntebe yo mu ruganiriro',
   // Daily reminder settings (Me page)

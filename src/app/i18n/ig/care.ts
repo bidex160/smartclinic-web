@@ -100,7 +100,7 @@ const care: Dictionary = {
   'care.provider.fastTrack': 'FastTrack dị',
   'care.provider.specialty': 'Ọkachamara (ọ dịghị mkpa)',
   'care.provider.anySpecialty': 'Ọkachamara ọ bụla',
-  'care.provider.verified': 'Ekwenyela',
+  'care.provider.verified': 'A nyochara ya',
   // Details
   'care.details.doctorHeading': 'Ọ nwere ihe ọzọ?',
   'care.details.heading': '{step}. Nkọwa ọzọ (ọ bụghị iwu)',

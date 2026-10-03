@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Obodo",
   "common.locale.language": "Asụsụ",
   "common.locale.more": "Asụsụ ndị ọzọ",
+  "common.locale.pick": "Asụsụ gị:",
+  "common.locale.keep": "Jiri asụsụ a",
+  "common.locale.report": "Kọọrọ anyị okwu na-ezighi ezi",
+  "common.locale.reportShown": "Kedu okwu na-ezighi ezi?",
+  "common.locale.reportBetter": "Okwu ka mma (ọ dịghị mkpa)",
+  "common.locale.reportSend": "Zipu",
+  "common.locale.reportThanks": "Daalụ! Anyị ga-edozi ya.",
   "common.locale.note": "Onye ndu gị na-asụ asụsụ a. Ụfọdụ peeji ka nọ n’asụsụ Bekee ka anyị na-asụgharị ha.",
 };
 

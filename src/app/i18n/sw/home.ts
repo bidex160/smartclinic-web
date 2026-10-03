@@ -9,7 +9,7 @@ const home: Dictionary = {
   'home.hero.titleEnd': 'pamoja.',
   'home.hero.intro':
     'SmartClinic iko nawe kila siku — tabia ndogo zinazokuweka na afya, na mwenzako wa kuaminika unapohitaji daktari, kipimo, dawa au hospitali.',
-  'home.hero.openMySmartClinic': 'Fungua My SmartClinic',
+  'home.hero.openMySmartClinic': 'Fungua SmartClinic Yangu',
   'home.hero.bookHealthCheck': 'Weka Smart Health Check',
   'home.hero.whyLabel': 'Kwa nini wagonjwa huchagua SmartClinic',
   'home.hero.clearPricing': 'Bei wazi',
@@ -17,7 +17,7 @@ const home: Dictionary = {
   'home.hero.careNearYou': 'Huduma karibu nawe',
   'home.hero.photoAlt': 'Dr Valerie wa SmartClinic katika kliniki yake',
   'home.hero.photoCaption': 'Analeta mabadiliko katika afya',
-  'home.hero.todayLabel': 'Mambo ya leo: kunywa glasi ya maji, tembea dakika 20. Fungua My SmartClinic',
+  'home.hero.todayLabel': 'Mambo ya leo: kunywa glasi ya maji, tembea dakika 20. Fungua SmartClinic Yangu',
   'home.hero.today': 'Leo',
   'home.hero.drinkWater': 'Kunywa glasi ya maji',
   'home.hero.walk': 'Tembea dakika 20',
@@ -117,9 +117,9 @@ const home: Dictionary = {
   'home.faq.providersQuestion': 'Watoa huduma wanachaguliwaje?',
   'home.faq.providersAnswer':
     'Watoa huduma wanaomba kujiunga na mtandao wa SmartClinic na wanakaguliwa kabla huduma zao hazijawekwa hapa.',
-  'home.faq.accessQuestion': 'Ninaingiaje kwenye My SmartClinic?',
+  'home.faq.accessQuestion': 'Ninaingiaje kwenye SmartClinic Yangu?',
   'home.faq.accessAnswer':
-    'Bonyeza Fungua My SmartClinic kuingia kwa barua pepe au namba ya simu iliyounganishwa na akaunti yako.',
+    'Bonyeza Fungua SmartClinic Yangu kuingia kwa barua pepe au namba ya simu iliyounganishwa na akaunti yako.',
   'home.faq.helpQuestion': 'Ninapataje msaada?',
   'home.faq.helpAnswer':
     'Ingia kuona huduma unazopata sasa. Msaada wa WhatsApp utaonekana hapa mawasiliano rasmi ya msaada yatakapowekwa.',
