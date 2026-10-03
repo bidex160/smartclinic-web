@@ -20,6 +20,8 @@ export interface RegisterProviderRequest extends ProviderProfileFields {
   readonly primarySpecialty?: string;
   readonly regulator?: string;
   readonly licenceNumber?: string;
+  /** From a facility claim link (/claim/…). */
+  readonly claimToken?: string;
   /** From a provider-to-provider invite link (?invite=…). */
   readonly inviteToken?: string;
 }

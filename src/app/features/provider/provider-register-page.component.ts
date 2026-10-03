@@ -36,6 +36,7 @@ import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/c
 import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 import { ProviderCredentialsApiService, RegulatorOption, Specialty } from '../../core/services/provider-credentials-api.service';
 import { SpecialtyPickerComponent } from './credentials/specialty-picker.component';
+import { FacilityOutreachApiService } from '../../core/services/facility-outreach-api.service';
 
 @Component({
   selector: 'app-provider-register-page',
@@ -69,6 +70,9 @@ export class ProviderRegisterPageComponent {
   readonly chosenSpecialties = signal<readonly string[]>([]);
   readonly primarySpecialty = signal<string | null>(null);
   readonly specialtyError = signal(false);
+  /** Facility claim link (/claim/<token> → ?claim=…): the listing's details are filled in. */
+  private readonly claimToken = this.route.snapshot.queryParamMap.get('claim')?.trim().slice(0, 80) || null;
+  readonly claiming = signal<{ displayName: string; interestedPatients: number } | null>(null);
   /** Provider-to-provider invite link token (?invite=…). */
   private readonly inviteToken = this.route.snapshot.queryParamMap.get('invite')?.trim().slice(0, 128) || null;
 
@@ -218,6 +222,23 @@ export class ProviderRegisterPageComponent {
       this.loadRegulators();
     });
     this.form.controls.countryCode.valueChanges.subscribe(() => this.loadRegulators());
+    if (this.claimToken) {
+      inject(FacilityOutreachApiService).preview(this.claimToken).subscribe({
+        next: (p) => {
+          if (p.claimed) return;
+          this.claiming.set({ displayName: p.displayName, interestedPatients: p.interestedPatients });
+          this.form.patchValue({ displayName: p.displayName, providerType: p.providerType as ProviderType, countryCode: p.countryCode });
+          // After the place lists load, so they don't reset what we fill in.
+          void this.locationData.ready().catch(() => undefined).then(() => {
+            this.loadRegisterCountry(p.countryCode);
+            this.form.patchValue({ stateOrRegion: p.stateOrRegion ?? '', city: p.city ?? '' });
+            const st = this.registerStates.find((x) => x.name.toLowerCase() === (p.stateOrRegion ?? '').toLowerCase());
+            if (st) { this.registrationStateCode.setValue(st.isoCode); this.onRegisterStateChange(st.isoCode); this.form.patchValue({ stateOrRegion: st.name, city: p.city ?? '' }); }
+          });
+        },
+        error: () => undefined,
+      });
+    }
     this.loadRegisterCountry(this.defaultCountryCode);
     void this.locationData.ready().then(() => this.loadRegisterCountry(this.form.controls.countryCode.value));
   }
@@ -319,6 +340,8 @@ export class ProviderRegisterPageComponent {
         ...(value.regulator && licenceNumber ? { regulator: value.regulator, licenceNumber } : {}),
 
         ...(this.inviteToken ? { inviteToken: this.inviteToken } : {}),
+
+        ...(this.claimToken && this.claiming() ? { claimToken: this.claimToken } : {}),
 
         countryCode:
           value.countryCode

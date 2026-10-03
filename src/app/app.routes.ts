@@ -661,6 +661,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'claim/:token',
+    title: 'Claim your facility | SmartClinic',
+    loadComponent: () => import('./features/claim/facility-claim-page.component').then((c) => c.FacilityClaimPageComponent),
+  },
+  {
     path: 'provider/register',
      data: { preload: true },
     title: 'Provider application | SmartClinic',
@@ -1067,6 +1072,11 @@ export const routes: Routes = [
         path: 'callbacks',
         title: 'Call-back requests | SmartClinic',
         loadComponent: () => import('./features/admin/support-callbacks-page.component').then((c) => c.SupportCallbacksPageComponent),
+      },
+      {
+        path: 'facility-outreach',
+        title: 'Facility outreach | SmartClinic',
+        loadComponent: () => import('./features/admin/facility-outreach-page.component').then((c) => c.FacilityOutreachPageComponent),
       },
       {
         path: 'language-feedback',
