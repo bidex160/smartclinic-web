@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': '{mode} service price',
   'care.provider.priceNote': 'Our system go confirm the correct price for your request.',
   'care.provider.fastTrack': 'FastTrack dey',
+  'care.provider.specialty': 'Specialty (if you want)',
+  'care.provider.anySpecialty': 'Any specialty',
+  'care.provider.verified': 'Verified',
   // Details
   'care.details.doctorHeading': 'Anything else?',
   'care.details.heading': '{step}. More details (if you want)',

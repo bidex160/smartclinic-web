@@ -28,11 +28,14 @@ import { LocationDataService } from '../../core/services/location-data.service';
 
 type Confirmation = 'activate' | 'suspend' | 'approve' | 'reject' | 'link' | 'unlink' | null;
 
+import { ProviderCredentialReviewComponent } from './provider-credential-review.component';
+
 @Component({
   selector: 'app-provider-admin-detail-page',
   imports: [
     ProviderEligibilityConfigComponent,
     ProviderServiceAreasComponent,
+    ProviderCredentialReviewComponent,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,

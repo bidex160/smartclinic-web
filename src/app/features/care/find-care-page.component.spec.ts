@@ -1,3 +1,4 @@
+import { ProviderCredentialsApiService } from '../../core/services/provider-credentials-api.service';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { Observable, of, Subject } from 'rxjs';
@@ -83,6 +84,7 @@ describe('FindCarePageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [FindCarePageComponent],
       providers: [
+        { provide: ProviderCredentialsApiService, useValue: { specialties: () => of([]), regulators: () => of([]), mine: () => of({ providerType: 'CLINIC', specialtyRequired: false, maxSpecialties: 40, specialties: [], regulators: [], credential: null, verified: false, uploadsAvailable: false, blockers: [] }), adminGet: () => of({ providerType: 'CLINIC', specialtyRequired: false, maxSpecialties: 40, specialties: [], regulators: [], credential: null, verified: false, uploadsAvailable: false, blockers: [], documentUrl: null, checkUrl: null, checkedVia: null, reviewNote: null }) } },
         provideRouter([]),
         {
           provide: ActivatedRoute,

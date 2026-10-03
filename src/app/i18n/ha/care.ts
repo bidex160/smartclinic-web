@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': 'Farashin sabis: {mode}',
   'care.provider.priceNote': 'Tsarinmu ne zai tabbatar da ainihin farashin buƙatarku.',
   'care.provider.fastTrack': 'Akwai FastTrack',
+  'care.provider.specialty': 'Ƙwarewa (ba dole ba)',
+  'care.provider.anySpecialty': 'Kowace ƙwarewa',
+  'care.provider.verified': 'An tabbatar',
   // Details
   'care.details.doctorHeading': 'Akwai wani abu kuma?',
   'care.details.heading': '{step}. Ƙarin bayani (ba dole ba)',

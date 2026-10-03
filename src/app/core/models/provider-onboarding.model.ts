@@ -15,6 +15,13 @@ export interface RegisterProviderRequest extends ProviderProfileFields {
   readonly password: string;
   readonly referralCode?: string;
   readonly intendedReferralType?: import('./referral.model').ReferralTargetType;
+  /** Doctors need at least one; facilities may list departments. */
+  readonly specialtyCodes?: readonly string[];
+  readonly primarySpecialty?: string;
+  readonly regulator?: string;
+  readonly licenceNumber?: string;
+  /** From a provider-to-provider invite link (?invite=…). */
+  readonly inviteToken?: string;
 }
 
 export type UpdateProviderProfileRequest = Partial<ProviderProfileFields>;
@@ -24,7 +31,10 @@ export type ProviderOnboardingBlocker =
   | 'NO_ACTIVE_CAPABILITY'
   | 'PROVIDER_LOCATION_WITHOUT_LOCATION'
   | 'HOME_VISIT_WITHOUT_SERVICE_AREA'
-  | 'NO_WEEKLY_AVAILABILITY';
+  | 'NO_WEEKLY_AVAILABILITY'
+  | 'SPECIALTY_MISSING'
+  | 'LICENCE_MISSING'
+  | 'LICENCE_NOT_VERIFIED';
 
 export interface ProviderOnboardingReadiness {
   readonly profileComplete: boolean;

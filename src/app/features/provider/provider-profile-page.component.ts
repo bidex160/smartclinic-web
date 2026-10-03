@@ -25,6 +25,8 @@ import { ProviderServiceAreasComponent } from './provider-service-areas.componen
 import { LocationDataService } from '../../core/services/location-data.service';
 import { ICountry, IState, ICity } from 'country-state-city';
 
+import { ProviderCredentialsCardComponent } from './credentials/provider-credentials-card.component';
+
 @Component({
   selector: 'app-provider-profile-page',
   imports: [
@@ -32,6 +34,7 @@ import { ICountry, IState, ICity } from 'country-state-city';
     RouterLink,
     ProviderEligibilityConfigComponent,
     ProviderServiceAreasComponent,
+    ProviderCredentialsCardComponent,
   ],
   providers: [
     ProviderSelfConfigurationApiService,
@@ -238,7 +241,7 @@ profileEditable(profile: ProviderOnboardingProfile): boolean {
   visibleBlockers(profile: ProviderOnboardingProfile): readonly ProviderOnboardingBlocker[] {
     return this.usesHealthCheckSetup(profile)
       ? profile.readiness.blockers
-      : profile.readiness.blockers.filter((blocker) => blocker === 'PROFILE_INCOMPLETE');
+      : profile.readiness.blockers.filter((blocker) => ['PROFILE_INCOMPLETE', 'SPECIALTY_MISSING', 'LICENCE_MISSING', 'LICENCE_NOT_VERIFIED'].includes(blocker));
   }
   blockerLabel(blocker: ProviderOnboardingBlocker): string {
     const labels: Record<ProviderOnboardingBlocker, string> = {
@@ -248,6 +251,9 @@ profileEditable(profile: ProviderOnboardingProfile): boolean {
         'Configure a location for any in-person Health Check service',
       HOME_VISIT_WITHOUT_SERVICE_AREA: 'Configure coverage for any Home Visit Health Check service',
       NO_WEEKLY_AVAILABILITY: 'Add availability for any Health Check service you activate',
+      SPECIALTY_MISSING: 'Choose your specialty (General Practice counts)',
+      LICENCE_MISSING: 'Add your licence number',
+      LICENCE_NOT_VERIFIED: 'Wait for SmartClinic to check your licence with the regulator',
     };
     return labels[blocker];
   }

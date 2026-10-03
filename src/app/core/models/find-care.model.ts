@@ -89,6 +89,10 @@ export interface PublicFindCareProvider {
     readonly countryCode: string;
   }[];
   readonly services: readonly PublicProviderCareService[];
+  /** Licence checked by SmartClinic staff with the regulator. */
+  readonly verified?: boolean;
+  /** Main specialty first. */
+  readonly specialties?: readonly { readonly code: string; readonly name: string; readonly isPrimary: boolean }[];
 }
 export interface PublicFindCareProviderPage {
   readonly items: readonly PublicFindCareProvider[];
@@ -106,6 +110,8 @@ export interface FindCareProviderFilters {
   readonly deliveryMode?: CareDeliveryMode;
   readonly fastTrackOnly?: boolean;
   readonly hostProviderReference?: string;
+  /** e.g. CARDIOLOGY; see /public/provider-directory/specialties. */
+  readonly specialty?: string;
   readonly page?: number;
   readonly limit?: number;
 }
