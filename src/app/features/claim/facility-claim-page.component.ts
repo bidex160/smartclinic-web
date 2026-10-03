@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ClaimPreview, FacilityOutreachApiService } from '../../core/services/facility-outreach-api.service';
+import { ClaimCodeStepComponent } from './claim-code-step.component';
 
 /**
  * Where a facility's invite link lands (/claim/<token>): who they are, how many patients asked
@@ -9,7 +10,7 @@ import { ClaimPreview, FacilityOutreachApiService } from '../../core/services/fa
  */
 @Component({
   selector: 'app-facility-claim-page',
-  imports: [RouterLink],
+  imports: [RouterLink, ClaimCodeStepComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="min-h-[70vh] bg-gradient-to-b from-sand-50 to-white px-4 pb-16 pt-10 sm:px-8">
@@ -28,10 +29,20 @@ import { ClaimPreview, FacilityOutreachApiService } from '../../core/services/fa
             <ul class="mt-6 grid gap-3 text-ink">
               <li class="flex gap-3"><span aria-hidden="true">✅</span><span>Free to join. Patients find you, book, and pay through SmartClinic.</span></li>
               <li class="flex gap-3"><span aria-hidden="true">💸</span><span>Payouts to your bank account. You see every booking and payment.</span></li>
-              <li class="flex gap-3"><span aria-hidden="true">🛡️</span><span>We check your licence before you go live, so patients can trust the Verified badge.</span></li>
+              @if (p.registryVerified) {
+                <li class="flex gap-3" data-registry-licence><span aria-hidden="true">🛡️</span><span>Your licence is current in the national Health Facility Registry. Confirm with a code and there’s nothing to upload: you can go live today.</span></li>
+              } @else {
+                <li class="flex gap-3"><span aria-hidden="true">🛡️</span><span>We check your licence before you go live, so patients can trust the Verified badge.</span></li>
+              }
               <li class="flex gap-3"><span aria-hidden="true">⏱️</span><span>About five minutes. Your name and place are already filled in.</span></li>
             </ul>
-            <a [routerLink]="['/provider/register']" [queryParams]="registerParams()" class="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-700 px-6 font-semibold text-white shadow-card" data-claim-start>Claim {{ p.displayName }}</a>
+            @if (needsCode() && p.listingId) {
+              <div class="mt-8"><app-claim-code-step [listingId]="p.listingId" [displayName]="p.displayName" (verified)="codeConfirmed($event)" /></div>
+              <a [routerLink]="['/provider/register']" [queryParams]="registerParams()" class="mt-4 block text-center text-sm font-semibold text-brand-700 underline" data-claim-without-code>Continue without a code (we’ll check your licence)</a>
+            } @else {
+              @if (p.ownershipVerified) { <p class="mt-6 rounded-2xl bg-emerald-50 p-4 font-semibold text-emerald-900 ring-1 ring-emerald-100" data-ownership-ok>✓ Confirmed. Your licence will be recorded from the registry automatically.</p> }
+              <a [routerLink]="['/provider/register']" [queryParams]="registerParams()" class="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-700 px-6 font-semibold text-white shadow-card" data-claim-start>Claim {{ p.displayName }}</a>
+            }
             <p class="mt-3 text-center text-sm text-ink-muted">Already on SmartClinic? <a routerLink="/login" class="font-semibold text-brand-700 underline">Sign in</a> and contact us to link this listing.</p>
           }
         } @else if (missing()) {
@@ -56,7 +67,18 @@ export class FacilityClaimPageComponent {
     return p ? { claim: this.token, type: p.providerType } : { claim: this.token };
   });
 
+  /** Licensed in the registry: a code to the registered contact lets them skip the paperwork. */
+  readonly needsCode = computed(() => {
+    const p = this.preview();
+    return Boolean(p && p.registryVerified && !p.ownershipVerified);
+  });
+  private readonly router = inject(Router);
+
   constructor() {
     this.api.preview(this.token).subscribe({ next: (p) => this.preview.set(p), error: () => this.missing.set(true) });
+  }
+
+  codeConfirmed(token: string): void {
+    void this.router.navigate(['/provider/register'], { queryParams: { claim: token || this.token } });
   }
 }

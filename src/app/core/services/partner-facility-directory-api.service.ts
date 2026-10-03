@@ -7,12 +7,15 @@ import { PartnerFacilityDirectoryPage, PartnerFacilityRequest, PartnerFacilityTy
 export class PartnerFacilityDirectoryApiService {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_CONFIG).baseUrl;
-  directory(query: { q?: string; facilityType?: PartnerFacilityType | ''; stateOrRegion?: string; city?: string; page?: number; limit?: number }) {
+  directory(query: { q?: string; facilityType?: PartnerFacilityType | ''; stateOrRegion?: string; city?: string; page?: number; limit?: number; near?: { lat: number; lng: number } | null; verifiedOnly?: boolean }) {
     let params = new HttpParams().set('page', query.page ?? 1).set('limit', query.limit ?? 20);
     for (const key of ['q', 'facilityType', 'stateOrRegion', 'city'] as const) {
       const value = query[key];
       if (value?.trim()) params = params.set(key, value.trim());
     }
+    // Rounded to about 100 m: enough to sort by distance, and never stored.
+    if (query.near) params = params.set('lat', query.near.lat.toFixed(3)).set('lng', query.near.lng.toFixed(3));
+    if (query.verifiedOnly) params = params.set('verifiedOnly', 'true');
     return this.http.get<PartnerFacilityDirectoryPage>(`${this.base}/me/partner-facility-directory`, { params });
   }
   requestContact(id: string) {

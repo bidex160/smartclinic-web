@@ -72,7 +72,8 @@ export class ProviderRegisterPageComponent {
   readonly specialtyError = signal(false);
   /** Facility claim link (/claim/<token> → ?claim=…): the listing's details are filled in. */
   private readonly claimToken = this.route.snapshot.queryParamMap.get('claim')?.trim().slice(0, 80) || null;
-  readonly claiming = signal<{ displayName: string; interestedPatients: number } | null>(null);
+  readonly isClaimLink = Boolean(this.claimToken);
+  readonly claiming = signal<{ displayName: string; interestedPatients: number; registryConfirmed?: boolean } | null>(null);
   /** Provider-to-provider invite link token (?invite=…). */
   private readonly inviteToken = this.route.snapshot.queryParamMap.get('invite')?.trim().slice(0, 128) || null;
 
@@ -226,7 +227,7 @@ export class ProviderRegisterPageComponent {
       inject(FacilityOutreachApiService).preview(this.claimToken).subscribe({
         next: (p) => {
           if (p.claimed) return;
-          this.claiming.set({ displayName: p.displayName, interestedPatients: p.interestedPatients });
+          this.claiming.set({ displayName: p.displayName, interestedPatients: p.interestedPatients, ...(p.registryVerified && p.ownershipVerified ? { registryConfirmed: true } : {}) });
           this.form.patchValue({ displayName: p.displayName, providerType: p.providerType as ProviderType, countryCode: p.countryCode });
           // After the place lists load, so they don't reset what we fill in.
           void this.locationData.ready().catch(() => undefined).then(() => {

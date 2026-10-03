@@ -661,6 +661,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'claim',
+    pathMatch: 'full',
+    title: 'Claim your facility | SmartClinic',
+    loadComponent: () => import('./features/claim/find-facility-page.component').then((c) => c.FindFacilityPageComponent),
+  },
+  {
     path: 'claim/:token',
     title: 'Claim your facility | SmartClinic',
     loadComponent: () => import('./features/claim/facility-claim-page.component').then((c) => c.FacilityClaimPageComponent),

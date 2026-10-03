@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { FacilityRegistryPanelComponent } from './facility-registry-panel.component';
 import { FacilityOutreachApiService, FacilityType, FUNNEL, IMPORT_TEMPLATE, InviteResult, OutreachDashboard, OutreachFilters, OutreachItem, OutreachStage, STAGE_LABELS } from '../../core/services/facility-outreach-api.service';
 
 const TYPE_LABEL: Record<FacilityType, string> = { HOSPITAL: 'Hospital / clinic', PHARMACY: 'Pharmacy', LABORATORY: 'Laboratory', RADIOLOGY: 'Radiology' };
@@ -18,17 +19,19 @@ const STAGE_TONE: Record<OutreachStage, string> = {
  */
 @Component({
   selector: 'app-facility-outreach-page',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, FacilityRegistryPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="mx-auto max-w-6xl px-4 py-8 sm:px-8">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 class="text-3xl font-bold text-brand-900">Facility outreach</h1>
-          <p class="mt-1 max-w-2xl text-slate-600">Bring listed hospitals, pharmacies and labs on board. Start with the places patients ask for most.</p>
+          <p class="mt-1 max-w-2xl text-slate-600">Facilities come from the national registry by themselves, and the ones patients ask for are invited automatically. Use this page for the exceptions.</p>
         </div>
-        <button type="button" (click)="showImport.set(!showImport())" class="min-h-11 rounded-lg bg-brand-700 px-4 font-semibold text-white" data-import-toggle>Upload a spreadsheet</button>
+        <button type="button" (click)="showImport.set(!showImport())" class="min-h-11 rounded-lg border border-slate-300 px-4 font-semibold text-slate-700" data-import-toggle>Upload a spreadsheet (backup)</button>
       </div>
+
+      <app-facility-registry-panel />
 
       @if (showImport()) {
         <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5" aria-labelledby="import-heading" data-import>
@@ -198,7 +201,7 @@ const STAGE_TONE: Record<OutreachStage, string> = {
             }
           </li>
         } @empty {
-          @if (data()) { <li class="rounded-2xl bg-slate-50 p-6 text-slate-600">No facilities match. Upload a spreadsheet to add some.</li> }
+          @if (data()) { <li class="rounded-2xl bg-slate-50 p-6 text-slate-600">No facilities match these filters. New ones arrive from the registry every night.</li> }
         }
       </ul>
 

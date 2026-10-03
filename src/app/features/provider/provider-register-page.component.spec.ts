@@ -111,6 +111,21 @@ describe('ProviderRegisterPageComponent', () => {
     component.register();
     expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ claimToken: 'tok_abcdefghijklmnopqrstuv', displayName: 'Garki Hospital' }));
   });
+  it('skips the licence step when the registry confirmed it, and says when they are approved', async () => {
+    const outreach = { preview: vi.fn(() => of({ displayName: 'Garki Hospital', facilityType: 'HOSPITAL', providerType: 'HOSPITAL', countryCode: 'NG', stateOrRegion: 'Federal Capital Territory', city: 'Garki', interestedPatients: 0, claimed: false, registryVerified: true, ownershipVerified: true })) };
+    TestBed.overrideProvider(FacilityOutreachApiService, { useValue: outreach });
+    const { component, fixture } = await setup(() => of({ ...profile(), onboardingStatus: 'APPROVED' }), { claim: 'tok_abcdefghijklmnopqrstuv' });
+    await new Promise((r) => setTimeout(r, 0));
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.claiming()).toEqual({ displayName: 'Garki Hospital', interestedPatients: 0, registryConfirmed: true });
+    expect(el.querySelector('[data-register-licence-auto]')).toBeTruthy();
+    expect(el.querySelector('[data-register-licence]')).toBeNull();
+    component.form.patchValue({ email: 'garki@example.test', phone: '+2348031234567', password: 'a-secure-password', stateOrRegion: 'Federal Capital Territory', city: 'Garki' });
+    component.register();
+    fixture.detectChanges();
+    expect(el.querySelector('[data-register-approved]')!.textContent).toContain('You’re approved');
+  });
   it('shows the server message when a licence is already used', async () => {
     const { component } = await setup(() => throwError(() => new HttpErrorResponse({ status: 409, error: { message: 'This licence number is already linked to another SmartClinic account. Contact support if this is yours.' } })));
     component.form.setValue({ ...valid(), regulator: 'MDCN', licenceNumber: 'MDCN/R/1' });
