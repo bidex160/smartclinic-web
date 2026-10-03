@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of, Subject, throwError } from 'rxjs';
 import { ProviderOnboardingApiService } from '../../core/services/provider-onboarding-api.service';
 import { ProviderCredentialsApiService } from '../../core/services/provider-credentials-api.service';
+import { FacilityOutreachApiService } from '../../core/services/facility-outreach-api.service';
 import { ProviderRegisterPageComponent } from './provider-register-page.component';
 
 describe('ProviderRegisterPageComponent', () => {
@@ -98,6 +99,17 @@ describe('ProviderRegisterPageComponent', () => {
     expect(api.register).toHaveBeenCalledWith(expect.objectContaining({
       specialtyCodes: ['PEDIATRICS', 'GENERAL_PRACTICE'], primarySpecialty: 'PEDIATRICS', regulator: 'MDCN', licenceNumber: 'MDCN/R/123', inviteToken: 'growth-token-1',
     }));
+  });
+  it('fills in a claimed facility and sends the claim token', async () => {
+    const outreach = { preview: vi.fn(() => of({ displayName: 'Garki Hospital', facilityType: 'HOSPITAL', providerType: 'HOSPITAL', countryCode: 'NG', stateOrRegion: 'Federal Capital Territory', city: 'Garki', interestedPatients: 3, claimed: false })) };
+    TestBed.overrideProvider(FacilityOutreachApiService, { useValue: outreach });
+    const { component, api } = await setup(() => of(profile()), { claim: 'tok_abcdefghijklmnopqrstuv', type: 'HOSPITAL' });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(component.claiming()).toEqual({ displayName: 'Garki Hospital', interestedPatients: 3 });
+    expect(component.form.getRawValue()).toMatchObject({ displayName: 'Garki Hospital', providerType: 'HOSPITAL', countryCode: 'NG' });
+    component.form.patchValue({ email: 'garki@example.test', phone: '+2348031234567', password: 'a-secure-password', stateOrRegion: 'Federal Capital Territory', city: 'Garki' });
+    component.register();
+    expect(api.register).toHaveBeenCalledWith(expect.objectContaining({ claimToken: 'tok_abcdefghijklmnopqrstuv', displayName: 'Garki Hospital' }));
   });
   it('shows the server message when a licence is already used', async () => {
     const { component } = await setup(() => throwError(() => new HttpErrorResponse({ status: 409, error: { message: 'This licence number is already linked to another SmartClinic account. Contact support if this is yours.' } })));
