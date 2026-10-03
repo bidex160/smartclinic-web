@@ -33,10 +33,25 @@ const play: Dictionary = {
   'play.word.feedback': '{hit} dey di right place, {near} dey inside di word',
   'play.word.solved': 'You solve am in {tries} tries, {time}!',
   'play.word.solvedShort': 'You solve am!',
-  'play.word.notSolved': 'No be this time. Di word na {word}.',
+  'play.word.notSolved': 'No be dis time. Di word na {word}.',
   'play.word.answerWas': 'Di word na {word}.',
   'play.word.shareAsk': 'Share your result make you see if your friends fit beat am:',
   'play.word.tomorrow': 'New Health Word go come tomorrow.',
+
+  // How to play
+  'play.how.title': 'How to play',
+  'play.how.step1': 'Guess today health word wey get five letters. You get {tries} tries.',
+  'play.how.step2': 'Type one word wey get five letters, then press Enter.',
+  'play.how.step3': 'Di colours dey show how close you be. Use dem for your next guess.',
+  'play.how.examples': 'Examples',
+  'play.how.exHit': 'Green: {letter} dey inside di word, and e dey di right place.',
+  'play.how.exNear': 'Yellow: {letter} dey inside di word, but e dey another place.',
+  'play.how.exMiss': 'Grey: {letter} no dey inside di word.',
+  'play.how.clock': 'Di clock go start wen you press Play. For challenges, di faster you be, di better.',
+  'play.how.daily': 'One new word every day, di same one for everybody. Share your result make you compare.',
+  'play.how.english': 'Di word na always English. Di hint go tell you di topic.',
+  'play.how.points': 'Finish am, you go get 5 points. Solve am, you go get 5 more.',
+  'play.how.gotIt': 'I don get am',
 
   'play.category.body': 'di body',
   'play.category.food': 'food and drink',
@@ -111,9 +126,9 @@ const play: Dictionary = {
   'play.challenge.waiting': 'We dey wait make friends join. Send di invite!',
   'play.challenge.howScored': 'How dem dey count points',
   'play.challenge.again': 'Start another challenge',
-  'play.challenge.leave': 'Leave this challenge',
-  'play.challenge.leaveConfirm': 'You wan leave this challenge? Dem go comot your score from di board.',
-  'play.challenge.notFound': 'We no see that challenge. Check di link.',
+  'play.challenge.leave': 'Leave dis challenge',
+  'play.challenge.leaveConfirm': 'You wan leave dis challenge? Dem go comot your score from di board.',
+  'play.challenge.notFound': 'We no see dat challenge. Check di link.',
 
   'play.invite.titleDuel': 'Invite who you dey challenge',
   'play.invite.titleGroup': 'Invite your friends',
@@ -121,8 +136,8 @@ const play: Dictionary = {
 
   'play.join.title': '{name} challenge you!',
   'play.join.cta': 'Accept di challenge',
-  'play.join.full': 'This challenge don full already.',
-  'play.join.ended': 'This challenge don finish.',
+  'play.join.full': 'Dis challenge don full already.',
+  'play.join.ended': 'Dis challenge don finish.',
 
   'play.board.place': 'Place {n}',
   'play.board.you': 'you',
@@ -130,7 +145,7 @@ const play: Dictionary = {
   'play.board.today': 'today',
 
   // Friends this week
-  'play.week.title': 'This week with friends',
+  'play.week.title': 'Dis week with friends',
   'play.week.intro': 'You and everybody wey you don challenge. E dey start again every Monday.',
   'play.week.noFriends': 'Start one challenge make you see your friends here.',
 

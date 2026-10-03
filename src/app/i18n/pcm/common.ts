@@ -45,7 +45,7 @@ const common: Dictionary = {
   "common.menu.my-impact": "Wetin I don do",
   "common.menu.referrals-rewards": "Bring person & gift",
   "common.menu.account": "My account",
-  "common.menu.family-dependants": "Family & people wey depend on you",
+  "common.menu.family-dependants": "Family & pipo wey depend on you",
   "common.menu.profile": "My profile",
   "common.menu.get-help": "Get help",
   "common.menu.my-progress": "How I dey go",
@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Country",
   "common.locale.language": "Language",
   "common.locale.more": "More language dem",
+  "common.locale.pick": "Your language:",
+  "common.locale.keep": "Keep dis language",
+  "common.locale.report": "Report word wey no correct",
+  "common.locale.reportShown": "Which word no correct?",
+  "common.locale.reportBetter": "Better word (if you get am)",
+  "common.locale.reportSend": "Send",
+  "common.locale.reportThanks": "Thank you! We go fix am.",
   "common.locale.note": "Your guide dey speak dis language. Some screen still dey for English as we dey translate dem.",
 };
 

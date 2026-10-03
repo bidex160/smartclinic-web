@@ -3,7 +3,7 @@ import type { Dictionary } from '../types';
 /** Play — ig. */
 const play: Dictionary = {
   'play.loading': 'Anyị na-ebu…',
-  'play.error': 'Ihe gbagoro. Biko nwaa ọzọ.',
+  'play.error': 'Nsogbu dapụtara. Biko nwaa ọzọ.',
   'play.points': 'akara',
 
   // Page
@@ -37,6 +37,21 @@ const play: Dictionary = {
   'play.word.answerWas': 'Okwu ahụ bụ {word}.',
   'play.word.shareAsk': 'Kekọrịta nsonaazụ gị, hụ ma ndị enyi gị ga-agafe ya:',
   'play.word.tomorrow': 'Health Word ọhụrụ ga-abịa echi.',
+
+  // How to play
+  'play.how.title': 'Otú esi egwu',
+  'play.how.step1': 'Chọpụta Health Word nke taa nke nwere mkpụrụedemede ise. Ị nwere ọnwụnwa {tries}.',
+  'play.how.step2': 'Dee okwu nwere mkpụrụedemede ise, ma pịa Tinye.',
+  'play.how.step3': 'Agba ndị ahụ na-egosi ka ị si dị nso. Jiri ha mee nchọpụta gị ọzọ.',
+  'play.how.examples': 'Ihe atụ',
+  'play.how.exHit': 'Akwụkwọ ndụ: {letter} nọ n’okwu ahụ, n’ebe ziri ezi.',
+  'play.how.exNear': 'Odo odo: {letter} nọ n’okwu ahụ, mana n’ebe ọzọ.',
+  'play.how.exMiss': 'Isi awọ: {letter} nọghị n’okwu ahụ.',
+  'play.how.clock': 'Oge na-amalite mgbe ị pịrị Gwuo. Ịbụ ọsọ ka mma n’ịma aka.',
+  'play.how.daily': 'Otu okwu ọhụrụ kwa ụbọchị, otu ihe ahụ maka onye ọ bụla. Kekọrịta nsonaazụ gị, tụnyere ya.',
+  'play.how.english': 'Okwu ahụ bụ n’asụsụ Bekee mgbe niile. Aka ntụ ga-agwa gị isiokwu ya.',
+  'play.how.points': 'Mechaa ya inweta akara 5, chọpụta ya inweta akara 5 ọzọ.',
+  'play.how.gotIt': 'Aghọtara m',
 
   'play.category.body': 'ahụ',
   'play.category.food': 'nri na ihe ọṅụṅụ',
@@ -75,11 +90,11 @@ const play: Dictionary = {
   'play.themeHint.ALL_ROUND': 'Ihe niile na-agụ',
   'play.themeHint.WORD': 'Ọnwụnwa kacha ole, oge kacha ngwa',
   'play.themeHint.QUIZ': 'Ajụjụ kwa ụbọchị',
-  'play.themeHint.ACTIVE_DAYS': 'Check-in na omume',
-  'play.rules.ALL_ROUND': 'Kwa ụbọchị: 10 maka check-in ma ọ bụ omume, 5 maka ajụjụ kwa ụbọchị na 5 ọzọ ma ọ bụrụ na ọ ziri ezi, 5 maka Health Word na 5 ọzọ ma ọ bụrụ na ị chọpụtara ya.',
+  'play.themeHint.ACTIVE_DAYS': 'Ịkọ otu ahụ dị gị na omume',
+  'play.rules.ALL_ROUND': 'Kwa ụbọchị: 10 maka ịkọ otu ahụ dị gị ma ọ bụ omume, 5 maka ajụjụ kwa ụbọchị na 5 ọzọ ma ọ bụrụ na ọ ziri ezi, 5 maka Health Word na 5 ọzọ ma ọ bụrụ na ị chọpụtara ya.',
   'play.rules.WORD': 'Kwa ụbọchị: chọpụta Health Word maka 10, tinyere 2 maka ọnwụnwa ọ bụla fọdụrụ gị. Ịgwu egwu na-achọpụtaghị ya na-enye 2. Ma ọ bụrụ na akara hà, onye oge ya dị ngwa ka ga-emeri.',
   'play.rules.QUIZ': 'Kwa ụbọchị: 5 maka ịza ajụjụ kwa ụbọchị na 10 ọzọ ma ọ bụrụ na ị zaa ya nke ọma.',
-  'play.rules.ACTIVE_DAYS': 'Kwa ụbọchị: 5 maka check-in gị na 5 maka ịkaa akara na ị mere omume.',
+  'play.rules.ACTIVE_DAYS': 'Kwa ụbọchị: 5 maka ịkọ otu ahụ dị gị na 5 maka ịkaa akara na ị mere omume.',
 
   'play.mode.duel': 'Mmadụ abụọ',
   'play.mode.group': 'Otu (ruo mmadụ 30)',
@@ -98,7 +113,7 @@ const play: Dictionary = {
   'play.status.upcoming': 'Na-amalite {date}',
   'play.status.daysLeft': 'Ụbọchị {n} fọdụrụ',
   'play.status.lastDay': 'Ụbọchị ikpeazụ!',
-  'play.status.ended': 'Ejiri ya mechaa',
+  'play.status.ended': 'Agwụla',
   'play.status.doneToday': 'emechara taa ✓',
 
   // One challenge
@@ -108,7 +123,7 @@ const play: Dictionary = {
   'play.challenge.board': 'Ndepụta ndị na-eduga',
   'play.challenge.final': 'Nsonaazụ ikpeazụ',
   'play.challenge.scoreNow': 'Akara taa',
-  'play.challenge.waiting': 'Na-ewere ndị enyi ka ha bata. Zipụ òkù ahụ!',
+  'play.challenge.waiting': 'Anyị na-eche ka ndị enyi bata. Zipụ òkù ahụ!',
   'play.challenge.howScored': 'Otu esi enweta akara',
   'play.challenge.again': 'Bido ịma aka ọzọ',
   'play.challenge.leave': 'Pụọ n’ịma aka a',
@@ -121,7 +136,7 @@ const play: Dictionary = {
 
   'play.join.title': '{name} ama gị aka!',
   'play.join.cta': 'Nabata ịma aka ahụ',
-  'play.join.full': 'Ịma aka a juputala.',
+  'play.join.full': 'Ịma aka a jupụtala.',
   'play.join.ended': 'Ịma aka a agwụla.',
 
   'play.board.place': 'Ọnọdụ {n}',

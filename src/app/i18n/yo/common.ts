@@ -3,7 +3,7 @@ import type { Dictionary } from '../types';
 /** App frame: header, menus, footer, patient navigation, country/language picker — Yoruba. Draft: needs native-speaker review before launch. */
 const common: Dictionary = {
   "common.brand.tagline": "Alábàárìn ìlera",
-  "common.brand.space": "Ààyè ìlera tìrẹ",
+  "common.brand.space": "Ààyè ìlera tiyín",
   "common.nav.mySmartClinic": "SmartClinic mi",
   "common.nav.menu": "Àkójọ",
   "common.nav.findCare": "Find Care",
@@ -39,7 +39,7 @@ const common: Dictionary = {
   "common.menu.fasttrack": "FastTrack",
   "common.menu.my-providers": "Àwọn olùtọ́jú mi",
   "common.menu.coverage-programmes": "Ìrànwọ́ owó & ètò",
-  "common.menu.health-insurance-hmo": "Ìdánilójú ìlera / HMO",
+  "common.menu.health-insurance-hmo": "Ìbánigbófò ìlera / HMO",
   "common.menu.healthy-families": "Ìdílé alálàáfíà",
   "common.menu.impact": "Ipa",
   "common.menu.my-impact": "Ipa mi",
@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Orílẹ̀-èdè",
   "common.locale.language": "Èdè",
   "common.locale.more": "Àwọn èdè míràn",
+  "common.locale.pick": "Èdè yín:",
+  "common.locale.keep": "Ẹ máa lo èdè yìí",
+  "common.locale.report": "Ẹ sọ fún wa nípa ọ̀rọ̀ tí kò tọ́",
+  "common.locale.reportShown": "Àwọn ọ̀rọ̀ wo ni kò tọ́?",
+  "common.locale.reportBetter": "Ọ̀rọ̀ tó dára jù (kò pọn dandan)",
+  "common.locale.reportSend": "Fi ránṣẹ́",
+  "common.locale.reportThanks": "Ẹ ṣé o! A ó tún un ṣe.",
   "common.locale.note": "Atọ́nà yín ń sọ èdè yìí. Àwọn ojú-ewé kan ṣì wà ní Gẹ̀ẹ́sì bí a ṣe ń túmọ̀ wọn.",
 };
 

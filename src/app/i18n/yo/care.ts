@@ -37,8 +37,8 @@ const care: Dictionary = {
   'care.success.requestedLocation': 'Ibi tí ẹ béèrè',
   'care.success.location': 'Ibi',
   'care.success.virtualCare': 'Ìtọ́jú lórí ayélujára',
-  'care.success.nextStep': 'SmartClinic yóò fi ìgbésẹ̀ tó kàn hàn níbí nínú My Care. Ẹ kò nílò láti tún bẹ̀rẹ̀.',
-  'care.success.viewMyCare': 'Wo My Care',
+  'care.success.nextStep': 'SmartClinic yóò fi ìgbésẹ̀ tó kàn hàn níbí nínú Ìtọ́jú mi. Ẹ kò nílò láti tún bẹ̀rẹ̀.',
+  'care.success.viewMyCare': 'Wo Ìtọ́jú mi',
   'care.price.pending': 'A ó mọ iye owó nígbà tí a bá yan olùtọ́jú fún yín.',
   // Status
   'care.status.matching': 'À ń wá olùtọ́jú',

@@ -1069,6 +1069,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/support-callbacks-page.component').then((c) => c.SupportCallbacksPageComponent),
       },
       {
+        path: 'language-feedback',
+        title: 'Language feedback | SmartClinic',
+        loadComponent: () => import('./features/admin/language-feedback-admin-page.component').then((c) => c.LanguageFeedbackAdminPageComponent),
+      },
+      {
         path: 'wellness-points',
         title: 'Wellness points | SmartClinic',
         loadComponent: () => import('./features/admin/wellness-points-admin-page.component').then((c) => c.WellnessPointsAdminPageComponent),

@@ -9,7 +9,7 @@ const play: Dictionary = {
   // Page
   'play.page.eyebrow': 'Gukina',
   'play.page.title': 'Kina ushishikarize inshuti',
-  'play.page.intro': 'Ijambo rimwe ry’ubuzima buri munsi, n’amarushanwa y’urukundo atuma wowe n’inshuti zawe mukomeza gukora.',
+  'play.page.intro': 'Ijambo rimwe ry’ubuzima buri munsi, n’amarushanwa ya gicuti atuma wowe n’inshuti zawe mukomeza gukora imyitozo.',
   'play.page.fairPlay': 'Gukina neza: amanota aturuka gusa ku bintu byiza ku buzima ukora muri SmartClinic, rimwe ku munsi kuri buri kimwe. Nta muntu urebwa amakuru yawe y’ubuzima.',
 
   // Dashboard tile
@@ -38,6 +38,21 @@ const play: Dictionary = {
   'play.word.shareAsk': 'Sangiza abandi ibyavuye mu mukino urebe ko inshuti zawe zakurusha:',
   'play.word.tomorrow': 'Health Word nshya iraza ejo.',
 
+  // How to play
+  'play.how.title': 'Uko bakina',
+  'play.how.step1': 'Vumbura ijambo ry’ubuzima ry’uyu munsi rigizwe n’inyuguti eshanu. Ufite inshuro {tries}.',
+  'play.how.step2': 'Andika ijambo ry’inyuguti eshanu, hanyuma ukande Emeza.',
+  'play.how.step3': 'Amabara yerekana uko wegereye. Uyakoreshe mu nshuro ikurikira.',
+  'play.how.examples': 'Ingero',
+  'play.how.exHit': 'Icyatsi: {letter} iri mu ijambo, mu mwanya ukwiye.',
+  'play.how.exNear': 'Umuhondo: {letter} iri mu ijambo, ariko mu wundi mwanya.',
+  'play.how.exMiss': 'Ibara ry’ivu: {letter} ntiri mu ijambo.',
+  'play.how.clock': 'Igihe gitangira ukanze Kina. Kwihuta ni byiza mu marushanwa.',
+  'play.how.daily': 'Ijambo rishya rimwe buri munsi, rimwe kuri bose. Sangiza ibyavuye mu mukino, ugereranye.',
+  'play.how.english': 'Ijambo riba mu Cyongereza buri gihe. Inama igaragaza insanganyamatsiko.',
+  'play.how.points': 'Rangiza ubone amanota 5, uririvumbure ubone andi 5.',
+  'play.how.gotIt': 'Nabyumvise',
+
   'play.category.body': 'umubiri',
   'play.category.food': 'ibiryo n’ibinyobwa',
   'play.category.move': 'kunyeganyeza umubiri',
@@ -55,7 +70,7 @@ const play: Dictionary = {
   // Sharing
   'play.share.whatsapp': 'WhatsApp',
   'play.share.more': 'Sangiza',
-  'play.share.copy': 'Koporora link',
+  'play.share.copy': 'Koporora ihuza',
   'play.share.copied': 'Byakoporowe ✓',
   'play.share.wordLine': 'SmartClinic Health Word #{n} {score} ⏱ {time}',
   'play.share.wordInvite': 'Wankurusha? Kina ku buntu:',
@@ -76,9 +91,9 @@ const play: Dictionary = {
   'play.themeHint.WORD': 'Inshuro nke, igihe gito',
   'play.themeHint.QUIZ': 'Ikibazo cya buri munsi',
   'play.themeHint.ACTIVE_DAYS': 'Isuzuma n’imirimo ya buri munsi',
-  'play.rules.ALL_ROUND': 'Buri munsi: 10 ku isuzuma cyangwa umurimo wa buri munsi, 5 ku kibazo cy’umunsi na 5 bundi iyo wacyishuye neza, 5 kuri Health Word na 5 bundi iyo warivumbuye.',
+  'play.rules.ALL_ROUND': 'Buri munsi: 10 ku isuzuma cyangwa umurimo wa buri munsi, 5 ku kibazo cy’umunsi n’andi 5 iyo wacyishuye neza, 5 kuri Health Word n’andi 5 iyo warivumbuye.',
   'play.rules.WORD': 'Buri munsi: kuvumbura Health Word bikuhesha 10, wongereweho 2 kuri buri nshuro isigaye. Gukina utarivumbuye bihesha 2. Iyo mungana, utwara igihe gito aratsinda.',
-  'play.rules.QUIZ': 'Buri munsi: 5 ku gusubiza ikibazo cy’umunsi na 10 bundi iyo wacyishuye neza.',
+  'play.rules.QUIZ': 'Buri munsi: 5 ku gusubiza ikibazo cy’umunsi n’andi 10 iyo wacyishuye neza.',
   'play.rules.ACTIVE_DAYS': 'Buri munsi: 5 ku isuzuma ryawe na 5 ku kuranga umurimo wa buri munsi wakoze.',
 
   'play.mode.duel': 'Umwe ku wundi',
@@ -91,7 +106,7 @@ const play: Dictionary = {
   'play.form.howLong': 'Igihe kingana iki?',
   'play.form.days': 'Iminsi {n}',
   'play.form.tomorrow': 'Tangira ejo aho gutangira uyu munsi',
-  'play.form.privacy': 'Inshuti zibona izina ryawe rya mbere, inyuguti imwe, amanota yawe n’iminsi wakoze. Ntizibona amakuru yawe y’ubuzima.',
+  'play.form.privacy': 'Inshuti zibona izina ryawe rya mbere, inyuguti ibanza y’irindi zina ryawe, amanota yawe n’iminsi wakoze. Ntizibona amakuru yawe y’ubuzima.',
   'play.form.create': 'Tangiza utumire',
   'play.form.cancel': 'Bireke',
 
@@ -113,11 +128,11 @@ const play: Dictionary = {
   'play.challenge.again': 'Tangiza irindi rushanwa',
   'play.challenge.leave': 'Va muri iri rushanwa',
   'play.challenge.leaveConfirm': 'Uvuye muri iri rushanwa? Amanota yawe azakurwa ku rutonde.',
-  'play.challenge.notFound': 'Ntitwabonye iryo rushanwa. Ongera urebe link.',
+  'play.challenge.notFound': 'Ntitwabonye iryo rushanwa. Ongera urebe ihuza.',
 
   'play.invite.titleDuel': 'Tumira uwo muhatanye',
   'play.invite.titleGroup': 'Tumira inshuti zawe',
-  'play.invite.body': 'Ohereza link kuri WhatsApp, mu butumwa bugufi, cyangwa mu itsinda iryo ariryo ryose. Inshuti nshya kuri SmartClinic zijyamo ku buntu.',
+  'play.invite.body': 'Ohereza ihuza kuri WhatsApp, mu butumwa bugufi, cyangwa mu itsinda iryo ariryo ryose. Inshuti nshya kuri SmartClinic zijyamo ku buntu.',
 
   'play.join.title': '{name} yagutumiye mu irushanwa!',
   'play.join.cta': 'Emera irushanwa',

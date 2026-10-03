@@ -54,6 +54,13 @@ const common: Dictionary = {
   "common.locale.country": "Ƙasa",
   "common.locale.language": "Harshe",
   "common.locale.more": "Ƙarin harsuna",
+  "common.locale.pick": "Harshenka:",
+  "common.locale.keep": "Ci gaba da wannan harshe",
+  "common.locale.report": "Faɗa mana kalmar da ba daidai ba",
+  "common.locale.reportShown": "Wane kalmomi ne ba daidai ba?",
+  "common.locale.reportBetter": "Kalmomi mafi kyau (ba dole ba)",
+  "common.locale.reportSend": "Aika",
+  "common.locale.reportThanks": "Na gode! Za mu gyara.",
   "common.locale.note": "Jagoranku yana magana da wannan harshe. Wasu shafuka suna cikin Turanci tukuna yayin da muke fassara su.",
 };
 

@@ -37,8 +37,8 @@ const care: Dictionary = {
   'care.success.requestedLocation': 'Lieu demandé',
   'care.success.location': 'Lieu',
   'care.success.virtualCare': 'Soins à distance',
-  'care.success.nextStep': 'SmartClinic affichera la prochaine étape ici, dans My Care. Vous n’avez pas besoin de recommencer.',
-  'care.success.viewMyCare': 'Voir My Care',
+  'care.success.nextStep': 'SmartClinic affichera la prochaine étape ici, dans Mes soins. Vous n’avez pas besoin de recommencer.',
+  'care.success.viewMyCare': 'Voir Mes soins',
   'care.price.pending': 'Le prix sera fixé quand un soignant sera attribué.',
   // Status
   'care.status.matching': 'Recherche d’un soignant',

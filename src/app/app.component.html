@@ -37,6 +37,7 @@
       <span><strong>SMART CLINIC</strong><small>EXCHANGE</small></span>
     </a> -->
         <nav aria-label="Primary navigation" class="hidden items-center gap-3 md:flex">
+          <app-locale-picker [compact]="true" align="right" />
           <a
             [routerLink]="mySmartClinicRoute()"
             class="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-200"
@@ -53,16 +54,20 @@
           </button>
         </nav>
 
-        <button
-          type="button"
-          (click)="menuOpen.set(!menuOpen())"
-          [attr.aria-expanded]="menuOpen()"
-          aria-controls="mobile-navigation"
-          class="min-h-11 rounded-full border border-ink/15 px-4 font-semibold text-ink md:hidden"
-        >
+        <div class="flex items-center gap-2 md:hidden">
+          <app-locale-picker [compact]="true" align="right" />
+          <button
+            type="button"
+            (click)="menuOpen.set(!menuOpen())"
+            [attr.aria-expanded]="menuOpen()"
+            aria-controls="mobile-navigation"
+            class="min-h-11 rounded-full border border-ink/15 px-4 font-semibold text-ink"
+          >
             {{ 'common.nav.menu' | t }}
           </button>
+        </div>
       </div>
+      <app-language-bar />
 
       @if (menuOpen()) {
         <nav

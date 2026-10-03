@@ -42,7 +42,7 @@ const kids: Dictionary = {
   'kids.page.saveError': 'Haikuhifadhiwa. Jaribu tena.',
   // Check-ups
   'kids.visit.title': 'Uchunguzi unaofuata',
-  'kids.visit.due': 'Tarehe {date}',
+  'kids.visit.due': 'Inapaswa kufanyika {date}',
   'kids.visit.inDays': 'Baada ya siku {n}',
   'kids.visit.today': 'Leo',
   'kids.visit.missed': 'Ilipaswa kufanyika siku {n} zilizopita',
@@ -90,7 +90,7 @@ const kids: Dictionary = {
   'kids.quiz.q06.question': 'Ufanye nini unapopiga chafya?',
   'kids.quiz.q06.a0': 'Kumpigia rafiki chafya', 'kids.quiz.q06.a1': 'Hakuna kitu', 'kids.quiz.q06.a2': 'Kupiga chafya kwenye kiwiko',
   'kids.quiz.q07.question': 'Watoto wanahitaji kulala kiasi gani?',
-  'kids.quiz.q07.a0': 'Saa 2', 'kids.quiz.q07.a1': 'Usingizi mrefu wa usiku', 'kids.quiz.q07.a2': 'Bila kulala',
+  'kids.quiz.q07.a0': 'Masaa 2 tu', 'kids.quiz.q07.a1': 'Usingizi mrefu wa usiku', 'kids.quiz.q07.a2': 'Bila kulala',
   'kids.quiz.q08.question': 'Kitafunio kipi kina afya?',
   'kids.quiz.q08.a0': 'Ndizi', 'kids.quiz.q08.a1': 'Mfuko wa peremende', 'kids.quiz.q08.a2': 'Soda',
   'kids.quiz.q09.question': 'Unacheza kwenye jua kali? Nini kinasaidia?',

@@ -3,13 +3,13 @@ import type { Dictionary } from '../types';
 /** home screens — yo. */
 const home: Dictionary = {
   // Hero
-  'home.hero.eyebrow': 'Alábàáṣiṣẹ́ ìlera tiyín',
+  'home.hero.eyebrow': 'Alábàárìn ìlera tiyín',
   'home.hero.titleStart': 'Ẹ wà ní àlàáfíà. Ẹ gba ìtọ́jú.',
   'home.hero.titleHighlight': 'Ẹ kó ìtàn ìlera yín',
   'home.hero.titleEnd': 'pọ̀ sí ibì kan.',
   'home.hero.intro':
     'SmartClinic wà pẹ̀lú yín lójoojúmọ́ — àwọn àṣà kékèké tí ó ń jẹ́ kí ara yín le, àti ọ̀rẹ́ tí ẹ lè gbẹ́kẹ̀lé nígbà tí ẹ bá nílò dókítà, àyẹ̀wò, oògùn tàbí ilé ìwòsàn.',
-  'home.hero.openMySmartClinic': 'Ṣí My SmartClinic',
+  'home.hero.openMySmartClinic': 'Ṣí SmartClinic mi',
   'home.hero.bookHealthCheck': 'Ṣètò Smart Health Check',
   'home.hero.whyLabel': 'Ìdí tí àwọn aláìsàn fi ń yan SmartClinic',
   'home.hero.clearPricing': 'Iye owó tó yé',
@@ -17,7 +17,7 @@ const home: Dictionary = {
   'home.hero.careNearYou': 'Ìtọ́jú nítòsí yín',
   'home.hero.photoAlt': 'Dr Valerie ti SmartClinic nínú ilé ìwòsàn rẹ̀',
   'home.hero.photoCaption': 'Ó ń mú àyípadà bá ètò ìlera',
-  'home.hero.todayLabel': 'Ohun tí ẹ ó ṣe lónìí: ẹ mu ife omi kan, ẹ rìn fún ìṣẹ́jú 20. Ṣí My SmartClinic',
+  'home.hero.todayLabel': 'Ohun tí ẹ ó ṣe lónìí: ẹ mu ife omi kan, ẹ rìn fún ìṣẹ́jú 20. Ṣí SmartClinic mi',
   'home.hero.today': 'Lónìí',
   'home.hero.drinkWater': 'Ẹ mu ife omi kan',
   'home.hero.walk': 'Ẹ rìn fún ìṣẹ́jú 20',
@@ -117,9 +117,9 @@ const home: Dictionary = {
   'home.faq.providersQuestion': 'Báwo ni a ṣe ń yan àwọn olùtọ́jú?',
   'home.faq.providersAnswer':
     'Àwọn olùtọ́jú ń béèrè láti darapọ̀ mọ́ SmartClinic Network, a sì ń yẹ̀ wọ́n wò kí iṣẹ́ wọn tó hàn níbí.',
-  'home.faq.accessQuestion': 'Báwo ni mo ṣe lè wọlé sí My SmartClinic?',
+  'home.faq.accessQuestion': 'Báwo ni mo ṣe lè wọlé sí SmartClinic mi?',
   'home.faq.accessAnswer':
-    'Ẹ tẹ Ṣí My SmartClinic láti wọlé pẹ̀lú àdírẹ́sì ímeèlì tàbí nọ́ńbà fóònù tó so mọ́ àkáǹtì yín.',
+    'Ẹ tẹ Ṣí SmartClinic mi láti wọlé pẹ̀lú àdírẹ́sì ímeèlì tàbí nọ́ńbà fóònù tó so mọ́ àkáǹtì yín.',
   'home.faq.helpQuestion': 'Báwo ni mo ṣe lè rí ìrànlọ́wọ́?',
   'home.faq.helpAnswer':
     'Ẹ wọlé láti wo ìtọ́jú tí ẹ ń gbà lọ́wọ́. Ìrànlọ́wọ́ WhatsApp yóò hàn níbí nígbà tí a bá ti ṣètò nọ́ńbà ìrànlọ́wọ́ tòótọ́.',

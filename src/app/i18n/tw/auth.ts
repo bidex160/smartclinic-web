@@ -33,7 +33,7 @@ const auth: Dictionary = {
   'auth.login.invitedText': 'Wo nsato no bɛdi wo akyi akɔ akawnt foforɔ no mu ankasa.',
   'auth.login.invitationHint': 'Wowɔ nsato link? Di kan bue no, na SmartClinic de wo referral bɛkɔ ankasa.',
   'auth.login.back': 'San kɔ SmartClinic',
-  'auth.login.error': 'Yɛntumi mfaa wo nkɔɔ mu. Hwɛ nsɛm a wode hyɛɛ mu no na san sɔ hwɛ.',
+  'auth.login.error': 'Yɛantumi amfa wo ankɔ mu. Hwɛ nsɛm a wode hyɛɛ mu no na san sɔ hwɛ.',
 
   'auth.register.panelEyebrow': 'Wo apɔmuden, ɛbom baabi korɔ',
   'auth.register.panelTitle': 'Bue akawnt baako ma wo SmartClinic akwantuo.',
@@ -53,7 +53,7 @@ const auth: Dictionary = {
   'auth.register.familyNamePlaceholder': 'sɛ Okafor',
   'auth.register.familyNameError': 'Hyɛ wo abusua din.',
   'auth.register.emailLabel': 'Email',
-  'auth.register.emailOptional': '(ɛnhia sɛ wode fon nɔma di dwuma a)',
+  'auth.register.emailOptional': '(sɛ wode fon nɔma di dwuma a, ɛnhia)',
   'auth.register.emailPlaceholder': 'sɛ ada@example.com',
   'auth.register.emailHint': 'Sɛ wowɔ email a, hyɛ mu. Wobɛtumi de fon nɔma abue wo akawnt nso.',
   'auth.register.emailError': 'Hyɛ email a ɛyɛ papa.',
@@ -79,7 +79,7 @@ const auth: Dictionary = {
   'auth.register.strengthGood': 'Ɛyɛ',
   'auth.register.strengthStrong': 'Ɛyɛ den',
   'auth.register.passwordHint': 'Fa nkyerɛwdeɛ 6–128.',
-  'auth.register.passwordError': 'Ɛsɛ sɛ ahintasɛm no wɔ nkyerɛwdeɛ 6 dodoɔ yi ara.',
+  'auth.register.passwordError': 'Ɛsɛ sɛ ahintasɛm no wɔ nkyerɛwdeɛ 6 anaa nea ɛboro saa.',
   'auth.register.submitting': 'Yɛrebue akawnt…',
   'auth.register.submit': 'Bue akawnt',
   'auth.register.haveAccount': 'Wowɔ akawnt dada?',
@@ -87,7 +87,7 @@ const auth: Dictionary = {
   'auth.register.referralInvalid': 'Saa referral link yi nyɛ adwuma bio. Bisa onipa a ɔto nsa frɛɛ wo no ma ɔmfa link foforɔ mma wo.',
   'auth.register.accountExists': 'Akawnt wɔ hɔ dada a ɛde saa email anaa fon nɔma yi. Kɔ mu mmom.',
   'auth.register.unreachable': 'Yɛntumi nnu SmartClinic. Hwɛ wo intanɛt na san sɔ hwɛ.',
-  'auth.register.failed': 'Yɛntumi mmuee wo akawnt. Hwɛ fɔm no na san sɔ hwɛ.',
+  'auth.register.failed': 'Yɛantumi ammue wo akawnt. Hwɛ fɔm no na san sɔ hwɛ.',
 };
 
 export default auth;

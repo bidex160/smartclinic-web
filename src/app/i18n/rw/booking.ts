@@ -19,7 +19,7 @@ const booking: Dictionary = {
   'booking.actions.back': 'Subira inyuma',
 
   'booking.checkup.title': 'Isuzuma ryawe',
-  'booking.checkup.intro': 'Hitamo uwo ari uw’uwo, isuzuma ushaka, n’aho ushaka ko rikorerwa.',
+  'booking.checkup.intro': 'Hitamo uwo isuzuma ari irye, isuzuma ushaka, n’aho ushaka ko rikorerwa.',
   'booking.checkup.checking': 'Turimo kureba abahari…',
   'booking.who.legend': 'Iri ni irya nde?',
   'booking.who.me': 'Njye',
