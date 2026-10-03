@@ -5,12 +5,23 @@ export interface PartnerFacilityDirectoryItem {
   sourceReference: string;
   displayName: string;
   facilityType: PartnerFacilityType;
-  location: { city: string | null; stateOrRegion: string | null; countryCode: string };
+  location: { city: string | null; stateOrRegion: string | null; countryCode: string; address?: string | null; lga?: string | null };
   readiness: PartnerFacilityReadiness;
   providerReference: string | null;
   source: string;
   sourceVerifiedAt: string | null;
   availableForConnection: boolean;
+  levelOfCare?: string | null;
+  ownership?: string | null;
+  /** Licence current in the national registry, or verified on SmartClinic. */
+  verified?: boolean;
+  /** The facility's public phone (from the registry, or corrected by SmartClinic). */
+  contact?: { phone: string | null; whatsapp: string | null };
+  mapsUrl?: string;
+  directionsUrl?: string;
+  onGoogle?: boolean;
+  alreadyAsked?: boolean;
+  distanceKm?: number | null;
 }
 export interface PartnerFacilityDirectoryPage {
   items: readonly PartnerFacilityDirectoryItem[];

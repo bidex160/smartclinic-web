@@ -165,6 +165,12 @@
         Welcome to SmartClinic.
       </h2>
 
+      @if (result()?.onboardingStatus === 'APPROVED') {
+        <p class="mt-3 rounded-xl bg-emerald-50 p-4 font-semibold text-emerald-900" data-register-approved>
+          You’re approved. Your licence was confirmed from the national registry, so there’s no review to wait for. Sign in and add your services and opening hours, and patients can start booking you.
+        </p>
+      }
+
       <p class="mt-3 text-slate-700">
         Your provider account has been created successfully.
       </p>
@@ -196,9 +202,15 @@
       novalidate
       class="mt-8 grid gap-5 rounded-2xl border border-brand-100 bg-white p-6 shadow-soft md:grid-cols-2"
     >
+      @if (!claiming() && !isClaimLink) {
+        <a routerLink="/claim" class="block rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900 ring-1 ring-emerald-100 md:col-span-2" data-register-find-listing>
+          <strong>Hospital, clinic, pharmacy or lab in Nigeria?</strong> You’re probably already listed from the national registry. <span class="font-semibold underline">Find and claim your facility</span>: confirm with a code and skip the licence paperwork.
+        </a>
+      }
       @if (claiming(); as c) {
         <div class="rounded-xl bg-ochre-50 p-4 text-sm text-slate-800 ring-1 ring-ochre-100" data-claiming>
           <strong>You’re claiming {{ c.displayName }}.</strong> We’ve filled in its name and place.
+          @if (c.registryConfirmed) { Your licence comes from the national registry, so there’s nothing to upload. }
           @if (c.interestedPatients) { {{ c.interestedPatients }} patient{{ c.interestedPatients === 1 ? ' is' : 's are' }} waiting to hear from you. }
         </div>
       }
@@ -568,7 +580,13 @@
         }
       </fieldset>
 
-      <fieldset class="rounded-xl border border-slate-200 p-4" data-register-licence>
+@if (claiming()?.registryConfirmed) {
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900" data-register-licence-auto>
+          <p class="font-bold">✓ Facility licence: confirmed automatically</p>
+          <p class="mt-1">The national Health Facility Registry lists this facility as registered and operating, and you confirmed its registered contact. Patients will see the Verified badge.</p>
+        </div>
+      } @else {
+            <fieldset class="rounded-xl border border-slate-200 p-4" data-register-licence>
         <legend class="px-1 font-bold">
           @if (isDoctor()) { Practising licence } @else { Facility licence }
           <span class="font-normal text-slate-500">(you can add it later)</span>
@@ -592,6 +610,7 @@
           <p class="mt-2 text-sm text-amber-800">Choose who issued it, so we know where to check.</p>
         }
       </fieldset>
+      }
 
       <!-- Validation summary -->
 

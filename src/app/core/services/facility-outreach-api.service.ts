@@ -70,6 +70,40 @@ export interface ClaimPreview {
   readonly city: string | null;
   readonly interestedPatients: number;
   readonly claimed: boolean;
+  readonly listingId?: string;
+  readonly address?: string | null;
+  /** Listed in the national Health Facility Registry. */
+  readonly registryListed?: boolean;
+  /** Licensed and operating in the registry. */
+  readonly registryVerified?: boolean;
+  /** A code sent to the registered contact was entered: the licence will be confirmed automatically. */
+  readonly ownershipVerified?: boolean;
+}
+
+export type CodeChannel = 'SMS' | 'WHATSAPP' | 'EMAIL';
+export interface CodeOption { readonly channel: CodeChannel; readonly masked: string }
+
+export interface ClaimSearchItem {
+  readonly id: string;
+  readonly displayName: string;
+  readonly facilityType: FacilityType;
+  readonly city: string | null;
+  readonly stateOrRegion: string | null;
+  readonly address: string | null;
+  readonly claimed: boolean;
+  readonly registryListed: boolean;
+  readonly registryVerified: boolean;
+  readonly channels: readonly CodeOption[];
+}
+
+export interface RegistryStatus {
+  readonly configured: boolean;
+  readonly enabled: boolean;
+  readonly running: boolean;
+  readonly totals: { listed: number; active: number; registryVerified: number; reachable: number; withLocation: number; onGoogle: number; claimed: number };
+  readonly byType: readonly { facilityType: FacilityType; n: number }[];
+  readonly recent: readonly { id: string; status: 'RUNNING' | 'SUCCEEDED' | 'FAILED'; startedAt: string; finishedAt: string | null; counts: Record<string, number>; error: string | null; triggeredBy: string }[];
+  readonly googlePlaces: { configured: boolean };
 }
 
 export const IMPORT_TEMPLATE = 'name,type,country,state,city,address,phone,whatsapp,email,website,contact_name\n"Example General Hospital",hospital,NG,Lagos,Ikeja,"1 Example Road",0803 000 0000,0803 000 0000,info@example.com,example.com,Admin office\n';
@@ -107,5 +141,29 @@ export class FacilityOutreachApiService {
   }
   preview(token: string) {
     return this.http.get<ClaimPreview>(`${this.base}/public/facility-claims/${encodeURIComponent(token)}`);
+  }
+
+  // Claim by code (public)
+  searchClaimable(q: string, countryCode?: string) {
+    const params: Record<string, string> = { q: q.trim() };
+    if (countryCode) params['countryCode'] = countryCode;
+    return this.http.get<{ items: readonly ClaimSearchItem[] }>(`${this.base}/public/facility-claim-codes/search`, { params });
+  }
+  codeOptions(listingId: string) {
+    return this.http.get<{ id: string; displayName: string; claimed: boolean; registryVerified: boolean; channels: readonly CodeOption[] }>(`${this.base}/public/facility-claim-codes/${encodeURIComponent(listingId)}`);
+  }
+  sendCode(listingId: string, channel: CodeChannel) {
+    return this.http.post<{ sentTo: string; channel: CodeChannel; expiresInSeconds: number }>(`${this.base}/public/facility-claim-codes/${encodeURIComponent(listingId)}/send`, { channel });
+  }
+  verifyCode(listingId: string, code: string) {
+    return this.http.post<{ claimToken: string; registryVerified: boolean }>(`${this.base}/public/facility-claim-codes/${encodeURIComponent(listingId)}/verify`, { code });
+  }
+
+  // Registry sync (staff)
+  registryStatus() {
+    return this.http.get<RegistryStatus>(`${this.base}/admin/facility-registry`);
+  }
+  startRegistrySync() {
+    return this.http.post<{ started: boolean }>(`${this.base}/admin/facility-registry/sync`, {});
   }
 }
