@@ -273,6 +273,7 @@ export class PatientLayoutComponent implements OnInit {
           { label: 'My Health Checks', route: '/me/health-checks', exact: true },
           { label: 'Book Health Check', route: '/me/book', exact: true },
           { label: 'My progress', route: '/me/progress', exact: true },
+          { label: 'Play & challenges', route: '/me/play', exact: false },
         ],
       },
       {

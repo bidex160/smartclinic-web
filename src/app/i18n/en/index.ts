@@ -7,7 +7,8 @@ import care from './care';
 import booking from './booking';
 import passport from './passport';
 import kids from './kids';
+import play from './play';
 
-const all: Dictionary = { ...common, ...home, ...auth, ...dashboard, ...care, ...booking, ...passport, ...kids };
+const all: Dictionary = { ...common, ...home, ...auth, ...dashboard, ...care, ...booking, ...passport, ...kids, ...play };
 
 export default all;
