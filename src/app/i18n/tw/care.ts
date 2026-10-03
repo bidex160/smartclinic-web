@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': 'Adwuma no bo: {mode}',
   'care.provider.priceNote': 'Yɛn nhyehyɛe no na ɛbɛsi wo abisade no bo ankasa pi.',
   'care.provider.fastTrack': 'FastTrack wɔ hɔ',
+  'care.provider.specialty': 'Adwumayɛ soronko (ɛnhia)',
+  'care.provider.anySpecialty': 'Adwumayɛ soronko biara',
+  'care.provider.verified': 'Wɔahwɛ mu',
   // Details
   'care.details.doctorHeading': 'Biribi foforo wɔ hɔ?',
   'care.details.heading': '{step}. Nsɛm foforo (sɛ wopɛ a)',

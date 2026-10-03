@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': 'Bei ya huduma: {mode}',
   'care.provider.priceNote': 'Mfumo wetu ndio unaothibitisha bei halisi ya ombi lako.',
   'care.provider.fastTrack': 'FastTrack inapatikana',
+  'care.provider.specialty': 'Utaalamu (si lazima)',
+  'care.provider.anySpecialty': 'Utaalamu wowote',
+  'care.provider.verified': 'Imethibitishwa',
   // Details
   'care.details.doctorHeading': 'Kuna kingine?',
   'care.details.heading': '{step}. Maelezo zaidi (si lazima)',

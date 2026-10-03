@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': 'Ọnụahịa ọrụ: {mode}',
   'care.provider.priceNote': 'Usoro anyị ga-akwado ezigbo ọnụahịa arịrịọ gị.',
   'care.provider.fastTrack': 'FastTrack dị',
+  'care.provider.specialty': 'Ọkachamara (ọ dịghị mkpa)',
+  'care.provider.anySpecialty': 'Ọkachamara ọ bụla',
+  'care.provider.verified': 'Ekwenyela',
   // Details
   'care.details.doctorHeading': 'Ọ nwere ihe ọzọ?',
   'care.details.heading': '{step}. Nkọwa ọzọ (ọ bụghị iwu)',

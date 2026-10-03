@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': 'Igiciro cya serivisi: {mode}',
   'care.provider.priceNote': 'Sisitemu yacu ni yo yemeza igiciro nyacyo cy’ubusabe bwawe.',
   'care.provider.fastTrack': 'FastTrack irahari',
+  'care.provider.specialty': 'Ubuhanga bwihariye (si ngombwa)',
+  'care.provider.anySpecialty': 'Ubuhanga ubwo ari bwo bwose',
+  'care.provider.verified': 'Byemejwe',
   // Details
   'care.details.doctorHeading': 'Hari ikindi?',
   'care.details.heading': '{step}. Ibindi bisobanuro (si ngombwa)',

@@ -293,6 +293,10 @@
         </section>
       </div>
     }
+    <section id="credentials" class="mt-6">
+      <app-provider-credentials-card (changed)="load()" />
+    </section>
+
     <section id="configuration" aria-label="Provider operational configuration">
       <app-provider-eligibility-config
         providerId="authenticated-provider"

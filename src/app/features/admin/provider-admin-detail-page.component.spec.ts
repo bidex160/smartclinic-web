@@ -1,3 +1,4 @@
+import { ProviderCredentialsApiService } from '../../core/services/provider-credentials-api.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
@@ -320,6 +321,7 @@ describe('ProviderAdminDetailPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProviderAdminDetailPageComponent],
       providers: [
+        { provide: ProviderCredentialsApiService, useValue: { specialties: () => of([]), regulators: () => of([]), mine: () => of({ providerType: 'CLINIC', specialtyRequired: false, maxSpecialties: 40, specialties: [], regulators: [], credential: null, verified: false, uploadsAvailable: false, blockers: [] }), adminGet: () => of({ providerType: 'CLINIC', specialtyRequired: false, maxSpecialties: 40, specialties: [], regulators: [], credential: null, verified: false, uploadsAvailable: false, blockers: [], documentUrl: null, checkUrl: null, checkedVia: null, reviewNote: null }) } },
         provideRouter([]),
         {
           provide: ActivatedRoute,

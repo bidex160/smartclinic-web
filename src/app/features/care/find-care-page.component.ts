@@ -20,6 +20,7 @@ import { Dependant, HealthCheckParticipantSelection } from '../../core/models/de
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
 import { TranslatePipe, TranslationService } from '../../core/services/translation.service';
+import { ProviderCredentialsApiService, Specialty } from '../../core/services/provider-credentials-api.service';
 
 /** Short, non-sensitive notes for known request topics (never patient data in the URL). */
 const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
@@ -315,6 +316,21 @@ const REQUEST_TOPIC_NOTES: Readonly<Record<string, string>> = {
           <legend class="px-2 text-xl font-bold">
             {{ 'care.provider.heading' | t: { step: requiresGeography() ? 4 : 3 } }}
           </legend>
+          @if (specialtyOptions().length) {
+            <label class="mt-3 block font-semibold"
+              >{{ 'care.provider.specialty' | t }}<select
+                [value]="specialty()"
+                (change)="specialtyChanged($any($event.target).value)"
+                class="mt-2 min-h-12 w-full rounded-xl border px-3"
+                data-specialty-filter
+              >
+                <option value="">{{ 'care.provider.anySpecialty' | t }}</option>
+                @for (s of specialtyOptions(); track s.code) {
+                  <option [value]="s.code">{{ s.name }}</option>
+                }
+              </select></label
+            >
+          }
           <label class="mt-3 block font-semibold"
             >{{ 'care.provider.label' | t }}<select
               formControlName="preferredProviderReference"
@@ -452,6 +468,10 @@ export class FindCarePageComponent {
   private readonly dependantsApi = inject(DependantsApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly i18n = inject(TranslationService);
+  private readonly credentialsApi = inject(ProviderCredentialsApiService);
+  /** Optional specialty filter for doctors (e.g. Pediatrics). */
+  readonly specialty = signal('');
+  readonly specialtyOptions = signal<readonly Specialty[]>([]);
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
   readonly marketConfiguration = SMARTCLINIC_MARKETS[this.market];
@@ -535,6 +555,7 @@ export class FindCarePageComponent {
     ];
   };
   constructor() {
+    this.credentialsApi.specialties().subscribe({ next: (list) => this.specialtyOptions.set(list), error: () => this.specialtyOptions.set([]) });
     this.doctorJourney.set(this.route.snapshot.queryParamMap.get('journey') === 'doctor' || !!this.route.snapshot.queryParamMap.get('institution'));
     this.hostInstitutionReference.set(this.route.snapshot.queryParamMap.get('institution'));
     const initialDoctorMode=this.route.snapshot.queryParamMap.get('doctorMode'); if(initialDoctorMode==='NOW'||initialDoctorMode==='LATER'||initialDoctorMode==='HOSPITAL') this.chooseDoctorMode(initialDoctorMode);
@@ -715,6 +736,7 @@ export class FindCarePageComponent {
         serviceCode: v.serviceCode,
         ...(deliveryMode ? { deliveryMode } : {}),
         ...(this.hostInstitutionReference() && deliveryMode === 'VIRTUAL' ? { hostProviderReference: this.hostInstitutionReference()! } : {}),
+        ...(this.specialty() ? { specialty: this.specialty() } : {}),
         ...(deliveryMode === 'VIRTUAL' && this.market === 'RW'
           ? { countryCode: this.market }
           : deliveryMode && deliveryMode !== 'VIRTUAL'
@@ -772,7 +794,13 @@ export class FindCarePageComponent {
           : 'care.mode.inPersonHelp',
     );
   }
+  specialtyChanged(code: string) {
+    this.specialty.set(code);
+    this.discoverProviders();
+  }
   providerLabel(p: PublicFindCareProvider) {
+    const verified = p.verified ? `✓ ${this.i18n.t('care.provider.verified')} · ` : '';
+    const main = p.specialties?.length ? ` · ${p.specialties[0].name}` : '';
     const fast = p.services.find((s) => s.code === this.form.controls.serviceCode.value)
       ?.supportsFastTrack
       ? ` · ${this.i18n.t('care.provider.fastTrack')}`
@@ -781,7 +809,7 @@ export class FindCarePageComponent {
       .find((s) => s.code === this.form.controls.serviceCode.value)
       ?.deliveryOptions.find((o) => o.deliveryMode === this.form.controls.deliveryMode.value);
     const price = option ? ` · ${formatMinor(option.priceMinor, option.currency)}` : '';
-    return `${p.displayName} · ${p.providerType.replaceAll('_', ' ')} · ${p.location.city ?? this.form.controls.city.value}, ${p.location.stateOrRegion ?? this.form.controls.stateOrRegion.value}${price}${fast}`;
+    return `${verified}${p.displayName}${main} · ${p.providerType.replaceAll('_', ' ')} · ${p.location.city ?? this.form.controls.city.value}, ${p.location.stateOrRegion ?? this.form.controls.stateOrRegion.value}${price}${fast}`;
   }
   selectedProviderPrice() {
     const provider = this.providers().find(

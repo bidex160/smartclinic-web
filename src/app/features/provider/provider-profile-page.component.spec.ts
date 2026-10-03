@@ -1,3 +1,4 @@
+import { ProviderCredentialsApiService } from '../../core/services/provider-credentials-api.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -135,6 +136,7 @@ describe('ProviderProfilePageComponent', () => {
     TestBed.configureTestingModule({
       imports: [ProviderProfilePageComponent],
       providers: [
+        { provide: ProviderCredentialsApiService, useValue: { specialties: () => of([]), regulators: () => of([]), mine: () => of({ providerType: 'CLINIC', specialtyRequired: false, maxSpecialties: 40, specialties: [], regulators: [], credential: null, verified: false, uploadsAvailable: false, blockers: [] }), adminGet: () => of({ providerType: 'CLINIC', specialtyRequired: false, maxSpecialties: 40, specialties: [], regulators: [], credential: null, verified: false, uploadsAvailable: false, blockers: [], documentUrl: null, checkUrl: null, checkedVia: null, reviewNote: null }) } },
         provideRouter([]),
         { provide: ProviderOnboardingApiService, useValue: api },
         { provide: AuthSessionService, useValue: { logout: () => of(true) } },

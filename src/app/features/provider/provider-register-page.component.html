@@ -362,30 +362,6 @@
         
       </div>
 
-      <!-- Professional or facility licence/reference -->
-
-      <div>
-        <label
-          for="register-reference"
-          class="font-bold"
-        >
-          Professional reference
-
-          <span
-            class="font-normal text-slate-500"
-          >
-            (optional)
-          </span>
-        </label>
-
-        <input
-          id="register-reference"
-          formControlName="professionalReference"
-          placeholder="Licence or registration number, if available"
-          class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 focus:border-brand-600 focus:ring-4 focus:ring-brand-100"
-        />
-      </div>
-
       <!-- Provider type -->
 
       <div>
@@ -568,6 +544,47 @@
           }
         </select>
       </div>
+
+      <!-- Specialty and licence -->
+
+      <fieldset class="rounded-xl border border-slate-200 p-4" data-register-specialties>
+        <legend class="px-1 font-bold">
+          @if (isDoctor()) { Your specialty } @else { Departments <span class="font-normal text-slate-500">(optional)</span> }
+        </legend>
+        <p class="text-sm text-slate-600">
+          @if (isDoctor()) { Choose up to 3. General Practice / Family Medicine counts. Patients search by specialty. }
+          @else { Which specialties do patients come to you for? You can add more later. }
+        </p>
+        <app-specialty-picker class="mt-2 block" [specialties]="specialtyCatalogue()" [max]="maxSpecialties()" [(selected)]="chosenSpecialties" [(primary)]="primarySpecialty" />
+        @if (specialtyError()) {
+          <p role="alert" class="mt-2 text-sm font-semibold text-red-700" data-specialty-error>Choose at least one specialty.</p>
+        }
+      </fieldset>
+
+      <fieldset class="rounded-xl border border-slate-200 p-4" data-register-licence>
+        <legend class="px-1 font-bold">
+          @if (isDoctor()) { Practising licence } @else { Facility licence }
+          <span class="font-normal text-slate-500">(you can add it later)</span>
+        </legend>
+        <p class="text-sm text-slate-600">We check every licence with the regulator before patients can book you. Adding it now gets you live sooner.</p>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <label class="block text-sm font-semibold" for="register-regulator">Issued by
+            <select id="register-regulator" formControlName="regulator" class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 font-normal focus:border-brand-600 focus:ring-4 focus:ring-brand-100">
+              <option value="">Choose the council or agency</option>
+              @for (r of regulatorOptions(); track r.code) { <option [value]="r.code">{{ r.name }}</option> }
+            </select>
+          </label>
+          <label class="block text-sm font-semibold" for="register-licence">Licence or registration number
+            <input id="register-licence" formControlName="licenceNumber" autocomplete="off" maxlength="60" placeholder="As printed on your certificate" class="mt-2 min-h-12 w-full rounded-lg border border-slate-300 px-3 font-normal focus:border-brand-600 focus:ring-4 focus:ring-brand-100" />
+          </label>
+        </div>
+        @if (form.controls.licenceNumber.invalid && form.controls.licenceNumber.touched) {
+          <p role="alert" class="mt-2 text-sm text-red-700">Use letters, numbers, slashes or dashes, as on your certificate.</p>
+        }
+        @if (form.controls.licenceNumber.value.trim() && !form.controls.regulator.value) {
+          <p class="mt-2 text-sm text-amber-800">Choose who issued it, so we know where to check.</p>
+        }
+      </fieldset>
 
       <!-- Validation summary -->
 

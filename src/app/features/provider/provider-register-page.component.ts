@@ -3,10 +3,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
   FormControl,
@@ -32,6 +34,8 @@ import { ProviderOnboardingApiService } from '../../core/services/provider-onboa
 import { AuthVisualPanelComponent } from "../../shared/components/auth-visual-panel.component";
 import { requestedMarket, rwandaLocale, SMARTCLINIC_MARKETS } from '../../core/config/market-context';
 import { LocalePreferencesService } from '../../core/services/locale-preferences.service';
+import { ProviderCredentialsApiService, RegulatorOption, Specialty } from '../../core/services/provider-credentials-api.service';
+import { SpecialtyPickerComponent } from './credentials/specialty-picker.component';
 
 @Component({
   selector: 'app-provider-register-page',
@@ -39,7 +43,8 @@ import { LocalePreferencesService } from '../../core/services/locale-preferences
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    AuthVisualPanelComponent
+    AuthVisualPanelComponent,
+    SpecialtyPickerComponent,
 ],
   templateUrl: './provider-register-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +61,16 @@ export class ProviderRegisterPageComponent {
 
   private readonly locationData =
     inject(LocationDataService);
+  private readonly credentialsApi = inject(ProviderCredentialsApiService);
+
+  /** Specialties and licence: doctors must choose a specialty; everyone adds a licence (now or later). */
+  readonly specialtyCatalogue = signal<readonly Specialty[]>([]);
+  readonly regulatorOptions = signal<readonly RegulatorOption[]>([]);
+  readonly chosenSpecialties = signal<readonly string[]>([]);
+  readonly primarySpecialty = signal<string | null>(null);
+  readonly specialtyError = signal(false);
+  /** Provider-to-provider invite link token (?invite=…). */
+  private readonly inviteToken = this.route.snapshot.queryParamMap.get('invite')?.trim().slice(0, 128) || null;
 
   readonly market = requestedMarket(this.route.snapshot.queryParamMap.get('market'), inject(LocalePreferencesService).market());
   readonly marketLanguage = rwandaLocale(this.route.snapshot.queryParamMap.get('lang'));
@@ -160,6 +175,13 @@ export class ProviderRegisterPageComponent {
       Validators.maxLength(200),
     ],
 
+    regulator: [''],
+
+    licenceNumber: [
+      '',
+      [Validators.maxLength(60), Validators.pattern(/^\s*[A-Za-z0-9][A-Za-z0-9 /.\-]{2,59}\s*$|^\s*$/)],
+    ],
+
     providerType:
       this.fb.control<ProviderType>(
         this.initialProviderType(),
@@ -182,7 +204,20 @@ export class ProviderRegisterPageComponent {
     ],
   });
 
+  private readonly typeValue = toSignal(this.form.controls.providerType.valueChanges, { initialValue: this.form.controls.providerType.value });
+  readonly isDoctor = computed(() => this.typeValue() === 'INDIVIDUAL');
+  readonly maxSpecialties = computed(() => (this.isDoctor() ? 3 : 40));
+
   constructor() {
+    this.credentialsApi.specialties().subscribe({ next: (s) => this.specialtyCatalogue.set(s), error: () => undefined });
+    this.loadRegulators();
+    this.form.controls.providerType.valueChanges.subscribe(() => {
+      this.chosenSpecialties.set([]);
+      this.primarySpecialty.set(null);
+      this.specialtyError.set(false);
+      this.loadRegulators();
+    });
+    this.form.controls.countryCode.valueChanges.subscribe(() => this.loadRegulators());
     this.loadRegisterCountry(this.defaultCountryCode);
     void this.locationData.ready().then(() => this.loadRegisterCountry(this.form.controls.countryCode.value));
   }
@@ -190,9 +225,23 @@ export class ProviderRegisterPageComponent {
   /**
    * Register provider.
    */
+  private loadRegulators(): void {
+    const v = this.form.getRawValue();
+    this.credentialsApi.regulators(v.countryCode, v.providerType).subscribe({
+      next: (r) => {
+        this.regulatorOptions.set(r);
+        if (!r.some((x) => x.code === this.form.controls.regulator.value)) this.form.controls.regulator.setValue(r.length === 2 ? r[0].code : '');
+      },
+      error: () => this.regulatorOptions.set([]),
+    });
+  }
+
   register(): void {
+    const missingSpecialty = this.isDoctor() && !this.chosenSpecialties().length;
+    this.specialtyError.set(missingSpecialty);
     if (
       this.form.invalid ||
+      missingSpecialty ||
       this.submitting()
     ) {
       this.form.markAllAsTouched();
@@ -201,6 +250,7 @@ export class ProviderRegisterPageComponent {
 
     const value =
       this.form.getRawValue();
+    const licenceNumber = value.licenceNumber.trim();
 
     /**
      * Derive the referral target from the ACTUAL
@@ -262,6 +312,14 @@ export class ProviderRegisterPageComponent {
         providerType:
           value.providerType,
 
+        ...(this.chosenSpecialties().length
+          ? { specialtyCodes: this.chosenSpecialties(), ...(this.primarySpecialty() ? { primarySpecialty: this.primarySpecialty()! } : {}) }
+          : {}),
+
+        ...(value.regulator && licenceNumber ? { regulator: value.regulator, licenceNumber } : {}),
+
+        ...(this.inviteToken ? { inviteToken: this.inviteToken } : {}),
+
         countryCode:
           value.countryCode
             .trim()
@@ -307,7 +365,9 @@ export class ProviderRegisterPageComponent {
         ) => {
            const message = Array.isArray(error.error?.message) ? error.error?.message.join(', '): error.error?.message;
           this.error.set(
-            error.status === 409
+            error.status === 409 && typeof message === 'string' && /licen/i.test(message)
+              ? message
+              : error.status === 409
               ? 'A SmartClinic account or provider identity already exists for these details. Contact SmartClinic operations if you need help.'
               : message || 
             (error.status === 409
@@ -504,6 +564,11 @@ private referralTargetForProviderType(
    * Reset registration form after successful
    * registration.
    */
+  private resetSpecialties(): void {
+    this.chosenSpecialties.set([]);
+    this.primarySpecialty.set(null);
+  }
+
   private resetForm(): void {
     this.form.reset({
       displayName: '',
@@ -511,6 +576,8 @@ private referralTargetForProviderType(
       phone: '',
       password: '',
       professionalReference: '',
+      regulator: '',
+      licenceNumber: '',
 
       /**
        * Keep the provider classification represented

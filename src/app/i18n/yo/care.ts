@@ -98,6 +98,9 @@ const care: Dictionary = {
   'care.provider.servicePrice': 'Iye owó iṣẹ́: {mode}',
   'care.provider.priceNote': 'Ètò wa ni yóò jẹ́rìí sí iye owó gidi fún ìbéèrè yín.',
   'care.provider.fastTrack': 'FastTrack wà',
+  'care.provider.specialty': 'Àkànṣe iṣẹ́ (kò pọn dandan)',
+  'care.provider.anySpecialty': 'Èyíkéyìí àkànṣe iṣẹ́',
+  'care.provider.verified': 'A ti ṣàyẹ̀wò rẹ̀',
   // Details
   'care.details.doctorHeading': 'Ṣé nǹkan míì wà?',
   'care.details.heading': '{step}. Àlàyé míì (tí ẹ bá fẹ́)',
