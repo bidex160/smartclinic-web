@@ -138,6 +138,7 @@ describe('PatientLayoutComponent', () => {
           ['My Health Checks', '/me/health-checks'],
           ['Book Health Check', '/me/book'],
           ['My progress', '/me/progress'],
+          ['Play & challenges', '/me/play'],
         ],
       },
       {

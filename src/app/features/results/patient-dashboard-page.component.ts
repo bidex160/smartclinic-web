@@ -437,6 +437,21 @@ interface DashboardNextStep {
           }
         </div>
 
+        <a routerLink="/me/play" class="group mt-4 flex items-center justify-between gap-4 overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-leaf-50 via-white to-ochre-50 p-5 shadow-card ring-1 ring-ink/[0.06]" data-play-tile>
+          <span class="flex min-w-0 items-center gap-4">
+            <span class="hidden shrink-0 gap-1 sm:flex" aria-hidden="true">
+              <span class="grid size-9 place-items-center rounded-md bg-leaf-500 font-bold text-white">W</span>
+              <span class="grid size-9 place-items-center rounded-md bg-ochre-300 font-bold text-ink">E</span>
+              <span class="grid size-9 place-items-center rounded-md bg-ink/30 font-bold text-white">L</span>
+            </span>
+            <span class="min-w-0">
+              <span class="block font-display text-xl font-semibold text-ink">{{ 'play.tile.title' | t }}</span>
+              <span class="block text-sm text-ink-soft">{{ 'play.tile.body' | t }}</span>
+            </span>
+          </span>
+          <span class="shrink-0 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white group-hover:bg-brand-800">{{ 'play.tile.cta' | t }} →</span>
+        </a>
+
         <nav class="mt-10" aria-labelledby="quick-access-heading">
           <div class="mb-4">
             <h2 id="quick-access-heading" class="font-display text-[1.6rem] font-semibold text-ink sm:text-[1.9rem]">

@@ -107,6 +107,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/partners/family-wellness-home-page.component').then((c) => c.FamilyWellnessHomePageComponent),
   },
   {
+    path: 'play',
+    title: 'Health Word | SmartClinic',
+    loadComponent: () => import('./features/play/play-invite-page.component').then((c) => c.PlayInvitePageComponent),
+  },
+  {
+    path: 'play/c/:code',
+    title: 'Join a health challenge | SmartClinic',
+    loadComponent: () => import('./features/play/play-invite-page.component').then((c) => c.PlayInvitePageComponent),
+  },
+  {
     path: 'healthy-families/join/:token',
     title: 'Join Healthy Families | SmartClinic',
     loadComponent: () => import('./features/partners/healthy-family-join-page.component').then((c) => c.HealthyFamilyJoinPageComponent),
@@ -292,6 +302,18 @@ export const routes: Routes = [
           import('./features/results/my-impact-page.component').then(
             (c) => c.MyImpactPageComponent,
           ),
+      },
+      {
+        path: 'play',
+        title: 'Play | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/play/play-page.component').then((c) => c.PlayPageComponent),
+      },
+      {
+        path: 'play/challenges/:code',
+        title: 'Health challenge | SmartClinic',
+        canActivate: [authenticatedUserGuard],
+        loadComponent: () => import('./features/play/challenge-page.component').then((c) => c.ChallengePageComponent),
       },
       {
         path: 'family/kids/:ref',

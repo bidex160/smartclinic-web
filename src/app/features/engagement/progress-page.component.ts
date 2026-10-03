@@ -18,6 +18,9 @@ const BADGE_ICON: Record<string, string> = {
   FIRST_HEALTH_CHECK: 'M20 6 9 17l-5-5',
   ROUTINE_BUILDER: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
   FAMILY_GUARDIAN: 'M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z',
+  WORD_FINDER: 'M4 7h4v4H4zM10 7h4v4h-4zM16 7h4v4h-4zM4 13h4v4H4z',
+  WORD_WIZARD: 'M12 2l2.4 5.6L20 8l-4.3 3.9L17 18l-5-3-5 3 1.3-6.1L4 8l5.6-.4z',
+  CHALLENGER: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z',
   PASSPORT_COMPLETE: 'M5 3h12a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2zM9 9h6M9 13h4',
 };
 
@@ -26,6 +29,8 @@ const EARN: readonly { key: string; label: string }[] = [
   { key: 'quizCorrect', label: 'Extra when you get it right' },
   { key: 'checkInDay', label: 'Tell us how you feel today' },
   { key: 'routineDay', label: 'Tick off a daily routine' },
+  { key: 'wordPlayed', label: 'Play the daily Health Word' },
+  { key: 'wordSolved', label: 'Extra when you solve it' },
   { key: 'passportItem', label: 'Fill in a page of your passport' },
   { key: 'selfCheck', label: 'Complete a Guided Self-Check' },
   { key: 'healthCheck', label: 'Complete a Smart Health Check' },
